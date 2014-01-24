@@ -1,0 +1,363 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	276;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	279;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	282;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	285;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	288;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	292;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	264;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	267;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	270;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	273;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	276;"	d	file:
+ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	280;"	d	file:
+CMAKE_BINARY_DIR	build/Makefile	/^CMAKE_BINARY_DIR = \/home\/xiaobin\/work\/Demos\/build$/;"	m
+CMAKE_BINARY_DIR	build/ThriftDemo/Makefile	/^CMAKE_BINARY_DIR = \/home\/xiaobin\/work\/Demos\/build$/;"	m
+CMAKE_COMMAND	build/Makefile	/^CMAKE_COMMAND = \/usr\/bin\/cmake$/;"	m
+CMAKE_COMMAND	build/ThriftDemo/Makefile	/^CMAKE_COMMAND = \/usr\/bin\/cmake$/;"	m
+CMAKE_SOURCE_DIR	build/Makefile	/^CMAKE_SOURCE_DIR = \/home\/xiaobin\/work\/Demos$/;"	m
+CMAKE_SOURCE_DIR	build/ThriftDemo/Makefile	/^CMAKE_SOURCE_DIR = \/home\/xiaobin\/work\/Demos$/;"	m
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	101;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	104;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	107;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	110;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	118;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	138;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	13;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	149;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	152;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	169;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	172;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	175;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	24;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	30;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	36;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	42;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	48;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	62;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	69;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	73;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	76;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	78;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	87;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	95;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	98;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	100;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	103;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	106;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	109;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	117;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	12;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	137;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	140;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	157;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	15;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	160;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	163;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	26;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	32;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	38;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	44;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	50;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	64;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	71;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	75;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	78;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	80;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	89;"	d	file:
+COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	97;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	111;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	120;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	155;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	15;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	160;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	25;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	31;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	38;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	44;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	51;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	56;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	64;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	81;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	88;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	110;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	119;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	143;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	148;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	17;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	27;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	33;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	40;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	46;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	53;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	58;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	66;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	83;"	d	file:
+COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	90;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	112;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	121;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	156;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	161;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	16;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	26;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	32;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	39;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	45;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	52;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	57;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	65;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	82;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	89;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	111;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	120;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	144;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	149;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	18;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	28;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	34;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	41;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	47;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	54;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	59;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	67;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	84;"	d	file:
+COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	91;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	114;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	125;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	128;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	157;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	162;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	17;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	27;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	33;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	53;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	58;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	66;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	83;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	91;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	113;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	124;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	127;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	145;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	150;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	19;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	29;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	35;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	55;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	60;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	68;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	85;"	d	file:
+COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	93;"	d	file:
+COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	132;"	d	file:
+COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	20;"	d	file:
+COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	131;"	d	file:
+COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	22;"	d	file:
+CommonConstants	ThriftDemo/thrift/gen-cpp/Common_constants.cpp	/^CommonConstants::CommonConstants() {$/;"	f	class:CommonConstants
+CommonConstants	ThriftDemo/thrift/gen-cpp/Common_constants.h	/^class CommonConstants {$/;"	c
+Common_CONSTANTS_H	ThriftDemo/thrift/gen-cpp/Common_constants.h	8;"	d
+Common_TYPES_H	ThriftDemo/thrift/gen-cpp/Common_types.h	8;"	d
+DEC	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	296;"	d	file:
+DEC	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	284;"	d	file:
+EQUALS	build/Makefile	/^EQUALS = =$/;"	m
+EQUALS	build/ThriftDemo/Makefile	/^EQUALS = =$/;"	m
+EchoServerConstants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.cpp	/^EchoServerConstants::EchoServerConstants() {$/;"	f	class:EchoServerConstants
+EchoServerConstants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.h	/^class EchoServerConstants {$/;"	c
+EchoServer_CONSTANTS_H	ThriftDemo/thrift/gen-cpp/EchoServer_constants.h	8;"	d
+EchoServer_TYPES_H	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	8;"	d
+HEX	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	307;"	d	file:
+HEX	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	295;"	d	file:
+Handler	ThriftDemo/thrift/gen-cpp/server.h	/^  typedef serverIf Handler;$/;"	t	class:serverIfFactory
+ID_VOID_MAIN	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	9;"	d	file:
+MessageType	ThriftDemo/thrift/gen-cpp/Common_types.h	/^struct MessageType {$/;"	s
+MessageTypeCommand	ThriftDemo/thrift/gen-cpp/Common_types.h	/^    MessageTypeCommand = 0,$/;"	e	enum:MessageType::type
+MessageTypeData	ThriftDemo/thrift/gen-cpp/Common_types.h	/^    MessageTypeData = 1$/;"	e	enum:MessageType::type
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	187;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	190;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	193;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	196;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	199;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	202;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	205;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	208;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	211;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	214;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	217;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	220;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	223;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	229;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	232;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	235;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	238;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	241;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	244;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	247;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	250;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	253;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	256;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	259;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	262;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	265;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	175;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	178;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	181;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	184;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	187;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	190;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	193;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	196;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	199;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	202;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	205;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	208;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	211;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	217;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	220;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	223;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	226;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	229;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	232;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	235;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	238;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	241;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	244;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	247;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	250;"	d	file:
+PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	253;"	d	file:
+ProcessFunction	ThriftDemo/thrift/gen-cpp/server.h	/^  typedef  void (serverProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);$/;"	t	class:serverProcessor
+ProcessMap	ThriftDemo/thrift/gen-cpp/server.h	/^  typedef std::map<std::string, ProcessFunction> ProcessMap;$/;"	t	class:serverProcessor
+RM	build/Makefile	/^RM = \/usr\/bin\/cmake -E remove -f$/;"	m
+RM	build/ThriftDemo/Makefile	/^RM = \/usr\/bin\/cmake -E remove -f$/;"	m
+SHELL	build/Makefile	/^SHELL = \/bin\/sh$/;"	m
+SHELL	build/ThriftDemo/Makefile	/^SHELL = \/bin\/sh$/;"	m
+SUFFIXES	build/Makefile	/^SUFFIXES =$/;"	m
+SUFFIXES	build/ThriftDemo/Makefile	/^SUFFIXES =$/;"	m
+__isset	ThriftDemo/thrift/gen-cpp/server.h	/^  _server_echo_args__isset __isset;$/;"	m	class:server_echo_args
+__set_data	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  void __set_data(const std::string& val) {$/;"	f	class:message
+__set_header	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  void __set_header(const head& val) {$/;"	f	class:message
+__set_len	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  void __set_len(const int32_t val) {$/;"	f	class:head
+__set_msg	ThriftDemo/thrift/gen-cpp/server.h	/^  void __set_msg(const std::string& val) {$/;"	f	class:server_echo_args
+__set_type	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  void __set_type(const MessageType::type val) {$/;"	f	class:head
+_kMessageTypeNames	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^const char* _kMessageTypeNames[] = {$/;"	v
+_kMessageTypeValues	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^int _kMessageTypeValues[] = {$/;"	v
+_server_echo_args__isset	ThriftDemo/thrift/gen-cpp/server.h	/^  _server_echo_args__isset() : msg(false) {}$/;"	f	struct:_server_echo_args__isset
+_server_echo_args__isset	ThriftDemo/thrift/gen-cpp/server.h	/^typedef struct _server_echo_args__isset {$/;"	s
+_server_echo_args__isset	ThriftDemo/thrift/gen-cpp/server.h	/^} _server_echo_args__isset;$/;"	t	typeref:struct:_server_echo_args__isset
+add	ThriftDemo/thrift/gen-cpp/server.h	/^  void add(boost::shared_ptr<serverIf> iface) {$/;"	f	class:serverMultiface
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^const char* head::ascii_fingerprint = "46A703A33337BED2F62F386FC66B2A5F";$/;"	m	class:head	file:
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^const char* message::ascii_fingerprint = "3CF811C32885C39149A72922DE980A64";$/;"	m	class:message	file:
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  static const char* ascii_fingerprint; \/\/ = "3CF811C32885C39149A72922DE980A64";$/;"	m	class:message
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  static const char* ascii_fingerprint; \/\/ = "46A703A33337BED2F62F386FC66B2A5F";$/;"	m	class:head
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^const uint8_t head::binary_fingerprint[16] = {0x46,0xA7,0x03,0xA3,0x33,0x37,0xBE,0xD2,0xF6,0x2F,0x38,0x6F,0xC6,0x6B,0x2A,0x5F};$/;"	m	class:head	file:
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^const uint8_t message::binary_fingerprint[16] = {0x3C,0xF8,0x11,0xC3,0x28,0x85,0xC3,0x91,0x49,0xA7,0x29,0x22,0xDE,0x98,0x0A,0x64};$/;"	m	class:message	file:
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  static const uint8_t binary_fingerprint[16]; \/\/ = {0x3C,0xF8,0x11,0xC3,0x28,0x85,0xC3,0x91,0x49,0xA7,0x29,0x22,0xDE,0x98,0x0A,0x64};$/;"	m	class:message
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  static const uint8_t binary_fingerprint[16]; \/\/ = {0x46,0xA7,0x03,0xA3,0x33,0x37,0xBE,0xD2,0xF6,0x2F,0x38,0x6F,0xC6,0x6B,0x2A,0x5F};$/;"	m	class:head
+data	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  std::string data;$/;"	m	class:message
+dispatchCall	ThriftDemo/thrift/gen-cpp/server.cpp	/^bool serverProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {$/;"	f	class:serverProcessor
+echo	ThriftDemo/echoserver.cpp	/^  void echo(const std::string& msg) {$/;"	f	class:serverHandler
+echo	ThriftDemo/thrift/gen-cpp/server.cpp	/^void serverClient::echo(const std::string& msg)$/;"	f	class:serverClient
+echo	ThriftDemo/thrift/gen-cpp/server.h	/^  void echo(const std::string& \/* msg *\/) {$/;"	f	class:serverNull
+echo	ThriftDemo/thrift/gen-cpp/server.h	/^  void echo(const std::string& msg) {$/;"	f	class:serverMultiface
+g_Common_constants	ThriftDemo/thrift/gen-cpp/Common_constants.cpp	/^const CommonConstants g_Common_constants;$/;"	v
+g_EchoServer_constants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.cpp	/^const EchoServerConstants g_EchoServer_constants;$/;"	v
+getHandler	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual serverIf* getHandler(const ::apache::thrift::TConnectionInfo&) {$/;"	f	class:serverIfSingletonFactory
+getInputProtocol	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getInputProtocol() {$/;"	f	class:serverClient
+getOutputProtocol	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {$/;"	f	class:serverClient
+getProcessor	ThriftDemo/thrift/gen-cpp/server.cpp	/^::boost::shared_ptr< ::apache::thrift::TProcessor > serverProcessorFactory::getProcessor(const ::apache::thrift::TConnectionInfo& connInfo) {$/;"	f	class:serverProcessorFactory
+handlerFactory_	ThriftDemo/thrift/gen-cpp/server.h	/^  ::boost::shared_ptr< serverIfFactory > handlerFactory_;$/;"	m	class:serverProcessorFactory
+head	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  head() : type((MessageType::type)0), len(0) {$/;"	f	class:head
+head	ThriftDemo/thrift/gen-cpp/Common_types.h	/^class head {$/;"	c
+header	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  head header;$/;"	m	class:message
+iface_	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr<serverIf> iface_;$/;"	m	class:serverIfSingletonFactory
+iface_	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr<serverIf> iface_;$/;"	m	class:serverProcessor
+ifaces_	ThriftDemo/thrift/gen-cpp/server.h	/^  std::vector<boost::shared_ptr<serverIf> > ifaces_;$/;"	m	class:serverMultiface
+info_arch	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_arch = "INFO" ":" "arch[" ARCHITECTURE_ID "]";$/;"	v
+info_arch	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_arch = "INFO" ":" "arch[" ARCHITECTURE_ID "]";$/;"	v
+info_compiler	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_compiler = "INFO" ":" "compiler[" COMPILER_ID "]";$/;"	v
+info_compiler	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_compiler = "INFO" ":" "compiler[" COMPILER_ID "]";$/;"	v
+info_platform	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_platform = "INFO" ":" "platform[" PLATFORM_ID "]";$/;"	v
+info_platform	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_platform = "INFO" ":" "platform[" PLATFORM_ID "]";$/;"	v
+info_version	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const info_version[] = {$/;"	v
+info_version	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const info_version[] = {$/;"	v
+iprot_	ThriftDemo/thrift/gen-cpp/server.h	/^  ::apache::thrift::protocol::TProtocol* iprot_;$/;"	m	class:serverClient
+len	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  int32_t len;$/;"	m	class:head
+main	ThriftDemo/echoclient.cpp	/^int main(int argc, const char *argv[])$/;"	f
+main	ThriftDemo/echoserver.cpp	/^int main(int argc, char **argv) {$/;"	f
+main	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^int main(int argc, char* argv[])$/;"	f
+main	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^void main() {}$/;"	f
+main	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^int main(int argc, char* argv[])$/;"	f
+message	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  message() : data() {$/;"	f	class:message
+message	ThriftDemo/thrift/gen-cpp/Common_types.h	/^class message {$/;"	c
+msg	ThriftDemo/thrift/gen-cpp/server.h	/^  bool msg;$/;"	m	struct:_server_echo_args__isset
+msg	ThriftDemo/thrift/gen-cpp/server.h	/^  const std::string* msg;$/;"	m	class:server_echo_pargs
+msg	ThriftDemo/thrift/gen-cpp/server.h	/^  std::string msg;$/;"	m	class:server_echo_args
+operator !=	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  bool operator != (const head &rhs) const {$/;"	f	class:head
+operator !=	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  bool operator != (const message &rhs) const {$/;"	f	class:message
+operator !=	ThriftDemo/thrift/gen-cpp/server.h	/^  bool operator != (const server_echo_args &rhs) const {$/;"	f	class:server_echo_args
+operator !=	ThriftDemo/thrift/gen-cpp/server.h	/^  bool operator != (const server_echo_result &rhs) const {$/;"	f	class:server_echo_result
+operator ==	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  bool operator == (const head & rhs) const$/;"	f	class:head
+operator ==	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  bool operator == (const message & rhs) const$/;"	f	class:message
+operator ==	ThriftDemo/thrift/gen-cpp/server.h	/^  bool operator == (const server_echo_args & rhs) const$/;"	f	class:server_echo_args
+operator ==	ThriftDemo/thrift/gen-cpp/server.h	/^  bool operator == (const server_echo_result & \/* rhs *\/) const$/;"	f	class:server_echo_result
+oprot_	ThriftDemo/thrift/gen-cpp/server.h	/^  ::apache::thrift::protocol::TProtocol* oprot_;$/;"	m	class:serverClient
+piprot_	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;$/;"	m	class:serverClient
+poprot_	ThriftDemo/thrift/gen-cpp/server.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;$/;"	m	class:serverClient
+processMap_	ThriftDemo/thrift/gen-cpp/server.h	/^  ProcessMap processMap_;$/;"	m	class:serverProcessor
+process_echo	ThriftDemo/thrift/gen-cpp/server.cpp	/^void serverProcessor::process_echo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:serverProcessor
+read	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^uint32_t head::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:head
+read	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^uint32_t message::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:message
+read	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:server_echo_args
+read	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:server_echo_presult
+read	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:server_echo_result
+recv_echo	ThriftDemo/thrift/gen-cpp/server.cpp	/^void serverClient::recv_echo()$/;"	f	class:serverClient
+releaseHandler	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual void releaseHandler(serverIf* \/* handler *\/) {}$/;"	f	class:serverIfSingletonFactory
+send_echo	ThriftDemo/thrift/gen-cpp/server.cpp	/^void serverClient::send_echo(const std::string& msg)$/;"	f	class:serverClient
+serverClient	ThriftDemo/thrift/gen-cpp/server.h	/^  serverClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, boost::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot) :$/;"	f	class:serverClient
+serverClient	ThriftDemo/thrift/gen-cpp/server.h	/^  serverClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :$/;"	f	class:serverClient
+serverClient	ThriftDemo/thrift/gen-cpp/server.h	/^class serverClient : virtual public serverIf {$/;"	c
+serverHandler	ThriftDemo/echoserver.cpp	/^  serverHandler() {$/;"	f	class:serverHandler
+serverHandler	ThriftDemo/echoserver.cpp	/^class serverHandler : virtual public serverIf {$/;"	c	file:
+serverIf	ThriftDemo/thrift/gen-cpp/server.h	/^class serverIf {$/;"	c
+serverIfFactory	ThriftDemo/thrift/gen-cpp/server.h	/^class serverIfFactory {$/;"	c
+serverIfSingletonFactory	ThriftDemo/thrift/gen-cpp/server.h	/^  serverIfSingletonFactory(const boost::shared_ptr<serverIf>& iface) : iface_(iface) {}$/;"	f	class:serverIfSingletonFactory
+serverIfSingletonFactory	ThriftDemo/thrift/gen-cpp/server.h	/^class serverIfSingletonFactory : virtual public serverIfFactory {$/;"	c
+serverMultiface	ThriftDemo/thrift/gen-cpp/server.h	/^  serverMultiface() {}$/;"	f	class:serverMultiface
+serverMultiface	ThriftDemo/thrift/gen-cpp/server.h	/^  serverMultiface(std::vector<boost::shared_ptr<serverIf> >& ifaces) : ifaces_(ifaces) {$/;"	f	class:serverMultiface
+serverMultiface	ThriftDemo/thrift/gen-cpp/server.h	/^class serverMultiface : virtual public serverIf {$/;"	c
+serverNull	ThriftDemo/thrift/gen-cpp/server.h	/^class serverNull : virtual public serverIf {$/;"	c
+serverProcessor	ThriftDemo/thrift/gen-cpp/server.h	/^  serverProcessor(boost::shared_ptr<serverIf> iface) :$/;"	f	class:serverProcessor
+serverProcessor	ThriftDemo/thrift/gen-cpp/server.h	/^class serverProcessor : public ::apache::thrift::TDispatchProcessor {$/;"	c
+serverProcessorFactory	ThriftDemo/thrift/gen-cpp/server.h	/^  serverProcessorFactory(const ::boost::shared_ptr< serverIfFactory >& handlerFactory) :$/;"	f	class:serverProcessorFactory
+serverProcessorFactory	ThriftDemo/thrift/gen-cpp/server.h	/^class serverProcessorFactory : public ::apache::thrift::TProcessorFactory {$/;"	c
+server_H	ThriftDemo/thrift/gen-cpp/server.h	8;"	d
+server_echo_args	ThriftDemo/thrift/gen-cpp/server.h	/^  server_echo_args() : msg() {$/;"	f	class:server_echo_args
+server_echo_args	ThriftDemo/thrift/gen-cpp/server.h	/^class server_echo_args {$/;"	c
+server_echo_pargs	ThriftDemo/thrift/gen-cpp/server.h	/^class server_echo_pargs {$/;"	c
+server_echo_presult	ThriftDemo/thrift/gen-cpp/server.h	/^class server_echo_presult {$/;"	c
+server_echo_result	ThriftDemo/thrift/gen-cpp/server.h	/^  server_echo_result() {$/;"	f	class:server_echo_result
+server_echo_result	ThriftDemo/thrift/gen-cpp/server.h	/^class server_echo_result {$/;"	c
+swap	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^void swap(head &a, head &b) {$/;"	f
+swap	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^void swap(message &a, message &b) {$/;"	f
+type	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  MessageType::type type;$/;"	m	class:head
+type	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  enum type {$/;"	g	struct:MessageType
+write	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^uint32_t head::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:head
+write	ThriftDemo/thrift/gen-cpp/Common_types.cpp	/^uint32_t message::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:message
+write	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:server_echo_args
+write	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:server_echo_pargs
+write	ThriftDemo/thrift/gen-cpp/server.cpp	/^uint32_t server_echo_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:server_echo_result
+~head	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  virtual ~head() throw() {}$/;"	f	class:head
+~message	ThriftDemo/thrift/gen-cpp/Common_types.h	/^  virtual ~message() throw() {}$/;"	f	class:message
+~serverIf	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverIf() {}$/;"	f	class:serverIf
+~serverIfFactory	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverIfFactory() {}$/;"	f	class:serverIfFactory
+~serverIfSingletonFactory	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverIfSingletonFactory() {}$/;"	f	class:serverIfSingletonFactory
+~serverMultiface	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverMultiface() {}$/;"	f	class:serverMultiface
+~serverNull	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverNull() {}$/;"	f	class:serverNull
+~serverProcessor	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~serverProcessor() {}$/;"	f	class:serverProcessor
+~server_echo_args	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~server_echo_args() throw() {}$/;"	f	class:server_echo_args
+~server_echo_pargs	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~server_echo_pargs() throw() {}$/;"	f	class:server_echo_pargs
+~server_echo_presult	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~server_echo_presult() throw() {}$/;"	f	class:server_echo_presult
+~server_echo_result	ThriftDemo/thrift/gen-cpp/server.h	/^  virtual ~server_echo_result() throw() {}$/;"	f	class:server_echo_result
