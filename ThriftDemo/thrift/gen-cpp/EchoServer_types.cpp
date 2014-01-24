@@ -20,10 +20,10 @@ const char* _kPacketTypeNames[] = {
 };
 const std::map<int, const char*> _PacketType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kPacketTypeValues, _kPacketTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
-const char* packet::ascii_fingerprint = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";
-const uint8_t packet::binary_fingerprint[16] = {0xD3,0xBA,0x2D,0x33,0xC1,0xBA,0x9D,0xD4,0xF2,0xFD,0xDA,0x18,0xF1,0x64,0x0B,0xC8};
+const char* Packet::ascii_fingerprint = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";
+const uint8_t Packet::binary_fingerprint[16] = {0xD3,0xBA,0x2D,0x33,0xC1,0xBA,0x9D,0xD4,0xF2,0xFD,0xDA,0x18,0xF1,0x64,0x0B,0xC8};
 
-uint32_t packet::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t Packet::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -87,9 +87,9 @@ uint32_t packet::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t packet::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t Packet::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("packet");
+  xfer += oprot->writeStructBegin("Packet");
 
   xfer += oprot->writeFieldBegin("type", ::apache::thrift::protocol::T_I32, 1);
   xfer += oprot->writeI32((int32_t)this->type);
@@ -108,7 +108,7 @@ uint32_t packet::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-void swap(packet &a, packet &b) {
+void swap(Packet &a, Packet &b) {
   using ::std::swap;
   swap(a.type, b.type);
   swap(a.len, b.len);

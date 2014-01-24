@@ -26,27 +26,27 @@ struct PacketType {
 
 extern const std::map<int, const char*> _PacketType_VALUES_TO_NAMES;
 
-typedef struct _packet__isset {
-  _packet__isset() : data(false) {}
+typedef struct _Packet__isset {
+  _Packet__isset() : data(false) {}
   bool data;
-} _packet__isset;
+} _Packet__isset;
 
-class packet {
+class Packet {
  public:
 
   static const char* ascii_fingerprint; // = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";
   static const uint8_t binary_fingerprint[16]; // = {0xD3,0xBA,0x2D,0x33,0xC1,0xBA,0x9D,0xD4,0xF2,0xFD,0xDA,0x18,0xF1,0x64,0x0B,0xC8};
 
-  packet() : type((PacketType::type)0), len(0), data() {
+  Packet() : type((PacketType::type)0), len(0), data() {
   }
 
-  virtual ~packet() throw() {}
+  virtual ~Packet() throw() {}
 
   PacketType::type type;
   int32_t len;
   std::string data;
 
-  _packet__isset __isset;
+  _Packet__isset __isset;
 
   void __set_type(const PacketType::type val) {
     type = val;
@@ -60,7 +60,7 @@ class packet {
     data = val;
   }
 
-  bool operator == (const packet & rhs) const
+  bool operator == (const Packet & rhs) const
   {
     if (!(type == rhs.type))
       return false;
@@ -70,18 +70,18 @@ class packet {
       return false;
     return true;
   }
-  bool operator != (const packet &rhs) const {
+  bool operator != (const Packet &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const packet & ) const;
+  bool operator < (const Packet & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(packet &a, packet &b);
+void swap(Packet &a, Packet &b);
 
 
 
