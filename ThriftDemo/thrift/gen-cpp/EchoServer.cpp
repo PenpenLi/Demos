@@ -257,8 +257,8 @@ uint32_t EchoServer_SendPacket_result::read(::apache::thrift::protocol::TProtoco
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->success);
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -283,8 +283,8 @@ uint32_t EchoServer_SendPacket_result::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeStructBegin("EchoServer_SendPacket_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
-    xfer += oprot->writeBool(this->success);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -313,8 +313,8 @@ uint32_t EchoServer_SendPacket_presult::read(::apache::thrift::protocol::TProtoc
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool((*(this->success)));
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -390,10 +390,10 @@ void EchoServerClient::recv_Echo(std::string& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "Echo failed: unknown result");
 }
 
-bool EchoServerClient::SendPacket(const Packet& p)
+void EchoServerClient::SendPacket(Packet& _return, const Packet& p)
 {
   send_SendPacket(p);
-  return recv_SendPacket();
+  recv_SendPacket(_return);
 }
 
 void EchoServerClient::send_SendPacket(const Packet& p)
@@ -410,7 +410,7 @@ void EchoServerClient::send_SendPacket(const Packet& p)
   oprot_->getTransport()->flush();
 }
 
-bool EchoServerClient::recv_SendPacket()
+void EchoServerClient::recv_SendPacket(Packet& _return)
 {
 
   int32_t rseqid = 0;
@@ -435,7 +435,6 @@ bool EchoServerClient::recv_SendPacket()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  bool _return;
   EchoServer_SendPacket_presult result;
   result.success = &_return;
   result.read(iprot_);
@@ -443,7 +442,8 @@ bool EchoServerClient::recv_SendPacket()
   iprot_->getTransport()->readEnd();
 
   if (result.__isset.success) {
-    return _return;
+    // _return pointer has now been filled
+    return;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "SendPacket failed: unknown result");
 }
@@ -544,7 +544,7 @@ void EchoServerProcessor::process_SendPacket(int32_t seqid, ::apache::thrift::pr
 
   EchoServer_SendPacket_result result;
   try {
-    result.success = iface_->SendPacket(args.p);
+    iface_->SendPacket(result.success, args.p);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {

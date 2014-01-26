@@ -16,7 +16,7 @@ class EchoServerIf {
  public:
   virtual ~EchoServerIf() {}
   virtual void Echo(std::string& _return, const std::string& msg) = 0;
-  virtual bool SendPacket(const Packet& p) = 0;
+  virtual void SendPacket(Packet& _return, const Packet& p) = 0;
 };
 
 class EchoServerIfFactory {
@@ -49,9 +49,8 @@ class EchoServerNull : virtual public EchoServerIf {
   void Echo(std::string& /* _return */, const std::string& /* msg */) {
     return;
   }
-  bool SendPacket(const Packet& /* p */) {
-    bool _return = false;
-    return _return;
+  void SendPacket(Packet& /* _return */, const Packet& /* p */) {
+    return;
   }
 };
 
@@ -222,16 +221,16 @@ typedef struct _EchoServer_SendPacket_result__isset {
 class EchoServer_SendPacket_result {
  public:
 
-  EchoServer_SendPacket_result() : success(0) {
+  EchoServer_SendPacket_result() {
   }
 
   virtual ~EchoServer_SendPacket_result() throw() {}
 
-  bool success;
+  Packet success;
 
   _EchoServer_SendPacket_result__isset __isset;
 
-  void __set_success(const bool val) {
+  void __set_success(const Packet& val) {
     success = val;
   }
 
@@ -263,7 +262,7 @@ class EchoServer_SendPacket_presult {
 
   virtual ~EchoServer_SendPacket_presult() throw() {}
 
-  bool* success;
+  Packet* success;
 
   _EchoServer_SendPacket_presult__isset __isset;
 
@@ -294,9 +293,9 @@ class EchoServerClient : virtual public EchoServerIf {
   void Echo(std::string& _return, const std::string& msg);
   void send_Echo(const std::string& msg);
   void recv_Echo(std::string& _return);
-  bool SendPacket(const Packet& p);
+  void SendPacket(Packet& _return, const Packet& p);
   void send_SendPacket(const Packet& p);
-  bool recv_SendPacket();
+  void recv_SendPacket(Packet& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -357,13 +356,14 @@ class EchoServerMultiface : virtual public EchoServerIf {
     return;
   }
 
-  bool SendPacket(const Packet& p) {
+  void SendPacket(Packet& _return, const Packet& p) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->SendPacket(p);
+      ifaces_[i]->SendPacket(_return, p);
     }
-    return ifaces_[i]->SendPacket(p);
+    ifaces_[i]->SendPacket(_return, p);
+    return;
   }
 
 };
