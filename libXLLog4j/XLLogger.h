@@ -14,6 +14,10 @@
 #   define LOG_TAG LOG4CPLUS_TEXT("YOUR_TAG")
 #endif //!LOG_TAG
 
+#ifndef LOG_SEPRATOR
+#   define LOG_SEPRATOR XL_TEXT(" -- ")
+#endif
+
 #ifndef LOGGER_NAME
 #   define LOGGER_NAME LOG4CPLUS_TEXT("XLLogger")
 #endif
@@ -29,24 +33,24 @@
 #if ENABLE_LOG
 
 #	if ENABLE_DEBUG_LOG
-#       define LOGT(msg) LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("T/") << LOG_TAG << XL_TEXT(": ") << msg)
+#       define LOGT(msg) LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("T/") << LOG_TAG << LOG_SEPRATOR << msg)
 #	else
 #		define LOGT(msg) ((void)0)
 #	endif //ENABLE_DEBUG_LOG
 
 #	if ENABLE_DEBUG_LOG
-#		define LOGD(msg) LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("D/") << LOG_TAG << XL_TEXT(": ") << msg)
+#		define LOGD(msg) LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("D/") << LOG_TAG << LOG_SEPRATOR << msg)
 #	else
 #		define LOGD(msg) ((void)0)
 #	endif //ENABLE_DEBUG_LOG
 
-#	define LOGI(msg) LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("I/") << LOG_TAG << XL_TEXT(": ") << msg)
+#	define LOGI(msg) LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("I/") << LOG_TAG << LOG_SEPRATOR << msg)
 
-#	define LOGW(msg) LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("W/") << LOG_TAG << XL_TEXT(": ") << msg)
+#	define LOGW(msg) LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("W/") << LOG_TAG << LOG_SEPRATOR << msg)
 
-#	define LOGE(msg) LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("E/") << LOG_TAG << XL_TEXT(": ") << msg)
+#	define LOGE(msg) LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("E/") << LOG_TAG << LOG_SEPRATOR << msg)
 
-#   define LOGF(msg) LOG4CPLUS_FATAL(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("F/") << LOG_TAG << XL_TEXT(": ") << msg)
+#   define LOGF(msg) LOG4CPLUS_FATAL(log4cplus::Logger::getInstance(LOGGER_NAME), XL_TEXT("F/") << LOG_TAG << LOG_SEPRATOR << msg)
 
 #else
 
