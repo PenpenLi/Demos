@@ -4,12 +4,17 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 
+//#define LOGGER_NAME XL_TEXT("EchoClient")
+#define LOG_TAG XL_TEXT("EchoClient")
+#include "XLLogger.h"
+
 using namespace apache::thrift;
 using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;
 
 int main(int argc, const char *argv[])
 {
+    XLLogger::Instance()->InitLogger(XL_TEXT("logger.cfg"));
     boost::shared_ptr<TSocket> socket(new TSocket("localhost", 9090));
     boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -17,17 +22,17 @@ int main(int argc, const char *argv[])
     EchoServerClient client(protocol);
     transport->open();
     std::string msg = "Hello World!";
-    std::cout << "echo \"" << msg << "\" to server ..." << std::endl;
+    LOGT("echo \"" << msg << "\" to server ...");
     std::string response;
     client.Echo(response, msg);
-    std::cout << "Response: " << response << std::endl;
+    LOGT("Response: " << response);
 
-    std::cout << "send packet ..." << std::endl;
+    LOGT("send packet ...");
     Packet p, ret;
     p.type = PacketType::PacketTypeData;
     p.data = "Hello THrift";
     client.SendPacket(ret, p);
-    std::cout << "Response: " << ret.data << std::endl;
+    LOGT("Response: " << ret.data);
 
     transport->close();
     return 0;

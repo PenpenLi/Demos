@@ -9,11 +9,11 @@ set(SERVER_SRC
     ${THRIFT_SRC}
     )
 add_executable(echoserver ${SERVER_SRC})
-target_link_libraries(echoserver thrift)
+target_link_libraries(echoserver XLLoger thrift log4cplus)
 
 set(CLIENT_SRC
     echoclient.cpp
     ${THRIFT_SRC}
     )
 add_executable(echoclient ${CLIENT_SRC})
-target_link_libraries(echoclient thrift)
+target_link_libraries(echoclient XLLoger thrift log4cplus)
