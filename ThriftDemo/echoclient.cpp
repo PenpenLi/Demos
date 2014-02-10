@@ -1,12 +1,12 @@
 #include <iostream>
-#include "EchoServer.h"
+#include "thrift/gen-cpp/EchoServer.h"
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 
 //#define LOGGER_NAME XL_TEXT("EchoClient")
-#define LOG_TAG XL_TEXT("EchoClient")
-#include "XLLogger.h"
+#define LOG_TAG TEXT("EchoClient")
+#include "../libXLLog4j/XLLogger.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::transport;
@@ -14,11 +14,12 @@ using namespace apache::thrift::protocol;
 
 int main(int argc, const char *argv[])
 {
-    XLLogger::Instance()->InitLogger(XL_TEXT("logger.cfg"));
-    boost::shared_ptr<TSocket> socket(new TSocket("localhost", 9090));
+    XLLogger::Instance()->InitLogger("echo_client_logger.cfg");
+    boost::shared_ptr<TTransport> socket(new TSocket("localhost", 9090));
     boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
+    LOGT("Create client ...");
     EchoServerClient client(protocol);
     transport->open();
     std::string msg = "Hello World!";

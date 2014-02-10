@@ -18,7 +18,7 @@ XLLogger::~XLLogger()
     }
 }
 
-void XLLogger::InitLogger(const log4cplus::tstring& cfgFileName, int secRefresh)
+void XLLogger::InitLogger(const TSTRING& cfgFileName, int secRefresh)
 {
     Logger::getInstance(LOGGER_NAME).setLogLevel(ALL_LOG_LEVEL);
     if (!_watchdog)

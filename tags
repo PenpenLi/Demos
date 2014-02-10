@@ -4,163 +4,9 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	276;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	279;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	282;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	285;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	288;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	292;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	264;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	267;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	270;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	273;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	276;"	d	file:
-ARCHITECTURE_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	280;"	d	file:
-CMAKE_BINARY_DIR	build/Makefile	/^CMAKE_BINARY_DIR = \/home\/xiaobin\/work\/Demos\/build$/;"	m
-CMAKE_BINARY_DIR	build/ThriftDemo/Makefile	/^CMAKE_BINARY_DIR = \/home\/xiaobin\/work\/Demos\/build$/;"	m
-CMAKE_COMMAND	build/Makefile	/^CMAKE_COMMAND = \/usr\/bin\/cmake$/;"	m
-CMAKE_COMMAND	build/ThriftDemo/Makefile	/^CMAKE_COMMAND = \/usr\/bin\/cmake$/;"	m
-CMAKE_SOURCE_DIR	build/Makefile	/^CMAKE_SOURCE_DIR = \/home\/xiaobin\/work\/Demos$/;"	m
-CMAKE_SOURCE_DIR	build/ThriftDemo/Makefile	/^CMAKE_SOURCE_DIR = \/home\/xiaobin\/work\/Demos$/;"	m
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	101;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	104;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	107;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	110;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	118;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	138;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	13;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	149;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	152;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	169;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	172;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	175;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	24;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	30;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	36;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	42;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	48;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	62;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	69;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	73;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	76;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	78;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	87;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	95;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	98;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	100;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	103;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	106;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	109;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	117;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	12;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	137;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	140;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	157;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	15;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	160;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	163;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	26;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	32;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	38;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	44;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	50;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	64;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	71;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	75;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	78;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	80;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	89;"	d	file:
-COMPILER_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	97;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	111;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	120;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	155;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	15;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	160;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	25;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	31;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	38;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	44;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	51;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	56;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	64;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	81;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	88;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	110;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	119;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	143;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	148;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	17;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	27;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	33;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	40;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	46;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	53;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	58;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	66;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	83;"	d	file:
-COMPILER_VERSION_MAJOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	90;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	112;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	121;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	156;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	161;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	16;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	26;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	32;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	39;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	45;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	52;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	57;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	65;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	82;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	89;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	111;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	120;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	144;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	149;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	18;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	28;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	34;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	41;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	47;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	54;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	59;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	67;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	84;"	d	file:
-COMPILER_VERSION_MINOR	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	91;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	114;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	125;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	128;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	157;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	162;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	17;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	27;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	33;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	53;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	58;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	66;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	83;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	91;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	113;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	124;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	127;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	145;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	150;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	19;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	29;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	35;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	55;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	60;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	68;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	85;"	d	file:
-COMPILER_VERSION_PATCH	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	93;"	d	file:
-COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	132;"	d	file:
-COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	20;"	d	file:
-COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	131;"	d	file:
-COMPILER_VERSION_TWEAK	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	22;"	d	file:
-DEC	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	296;"	d	file:
-DEC	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	284;"	d	file:
-EQUALS	build/Makefile	/^EQUALS = =$/;"	m
-EQUALS	build/ThriftDemo/Makefile	/^EQUALS = =$/;"	m
+ENABLE_CONSOLE_LOG	libXLLog4j/XLLogger.h	31;"	d
+ENABLE_DEBUG_LOG	libXLLog4j/XLLogger.h	27;"	d
+ENABLE_LOG	libXLLog4j/XLLogger.h	9;"	d
 Echo	ThriftDemo/echoserver.cpp	/^  void Echo(std::string& _return, const std::string& msg) {$/;"	f	class:EchoServerHandler
 Echo	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::Echo(std::string& _return, const std::string& msg)$/;"	f	class:EchoServerClient
 Echo	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void Echo(std::string& \/* _return *\/, const std::string& \/* msg *\/) {$/;"	f	class:EchoServerNull
@@ -199,62 +45,29 @@ EchoServer_SendPacket_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class Ech
 EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_SendPacket_result() {$/;"	f	class:EchoServer_SendPacket_result
 EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_SendPacket_result {$/;"	c
 EchoServer_TYPES_H	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	8;"	d
-HEX	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	307;"	d	file:
-HEX	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	295;"	d	file:
 Handler	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef EchoServerIf Handler;$/;"	t	class:EchoServerIfFactory
-ID_VOID_MAIN	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	9;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	187;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	190;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	193;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	196;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	199;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	202;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	205;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	208;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	211;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	214;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	217;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	220;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	223;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	229;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	232;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	235;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	238;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	241;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	244;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	247;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	250;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	253;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	256;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	259;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	262;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	265;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	175;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	178;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	181;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	184;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	187;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	190;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	193;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	196;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	199;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	202;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	205;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	208;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	211;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	217;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	220;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	223;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	226;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	229;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	232;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	235;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	238;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	241;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	244;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	247;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	250;"	d	file:
-PLATFORM_ID	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	253;"	d	file:
+InitLogger	libXLLog4j/XLLogger.cpp	/^void XLLogger::InitLogger()$/;"	f	class:XLLogger
+InitLogger	libXLLog4j/XLLogger.cpp	/^void XLLogger::InitLogger(const log4cplus::tstring& cfgFileName, int secRefresh)$/;"	f	class:XLLogger
+InitLogger	libXLLog4j/XLLogger.cpp	/^void XLLogger::InitLogger(const log4cplus::tstring& loggerName)$/;"	f	class:XLLogger
+Instance	libXLLog4j/XLLogger.h	/^    static XLLogger *Instance()$/;"	f	class:XLLogger
+LOGD	libXLLog4j/XLLogger.h	42;"	d
+LOGD	libXLLog4j/XLLogger.h	44;"	d
+LOGD	libXLLog4j/XLLogger.h	58;"	d
+LOGE	libXLLog4j/XLLogger.h	51;"	d
+LOGE	libXLLog4j/XLLogger.h	61;"	d
+LOGF	libXLLog4j/XLLogger.h	53;"	d
+LOGF	libXLLog4j/XLLogger.h	62;"	d
+LOGGER_NAME	libXLLog4j/XLLogger.h	22;"	d
+LOGI	libXLLog4j/XLLogger.h	47;"	d
+LOGI	libXLLog4j/XLLogger.h	59;"	d
+LOGT	libXLLog4j/XLLogger.h	36;"	d
+LOGT	libXLLog4j/XLLogger.h	38;"	d
+LOGT	libXLLog4j/XLLogger.h	57;"	d
+LOGW	libXLLog4j/XLLogger.h	49;"	d
+LOGW	libXLLog4j/XLLogger.h	60;"	d
+LOG_SEPRATOR	libXLLog4j/XLLogger.h	18;"	d
+LOG_TAG	ThriftDemo/echoclient.cpp	8;"	d	file:
+LOG_TAG	libXLLog4j/XLLogger.h	14;"	d
 Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  Packet() : type((PacketType::type)0), len(0), data() {$/;"	f	class:Packet
 Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^class Packet {$/;"	c
 PacketType	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^struct PacketType {$/;"	s
@@ -262,16 +75,13 @@ PacketTypeCmd	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^    PacketTypeCmd =
 PacketTypeData	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^    PacketTypeData = 1$/;"	e	enum:PacketType::type
 ProcessFunction	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef  void (EchoServerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);$/;"	t	class:EchoServerProcessor
 ProcessMap	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef std::map<std::string, ProcessFunction> ProcessMap;$/;"	t	class:EchoServerProcessor
-RM	build/Makefile	/^RM = \/usr\/bin\/cmake -E remove -f$/;"	m
-RM	build/ThriftDemo/Makefile	/^RM = \/usr\/bin\/cmake -E remove -f$/;"	m
-SHELL	build/Makefile	/^SHELL = \/bin\/sh$/;"	m
-SHELL	build/ThriftDemo/Makefile	/^SHELL = \/bin\/sh$/;"	m
-SUFFIXES	build/Makefile	/^SUFFIXES =$/;"	m
-SUFFIXES	build/ThriftDemo/Makefile	/^SUFFIXES =$/;"	m
 SendPacket	ThriftDemo/echoserver.cpp	/^  void SendPacket(Packet& _return, const Packet& p) {$/;"	f	class:EchoServerHandler
 SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::SendPacket(Packet& _return, const Packet& p)$/;"	f	class:EchoServerClient
 SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void SendPacket(Packet& \/* _return *\/, const Packet& \/* p *\/) {$/;"	f	class:EchoServerNull
 SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void SendPacket(Packet& _return, const Packet& p) {$/;"	f	class:EchoServerMultiface
+XLLogger	libXLLog4j/XLLogger.cpp	/^XLLogger::XLLogger(): _watchdog(NULL)$/;"	f	class:XLLogger
+XLLogger	libXLLog4j/XLLogger.h	/^class XLLogger$/;"	c
+XL_TEXT	libXLLog4j/XLLogger.h	5;"	d
 _EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_args__isset() : msg(false) {}$/;"	f	struct:_EchoServer_Echo_args__isset
 _EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_Echo_args__isset {$/;"	s
 _EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_Echo_args__isset;$/;"	t	typeref:struct:_EchoServer_Echo_args__isset
@@ -309,6 +119,7 @@ __set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(cons
 __set_type	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  void __set_type(const PacketType::type val) {$/;"	f	class:Packet
 _kPacketTypeNames	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^const char* _kPacketTypeNames[] = {$/;"	v
 _kPacketTypeValues	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^int _kPacketTypeValues[] = {$/;"	v
+_watchdog	libXLLog4j/XLLogger.h	/^    log4cplus::ConfigureAndWatchThread *_watchdog;$/;"	m	class:XLLogger
 add	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void add(boost::shared_ptr<EchoServerIf> iface) {$/;"	f	class:EchoServerMultiface
 ascii_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^const char* Packet::ascii_fingerprint = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";$/;"	m	class:Packet	file:
 ascii_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  static const char* ascii_fingerprint; \/\/ = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";$/;"	m	class:Packet
@@ -326,21 +137,10 @@ handlerFactory_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ::boost::shared_ptr< 
 iface_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr<EchoServerIf> iface_;$/;"	m	class:EchoServerIfSingletonFactory
 iface_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr<EchoServerIf> iface_;$/;"	m	class:EchoServerProcessor
 ifaces_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::vector<boost::shared_ptr<EchoServerIf> > ifaces_;$/;"	m	class:EchoServerMultiface
-info_arch	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_arch = "INFO" ":" "arch[" ARCHITECTURE_ID "]";$/;"	v
-info_arch	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_arch = "INFO" ":" "arch[" ARCHITECTURE_ID "]";$/;"	v
-info_compiler	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_compiler = "INFO" ":" "compiler[" COMPILER_ID "]";$/;"	v
-info_compiler	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_compiler = "INFO" ":" "compiler[" COMPILER_ID "]";$/;"	v
-info_platform	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const* info_platform = "INFO" ":" "platform[" PLATFORM_ID "]";$/;"	v
-info_platform	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const* info_platform = "INFO" ":" "platform[" PLATFORM_ID "]";$/;"	v
-info_version	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^char const info_version[] = {$/;"	v
-info_version	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^char const info_version[] = {$/;"	v
 iprot_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ::apache::thrift::protocol::TProtocol* iprot_;$/;"	m	class:EchoServerClient
 len	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  int32_t len;$/;"	m	class:Packet
 main	ThriftDemo/echoclient.cpp	/^int main(int argc, const char *argv[])$/;"	f
 main	ThriftDemo/echoserver.cpp	/^int main(int argc, char **argv) {$/;"	f
-main	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^int main(int argc, char* argv[])$/;"	f
-main	build/CMakeFiles/CompilerIdC/CMakeCCompilerId.c	/^void main() {}$/;"	f
-main	build/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp	/^int main(int argc, char* argv[])$/;"	f
 msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool msg;$/;"	m	struct:_EchoServer_Echo_args__isset
 msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const std::string* msg;$/;"	m	class:EchoServer_Echo_pargs
 msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string msg;$/;"	m	class:EchoServer_Echo_args
@@ -408,3 +208,4 @@ write	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^uint32_t Packet::write(::
 ~EchoServer_SendPacket_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_presult() throw() {}$/;"	f	class:EchoServer_SendPacket_presult
 ~EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_result() throw() {}$/;"	f	class:EchoServer_SendPacket_result
 ~Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  virtual ~Packet() throw() {}$/;"	f	class:Packet
+~XLLogger	libXLLog4j/XLLogger.cpp	/^XLLogger::~XLLogger()$/;"	f	class:XLLogger
