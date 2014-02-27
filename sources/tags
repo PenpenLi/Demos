@@ -1,0 +1,484 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ENABLE_CONSOLE_LOG	libXLLog4j/XLLogger.h	34;"	d
+ENABLE_DEBUG_LOG	libXLLog4j/XLLogger.h	30;"	d
+ENABLE_LOG	libXLLog4j/XLLogger.h	12;"	d
+Echo	ThriftDemo/echoserver.cpp	/^	void Echo(std::string& _return, const std::string& msg) {$/;"	f	class:EchoServerHandler
+Echo	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::Echo(std::string& _return, const std::string& msg)$/;"	f	class:EchoServerClient
+Echo	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void Echo(std::string& \/* _return *\/, const std::string& \/* msg *\/) {$/;"	f	class:EchoServerNull
+Echo	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void Echo(std::string& _return, const std::string& msg) {$/;"	f	class:EchoServerMultiface
+Echo	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  void Echo(std::string& _return, const std::string& msg) {$/;"	f	class:EchoServerHandler
+EchoServerClient	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, boost::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot) :$/;"	f	class:EchoServerClient
+EchoServerClient	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :$/;"	f	class:EchoServerClient
+EchoServerClient	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerClient : virtual public EchoServerIf {$/;"	c
+EchoServerConstants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.cpp	/^EchoServerConstants::EchoServerConstants() {$/;"	f	class:EchoServerConstants
+EchoServerConstants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.h	/^class EchoServerConstants {$/;"	c
+EchoServerHandler	ThriftDemo/echoserver.cpp	/^	EchoServerHandler() {$/;"	f	class:EchoServerHandler
+EchoServerHandler	ThriftDemo/echoserver.cpp	/^class EchoServerHandler: virtual public EchoServerIf {$/;"	c	file:
+EchoServerHandler	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  EchoServerHandler() {$/;"	f	class:EchoServerHandler
+EchoServerHandler	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^class EchoServerHandler : virtual public EchoServerIf {$/;"	c	file:
+EchoServerIf	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerIf {$/;"	c
+EchoServerIfFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerIfFactory {$/;"	c
+EchoServerIfSingletonFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerIfSingletonFactory(const boost::shared_ptr<EchoServerIf>& iface) : iface_(iface) {}$/;"	f	class:EchoServerIfSingletonFactory
+EchoServerIfSingletonFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerIfSingletonFactory : virtual public EchoServerIfFactory {$/;"	c
+EchoServerMultiface	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerMultiface() {}$/;"	f	class:EchoServerMultiface
+EchoServerMultiface	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerMultiface(std::vector<boost::shared_ptr<EchoServerIf> >& ifaces) : ifaces_(ifaces) {$/;"	f	class:EchoServerMultiface
+EchoServerMultiface	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerMultiface : virtual public EchoServerIf {$/;"	c
+EchoServerNull	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerNull : virtual public EchoServerIf {$/;"	c
+EchoServerProcessor	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerProcessor(boost::shared_ptr<EchoServerIf> iface) :$/;"	f	class:EchoServerProcessor
+EchoServerProcessor	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerProcessor : public ::apache::thrift::TDispatchProcessor {$/;"	c
+EchoServerProcessorFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServerProcessorFactory(const ::boost::shared_ptr< EchoServerIfFactory >& handlerFactory) :$/;"	f	class:EchoServerProcessorFactory
+EchoServerProcessorFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServerProcessorFactory : public ::apache::thrift::TProcessorFactory {$/;"	c
+EchoServer_CONSTANTS_H	ThriftDemo/thrift/gen-cpp/EchoServer_constants.h	8;"	d
+EchoServer_Echo_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_Echo_args() : msg() {$/;"	f	class:EchoServer_Echo_args
+EchoServer_Echo_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_Echo_args {$/;"	c
+EchoServer_Echo_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_Echo_pargs {$/;"	c
+EchoServer_Echo_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_Echo_presult {$/;"	c
+EchoServer_Echo_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_Echo_result() : success() {$/;"	f	class:EchoServer_Echo_result
+EchoServer_Echo_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_Echo_result {$/;"	c
+EchoServer_H	ThriftDemo/thrift/gen-cpp/EchoServer.h	8;"	d
+EchoServer_HelloBool_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloBool_args() : para(0) {$/;"	f	class:EchoServer_HelloBool_args
+EchoServer_HelloBool_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloBool_args {$/;"	c
+EchoServer_HelloBool_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloBool_pargs {$/;"	c
+EchoServer_HelloBool_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloBool_presult {$/;"	c
+EchoServer_HelloBool_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloBool_result() : success(0) {$/;"	f	class:EchoServer_HelloBool_result
+EchoServer_HelloBool_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloBool_result {$/;"	c
+EchoServer_HelloInt64_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloInt64_args() : para(0) {$/;"	f	class:EchoServer_HelloInt64_args
+EchoServer_HelloInt64_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt64_args {$/;"	c
+EchoServer_HelloInt64_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt64_pargs {$/;"	c
+EchoServer_HelloInt64_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt64_presult {$/;"	c
+EchoServer_HelloInt64_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloInt64_result() : success(0) {$/;"	f	class:EchoServer_HelloInt64_result
+EchoServer_HelloInt64_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt64_result {$/;"	c
+EchoServer_HelloInt_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloInt_args() : para(0) {$/;"	f	class:EchoServer_HelloInt_args
+EchoServer_HelloInt_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt_args {$/;"	c
+EchoServer_HelloInt_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt_pargs {$/;"	c
+EchoServer_HelloInt_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt_presult {$/;"	c
+EchoServer_HelloInt_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloInt_result() : success(0) {$/;"	f	class:EchoServer_HelloInt_result
+EchoServer_HelloInt_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloInt_result {$/;"	c
+EchoServer_HelloNull_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloNull_args() {$/;"	f	class:EchoServer_HelloNull_args
+EchoServer_HelloNull_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloNull_args {$/;"	c
+EchoServer_HelloNull_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloNull_pargs {$/;"	c
+EchoServer_HelloNull_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloNull_presult {$/;"	c
+EchoServer_HelloNull_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloNull_result() : success() {$/;"	f	class:EchoServer_HelloNull_result
+EchoServer_HelloNull_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloNull_result {$/;"	c
+EchoServer_HelloString_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloString_args() : para() {$/;"	f	class:EchoServer_HelloString_args
+EchoServer_HelloString_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloString_args {$/;"	c
+EchoServer_HelloString_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloString_pargs {$/;"	c
+EchoServer_HelloString_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloString_presult {$/;"	c
+EchoServer_HelloString_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloString_result() : success() {$/;"	f	class:EchoServer_HelloString_result
+EchoServer_HelloString_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloString_result {$/;"	c
+EchoServer_HelloVoid_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloVoid_args() {$/;"	f	class:EchoServer_HelloVoid_args
+EchoServer_HelloVoid_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloVoid_args {$/;"	c
+EchoServer_HelloVoid_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloVoid_pargs {$/;"	c
+EchoServer_HelloVoid_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloVoid_presult {$/;"	c
+EchoServer_HelloVoid_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_HelloVoid_result() {$/;"	f	class:EchoServer_HelloVoid_result
+EchoServer_HelloVoid_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_HelloVoid_result {$/;"	c
+EchoServer_SendPacket_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_SendPacket_args() {$/;"	f	class:EchoServer_SendPacket_args
+EchoServer_SendPacket_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_SendPacket_args {$/;"	c
+EchoServer_SendPacket_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_SendPacket_pargs {$/;"	c
+EchoServer_SendPacket_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_SendPacket_presult {$/;"	c
+EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  EchoServer_SendPacket_result() {$/;"	f	class:EchoServer_SendPacket_result
+EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^class EchoServer_SendPacket_result {$/;"	c
+EchoServer_TYPES_H	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	8;"	d
+Handler	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef EchoServerIf Handler;$/;"	t	class:EchoServerIfFactory
+HelloBool	ThriftDemo/echoserver.cpp	/^	bool HelloBool(const bool para) {$/;"	f	class:EchoServerHandler
+HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^bool EchoServerClient::HelloBool(const bool para)$/;"	f	class:EchoServerClient
+HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool HelloBool(const bool \/* para *\/) {$/;"	f	class:EchoServerNull
+HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool HelloBool(const bool para) {$/;"	f	class:EchoServerMultiface
+HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  bool HelloBool(const bool para) {$/;"	f	class:EchoServerHandler
+HelloInt	ThriftDemo/echoserver.cpp	/^	int32_t HelloInt(const int32_t para) {$/;"	f	class:EchoServerHandler
+HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^int32_t EchoServerClient::HelloInt(const int32_t para)$/;"	f	class:EchoServerClient
+HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int32_t HelloInt(const int32_t \/* para *\/) {$/;"	f	class:EchoServerNull
+HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int32_t HelloInt(const int32_t para) {$/;"	f	class:EchoServerMultiface
+HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  int32_t HelloInt(const int32_t para) {$/;"	f	class:EchoServerHandler
+HelloInt64	ThriftDemo/echoserver.cpp	/^	int64_t HelloInt64(const int64_t para) {$/;"	f	class:EchoServerHandler
+HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^int64_t EchoServerClient::HelloInt64(const int64_t para)$/;"	f	class:EchoServerClient
+HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int64_t HelloInt64(const int64_t \/* para *\/) {$/;"	f	class:EchoServerNull
+HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int64_t HelloInt64(const int64_t para) {$/;"	f	class:EchoServerMultiface
+HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  int64_t HelloInt64(const int64_t para) {$/;"	f	class:EchoServerHandler
+HelloNull	ThriftDemo/echoserver.cpp	/^	void HelloNull(std::string& _return) {$/;"	f	class:EchoServerHandler
+HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::HelloNull(std::string& _return)$/;"	f	class:EchoServerClient
+HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloNull(std::string& \/* _return *\/) {$/;"	f	class:EchoServerNull
+HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloNull(std::string& _return) {$/;"	f	class:EchoServerMultiface
+HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  void HelloNull(std::string& _return) {$/;"	f	class:EchoServerHandler
+HelloString	ThriftDemo/echoserver.cpp	/^	void HelloString(std::string& _return, const std::string& para) {$/;"	f	class:EchoServerHandler
+HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::HelloString(std::string& _return, const std::string& para)$/;"	f	class:EchoServerClient
+HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloString(std::string& \/* _return *\/, const std::string& \/* para *\/) {$/;"	f	class:EchoServerNull
+HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloString(std::string& _return, const std::string& para) {$/;"	f	class:EchoServerMultiface
+HelloString	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  void HelloString(std::string& _return, const std::string& para) {$/;"	f	class:EchoServerHandler
+HelloVoid	ThriftDemo/echoserver.cpp	/^	void HelloVoid() {$/;"	f	class:EchoServerHandler
+HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::HelloVoid()$/;"	f	class:EchoServerClient
+HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloVoid() {$/;"	f	class:EchoServerMultiface
+HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void HelloVoid() {$/;"	f	class:EchoServerNull
+HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  void HelloVoid() {$/;"	f	class:EchoServerHandler
+InitLogger	libXLLog4j/XLLogger.cpp	/^void XLLogger::InitLogger()$/;"	f	class:XLLogger
+InitLogger	libXLLog4j/XLLogger.cpp	/^void XLLogger::InitLogger(const TSTRING& cfgFileName, int secRefresh)$/;"	f	class:XLLogger
+Instance	libXLLog4j/XLLogger.h	/^    static XLLogger *Instance()$/;"	f	class:XLLogger
+LOGD	libXLLog4j/XLLogger.h	45;"	d
+LOGD	libXLLog4j/XLLogger.h	47;"	d
+LOGD	libXLLog4j/XLLogger.h	61;"	d
+LOGE	libXLLog4j/XLLogger.h	54;"	d
+LOGE	libXLLog4j/XLLogger.h	64;"	d
+LOGF	libXLLog4j/XLLogger.h	56;"	d
+LOGF	libXLLog4j/XLLogger.h	65;"	d
+LOGGER_NAME	libXLLog4j/XLLogger.h	25;"	d
+LOGI	libXLLog4j/XLLogger.h	50;"	d
+LOGI	libXLLog4j/XLLogger.h	62;"	d
+LOGT	libXLLog4j/XLLogger.h	39;"	d
+LOGT	libXLLog4j/XLLogger.h	41;"	d
+LOGT	libXLLog4j/XLLogger.h	60;"	d
+LOGW	libXLLog4j/XLLogger.h	52;"	d
+LOGW	libXLLog4j/XLLogger.h	63;"	d
+LOG_SEPRATOR	libXLLog4j/XLLogger.h	21;"	d
+LOG_TAG	ThriftDemo/echoclient.cpp	13;"	d	file:
+LOG_TAG	ThriftDemo/echoserver.cpp	22;"	d	file:
+LOG_TAG	ThriftDemo/echoserver.cpp	23;"	d	file:
+LOG_TAG	boost.format/FormatDemo.cpp	3;"	d	file:
+LOG_TAG	libXLLog4j/XLLogger.h	17;"	d
+Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  Packet() : type((PacketType::type)0), len(0), data() {$/;"	f	class:Packet
+Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^class Packet {$/;"	c
+PacketType	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^struct PacketType {$/;"	s
+PacketTypeCmd	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^    PacketTypeCmd = 0,$/;"	e	enum:PacketType::type
+PacketTypeData	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^    PacketTypeData = 1$/;"	e	enum:PacketType::type
+ProcessFunction	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef  void (EchoServerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);$/;"	t	class:EchoServerProcessor
+ProcessMap	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  typedef std::map<std::string, ProcessFunction> ProcessMap;$/;"	t	class:EchoServerProcessor
+SendPacket	ThriftDemo/echoserver.cpp	/^	void SendPacket(Packet& _return, const Packet& p) {$/;"	f	class:EchoServerHandler
+SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::SendPacket(Packet& _return, const Packet& p)$/;"	f	class:EchoServerClient
+SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void SendPacket(Packet& \/* _return *\/, const Packet& \/* p *\/) {$/;"	f	class:EchoServerNull
+SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void SendPacket(Packet& _return, const Packet& p) {$/;"	f	class:EchoServerMultiface
+SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^  void SendPacket(Packet& _return, const Packet& p) {$/;"	f	class:EchoServerHandler
+TEXT	libXLLog4j/XLLogger.h	6;"	d
+TSTRING	libXLLog4j/XLLogger.h	8;"	d
+XLLogger	libXLLog4j/XLLogger.cpp	/^XLLogger::XLLogger(): _watchdog(NULL)$/;"	f	class:XLLogger
+XLLogger	libXLLog4j/XLLogger.h	/^class XLLogger$/;"	c
+_EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_args__isset() : msg(false) {}$/;"	f	struct:_EchoServer_Echo_args__isset
+_EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_Echo_args__isset {$/;"	s
+_EchoServer_Echo_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_Echo_args__isset;$/;"	t	typeref:struct:_EchoServer_Echo_args__isset
+_EchoServer_Echo_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_Echo_presult__isset
+_EchoServer_Echo_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_Echo_presult__isset {$/;"	s
+_EchoServer_Echo_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_Echo_presult__isset;$/;"	t	typeref:struct:_EchoServer_Echo_presult__isset
+_EchoServer_Echo_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_Echo_result__isset
+_EchoServer_Echo_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_Echo_result__isset {$/;"	s
+_EchoServer_Echo_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_Echo_result__isset;$/;"	t	typeref:struct:_EchoServer_Echo_result__isset
+_EchoServer_HelloBool_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_args__isset() : para(false) {}$/;"	f	struct:_EchoServer_HelloBool_args__isset
+_EchoServer_HelloBool_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloBool_args__isset {$/;"	s
+_EchoServer_HelloBool_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloBool_args__isset;$/;"	t	typeref:struct:_EchoServer_HelloBool_args__isset
+_EchoServer_HelloBool_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloBool_presult__isset
+_EchoServer_HelloBool_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloBool_presult__isset {$/;"	s
+_EchoServer_HelloBool_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloBool_presult__isset;$/;"	t	typeref:struct:_EchoServer_HelloBool_presult__isset
+_EchoServer_HelloBool_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloBool_result__isset
+_EchoServer_HelloBool_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloBool_result__isset {$/;"	s
+_EchoServer_HelloBool_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloBool_result__isset;$/;"	t	typeref:struct:_EchoServer_HelloBool_result__isset
+_EchoServer_HelloInt64_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_args__isset() : para(false) {}$/;"	f	struct:_EchoServer_HelloInt64_args__isset
+_EchoServer_HelloInt64_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt64_args__isset {$/;"	s
+_EchoServer_HelloInt64_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt64_args__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt64_args__isset
+_EchoServer_HelloInt64_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloInt64_presult__isset
+_EchoServer_HelloInt64_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt64_presult__isset {$/;"	s
+_EchoServer_HelloInt64_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt64_presult__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt64_presult__isset
+_EchoServer_HelloInt64_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloInt64_result__isset
+_EchoServer_HelloInt64_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt64_result__isset {$/;"	s
+_EchoServer_HelloInt64_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt64_result__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt64_result__isset
+_EchoServer_HelloInt_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_args__isset() : para(false) {}$/;"	f	struct:_EchoServer_HelloInt_args__isset
+_EchoServer_HelloInt_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt_args__isset {$/;"	s
+_EchoServer_HelloInt_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt_args__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt_args__isset
+_EchoServer_HelloInt_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloInt_presult__isset
+_EchoServer_HelloInt_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt_presult__isset {$/;"	s
+_EchoServer_HelloInt_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt_presult__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt_presult__isset
+_EchoServer_HelloInt_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloInt_result__isset
+_EchoServer_HelloInt_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloInt_result__isset {$/;"	s
+_EchoServer_HelloInt_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloInt_result__isset;$/;"	t	typeref:struct:_EchoServer_HelloInt_result__isset
+_EchoServer_HelloNull_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloNull_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloNull_presult__isset
+_EchoServer_HelloNull_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloNull_presult__isset {$/;"	s
+_EchoServer_HelloNull_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloNull_presult__isset;$/;"	t	typeref:struct:_EchoServer_HelloNull_presult__isset
+_EchoServer_HelloNull_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloNull_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloNull_result__isset
+_EchoServer_HelloNull_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloNull_result__isset {$/;"	s
+_EchoServer_HelloNull_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloNull_result__isset;$/;"	t	typeref:struct:_EchoServer_HelloNull_result__isset
+_EchoServer_HelloString_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_args__isset() : para(false) {}$/;"	f	struct:_EchoServer_HelloString_args__isset
+_EchoServer_HelloString_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloString_args__isset {$/;"	s
+_EchoServer_HelloString_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloString_args__isset;$/;"	t	typeref:struct:_EchoServer_HelloString_args__isset
+_EchoServer_HelloString_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloString_presult__isset
+_EchoServer_HelloString_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloString_presult__isset {$/;"	s
+_EchoServer_HelloString_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloString_presult__isset;$/;"	t	typeref:struct:_EchoServer_HelloString_presult__isset
+_EchoServer_HelloString_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_HelloString_result__isset
+_EchoServer_HelloString_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_HelloString_result__isset {$/;"	s
+_EchoServer_HelloString_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_HelloString_result__isset;$/;"	t	typeref:struct:_EchoServer_HelloString_result__isset
+_EchoServer_SendPacket_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_args__isset() : p(false) {}$/;"	f	struct:_EchoServer_SendPacket_args__isset
+_EchoServer_SendPacket_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_SendPacket_args__isset {$/;"	s
+_EchoServer_SendPacket_args__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_SendPacket_args__isset;$/;"	t	typeref:struct:_EchoServer_SendPacket_args__isset
+_EchoServer_SendPacket_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_presult__isset() : success(false) {}$/;"	f	struct:_EchoServer_SendPacket_presult__isset
+_EchoServer_SendPacket_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_SendPacket_presult__isset {$/;"	s
+_EchoServer_SendPacket_presult__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_SendPacket_presult__isset;$/;"	t	typeref:struct:_EchoServer_SendPacket_presult__isset
+_EchoServer_SendPacket_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_result__isset() : success(false) {}$/;"	f	struct:_EchoServer_SendPacket_result__isset
+_EchoServer_SendPacket_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^typedef struct _EchoServer_SendPacket_result__isset {$/;"	s
+_EchoServer_SendPacket_result__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^} _EchoServer_SendPacket_result__isset;$/;"	t	typeref:struct:_EchoServer_SendPacket_result__isset
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_args__isset __isset;$/;"	m	class:EchoServer_Echo_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_presult__isset __isset;$/;"	m	class:EchoServer_Echo_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_Echo_result__isset __isset;$/;"	m	class:EchoServer_Echo_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_args__isset __isset;$/;"	m	class:EchoServer_HelloBool_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_presult__isset __isset;$/;"	m	class:EchoServer_HelloBool_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloBool_result__isset __isset;$/;"	m	class:EchoServer_HelloBool_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_args__isset __isset;$/;"	m	class:EchoServer_HelloInt64_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_presult__isset __isset;$/;"	m	class:EchoServer_HelloInt64_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt64_result__isset __isset;$/;"	m	class:EchoServer_HelloInt64_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_args__isset __isset;$/;"	m	class:EchoServer_HelloInt_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_presult__isset __isset;$/;"	m	class:EchoServer_HelloInt_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloInt_result__isset __isset;$/;"	m	class:EchoServer_HelloInt_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloNull_presult__isset __isset;$/;"	m	class:EchoServer_HelloNull_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloNull_result__isset __isset;$/;"	m	class:EchoServer_HelloNull_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_args__isset __isset;$/;"	m	class:EchoServer_HelloString_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_presult__isset __isset;$/;"	m	class:EchoServer_HelloString_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_HelloString_result__isset __isset;$/;"	m	class:EchoServer_HelloString_result
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_args__isset __isset;$/;"	m	class:EchoServer_SendPacket_args
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_presult__isset __isset;$/;"	m	class:EchoServer_SendPacket_presult
+__isset	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  _EchoServer_SendPacket_result__isset __isset;$/;"	m	class:EchoServer_SendPacket_result
+__set_data	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  void __set_data(const std::string& val) {$/;"	f	class:Packet
+__set_len	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  void __set_len(const int32_t val) {$/;"	f	class:Packet
+__set_msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_msg(const std::string& val) {$/;"	f	class:EchoServer_Echo_args
+__set_p	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_p(const Packet& val) {$/;"	f	class:EchoServer_SendPacket_args
+__set_para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_para(const bool val) {$/;"	f	class:EchoServer_HelloBool_args
+__set_para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_para(const int32_t val) {$/;"	f	class:EchoServer_HelloInt_args
+__set_para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_para(const int64_t val) {$/;"	f	class:EchoServer_HelloInt64_args
+__set_para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_para(const std::string& val) {$/;"	f	class:EchoServer_HelloString_args
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const Packet& val) {$/;"	f	class:EchoServer_SendPacket_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const bool val) {$/;"	f	class:EchoServer_HelloBool_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const int32_t val) {$/;"	f	class:EchoServer_HelloInt_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const int64_t val) {$/;"	f	class:EchoServer_HelloInt64_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const std::string& val) {$/;"	f	class:EchoServer_Echo_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const std::string& val) {$/;"	f	class:EchoServer_HelloNull_result
+__set_success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void __set_success(const std::string& val) {$/;"	f	class:EchoServer_HelloString_result
+__set_type	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  void __set_type(const PacketType::type val) {$/;"	f	class:Packet
+_kPacketTypeNames	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^const char* _kPacketTypeNames[] = {$/;"	v
+_kPacketTypeValues	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^int _kPacketTypeValues[] = {$/;"	v
+_watchdog	libXLLog4j/XLLogger.h	/^    log4cplus::ConfigureAndWatchThread *_watchdog;$/;"	m	class:XLLogger
+add	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  void add(boost::shared_ptr<EchoServerIf> iface) {$/;"	f	class:EchoServerMultiface
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^const char* Packet::ascii_fingerprint = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";$/;"	m	class:Packet	file:
+ascii_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  static const char* ascii_fingerprint; \/\/ = "D3BA2D33C1BA9DD4F2FDDA18F1640BC8";$/;"	m	class:Packet
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^const uint8_t Packet::binary_fingerprint[16] = {0xD3,0xBA,0x2D,0x33,0xC1,0xBA,0x9D,0xD4,0xF2,0xFD,0xDA,0x18,0xF1,0x64,0x0B,0xC8};$/;"	m	class:Packet	file:
+binary_fingerprint	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  static const uint8_t binary_fingerprint[16]; \/\/ = {0xD3,0xBA,0x2D,0x33,0xC1,0xBA,0x9D,0xD4,0xF2,0xFD,0xDA,0x18,0xF1,0x64,0x0B,0xC8};$/;"	m	class:Packet
+connection_count	ThriftDemo/echoclient.cpp	/^static const int connection_count = 1000;$/;"	v	file:
+data	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  std::string data;$/;"	m	class:Packet
+dispatchCall	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^bool EchoServerProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {$/;"	f	class:EchoServerProcessor
+g_EchoServer_constants	ThriftDemo/thrift/gen-cpp/EchoServer_constants.cpp	/^const EchoServerConstants g_EchoServer_constants;$/;"	v
+g_count	ThriftDemo/echoclient.cpp	/^static int g_count = test_count;$/;"	v	file:
+getHandler	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual EchoServerIf* getHandler(const ::apache::thrift::TConnectionInfo&) {$/;"	f	class:EchoServerIfSingletonFactory
+getInputProtocol	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getInputProtocol() {$/;"	f	class:EchoServerClient
+getOutputProtocol	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {$/;"	f	class:EchoServerClient
+getProcessor	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^::boost::shared_ptr< ::apache::thrift::TProcessor > EchoServerProcessorFactory::getProcessor(const ::apache::thrift::TConnectionInfo& connInfo) {$/;"	f	class:EchoServerProcessorFactory
+handlerFactory_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ::boost::shared_ptr< EchoServerIfFactory > handlerFactory_;$/;"	m	class:EchoServerProcessorFactory
+iface_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr<EchoServerIf> iface_;$/;"	m	class:EchoServerIfSingletonFactory
+iface_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr<EchoServerIf> iface_;$/;"	m	class:EchoServerProcessor
+ifaces_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::vector<boost::shared_ptr<EchoServerIf> > ifaces_;$/;"	m	class:EchoServerMultiface
+iprot_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ::apache::thrift::protocol::TProtocol* iprot_;$/;"	m	class:EchoServerClient
+len	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  int32_t len;$/;"	m	class:Packet
+main	ThriftDemo/echoclient.cpp	/^int main(int argc, const char *argv[]) {$/;"	f
+main	ThriftDemo/echoserver.cpp	/^int main(int argc, char **argv) {$/;"	f
+main	ThriftDemo/thrift/gen-cpp/EchoServer_server.skeleton.cpp	/^int main(int argc, char **argv) {$/;"	f
+main	boost.format/FormatDemo.cpp	/^int main(int argc, char *argv[]) {$/;"	f
+msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool msg;$/;"	m	struct:_EchoServer_Echo_args__isset
+msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const std::string* msg;$/;"	m	class:EchoServer_Echo_pargs
+msg	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string msg;$/;"	m	class:EchoServer_Echo_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_Echo_args &rhs) const {$/;"	f	class:EchoServer_Echo_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_Echo_result &rhs) const {$/;"	f	class:EchoServer_Echo_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloBool_args &rhs) const {$/;"	f	class:EchoServer_HelloBool_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloBool_result &rhs) const {$/;"	f	class:EchoServer_HelloBool_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloInt64_args &rhs) const {$/;"	f	class:EchoServer_HelloInt64_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloInt64_result &rhs) const {$/;"	f	class:EchoServer_HelloInt64_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloInt_args &rhs) const {$/;"	f	class:EchoServer_HelloInt_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloInt_result &rhs) const {$/;"	f	class:EchoServer_HelloInt_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloNull_args &rhs) const {$/;"	f	class:EchoServer_HelloNull_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloNull_result &rhs) const {$/;"	f	class:EchoServer_HelloNull_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloString_args &rhs) const {$/;"	f	class:EchoServer_HelloString_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloString_result &rhs) const {$/;"	f	class:EchoServer_HelloString_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloVoid_args &rhs) const {$/;"	f	class:EchoServer_HelloVoid_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_HelloVoid_result &rhs) const {$/;"	f	class:EchoServer_HelloVoid_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_SendPacket_args &rhs) const {$/;"	f	class:EchoServer_SendPacket_args
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator != (const EchoServer_SendPacket_result &rhs) const {$/;"	f	class:EchoServer_SendPacket_result
+operator !=	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  bool operator != (const Packet &rhs) const {$/;"	f	class:Packet
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_Echo_args & rhs) const$/;"	f	class:EchoServer_Echo_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_Echo_result & rhs) const$/;"	f	class:EchoServer_Echo_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloBool_args & rhs) const$/;"	f	class:EchoServer_HelloBool_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloBool_result & rhs) const$/;"	f	class:EchoServer_HelloBool_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloInt64_args & rhs) const$/;"	f	class:EchoServer_HelloInt64_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloInt64_result & rhs) const$/;"	f	class:EchoServer_HelloInt64_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloInt_args & rhs) const$/;"	f	class:EchoServer_HelloInt_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloInt_result & rhs) const$/;"	f	class:EchoServer_HelloInt_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloNull_args & \/* rhs *\/) const$/;"	f	class:EchoServer_HelloNull_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloNull_result & rhs) const$/;"	f	class:EchoServer_HelloNull_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloString_args & rhs) const$/;"	f	class:EchoServer_HelloString_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloString_result & rhs) const$/;"	f	class:EchoServer_HelloString_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloVoid_args & \/* rhs *\/) const$/;"	f	class:EchoServer_HelloVoid_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_HelloVoid_result & \/* rhs *\/) const$/;"	f	class:EchoServer_HelloVoid_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_SendPacket_args & rhs) const$/;"	f	class:EchoServer_SendPacket_args
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool operator == (const EchoServer_SendPacket_result & rhs) const$/;"	f	class:EchoServer_SendPacket_result
+operator ==	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  bool operator == (const Packet & rhs) const$/;"	f	class:Packet
+oprot_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ::apache::thrift::protocol::TProtocol* oprot_;$/;"	m	class:EchoServerClient
+p	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  Packet p;$/;"	m	class:EchoServer_SendPacket_args
+p	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool p;$/;"	m	struct:_EchoServer_SendPacket_args__isset
+p	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const Packet* p;$/;"	m	class:EchoServer_SendPacket_pargs
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool para;$/;"	m	class:EchoServer_HelloBool_args
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool para;$/;"	m	struct:_EchoServer_HelloBool_args__isset
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool para;$/;"	m	struct:_EchoServer_HelloInt64_args__isset
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool para;$/;"	m	struct:_EchoServer_HelloInt_args__isset
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool para;$/;"	m	struct:_EchoServer_HelloString_args__isset
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const bool* para;$/;"	m	class:EchoServer_HelloBool_pargs
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const int32_t* para;$/;"	m	class:EchoServer_HelloInt_pargs
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const int64_t* para;$/;"	m	class:EchoServer_HelloInt64_pargs
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  const std::string* para;$/;"	m	class:EchoServer_HelloString_pargs
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int32_t para;$/;"	m	class:EchoServer_HelloInt_args
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int64_t para;$/;"	m	class:EchoServer_HelloInt64_args
+para	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string para;$/;"	m	class:EchoServer_HelloString_args
+piprot_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;$/;"	m	class:EchoServerClient
+poprot_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;$/;"	m	class:EchoServerClient
+processMap_	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  ProcessMap processMap_;$/;"	m	class:EchoServerProcessor
+process_Echo	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_Echo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloBool(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloInt(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloInt64(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloNull(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloString(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_HelloVoid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+process_SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerProcessor::process_SendPacket(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)$/;"	f	class:EchoServerProcessor
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_Echo_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_Echo_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_Echo_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloBool_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloBool_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloBool_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt64_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt64_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt64_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloInt_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloNull_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloNull_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloNull_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloString_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloString_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloString_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloVoid_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloVoid_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_HelloVoid_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_args::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_SendPacket_args
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_presult::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_SendPacket_presult
+read	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_result::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:EchoServer_SendPacket_result
+read	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^uint32_t Packet::read(::apache::thrift::protocol::TProtocol* iprot) {$/;"	f	class:Packet
+recv_Echo	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::recv_Echo(std::string& _return)$/;"	f	class:EchoServerClient
+recv_HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^bool EchoServerClient::recv_HelloBool()$/;"	f	class:EchoServerClient
+recv_HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^int32_t EchoServerClient::recv_HelloInt()$/;"	f	class:EchoServerClient
+recv_HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^int64_t EchoServerClient::recv_HelloInt64()$/;"	f	class:EchoServerClient
+recv_HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::recv_HelloNull(std::string& _return)$/;"	f	class:EchoServerClient
+recv_HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::recv_HelloString(std::string& _return)$/;"	f	class:EchoServerClient
+recv_HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::recv_HelloVoid()$/;"	f	class:EchoServerClient
+recv_SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::recv_SendPacket(Packet& _return)$/;"	f	class:EchoServerClient
+releaseHandler	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual void releaseHandler(EchoServerIf* \/* handler *\/) {}$/;"	f	class:EchoServerIfSingletonFactory
+send_Echo	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_Echo(const std::string& msg)$/;"	f	class:EchoServerClient
+send_HelloBool	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloBool(const bool para)$/;"	f	class:EchoServerClient
+send_HelloInt	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloInt(const int32_t para)$/;"	f	class:EchoServerClient
+send_HelloInt64	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloInt64(const int64_t para)$/;"	f	class:EchoServerClient
+send_HelloNull	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloNull()$/;"	f	class:EchoServerClient
+send_HelloString	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloString(const std::string& para)$/;"	f	class:EchoServerClient
+send_HelloVoid	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_HelloVoid()$/;"	f	class:EchoServerClient
+send_SendPacket	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^void EchoServerClient::send_SendPacket(const Packet& p)$/;"	f	class:EchoServerClient
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  Packet success;$/;"	m	class:EchoServer_SendPacket_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  Packet* success;$/;"	m	class:EchoServer_SendPacket_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	class:EchoServer_HelloBool_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_Echo_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_Echo_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloBool_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloBool_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloInt64_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloInt64_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloInt_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloInt_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloNull_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloNull_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloString_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_HelloString_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_SendPacket_presult__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool success;$/;"	m	struct:_EchoServer_SendPacket_result__isset
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  bool* success;$/;"	m	class:EchoServer_HelloBool_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int32_t success;$/;"	m	class:EchoServer_HelloInt_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int32_t* success;$/;"	m	class:EchoServer_HelloInt_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int64_t success;$/;"	m	class:EchoServer_HelloInt64_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  int64_t* success;$/;"	m	class:EchoServer_HelloInt64_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string success;$/;"	m	class:EchoServer_Echo_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string success;$/;"	m	class:EchoServer_HelloNull_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string success;$/;"	m	class:EchoServer_HelloString_result
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string* success;$/;"	m	class:EchoServer_Echo_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string* success;$/;"	m	class:EchoServer_HelloNull_presult
+success	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  std::string* success;$/;"	m	class:EchoServer_HelloString_presult
+swap	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^void swap(Packet &a, Packet &b) {$/;"	f
+test	ThriftDemo/echoclient.cpp	/^void test(int count) {$/;"	f
+test_count	ThriftDemo/echoclient.cpp	/^static int test_count = 4000;$/;"	v	file:
+type	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  PacketType::type type;$/;"	m	class:Packet
+type	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  enum type {$/;"	g	struct:PacketType
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_Echo_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_Echo_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_Echo_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_Echo_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloBool_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloBool_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloBool_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloBool_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt64_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt64_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt64_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt64_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloInt_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloInt_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloNull_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloNull_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloNull_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloNull_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloString_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloString_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloString_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloString_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloVoid_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloVoid_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_HelloVoid_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_HelloVoid_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_args::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_SendPacket_args
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_SendPacket_pargs
+write	ThriftDemo/thrift/gen-cpp/EchoServer.cpp	/^uint32_t EchoServer_SendPacket_result::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:EchoServer_SendPacket_result
+write	ThriftDemo/thrift/gen-cpp/EchoServer_types.cpp	/^uint32_t Packet::write(::apache::thrift::protocol::TProtocol* oprot) const {$/;"	f	class:Packet
+~EchoServerIf	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerIf() {}$/;"	f	class:EchoServerIf
+~EchoServerIfFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerIfFactory() {}$/;"	f	class:EchoServerIfFactory
+~EchoServerIfSingletonFactory	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerIfSingletonFactory() {}$/;"	f	class:EchoServerIfSingletonFactory
+~EchoServerMultiface	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerMultiface() {}$/;"	f	class:EchoServerMultiface
+~EchoServerNull	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerNull() {}$/;"	f	class:EchoServerNull
+~EchoServerProcessor	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServerProcessor() {}$/;"	f	class:EchoServerProcessor
+~EchoServer_Echo_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_Echo_args() throw() {}$/;"	f	class:EchoServer_Echo_args
+~EchoServer_Echo_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_Echo_pargs() throw() {}$/;"	f	class:EchoServer_Echo_pargs
+~EchoServer_Echo_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_Echo_presult() throw() {}$/;"	f	class:EchoServer_Echo_presult
+~EchoServer_Echo_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_Echo_result() throw() {}$/;"	f	class:EchoServer_Echo_result
+~EchoServer_HelloBool_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloBool_args() throw() {}$/;"	f	class:EchoServer_HelloBool_args
+~EchoServer_HelloBool_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloBool_pargs() throw() {}$/;"	f	class:EchoServer_HelloBool_pargs
+~EchoServer_HelloBool_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloBool_presult() throw() {}$/;"	f	class:EchoServer_HelloBool_presult
+~EchoServer_HelloBool_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloBool_result() throw() {}$/;"	f	class:EchoServer_HelloBool_result
+~EchoServer_HelloInt64_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt64_args() throw() {}$/;"	f	class:EchoServer_HelloInt64_args
+~EchoServer_HelloInt64_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt64_pargs() throw() {}$/;"	f	class:EchoServer_HelloInt64_pargs
+~EchoServer_HelloInt64_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt64_presult() throw() {}$/;"	f	class:EchoServer_HelloInt64_presult
+~EchoServer_HelloInt64_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt64_result() throw() {}$/;"	f	class:EchoServer_HelloInt64_result
+~EchoServer_HelloInt_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt_args() throw() {}$/;"	f	class:EchoServer_HelloInt_args
+~EchoServer_HelloInt_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt_pargs() throw() {}$/;"	f	class:EchoServer_HelloInt_pargs
+~EchoServer_HelloInt_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt_presult() throw() {}$/;"	f	class:EchoServer_HelloInt_presult
+~EchoServer_HelloInt_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloInt_result() throw() {}$/;"	f	class:EchoServer_HelloInt_result
+~EchoServer_HelloNull_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloNull_args() throw() {}$/;"	f	class:EchoServer_HelloNull_args
+~EchoServer_HelloNull_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloNull_pargs() throw() {}$/;"	f	class:EchoServer_HelloNull_pargs
+~EchoServer_HelloNull_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloNull_presult() throw() {}$/;"	f	class:EchoServer_HelloNull_presult
+~EchoServer_HelloNull_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloNull_result() throw() {}$/;"	f	class:EchoServer_HelloNull_result
+~EchoServer_HelloString_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloString_args() throw() {}$/;"	f	class:EchoServer_HelloString_args
+~EchoServer_HelloString_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloString_pargs() throw() {}$/;"	f	class:EchoServer_HelloString_pargs
+~EchoServer_HelloString_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloString_presult() throw() {}$/;"	f	class:EchoServer_HelloString_presult
+~EchoServer_HelloString_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloString_result() throw() {}$/;"	f	class:EchoServer_HelloString_result
+~EchoServer_HelloVoid_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloVoid_args() throw() {}$/;"	f	class:EchoServer_HelloVoid_args
+~EchoServer_HelloVoid_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloVoid_pargs() throw() {}$/;"	f	class:EchoServer_HelloVoid_pargs
+~EchoServer_HelloVoid_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloVoid_presult() throw() {}$/;"	f	class:EchoServer_HelloVoid_presult
+~EchoServer_HelloVoid_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_HelloVoid_result() throw() {}$/;"	f	class:EchoServer_HelloVoid_result
+~EchoServer_SendPacket_args	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_args() throw() {}$/;"	f	class:EchoServer_SendPacket_args
+~EchoServer_SendPacket_pargs	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_pargs() throw() {}$/;"	f	class:EchoServer_SendPacket_pargs
+~EchoServer_SendPacket_presult	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_presult() throw() {}$/;"	f	class:EchoServer_SendPacket_presult
+~EchoServer_SendPacket_result	ThriftDemo/thrift/gen-cpp/EchoServer.h	/^  virtual ~EchoServer_SendPacket_result() throw() {}$/;"	f	class:EchoServer_SendPacket_result
+~Packet	ThriftDemo/thrift/gen-cpp/EchoServer_types.h	/^  virtual ~Packet() throw() {}$/;"	f	class:Packet
+~XLLogger	libXLLog4j/XLLogger.cpp	/^XLLogger::~XLLogger()$/;"	f	class:XLLogger

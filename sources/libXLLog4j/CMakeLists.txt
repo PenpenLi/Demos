@@ -1,0 +1,7 @@
+file(GLOB SRCS "./*.cpp")
+file(GLOB INCS "./*.h")
+
+#add_definitions(-fPIC)
+
+add_library(XLLoger STATIC ${SRCS} ${INCS})
+
