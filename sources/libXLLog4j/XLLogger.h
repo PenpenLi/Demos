@@ -11,12 +11,10 @@
 #ifndef ENABLE_LOG
 #   define ENABLE_LOG 1
 #endif //!ENABLE_LOG
-
 /// We should define our own tag before including logger.h
 #ifndef LOG_TAG
 #   define LOG_TAG LOG4CPLUS_TEXT("YOUR_TAG")
 #endif //!LOG_TAG
-
 #ifndef LOG_SEPRATOR
 #   define LOG_SEPRATOR TEXT(" -- ")
 #endif
@@ -29,7 +27,6 @@
 #ifndef ENABLE_DEBUG_LOG
 #   define ENABLE_DEBUG_LOG 1
 #endif //!ENABLE_DEBUG_LOG
-
 /// 终端、debug window日志开关
 #define ENABLE_CONSOLE_LOG 1
 
@@ -40,13 +37,11 @@
 #	else
 #		define LOGT(msg) ((void)0)
 #	endif //ENABLE_DEBUG_LOG
-
 #	if ENABLE_DEBUG_LOG
 #		define LOGD(msg) LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOGGER_NAME), TEXT("D/") << LOG_TAG << LOG_SEPRATOR << msg)
 #	else
 #		define LOGD(msg) ((void)0)
 #	endif //ENABLE_DEBUG_LOG
-
 #	define LOGI(msg) LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOGGER_NAME), TEXT("I/") << LOG_TAG << LOG_SEPRATOR << msg)
 
 #	define LOGW(msg) LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOGGER_NAME), TEXT("W/") << LOG_TAG << LOG_SEPRATOR << msg)
@@ -69,22 +64,20 @@
 /*!
  * @class XLLogger log4j
  */
-class XLLogger
-{
+class XLLogger {
 public:
-    static XLLogger *Instance()
-    {
-        static XLLogger logger;
-        return &logger;
-    }
+	static XLLogger *Instance() {
+		static XLLogger logger;
+		return &logger;
+	}
 
-    void InitLogger(const TSTRING& cfgFileName, int secRefresh = 0);
+	void InitLogger(const TSTRING& cfgFileName, int secRefresh = 0);
 
-    void InitLogger();
+	void InitLogger(const char* szProgramPath, int secRefresh = 0);
 protected:
-    XLLogger();
-    virtual ~XLLogger();
-    XLLogger(const XLLogger& logger);
+	XLLogger();
+	virtual ~XLLogger();
+	XLLogger(const XLLogger& logger);
 private:
-    log4cplus::ConfigureAndWatchThread *_watchdog;
+	log4cplus::ConfigureAndWatchThread *_watchdog;
 };

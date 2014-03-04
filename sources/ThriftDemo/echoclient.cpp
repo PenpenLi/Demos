@@ -17,7 +17,7 @@ using namespace apache::thrift;
 using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;
 
-static const int connection_count = 1000;
+__attribute__((__unused__)) static const int connection_count = 1000;
 static int test_count = 4000;
 
 static int g_count = test_count;
@@ -55,17 +55,17 @@ int main(int argc, const char *argv[]) {
 	LOGT("Begin test ...");
 	try {
 //		while(true) {
-			boost::progress_timer t;
-			LOGI("**线程数: "<<g_count);
+		boost::progress_timer t;
+		LOGI("**线程数: "<<g_count);
 
-			for (int i = 0; i < test_count; ++i) {
-				boost::thread testThread(boost::bind(test, i));
-			}
-			while (g_count) {
-				sleep(1);
-				LOGT("waiting ...");
-			}
-			LOGT("**Done.");
+		for (int i = 0; i < test_count; ++i) {
+			boost::thread testThread(boost::bind(test, i));
+		}
+		while (g_count) {
+			sleep(1);
+			LOGT("waiting ...");
+		}
+		LOGT("**Done.");
 //			test_count += 100;
 //			g_count = test_count;
 //		}

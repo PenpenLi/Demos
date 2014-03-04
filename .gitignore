@@ -1,6 +1,8 @@
 bin/*
+bin/!*.cfg
 build/*
+build/!*.sh
 eclipse/*
+eclipse/!*.sh
 lib/*
 \.*
-bin/!*.cfg

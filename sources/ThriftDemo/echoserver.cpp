@@ -112,32 +112,30 @@ int main(int argc, char **argv) {
 	shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
 
 	///*
-	 //nonblocking server
-	 shared_ptr<ThreadManager> threadManager =
-	 ThreadManager::newSimpleThreadManager(4);
-	 shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
-	 threadManager->threadFactory(threadFactory);
-	 threadManager->start();
-	 TNonblockingServer server(processor, protocolFactory, port, threadManager);
-	 //*/
+	//nonblocking server
+	shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(4);
+	shared_ptr<ThreadFactory> threadFactory(new PosixThreadFactory());
+	threadManager->threadFactory(threadFactory);
+	threadManager->start();
+	TNonblockingServer server(processor, protocolFactory, port, threadManager);
+	//*/
 
 	/*
 	 //simple server
 	 TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
 	 */
 
-
-	 /*
-	//thread poor server
-	boost::shared_ptr<ThreadManager> threadManager =
-			ThreadManager::newSimpleThreadManager(4);
-	boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<
-			PosixThreadFactory>(new PosixThreadFactory());
-	threadManager->threadFactory(threadFactory);
-	threadManager->start();
-	TThreadPoolServer server(processor, serverTransport, transportFactory,
-			protocolFactory, threadManager);
-	  */
+	/*
+	 //thread poor server
+	 boost::shared_ptr<ThreadManager> threadManager =
+	 ThreadManager::newSimpleThreadManager(4);
+	 boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<
+	 PosixThreadFactory>(new PosixThreadFactory());
+	 threadManager->threadFactory(threadFactory);
+	 threadManager->start();
+	 TThreadPoolServer server(processor, serverTransport, transportFactory,
+	 protocolFactory, threadManager);
+	 */
 
 	LOGT("Start server ...");
 	server.serve();
