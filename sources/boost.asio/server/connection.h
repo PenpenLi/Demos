@@ -14,8 +14,10 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 #define HEADER_LEN	4
+#define MAX_BODY_LEN	2048
 
 /*!
  * @class connection
@@ -25,6 +27,8 @@ class connection: public boost::enable_shared_from_this<connection>, private boo
 public:
 	/// Construct a connection with the given io_service.
 	explicit connection(boost::asio::io_service& io_service, uint64_t connection_id);
+
+	virtual ~connection();
 
 	/// Get the socket associated with the connection.
 	boost::asio::ip::tcp::socket& socket();
@@ -37,15 +41,17 @@ protected:
 	boost::asio::deadline_timer deadline_;
 	void check_deadline(boost::asio::deadline_timer* deadline);
 
-private:
+	/// handle data
+	void handle_data(char* data, uint32_t size);
+
 	///////////////////////////////////////////////////////////////////////////
 	/// header buffer.
 	boost::array<char, HEADER_LEN> header_buffer_;
 
 	/// body buffer
-	char body_buffer_[2048];
+	char body_buffer_[MAX_BODY_LEN];
 	/// body length
-	int body_length_;
+	uint32_t body_length_;
 
 	/// Handle completion of a read header.
 	void handle_read_header(const boost::system::error_code& error);
@@ -58,6 +64,8 @@ private:
 	boost::asio::ip::tcp::socket socket_;
 
 	uint64_t connection_id_;
+
+	void shutdown();
 
 	/// The incoming request.
 	/// The parser for the incoming request.

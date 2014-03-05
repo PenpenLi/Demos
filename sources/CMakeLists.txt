@@ -20,6 +20,11 @@ link_directories(
     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
+#proto code
+set(PROTO_CPP_DIR ${Demos_SOURCE_DIR}/ProtocolBuffer/cpp)
+file(GLOB PROTO_INCS "${PROTO_CPP_DIR}/*.h")
+file(GLOB PROTO_SRCS "${PROTO_CPP_DIR}/*.cc")
+
 #compile options
 add_definitions(-g -Wall -O --std=c++11)
 
