@@ -1,0 +1,40 @@
+
+message Packet {
+    enum CommandType {
+        kCommandHeartbeat   = 0;
+        kCommandMessage     = 1;
+        kCommandPerson      = 2;
+        kCommandAddressbook = 3;
+    }
+    required uint32         version      = 1 [default = 1];
+    required CommandType    command      = 2;
+    optional bytes          serialized   = 3;
+    optional uint64         connectionid = 4;
+};
+
+message Person {
+    required string name = 1;
+    required int32 id = 2;
+    optional string email = 3;
+
+    enum PhoneType {
+        MOBILE = 0;
+        HOME = 1;
+        WORK = 2;
+    }
+
+    message PhoneNumber {
+        required string number = 1;
+        optional PhoneType type = 2 [default = HOME];
+    }
+
+    repeated PhoneNumber phone = 4;
+}
+
+message AddressBook {
+    repeated Person person = 1;
+}
+
+message Message {
+    required string msg = 1;
+}
