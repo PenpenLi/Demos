@@ -114,6 +114,9 @@ void connection::handle_data(char* data, uint32_t size) {
 	}
 	case Packet::kCommandMessage: {
 		LOGT("Receive kCommandMessage command.");
+		Message message;
+		message.ParseFromString(pkt.serialized());
+		LOGT("Message: "<<message.msg());
 		break;
 	}
 	case Packet::kCommandPerson: {

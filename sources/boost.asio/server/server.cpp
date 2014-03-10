@@ -74,5 +74,8 @@ void server::handle_accept(const boost::system::error_code& e) {
 }
 
 void server::handle_stop() {
+	boost::system::error_code ec;
+	acceptor_.close(ec);
+	acceptor_.cancel(ec);
 	io_service_pool_.stop();
 }

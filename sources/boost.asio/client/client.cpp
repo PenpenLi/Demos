@@ -14,23 +14,24 @@
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-#define HEARTBEAT_INTERVAL	30
-#define RECONNECT_INTERVAL	10
+#define HEARTBEAT_INTERVAL	10
+#define RECONNECT_INTERVAL	5
 
 client::client(boost::asio::io_service& io_service, const std::string& address, const std::string& port) :
 		socket_(io_service), deadline_(io_service), reconnect_timer_(io_service), server_addr_(address), server_port_(
-				port), body_length_(0), io_service_(io_service), is_stop_(false) {
+				port), body_length_(0), io_service_(io_service), is_stop_(false), is_connection_valid_(false) {
 	LOGT("client");
 	connect_to_server();
 }
 
 client::~client() {
 	LOGT("~client");
+	packet_queue_.clear();
 	Stop();
 }
 
 void client::SendPacket(const Packet& pkt) {
-
+	io_service_.post(boost::bind(&client::SendPacketCore, this, pkt));
 }
 
 void client::Stop() {
@@ -41,8 +42,11 @@ void client::Stop() {
 void client::handle_connect(const boost::system::error_code& err) {
 	if (!err) {
 		LOGT("Connected to server.");
-		packet_queue_.clear();
+		packet_queue_.clear();	//连接未建立时允许SendPacket，所以这里不要清队列
 		reconnect_timer_.cancel();
+
+		is_connection_valid_ = true;
+
 		// read
 		LOGT("Reading header ...");
 		async_read(socket_, buffer(header_buffer_, HEADER_LEN),
@@ -114,7 +118,7 @@ void client::check_deadline(boost::asio::deadline_timer* deadline) {
 		Packet pkt;
 		pkt.set_command(Packet::kCommandHeartbeat);
 		pkt.set_version(1);
-		deliver(pkt);
+		SendPacketCore(pkt);
 	}
 }
 
@@ -135,11 +139,18 @@ void client::connect_to_server() {
 	async_connect(socket_, endpoint_iterator, boost::bind(&client::handle_connect, this, placeholders::error));
 }
 
-void client::deliver(const Packet& pkt) {
+void client::SendPacketCore(const Packet& pkt) {
 	bool bNeedDeliver = packet_queue_.empty();
 	packet_queue_.push_back(pkt);
-	if (bNeedDeliver) {
+	if (is_connection_valid_ && bNeedDeliver) {
 		LOGT("Boot first deliver ...");
+		deliver_one();
+	}
+}
+
+void client::deliver_one() {
+	if (!packet_queue_.empty()) {
+		Packet pkt = packet_queue_.front();
 		int length = pkt.ByteSize();
 		memcpy(packet_buffer_, &length, 4);
 		pkt.SerializeToArray(packet_buffer_ + 4, length);
@@ -150,18 +161,15 @@ void client::deliver(const Packet& pkt) {
 
 void client::handle_deliver(const boost::system::error_code& err) {
 	if (!err) {
-		if (packet_queue_.empty()) {
+		if (!is_connection_valid_ || packet_queue_.empty()) {
+			//连接无效或无消息直接返回
 			return;
 		}
 
 		packet_queue_.pop_front();
 		if (!packet_queue_.empty()) {
 			LOGT("Deliver front packet from queue ...");
-			int length = packet_queue_.front().ByteSize();
-			memcpy(packet_buffer_, &length, 4);
-			packet_queue_.front().SerializeToArray(packet_buffer_ + 4, length);
-			async_write(socket_, boost::asio::buffer(packet_buffer_, (length + 4)),
-					boost::bind(&client::handle_deliver, this, placeholders::error));
+			deliver_one();
 		}
 	} else {
 		LOGE("Deliver packet error: "<<err.message());
@@ -170,6 +178,7 @@ void client::handle_deliver(const boost::system::error_code& err) {
 }
 
 void client::shutdown() {
+	is_connection_valid_ = false;	//连接无效
 	LOGT("Shutdown connection ...");
 	deadline_.cancel();
 	boost::system::error_code ec;

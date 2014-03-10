@@ -54,7 +54,8 @@ private:
 	std::deque<Packet> packet_queue_;
 
 	char packet_buffer_[HEADER_LEN + MAX_BODY_LEN];
-	void deliver(const Packet& pkt);
+	void SendPacketCore(const Packet& pkt);
+	void deliver_one();
 	void handle_deliver(const boost::system::error_code& err);
 
 	boost::asio::io_service& io_service_;
@@ -63,6 +64,8 @@ private:
 
 	void shutdown();
 	void reconnect();
+
+	bool is_connection_valid_;
 };
 
 #endif /* CLIENT_H_ */
