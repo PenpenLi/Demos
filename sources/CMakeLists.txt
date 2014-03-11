@@ -25,10 +25,13 @@ set(PROTO_CPP_DIR ${Demos_SOURCE_DIR}/ProtocolBuffer/cpp)
 file(GLOB PROTO_INCS "${PROTO_CPP_DIR}/*.h")
 file(GLOB PROTO_SRCS "${PROTO_CPP_DIR}/*.cc")
 
+
 #compile options
 add_definitions(-g -Wall -O --std=c++11)
 
+add_subdirectory(gtest)
 add_subdirectory(libXLLog4j)
 add_subdirectory(ThriftDemo)
 add_subdirectory(boost.general)
 add_subdirectory(boost.asio)
+add_subdirectory(UnitTest)

@@ -10,10 +10,10 @@
 
 #include <boost/pool/singleton_pool.hpp>
 
-#define MEMORY_BUFFER_MAX_SIZE 32768
+#define MEMORY_SIZE_8K 8192
 
 struct memorypool {
 };
-typedef boost::singleton_pool<memorypool, MEMORY_BUFFER_MAX_SIZE> memory_pool_32k;
+typedef boost::singleton_pool<memorypool, MEMORY_SIZE_8K> memory_pool_8k;
 
 #endif /* MEMERYPOOL_HPP_ */

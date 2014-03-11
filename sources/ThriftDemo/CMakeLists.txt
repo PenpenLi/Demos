@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
-
 include_directories("${CMAKE_CURRENT_LIST_DIR}/thrift/gen-cpp")
 
 #file(GLOB THRIFT_SRC "${CMAKE_CURRENT_LIST_DIR}/thrift/gen-cpp/*.cpp")
