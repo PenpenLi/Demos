@@ -36,6 +36,10 @@ public:
 	/// Start the first asynchronous operation for the connection.
 	void start();
 
+	uint64_t connection_id() {
+		return connection_id_;
+	}
+
 protected:
 	/// deadline for the async operation.
 	boost::asio::deadline_timer deadline_;

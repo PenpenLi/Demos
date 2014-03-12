@@ -66,6 +66,16 @@
  */
 class XLLogger {
 public:
+	enum XLLogLevel {
+		XLLogLevelTrace,
+		XLLogLevelDebug,
+		XLLogLevelInfo,
+		XLLogLevelWarn,
+		XLLogLevelError,
+		XLLogLevelFatal,
+		XLLogLevelOff,
+		XLLogLevelAll
+	};
 	static XLLogger *Instance() {
 		static XLLogger logger;
 		return &logger;
@@ -74,6 +84,8 @@ public:
 	void InitLogger(const TSTRING& cfgFileName, int secRefresh = 0);
 
 	void InitLogger(const char* szProgramPath, int secRefresh = 0);
+
+	void SetLogLevel(XLLogLevel level);
 protected:
 	XLLogger();
 	virtual ~XLLogger();

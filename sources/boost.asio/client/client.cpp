@@ -8,6 +8,8 @@
 #include "client/client.h"
 #include <boost/bind.hpp>
 #include "packet.pb.h"
+
+#define ENABLE_DEBUG_LOG 1
 #define LOG_TAG "client"
 #include "XLLogger.h"
 
@@ -52,10 +54,10 @@ void client::handle_connect(const boost::system::error_code& err) {
 		async_read(socket_, buffer(header_buffer_, HEADER_LEN),
 				boost::bind(&client::handle_read_header, this, placeholders::error));
 
-		//
-		LOGT("Start heartbeat ...");
-		deadline_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
-		deadline_.async_wait(boost::bind(&client::check_deadline, this, &deadline_));
+//		// heartbeat
+//		LOGT("Start heartbeat ...");
+//		deadline_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
+//		deadline_.async_wait(boost::bind(&client::check_deadline, this, &deadline_));
 	} else {
 		LOGE("Connect to server error: "<<err.message());
 		if (!is_stop_) {
@@ -92,6 +94,19 @@ void client::handle_read_header(const boost::system::error_code& err) {
 void client::handle_read_body(const boost::system::error_code& err) {
 	if (!err) {
 		// handle body
+		Packet pkt;
+		pkt.ParseFromArray(body_buffer_, body_length_);
+		switch (pkt.command()) {
+		case Packet::kCommandMessage: {
+			Message message;
+			message.ParseFromString(pkt.serialized());
+			LOGI(message.msg());
+			break;
+		}
+		default:
+			LOGE("Unknown command: "<<pkt.command());
+			break;
+		}
 
 		// read header again
 		LOGT("Reading header ...");
@@ -143,13 +158,14 @@ void client::SendPacketCore(const Packet& pkt) {
 	bool bNeedDeliver = packet_queue_.empty();
 	packet_queue_.push_back(pkt);
 	if (is_connection_valid_ && bNeedDeliver) {
-		LOGT("Boot first deliver ...");
+		LOGD("Boot first deliver ...");
 		deliver_one();
 	}
 }
 
 void client::deliver_one() {
 	if (!packet_queue_.empty()) {
+		LOGD("deliver one package ...");
 		Packet pkt = packet_queue_.front();
 		int length = pkt.ByteSize();
 		memcpy(packet_buffer_, &length, 4);
@@ -163,12 +179,13 @@ void client::handle_deliver(const boost::system::error_code& err) {
 	if (!err) {
 		if (!is_connection_valid_ || packet_queue_.empty()) {
 			//连接无效或无消息直接返回
+			LOGW("连接无效或无消息.");
 			return;
 		}
 
 		packet_queue_.pop_front();
 		if (!packet_queue_.empty()) {
-			LOGT("Deliver front packet from queue ...");
+			LOGD("Deliver front packet from queue ...");
 			deliver_one();
 		}
 	} else {

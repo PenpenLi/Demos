@@ -18,12 +18,11 @@ using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;
 
 __attribute__((__unused__)) static const int connection_count = 1000;
-static int test_count = 4000;
+static int test_count = 2000;
 
 static int g_count = test_count;
 
 void test(int count) {
-	--g_count;
 //	LOGT("Create client"<<count<<" ...");
 	boost::shared_ptr<TTransport> socket(new TSocket("127.0.0.1", 9090));
 //	boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
@@ -48,10 +47,11 @@ void test(int count) {
 //	int iRet = c.HelloInt(count);
 //	LOGT("HelloInt: " << iRet);
 	transport->close();
+	--g_count;
 }
 
 int main(int argc, const char *argv[]) {
-	XLLogger::Instance()->InitLogger("echo_client_logger.cfg");
+	XLLogger::Instance()->InitLogger(argv[0]);
 	LOGT("Begin test ...");
 	try {
 //		while(true) {

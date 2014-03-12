@@ -7,6 +7,8 @@
 
 #include "server.h"
 #include <boost/bind.hpp>
+
+#define ENABLE_DEBUG_LOG 0
 #define LOG_TAG "server"
 #include "XLLogger.h"
 
@@ -52,7 +54,7 @@ void server::start_accept() {
 		connection_id_ = 1;
 	}
 	LOGT("start_accept, connection_id="<<connection_id_);
-	//前一个connection不会释放吗？为什么？
+	//前一个connection不会释放吗？为什么？ connection.start... 通过shared_from_this引用？
 	LOGT("connection reference count: "<<new_connection_.use_count());
 	new_connection_.reset(new connection(io_service_pool_.get_io_service(), connection_id_));
 	LOGT("connection reference count: "<<new_connection_.use_count());
@@ -63,6 +65,7 @@ void server::start_accept() {
 void server::handle_accept(const boost::system::error_code& e) {
 	if (!e) {
 		// handle connection
+		LOGI("new connection, id="<<new_connection_->connection_id());
 		LOGT("Handle new connection ...");
 		LOGT("connection reference count: "<<new_connection_.use_count());
 		new_connection_->start();

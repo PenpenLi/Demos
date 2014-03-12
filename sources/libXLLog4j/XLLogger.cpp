@@ -63,3 +63,30 @@ void XLLogger::InitLogger(const char* szProgramPath, int secRefresh) {
 	logger.addAppender(fileAppender);
 }
 
+void XLLogger::SetLogLevel(XLLogLevel level) {
+	Logger logger = Logger::getInstance(LOGGER_NAME);
+	switch (level) {
+	case XLLogLevelAll:
+	case XLLogLevelTrace:
+		logger.setLogLevel(ALL_LOG_LEVEL);
+		break;
+	case XLLogLevelDebug:
+		logger.setLogLevel(DEBUG_LOG_LEVEL);
+		break;
+	case XLLogLevelInfo:
+		logger.setLogLevel(INFO_LOG_LEVEL);
+		break;
+	case XLLogLevelWarn:
+		logger.setLogLevel(WARN_LOG_LEVEL);
+		break;
+	case XLLogLevelError:
+		logger.setLogLevel(ERROR_LOG_LEVEL);
+		break;
+	case XLLogLevelFatal:
+		logger.setLogLevel(FATAL_LOG_LEVEL);
+		break;
+	case XLLogLevelOff:
+		logger.setLogLevel(OFF_LOG_LEVEL);
+		break;
+	}
+}

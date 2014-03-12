@@ -53,3 +53,20 @@ boost::asio::io_service& io_service_pool::get_io_service() {
 		next_io_service_ = 0;
 	return io_service;
 }
+
+void io_service_pool::run(RunCallback callback) {
+	run_callback_ = callback;
+	// Create a pool of threads to run all of the io_services.
+	std::vector<boost::shared_ptr<boost::thread> > threads;
+	for (std::size_t i = 0; i < io_services_.size(); ++i) {
+		boost::shared_ptr<boost::thread> thread(
+				new boost::thread(boost::bind(&boost::asio::io_service::run, io_services_[i])));
+		threads.push_back(thread);
+	}
+
+	run_callback_();
+
+	// Wait for all threads in the pool to exit.
+	for (std::size_t i = 0; i < threads.size(); ++i)
+		threads[i]->join();
+}

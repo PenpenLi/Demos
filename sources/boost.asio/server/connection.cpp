@@ -8,11 +8,14 @@
 #include "connection.h"
 #include <vector>
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
+#define ENABLE_DEBUG_LOG 0
 #define LOG_TAG "connection"
 #include "XLLogger.h"
 
 #include "packet.pb.h"
+#include "memerypool.hpp"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -33,10 +36,11 @@ boost::asio::ip::tcp::socket& connection::socket() {
 }
 
 void connection::start() {
-	// Set a deadline for the read operation.
-	deadline_.expires_from_now(boost::posix_time::seconds(DEADLINE_TIME));
-	deadline_.async_wait(boost::bind(&connection::check_deadline, shared_from_this(), &deadline_));
+//	// Set a deadline for the read operation.
+//	deadline_.expires_from_now(boost::posix_time::seconds(DEADLINE_TIME));
+//	deadline_.async_wait(boost::bind(&connection::check_deadline, shared_from_this(), &deadline_));
 
+	// boot reading, read header
 	LOGT("Reading header ...");
 	async_read(socket_, buffer(header_buffer_, HEADER_LEN),
 			boost::bind(&connection::handle_read_header, shared_from_this(), placeholders::error));
@@ -116,7 +120,44 @@ void connection::handle_data(char* data, uint32_t size) {
 		LOGT("Receive kCommandMessage command.");
 		Message message;
 		message.ParseFromString(pkt.serialized());
-		LOGT("Message: "<<message.msg());
+		LOGI("id: " << connection_id_ << ", Message: " << message.msg());
+
+		// response
+		boost::posix_time::ptime pt(boost::posix_time::microsec_clock::local_time());
+		std::string strRet = boost::posix_time::to_simple_string(pt);
+		message.set_msg(strRet);
+		Packet retPkt;
+		retPkt.set_version(1);
+		retPkt.set_command(Packet::kCommandMessage);
+		retPkt.set_serialized(message.SerializeAsString());
+		int length = retPkt.ByteSize();
+		int totalLen = length + 4;
+		if (totalLen <= MEMORY_SIZE_8K) {
+			char *pkgBuffer = (char *) memory_pool_8k::malloc();
+			if (pkgBuffer) {
+				memcpy(pkgBuffer, &length, 4);
+				retPkt.SerializeToArray(pkgBuffer + 4, length);
+				boost::system::error_code ec;
+				int writeLen = socket_.write_some(boost::asio::buffer(pkgBuffer, totalLen), ec);
+				int current = writeLen;
+				while (current < totalLen && !ec) {
+					//writeLen >= 0
+					writeLen = socket_.write_some(boost::asio::buffer(pkgBuffer + current, totalLen - current), ec);
+					current += writeLen;
+				}
+				if (ec) {
+					LOGE("id: " << connection_id_ << ", write error: " << ec.message());
+				} else {
+					LOGI("id: " << connection_id_ << ", write response OK.");
+				}
+				memory_pool_8k::free(pkgBuffer);
+			} else {
+				LOGE("id: " << connection_id_ << ", memery error!");
+			}
+		} else {
+			//todo
+			LOGE("id: " << connection_id_ << ", Packet is bigger than memery pool size.");
+		}
 		break;
 	}
 	case Packet::kCommandPerson: {
