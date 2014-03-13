@@ -16,7 +16,7 @@ set(SERVER_SRC
     )
 add_executable(echoserver ${SERVER_SRC})
 target_link_libraries(echoserver
-    XLLoger
+    common
     thrift
     thriftnb
     log4cplus
@@ -31,7 +31,7 @@ set(CLIENT_SRC
     )
 add_executable(echoclient ${CLIENT_SRC})
 target_link_libraries(echoclient
-    XLLoger
+    common
     thrift
     log4cplus
     boost_system

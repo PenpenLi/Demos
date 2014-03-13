@@ -10,7 +10,7 @@ add_executable(RunUnitTest ${SRCS} ${INCS})
 
 target_link_libraries(RunUnitTest
     gtest
-    XLLoger
+    common
     log4cplus
     pthread
     boost_system

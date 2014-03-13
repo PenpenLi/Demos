@@ -16,7 +16,7 @@ add_executable(${TARGETNAME}
 
 target_link_libraries(
     ${TARGETNAME}
-    XLLoger
+    common
     log4cplus
     boost_system
     boost_thread
