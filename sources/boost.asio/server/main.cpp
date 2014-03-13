@@ -15,8 +15,8 @@
 int main(int argc, char *argv[]) {
 	int result = 0;
 	try {
-		XLLogger::Instance()->InitLogger(argv[0]);
-		XLLogger::Instance()->SetLogLevel(XLLogger::XLLogLevelDebug);
+		XL::Logger::Instance()->InitLogger(argv[0]);
+		XL::Logger::Instance()->SetLogLevel(XL::Logger::LogLevelDebug);
 		server s(44444, boost::thread::hardware_concurrency() + 2);
 		s.run();
 	} catch (const std::exception& e) {

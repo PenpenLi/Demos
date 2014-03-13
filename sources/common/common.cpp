@@ -1,4 +1,4 @@
-/* Copyright (C)
+/*! Copyright (C)
  * 2014 - lxb
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,20 +15,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-/**
- * @file UnitTest.cpp
- * @brief 单元测试
+/*!
+ * @file common.cpp
+ * @brief common
  * @author lxb
- * @version
- * @date 2014-03-11
+ * @version 1.0
+ * @date 2014-03-13
  */
-#include <gtest/gtest.h>
-#define LOG_TAG "main"
-#include "XLLogger.h"
-
-int main(int argc, char *argv[])
-{
-	XL::Logger::Instance()->InitLogger(argv[0]);
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+#include "common.h"

@@ -22,4 +22,5 @@ target_link_libraries(
     boost_thread
     boost_date_time
     protobuf
+    boost_program_options
 )

@@ -61,23 +61,25 @@
 
 #endif //ENABLE_LOG
 //////////////////////////////////////////////////////////////////
+namespace XL {
+
 /*!
  * @class XLLogger log4j
  */
-class XLLogger {
+class Logger {
 public:
-	enum XLLogLevel {
-		XLLogLevelTrace,
-		XLLogLevelDebug,
-		XLLogLevelInfo,
-		XLLogLevelWarn,
-		XLLogLevelError,
-		XLLogLevelFatal,
-		XLLogLevelOff,
-		XLLogLevelAll
+	enum LogLevel {
+		LogLevelOff,
+		LogLevelFatal,
+		LogLevelError,
+		LogLevelWarn,
+		LogLevelInfo,
+		LogLevelDebug,
+		LogLevelTrace,
+		LogLevelAll
 	};
-	static XLLogger *Instance() {
-		static XLLogger logger;
+	static Logger *Instance() {
+		static Logger logger;
 		return &logger;
 	}
 
@@ -85,11 +87,13 @@ public:
 
 	void InitLogger(const char* szProgramPath, int secRefresh = 0);
 
-	void SetLogLevel(XLLogLevel level);
+	void SetLogLevel(LogLevel level);
 protected:
-	XLLogger();
-	virtual ~XLLogger();
-	XLLogger(const XLLogger& logger);
+	Logger();
+	virtual ~Logger();
+	Logger(const Logger& logger);
 private:
 	log4cplus::ConfigureAndWatchThread *_watchdog;
 };
+
+}  // namespace XL

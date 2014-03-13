@@ -15,7 +15,7 @@ typedef boost::scoped_ptr<CDemo> DemoScopedPtr;
 typedef boost::weak_ptr<CDemo> DemoWeakPtr;
 
 int main(int argc, char *argv[]) {
-	XLLogger::Instance()->InitLogger(argv[0]);
+	XL::Logger::Instance()->InitLogger(argv[0]);
 	LOGT("Program Name: " << argv[0]);
 	LOGT("boost.format demo: ");
 	std::string feild1 = "Hello";

@@ -15,4 +15,6 @@ target_link_libraries(RunUnitTest
     pthread
     boost_system
     boost_thread
+    common
+    curl
 )

@@ -5,6 +5,7 @@
  *      Author: xiaobin
  */
 
+#include <iostream>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -27,6 +28,7 @@ typedef boost::shared_ptr<client> client_ptr;
 typedef std::vector<client_ptr> client_vector;
 
 using namespace boost;
+namespace po = boost::program_options;
 
 static bool bRun = false;
 
@@ -48,8 +50,36 @@ void test(client_ptr client) {
 
 int main(int argc, char *argv[]) {
 	try {
-		XLLogger::Instance()->InitLogger(argv[0]);
-		XLLogger::Instance()->SetLogLevel(XLLogger::XLLogLevelDebug);
+		XL::Logger::Instance()->InitLogger(argv[0]);
+
+		po::options_description options("options");
+		options.add_options()
+				("help,h", "print this help message")
+				("version,v", "print version string")
+				("client,c", "number of clients, default 1")
+				("address,a", "server address")
+				("port,p", "server port")
+				("time,t", "run for <sec> seconds, default 30");
+		po::variables_map vm;
+		po::store(po::parse_command_line(argc, argv, options), vm);
+		po::notify(vm);
+		if (vm.count("help")) {
+			std::cout << options << std::endl;
+			return 0;
+		}
+
+		if (!vm.count("address")) {
+			std::cout << "no server address!" << std::endl;
+			std::cout << options << std::endl;
+			return 1;
+		}
+
+		if (!vm.count("port")) {
+			std::cout << "no server port!" << std::endl;
+			std::cout << options << std::endl;
+			return 1;
+		}
+		XL::Logger::Instance()->SetLogLevel(XL::Logger::LogLevelDebug);
 
 		LOGI(CLIENT_COUNT<<" clients, "<<"runing "<<RUNNING_TIME<<" seconds ...");
 		io_service_pool pool(CLIENT_COUNT);
@@ -57,7 +87,8 @@ int main(int argc, char *argv[]) {
 		for (int i = 0; i < CLIENT_COUNT; ++i) {
 			// client
 			LOGT("Create client "<<i);
-			client_ptr client_(new client(pool.get_io_service(), "127.0.0.1", "44444"));
+			client_ptr client_(
+					new client(pool.get_io_service(), vm["address"].as<std::string>(), vm["port"].as<std::string>()));
 			clients.push_back(client_);
 		}
 		boost::thread thread_(boost::bind(&io_service_pool::run, &pool, callback));

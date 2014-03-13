@@ -51,7 +51,7 @@ void test(int count) {
 }
 
 int main(int argc, const char *argv[]) {
-	XLLogger::Instance()->InitLogger(argv[0]);
+	XL::Logger::Instance()->InitLogger(argv[0]);
 	LOGT("Begin test ...");
 	try {
 //		while(true) {

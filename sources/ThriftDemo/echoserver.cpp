@@ -102,7 +102,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-	XLLogger::Instance()->InitLogger(argv[0]);
+	XL::Logger::Instance()->InitLogger(argv[0]);
 	int port = 9090;
 
 	shared_ptr<EchoServerIf> handler(new EchoServerHandler());

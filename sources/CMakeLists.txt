@@ -12,6 +12,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${Demos_SOURCE_DIR}/../bin)
 #include dirs
 include_directories(
     ${Demos_SOURCE_DIR}/libXLLog4j
+    ${Demos_SOURCE_DIR}/common
 )
 
 #lib dirs
@@ -30,6 +31,7 @@ file(GLOB PROTO_SRCS "${PROTO_CPP_DIR}/*.cc")
 add_definitions(-g -Wall -O --std=c++11)
 
 add_subdirectory(gtest)
+add_subdirectory(common)
 add_subdirectory(libXLLog4j)
 add_subdirectory(ThriftDemo)
 add_subdirectory(boost.general)
