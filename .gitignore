@@ -7,5 +7,5 @@ eclipse/!*.sh
 lib/*
 \.*
 python/logs
-*.pyc
+python/**/*.pyc
 xcodeprojects
