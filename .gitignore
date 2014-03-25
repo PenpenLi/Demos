@@ -6,3 +6,6 @@ eclipse/*
 eclipse/!*.sh
 lib/*
 \.*
+python/logs
+*.pyc
+xcodeprojects
