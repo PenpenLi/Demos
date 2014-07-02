@@ -9,9 +9,18 @@ class CustomDialog : public QDialog
 public:
     explicit CustomDialog(QWidget *parent = 0);
 
+protected:
+    void paintEvent(QPaintEvent *);
+    void showEvent(QShowEvent *);
+    void hideEvent(QHideEvent *);
+    bool eventFilter(QObject *, QEvent *);
+    bool event(QEvent *);
+
 signals:
 
 public slots:
+
+private:
 
 };
 

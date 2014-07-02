@@ -2,10 +2,11 @@
 #include "ui_testdialog.h"
 
 TestDialog::TestDialog(QWidget *parent) :
-    QDialog(parent),
+    CustomDialog(parent),
     ui(new Ui::TestDialog)
 {
     ui->setupUi(this);
+//    hide();
 }
 
 TestDialog::~TestDialog()

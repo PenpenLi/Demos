@@ -9,3 +9,4 @@ lib/*
 python/logs
 python/**/*.pyc
 xcodeprojects
+qt/build*

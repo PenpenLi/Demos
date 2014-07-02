@@ -9,6 +9,9 @@ class CustomWidget : public QWidget
 public:
     explicit CustomWidget(QWidget *parent = 0);
 
+protected:
+    void paintEvent(QPaintEvent *);
+
 signals:
 
 public slots:

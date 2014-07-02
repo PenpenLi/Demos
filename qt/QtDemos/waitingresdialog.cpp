@@ -3,20 +3,22 @@
 #include <QPainter>
 #include <QMovie>
 
-#define LOG_TAG "WaitingResDialog"
-#include "logger.h"
-
 WaitingResDialog::WaitingResDialog(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::FramelessWindowHint | Qt::CustomizeWindowHint),
     ui(new Ui::WaitingResDialog)
 {
     ui->setupUi(this);
 
+//    setWindowModality(Qt::ApplicationModal);
+//    setModal(true);
+
     this->setAttribute(Qt::WA_TranslucentBackground, true);
-    setWindowFlags(Qt::FramelessWindowHint);
+//    setWindowFlags(Qt::FramelessWindowHint);
+//    setWindowFlags(Qt::Dialog | );
     ui->lableIcon->setAttribute(Qt::WA_TranslucentBackground, true);
-    movie = new QMovie(":/imgs/juhua.gif", QByteArray(), this);
+    movie = new QMovie("://juhua.gif", QByteArray(), this);
     ui->lableIcon->setMovie(movie);
+    hide();
 }
 
 WaitingResDialog::~WaitingResDialog()
@@ -26,7 +28,6 @@ WaitingResDialog::~WaitingResDialog()
 
 void WaitingResDialog::showEvent(QShowEvent *e)
 {
-    LOGT("show");
     movie->start();
     QApplication::postEvent(this, new QEvent(QEvent::UpdateRequest), Qt::LowEventPriority);
     QDialog::showEvent(e);
@@ -34,7 +35,6 @@ void WaitingResDialog::showEvent(QShowEvent *e)
 
 void WaitingResDialog::hideEvent(QHideEvent *e)
 {
-    LOGT("hide");
     movie->stop();
     QDialog::hideEvent(e);
 }

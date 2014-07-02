@@ -1,13 +1,13 @@
 #ifndef TESTDIALOG_H
 #define TESTDIALOG_H
 
-#include <QDialog>
+#include "customdialog.h"
 
 namespace Ui {
 class TestDialog;
 }
 
-class TestDialog : public QDialog
+class TestDialog : public CustomDialog
 {
     Q_OBJECT
 

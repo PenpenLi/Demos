@@ -2,7 +2,7 @@
 #include "ui_testform.h"
 
 TestForm::TestForm(QWidget *parent) :
-    QWidget(parent),
+    CustomWidget(parent),
     ui(new Ui::TestForm)
 {
     ui->setupUi(this);

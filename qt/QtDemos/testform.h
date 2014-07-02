@@ -2,12 +2,13 @@
 #define TESTFORM_H
 
 #include <QWidget>
+#include "customwidget.h"
 
 namespace Ui {
 class TestForm;
 }
 
-class TestForm : public QWidget
+class TestForm : public CustomWidget
 {
     Q_OBJECT
 

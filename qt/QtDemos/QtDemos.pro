@@ -13,8 +13,24 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    customdialog.cpp \
+    testdialog.cpp \
+    customwidget.cpp \
+    waitingresdialog.cpp \
+    testform.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    customdialog.h \
+    testdialog.h \
+    customwidget.h \
+    waitingresdialog.h \
+    testform.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    testdialog.ui \
+    waitingresdialog.ui \
+    testform.ui
+
+RESOURCES += \
+    res.qrc
