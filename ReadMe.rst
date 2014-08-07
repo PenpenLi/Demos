@@ -1,10 +1,12 @@
+=====
 Demos
-==================
+=====
 
 我的学习笔记
 ------------
 
 - C/C++
+
     * log4cplus 1.1.2
     * boost 1.55
     * thrift 0.9.1
@@ -13,3 +15,5 @@ Demos
     * zeromq 4.0.3
 
 - python
+
+    * cocos2d

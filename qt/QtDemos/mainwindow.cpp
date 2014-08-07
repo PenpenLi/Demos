@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     QToolButton *btnTest = new QToolButton;
     btnTest->setStyleSheet("background-color: red");
+    btnTest->setText(tr("test"));
     connect(btnTest, SIGNAL(clicked()), this, SLOT(onTest()));
     ui->mainToolBar->addWidget(btnTest);
     waitDlg->show();

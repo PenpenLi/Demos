@@ -4,7 +4,7 @@
 #include <QMovie>
 
 WaitingResDialog::WaitingResDialog(QWidget *parent) :
-    QDialog(parent, Qt::FramelessWindowHint | Qt::CustomizeWindowHint),
+    QDialog(parent, Qt::Sheet | Qt::FramelessWindowHint | Qt::CustomizeWindowHint),
     ui(new Ui::WaitingResDialog)
 {
     ui->setupUi(this);
@@ -14,7 +14,6 @@ WaitingResDialog::WaitingResDialog(QWidget *parent) :
 
     this->setAttribute(Qt::WA_TranslucentBackground, true);
 //    setWindowFlags(Qt::FramelessWindowHint);
-//    setWindowFlags(Qt::Dialog | );
     ui->lableIcon->setAttribute(Qt::WA_TranslucentBackground, true);
     movie = new QMovie("://juhua.gif", QByteArray(), this);
     ui->lableIcon->setMovie(movie);
