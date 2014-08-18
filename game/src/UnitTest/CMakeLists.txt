@@ -9,3 +9,5 @@ target_link_libraries(RunUnitTest
     log4cplus
     c++
 )
+
+add_dependencies(RunUnitTest gtest base)

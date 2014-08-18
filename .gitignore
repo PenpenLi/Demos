@@ -11,3 +11,10 @@ python/**/*.pyc
 xcodeprojects
 qt/build*
 qt/**/*.user
+game/bin/*
+game/bin/!*.cfg
+game/lib/*
+game/build/xcode/*
+game/build/xcode/!*.sh
+game/build/make/*
+game/build/make/!*.sh

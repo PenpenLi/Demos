@@ -2,13 +2,21 @@ cmake_minimum_required(VERSION 2.6)
 
 # todo(lxb): cross platforms
 set(CMAKE_CONFIGURATION_TYPES Debug;Release)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+#set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
 set(CMAKE_OSX_ARCHITECTURES x86_64)
 
 #output dirs
+# First for the generic no-config case (e.g. with mingw)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${game_SOURCE_DIR}/../lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${game_SOURCE_DIR}/../lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${game_SOURCE_DIR}/../bin)
+# Second, for multi-config builds (e.g. msvc)
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${game_SOURCE_DIR}/../bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${game_SOURCE_DIR}/../lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${game_SOURCE_DIR}/../lib)
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 set(3RD_DIR ${game_SOURCE_DIR}/3rd)
 
