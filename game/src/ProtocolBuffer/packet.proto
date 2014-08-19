@@ -1,0 +1,15 @@
+
+message Packet {
+    enum CommandType {
+        kCommandHeartbeat   = 0;
+        kCommandMessage     = 1;
+    }
+    required uint32         version      = 1 [default = 1];
+    required CommandType    command      = 2;
+    optional bytes          serialized   = 3;
+    optional uint64         connectionid = 4;
+};
+
+message Message {
+    required string msg = 1;
+}
