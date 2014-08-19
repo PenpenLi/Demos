@@ -44,7 +44,6 @@ file(GLOB PROTO_SRCS "${PROTO_CPP_DIR}/*.cc")
 add_definitions(
     -std=c++11
     -stdlib=libc++
-    -v
 )
 
 # solution name
@@ -53,4 +52,6 @@ project(game)
 # subdirs
 add_subdirectory(3rd)
 add_subdirectory(base)
+add_subdirectory(client)
+add_subdirectory(server)
 add_subdirectory(UnitTest)
