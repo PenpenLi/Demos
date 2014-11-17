@@ -1,0 +1,53 @@
+#ifndef MOF_SKILLEFFECTVAL_H
+#define MOF_SKILLEFFECTVAL_H
+
+class SkillEffectVal{
+public:
+	void setHitBackTime(float);
+	void getTargetNum(void)const;
+	void getLastTime(void);
+	void setDelayTime(float);
+	void setAttackIntervalTime(float);
+	void getAttackCount(void);
+	void getSpeed(void)const;
+	void setAudioID(int);
+	void setAppearOffset(float);
+	void getDelayTime(void);
+	void getTargetNum(void);
+	void getAudioID(void)const;
+	void setCastTime(float);
+	void getAffectValue(void)const;
+	void getHitBackTime(void)const;
+	void getAffectValue(void);
+	void setSkillEffectId(int);
+	void getEffectResId(void);
+	void getHitBackDistance(void);
+	void getAttackIntervalTime(void)const;
+	void getAudioID(void);
+	void getAppearOffset(void);
+	void getHitBackDistance(void)const;
+	void setMoveLength(float);
+	void getAttackCount(void)const;
+	void getMoveLength(void);
+	void SkillEffectVal(void);
+	void getDelayTime(void)const;
+	void setTargetNum(int);
+	void getHitBackTime(void);
+	void setAffectFloat(float);
+	void getLastTime(void)const;
+	void getAffectFloat(void);
+	void setEffectResId(int);
+	void setAttackCount(int);
+	void setAffectValue(int);
+	void setLastTime(float);
+	void getAttackIntervalTime(void);
+	void getEffectResId(void)const;
+	void setSpeed(float);
+	void setHitBackDistance(int);
+	void getAppearOffset(void)const;
+	void getCastTime(void)const;
+	void getCastTime(void);
+	void getSpeed(void);
+	void getMoveLength(void)const;
+}
+#endif

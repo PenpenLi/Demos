@@ -1,0 +1,84 @@
+#ifndef MOF_ROLE_H
+#define MOF_ROLE_H
+
+class Role{
+public:
+	void Role(ObjType,int);
+	void RolesHeartBeat(float);
+	void RolesAIStart(void);
+	void showObjNameNew(cocos2d::_ccColor3B, int);
+	void canAICrossPortal(void);
+	void stop(void);
+	void getBeat(void)const;
+	void FixAtkOrient(LivingObject *);
+	void showObjNameNew(cocos2d::_ccColor3B,int);
+	void animationHandler(BoneAniEventType,std::string,std::string,bool);
+	void animationHandler(BoneAniEventType, std::string,	std::string, bool);
+	void setRankNeedfreshByType(SortType,bool);
+	void RoleTrack(LivingObject *);
+	void death(LivingObject *);
+	void reborn(void);
+	void emitSkill(int);
+	void setStar(int);
+	void RoleEscape(LivingObject	*);
+	void getUseTitle(void)const;
+	void setMaxFat(int);
+	void setMaxExp(int);
+	void getGuildMemberRank(void)const;
+	void RoleCanAtk(LivingObject	*);
+	void getPet(void);
+	void Role(ObjType, int);
+	void getMaxExp(void)const;
+	void setPet(PetMonster *);
+	void create(int,RoleTpltCfg *,int);
+	void worldBossDeath(float);
+	void getStar(void)const;
+	void getMaxExp(void);
+	void getUseTitle(void);
+	void setLastTime(float);
+	void setPassTime(int);
+	void hitted(void);
+	void AutoAtkInput(void);
+	void showObjVipNew(void);
+	void setHpPer(float);
+	void setGuildMemberRank(int);
+	void createVerifyProp(LivingObject *,VerifyPropType);
+	void getMaxFat(void)const;
+	void getRankNeedfreshByType(SortType);
+	void setRoleRand(int);
+	void getGuildMemberRank(void);
+	void getPassTime(void);
+	void getRoleRand(void);
+	void calcBattleStar(void);
+	void reSetHeadStuff(void);
+	void cleanHeadStuff(void);
+	void showRoleDeath(float);
+	void showObjGuild(cocos2d::_ccColor3B, int);
+	void getPassTime(void)const;
+	void setLastBeat(int);
+	void setBeat(int);
+	void getMaxFat(void);
+	void RoleAIWalkToPortal(void);
+	void animationHandler(BoneAniEventType, std::string, std::string, bool);
+	void damage(int, LivingObject *);
+	void showObjHonor(cocos2d::_ccColor3B, int);
+	void showObjHonor(cocos2d::_ccColor3B,int);
+	void checkHasSampleEquipSkills(void);
+	void getStar(void);
+	void setRankNeedfreshByType(SortType, bool);
+	void setHpNum(int);
+	void setUseTitle(int);
+	void damage(int,LivingObject	*);
+	void RoleAutoCastSkill(LivingObject *);
+	void RolesAIStop(void);
+	void ~Role();
+	void create(int, RoleTpltCfg	*, int);
+	void fillDataFromJsonVO(std::string);
+	void showObjGuild(cocos2d::_ccColor3B,int);
+	void createVerifyProp(LivingObject *, VerifyPropType);
+	void setDeadEffectNull(void);
+	void getBeat(void);
+	void playDeadEffect(void);
+	void getRoleRand(void)const;
+}
+#endif

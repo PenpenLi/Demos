@@ -1,0 +1,59 @@
+#ifndef MOF_SKILLCFGDEF_H
+#define MOF_SKILLCFGDEF_H
+
+class SkillCfgDef{
+public:
+	void getAttackRectWidth(void)const;
+	void setPrevID(int);
+	void getNeedPages(void)const;
+	void getNeedGold(void);
+	void setRange(int);
+	void getCastRangeY(void)const;
+	void setAttackRectHeight(float);
+	void getMaxLvl(void);
+	void getNeedPages(void);
+	void setComCD(float);
+	void getSkillCD(void)const;
+	void getIsControl(void);
+	void getBattlePoint(void)const;
+	void getPetSkillType(void)const;
+	void getSkillCD(void);
+	void getSkillID(void)const;
+	void setAttackRectX(float);
+	void getAttackRectY(void);
+	void SkillCfgDef(void);
+	void getCastRangeX(void);
+	void getSkillID(void);
+	void setIsControl(bool);
+	void getAttackRectX(void);
+	void getLearnLvl(void)const;
+	void getComCD(void)const;
+	void getLearnLvl(void);
+	void setNeedPages(int);
+	void setSkillID(int);
+	void setBattlePoint(int);
+	void getAttackRectX(void)const;
+	void getNeedGold(void)const;
+	void setAttackRectY(float);
+	void setNeedGold(int);
+	void setLearnLvl(int);
+	void setCastRangeX(int);
+	void setSkillCD(float);
+	void getCastRangeY(void);
+	void getMaxLvl(void)const;
+	void setSKillType(int);
+	void getSKillType(void);
+	void getAttackRectHeight(void);
+	void getSKillType(void)const;
+	void setMaxLvl(int);
+	void getPetSkillType(void);
+	void getBattlePoint(void);
+	void setPetSkillType(int);
+	void setCastRangeY(int);
+	void getAttackRectHeight(void)const;
+	void setAttackRectWidth(float);
+	void getAttackRectY(void)const;
+	void getAttackRectWidth(void);
+	void getComCD(void);
+}
+#endif

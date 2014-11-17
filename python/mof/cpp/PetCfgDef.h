@@ -1,0 +1,81 @@
+#ifndef MOF_PETCFGDEF_H
+#define MOF_PETCFGDEF_H
+
+class PetCfgDef{
+public:
+	void setMinGrowthRefine(int);
+	void setExtraProp(float);
+	void getType(void)const;
+	void setCapatodef(float);
+	void setExtraPropPoint(int);
+	void getTypeForPetMerger(void);
+	void getExtlvlAdd(void);
+	void getNeedGrowthPill(void)const;
+	void getMaxbaseprop(void)const;
+	void getGrowthAdd(void)const;
+	void setStre(int);
+	void getGrowthRate(void)const;
+	void getStretoatk(void)const;
+	void getMaxGrowthRefine(void)const;
+	void getIntetoatk(void);
+	void getMergeExp(void)const;
+	void setMergeExp(int);
+	void PetCfgDef(void);
+	void getTypeForPetMerger(void)const;
+	void setQua(int);
+	void getMaxGrowthRefine(void);
+	void setMonsterTpltID(int);
+	void getGrowthRate(void);
+	void setNeedGrowthPill(int);
+	void getMergeExp(void);
+	void getNeedGrowthPill(void);
+	void getPhystohp(void);
+	void getIntetoatk(void)const;
+	void getGrowthAdd(void);
+	void setStarBorn(int);
+	void setGrowthRate(float);
+	void getMonsterTpltID(void);
+	void getMaxlvl(void);
+	void getExp(void);
+	void getStageBorn(void)const;
+	void setExtlvlAdd(int);
+	void setGrowthSuccFactor(float);
+	void setCri(float);
+	void getMaxlvlAdd(void)const;
+	void setExp(int);
+	void getExtlvl(void);
+	void setPhys(int);
+	void getStageBorn(void);
+	void setCapa(int);
+	void setStretoatk(float);
+	void getMaxlvlAdd(void);
+	void setMaxGrowthRefine(int);
+	void setCollectqua(int);
+	void setType(int);
+	void setCrip(float);
+	void setIntetoatk(float);
+	void getCri(void)const;
+	void getQua(void);
+	void getExtlvl(void)const;
+	void getCapatodef(void);
+	void getType(void);
+	void setGrowthAdd(int);
+	void setTypeForPetMerger(int);
+	void getPhystohp(void)const;
+	void setExtlvl(int);
+	void setMaxbaseprop(int);
+	void setPhystohp(float);
+	void getExp(void)const;
+	void setInte(int);
+	void setMaxlvl(int);
+	void getQua(void)const;
+	void getStretoatk(void);
+	void setMaxlvlAdd(int);
+	void getMaxlvl(void)const;
+	void getMaxbaseprop(void);
+	void setStageBorn(int);
+	void getCri(void);
+	void getCapatodef(void)const;
+	void getExtlvlAdd(void)const;
+}
+#endif

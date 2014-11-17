@@ -16,7 +16,8 @@
 //#define ENABLE_LOG 0
 //#define ENABLE_DEBUG_LOG 0
 #define LOG_TAG "LoggerTest"
-#include "Logger.h"
+//#include "Logger.h"
+#include "log.h"
 
 LoggerTest::LoggerTest() {
 	// TODO Auto-generated constructor stub
@@ -44,4 +45,7 @@ TEST_F(LoggerTest, testLogger) {
 	LOGW("Warn: " << 123 <<"!");
 	LOGE("Error: code=" << "-0x1111");
 	LOGF("Fatal: 严重错误，程序退出！code="<<0xfffffff);
+    printf("printf test\n");
+    fprintf(stderr, "fprintf to stderr\n");
+    fprintf(stdout, "fprintf to stdout\n");
 }

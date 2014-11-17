@@ -1,0 +1,85 @@
+#ifndef MOF_MONSTERCFGDEF_H
+#define MOF_MONSTERCFGDEF_H
+
+class MonsterCfgDef{
+public:
+	void setHp(int);
+	void setAtkRectOrigX(float);
+	void getPerAnger(void)const;
+	void getWalkSpeed(void)const;
+	void setPerAnger(int);
+	void getAtkSpeed(void);
+	void setAtkSpeed(int);
+	void getBeAtkRangeY(void)const;
+	void getSkillRangeX(void);
+	void setChangingRoundX(float);
+	void getAtkSpeed(void)const;
+	void getDef(void);
+	void setVision(float);
+	void getHit(void);
+	void getPatrolLength(void);
+	void setBeAtkRangeX(float);
+	void getAtk(void);
+	void getAtkRangeY(void)const;
+	void setPatrolLength(float);
+	void getHangAround(void)const;
+	void getChangingRoundY(void)const;
+	void getHangAround(void);
+	void getDodge(void)const;
+	void setAtkRangeY(float);
+	void MonsterCfgDef(void);
+	void setAtkRectOrigY(float);
+	void getHp(void);
+	void getDodge(void);
+	void getActionperiod(void)const;
+	void getDef(void)const;
+	void setAtk(int);
+	void setWalkSpeed(int);
+	void setAtkProbality(float);
+	void getAtkProbality(void)const;
+	void getBeAtkRangeY(void);
+	void getBeAtkRangeX(void)const;
+	void setHangAround(int);
+	void getVision(void)const;
+	void setActionperiod(float);
+	void getChangingRoundX(void);
+	void getFollowProbality(void);
+	void getAtk(void)const;
+	void getAtkRangeX(void);
+	void getPatrolLength(void)const;
+	void getAtkPeriod(void)const;
+	void setDodge(int);
+	void getBeAtkRangeX(void);
+	void getVision(void);
+	void setAtkRangeX(float);
+	void getHp(void)const;
+	void getChangingRoundY(void);
+	void setAtkPeriod(float);
+	void setHit(float);
+	void getChangingRoundX(void)const;
+	void setBeAtkRangeY(float);
+	void setChangingRoundY(float);
+	void getAtkPeriod(void);
+	void setSkillRangeY(float);
+	void getSkillRangeY(void)const;
+	void getAtkProbality(void);
+	void getAtkRectOrigX(void)const;
+	void getAtkRectOrigY(void)const;
+	void getHit(void)const;
+	void getSkillRangeX(void)const;
+	void setDef(int);
+	void getSkillRangeY(void);
+	void getAtkRectOrigY(void);
+	void getAtkRectOrigX(void);
+	void getPerAnger(void);
+	void getWalkSpeed(void);
+	void setSkillRangeX(float);
+	void setLvl(int);
+	void getAtkRangeX(void)const;
+	void getLvl(void);
+	void getFollowProbality(void)const;
+	void getActionperiod(void);
+	void setFollowProbality(int);
+	void getAtkRangeY(void);
+}
+#endif

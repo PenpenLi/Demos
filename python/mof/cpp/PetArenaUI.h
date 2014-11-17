@@ -1,0 +1,86 @@
+#ifndef MOF_PETARENAUI_H
+#define MOF_PETARENAUI_H
+
+class PetArenaUI{
+public:
+	void setExchangeTitleShow(PetPvpType);
+	void initMyPetList(void);
+	void onMenuItemLabel2Clicked(cocos2d::CCObject *);
+	void onMenuItemLabel1Clicked(cocos2d::CCObject *);
+	void onMenuItemRightClick(cocos2d::CCObject *);
+	void ccTouchCancelled(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void deletePetArenaUI(void);
+	void onMenuItemCloseIntroduceClicked(cocos2d::CCObject *);
+	void initMyPetArenaTableViewData(int);
+	void ccTouchCancelled(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void onMenuItemBuyOK(void);
+	void initControl(void);
+	void onMenuItemAddPetClicked(cocos2d::CCObject	*);
+	void onMenuItemLabel3Clicked(cocos2d::CCObject	*);
+	void deleteunlockLabel(int);
+	void refreshAllPetIcon(float);
+	void ccTouchCancelled(cocos2d::CCTouch	*,cocos2d::CCEvent *);
+	void setMyIntegral(void);
+	void onMenuItemLeftClick(cocos2d::CCObject *);
+	void ccTouchCancelled(cocos2d::CCTouch	*, cocos2d::CCEvent *);
+	void setEnemyInfor(void);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,char const*);
+	void onMenuItemShowMatchingPetClicked(cocos2d::CCObject	*);
+	void ccTouchEnded(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void PetArenaUI(void);
+	void onMenuItemOpenIntroduceClicked(cocos2d::CCObject *);
+	void createChooseCompetitorsNode(void);
+	void ~PetArenaUI();
+	void setMyPetArenaInfor(void);
+	void showMyHistoryRecord(void);
+	void ccTouchBegan(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void showChooseArenaPet(void);
+	void ccTouchBegan(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void initScrollView(void);
+	void registerWithTouchDispatcher(void);
+	void ccTouchEnded(cocos2d::CCTouch *, cocos2d::CCEvent	*);
+	void setWeekAward(int,	int);
+	void showActivityDesc(PetPvpItem *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,	char const*);
+	void deleteAddPetEffect(int);
+	void createPetInfor(PetCfgDef *, int, int);
+	void createUnlockLabel(int);
+	void createPetInfor(PetCfgDef *,int,int);
+	void onMenuItemLabel2Clicked(cocos2d::CCObject	*);
+	void onMenuItemShowMatchingPetClicked(cocos2d::CCObject *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *, char const*);
+	void setWeekAward(int,int);
+	void ccTouchMoved(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void onMenuItemCloseCheekAwardClicked(cocos2d::CCObject *);
+	void createPetIcon(PetMonster *,int,cocos2d::CCNode *);
+	void ccTouchMoved(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void deleteArenaPets(void);
+	void onMenuItemQueueImageClicked(cocos2d::CCObject *);
+	void onMenuItemCloseIntroduceClicked(cocos2d::CCObject	*);
+	void onMenuItemLabel3Clicked(cocos2d::CCObject *);
+	void onMenuItemCloseCheekAwardClicked(cocos2d::CCObject	*);
+	void onMenuItemCloseClicked(cocos2d::CCObject *);
+	void setCompetitiveQueueIsShow(bool);
+	void refreshStarGame(float);
+	void setChooseArenaControlIsShow(bool);
+	void onMenuItemCheckHistoryClicked(cocos2d::CCObject *);
+	void onMenuItemLabel1Clicked(cocos2d::CCObject	*);
+	void setAddMyPetImageState(int,bool);
+	void onMenuItemExchangePriceClicked(cocos2d::CCObject *);
+	void ccTouchMoved(cocos2d::CCTouch *, cocos2d::CCEvent	*);
+	void ccTouchEnded(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void onMenuItemAddAllPetClicked(cocos2d::CCObject *);
+	void create(void);
+	void createAddPetEffect(int);
+	void ccTouchBegan(cocos2d::CCTouch *, cocos2d::CCEvent	*);
+	void onMenuItemAddPetClicked(cocos2d::CCObject *);
+	void onMenuItemCloseHistoryrecordClicked(cocos2d::CCObject *);
+	void createChooseArenaPet(void);
+	void setAddMyPetImageState(int, bool);
+	void onMenuItemBuyCancel(void);
+	void createPetIcon(PetMonster *, int, cocos2d::CCNode *);
+	void init(void);
+	void onExit(void);
+	void onEnter(void);
+}
+#endif

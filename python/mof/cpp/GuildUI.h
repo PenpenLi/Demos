@@ -1,0 +1,88 @@
+#ifndef MOF_GUILDUI_H
+#define MOF_GUILDUI_H
+
+class GuildUI{
+public:
+	void onMenuItemShowManorClicked(cocos2d::CCObject *);
+	void onMenuItemShopClick(cocos2d::CCObject *);
+	void create(void);
+	void setGuildBlessData(void);
+	void ccTouchEnded(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void onMenuItemMemberClick(cocos2d::CCObject *);
+	void onGuildDescTouchUpInsideClicked(cocos2d::CCObject *);
+	void onMenuItemDismissClick(cocos2d::CCObject *);
+	void onMenuItemGonowClicked(cocos2d::CCObject *);
+	void playGuildTreasureFight(void);
+	void setGuildDescDesc(void);
+	void onMenuItemQuitCancel(void);
+	void refreshTimer(float);
+	void setGuildInspiredData(void);
+	void initControl(void);
+	void ccTouchEnded(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void onMenuItemMessageClick(cocos2d::CCObject *);
+	void showGuildData(GuildRoomData);
+	void onMenuItemQuitClick(cocos2d::CCObject	*);
+	void playGuildBoss(void);
+	void onMenuItemQuitOK(void);
+	void GuildUI(void);
+	void ccTouchCancelled(cocos2d::CCTouch *,	cocos2d::CCEvent *);
+	void onGuildDescTouchUpOutsideClicked(cocos2d::CCObject *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,char const*);
+	void editBoxEditingDidBegin(cocos2d::extension::CCEditBox *);
+	void onMenuItemShopClick(cocos2d::CCObject	*);
+	void ccTouchCancelled(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void onMenuItemReturnClick(cocos2d::CCObject *);
+	void onMenuItemSureCourageClicked(cocos2d::CCObject *);
+	void ccTouchCancelled(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void createDescControlButton(void);
+	void onMenuItemOtherGuildClick(cocos2d::CCObject *);
+	void ccTouchBegan(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void setActivityScrollViewPosition(bool);
+	void onMenuItemEncourageClicked(cocos2d::CCObject	*);
+	void ccTouchBegan(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void setRefreshActivityData(int, bool);
+	void onEnterGuildActivity(cocos2d::CCObject *);
+	void registerWithTouchDispatcher(void);
+	void ccTouchCancelled(cocos2d::CCTouch *,cocos2d::CCEvent	*);
+	void onMenuItemCancelDismissClick(cocos2d::CCObject *);
+	void onMenuItemEncourageClicked(cocos2d::CCObject *);
+	void setDissolutionStata(void);
+	void showGuildChallengeData(bool);
+	void setShowNotice(bool);
+	void showGuildTreasurefightManor(bool);
+	void initEditNotice(void);
+	void onMenuItemSendBlessClicked(cocos2d::CCObject	*);
+	void editBoxEditingDidBegin(cocos2d::extension::CCEditBox	*);
+	void onMenuItemCloseClick(cocos2d::CCObject *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *, char const*);
+	void playGuildChallenge(void);
+	void ccTouchMoved(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void showGuildPlayerData(GuildPlayerData);
+	void ccTouchMoved(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void setRefreshActivityData(int,bool);
+	void deleteExitGuildTimes(void);
+	void onEnter(void);
+	void onMenuItemSendBlessClicked(cocos2d::CCObject *);
+	void onGuildRoomUI(cocos2d::CCObject *);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *, std::string const&);
+	void onMenuItemShowManorClicked(cocos2d::CCObject	*);
+	void editBoxEditingDidEnd(cocos2d::extension::CCEditBox *);
+	void onActivityRightClicked(cocos2d::CCObject *);
+	void setQuitGuildMenuState(void);
+	void ~GuildUI();
+	void showActivityDesc(ActivityCfgDef *);
+	void onMenuItemQuitClick(cocos2d::CCObject *);
+	void onActivityLeftClicked(cocos2d::CCObject *);
+	void onMenuItemCancelCourageClicked(cocos2d::CCObject *);
+	void editBoxReturn(cocos2d::extension::CCEditBox *);
+	void onGuildDescTochDownClicked(cocos2d::CCObject	*);
+	void onExit(void);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *,std::string const&);
+	void initCallback(void);
+	void onMenuItemSkillClick(cocos2d::CCObject *);
+	void onMenuItemDevoteClick(cocos2d::CCObject *);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *,std::string	const&);
+	void init(void);
+	void onGuildDescTochDownClicked(cocos2d::CCObject *);
+}
+#endif

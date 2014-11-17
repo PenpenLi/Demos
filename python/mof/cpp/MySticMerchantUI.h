@@ -1,0 +1,81 @@
+#ifndef MOF_MYSTICMERCHANTUI_H
+#define MOF_MYSTICMERCHANTUI_H
+
+class MySticMerchantUI{
+public:
+	void onMenuItemProCloseClicked(cocos2d::CCObject *);
+	void reReqMysteriousList(void);
+	void ccTouchMoved(cocos2d::CCTouch	*, cocos2d::CCEvent *);
+	void ccTouchEnded(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void ccTouchEnded(cocos2d::CCTouch	*,cocos2d::CCEvent *);
+	void onAssignCCBMemberVariable(cocos2d::CCObject	*,char const*,cocos2d::CCNode *);
+	void upMysteriousList(void);
+	void onMenuItemPropsExchangeCancel(void);
+	void onMenuAdd(void);
+	void onMenuItemSeeProps(cocos2d::CCObject	*);
+	void create(void);
+	void setMenuEnable(bool,bool,bool);
+	void ~MySticMerchantUI();
+	void onMenuItemPropsExchangeClicked(cocos2d::CCObject *);
+	void ccTouchEnded(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void onMenuAddMax(void);
+	void onMenuItemFreeRefresh(cocos2d::CCObject *);
+	void initRefreshBtn(void);
+	void showProps(bool);
+	void onAssignCCBMemberVariable(cocos2d::CCObject	*, char	const*,	cocos2d::CCNode	*);
+	void onMenuItemOnsaleClicked(cocos2d::CCObject *);
+	void refreshData(float);
+	void onMenuItemSeeProps(cocos2d::CCObject *);
+	void onMenuItemBuyCancel(void);
+	void onMenuItemPreClicked(cocos2d::CCObject *);
+	void ccTouchBegan(cocos2d::CCTouch	*,cocos2d::CCEvent *);
+	void ccTouchBegan(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void ccTouchBegan(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void ccTouchCancelled(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void setBtnEnable(int);
+	void initScrollView(void);
+	void onMenuSub(void);
+	void registerWithTouchDispatcher(void);
+	void onMenuItemDiamondClicked(cocos2d::CCObject *);
+	void onMenuItemRefreshClicked(cocos2d::CCObject *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,	char const*);
+	void removeCommonDialogUI(void);
+	void onMenuItemGoldProductClicked(cocos2d::CCObject *);
+	void setMenuEnable(bool,	bool, bool);
+	void ccTouchBegan(cocos2d::CCTouch	*, cocos2d::CCEvent *);
+	void showPropsExchangeDesc(MysteriousInfo *);
+	void paserTime(int);
+	void getCurrentProductType(void);
+	void ccTouchMoved(cocos2d::CCTouch *, cocos2d::CCEvent *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *, char const*);
+	void closeShopProps(void);
+	void initProps(void);
+	void buyGoodsSuccess(void);
+	void ccTouchMoved(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,char const*);
+	void onEnter(void);
+	void setCurPage(void);
+	void onAssignCCBMemberVariable(cocos2d::CCObject *, char const*, cocos2d::CCNode *);
+	void onMenuItemCloseClicked(cocos2d::CCObject *);
+	void ccTouchEnded(cocos2d::CCTouch	*, cocos2d::CCEvent *);
+	void onMenuItemProCloseClicked(cocos2d::CCObject	*);
+	void MySticMerchantUI(void);
+	void initScrollViewContainer(void);
+	void refreshGoldAndRmb(void);
+	void onMenuItemOK(void);
+	void onMenuItemBuyOK(void);
+	void initControl(void);
+	void onAssignCCBMemberVariable(cocos2d::CCObject *,char const*,cocos2d::CCNode *);
+	void onMenuSubMin(void);
+	void ccTouchCancelled(cocos2d::CCTouch *,cocos2d::CCEvent *);
+	void ccTouchCancelled(cocos2d::CCTouch *, cocos2d::CCEvent	*);
+	void changeUpdateTime(void);
+	void onMenuItemNextClicked(cocos2d::CCObject *);
+	void onMenuItemGoldRefresh(cocos2d::CCObject *);
+	void showActivityDesc(MysteriousInfo *);
+	void onMenuItemPropsExchangeOK(void);
+	void ccTouchMoved(cocos2d::CCTouch	*,cocos2d::CCEvent *);
+	void init(void);
+	void onExit(void);
+}
+#endif

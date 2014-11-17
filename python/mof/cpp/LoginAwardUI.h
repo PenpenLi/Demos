@@ -1,0 +1,82 @@
+#ifndef MOF_LOGINAWARDUI_H
+#define MOF_LOGINAWARDUI_H
+
+class LoginAwardUI{
+public:
+	void showRemainNumAndMoney(int,int,int);
+	void showEffect(std::string);
+	void setTenLotteryShow(void);
+	void setSale(int,int);
+	void callback(cocos2d::CCNode	*);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,char	const*);
+	void awardNodeMoveCallBack(void);
+	void NawardNodeMoveCallBack(void);
+	void onMenuItemLeaveMsgClicked(cocos2d::CCObject *);
+	void onMenuItemTodayLotteryClicked(cocos2d::CCObject	*);
+	void onDescAwardTouchUpOutsideClicked(cocos2d::CCObject *);
+	void setThisLotteryGet(std::vector<int, std::allocator<int>>, int);
+	void showDescNode(int, bool);
+	void NroundDisk(void);
+	void onMenuItemShowNLotteryClicked(cocos2d::CCObject *);
+	void onMenuItemCancelledLotteryClicked(cocos2d::CCObject *);
+	void detectionFunctionOpen(void);
+	void onMenuItemAwardDescClicked(cocos2d::CCObject *);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *,char const*);
+	void hideDescNode(void);
+	void onMenuItemTodayLotteryClicked(cocos2d::CCObject *);
+	void setLotteryhistory(std::vector<obj_lotteryhistory,std::allocator<obj_lotteryhistory>>);
+	void onMenuItemLotteryButtonClicked(cocos2d::CCObject	*);
+	void initLvReward(void);
+	void onMenuItemRewardClicked(cocos2d::CCObject *);
+	void onMenuItemLvAwardClicked(cocos2d::CCObject *);
+	void setCostMoney(int);
+	void onMenuItemHideDescNodeClicked(cocos2d::CCObject	*);
+	void setHistoryPosition(awardTap);
+	void onExit(void);
+	void setThisLotteryGet(std::vector<int,std::allocator<int>>,int);
+	void setLotteryRemainCount(int);
+	void roundDisk(void);
+	void onMenuItemShowNLotteryClicked(cocos2d::CCObject	*);
+	void setAwardState(int, bool, bool);
+	void onDescAwardDragInsideClicked(cocos2d::CCObject *);
+	void editBoxEditingDidBegin(cocos2d::extension::CCEditBox *);
+	void setNLotteryGet(std::vector<int,	std::allocator<int>>, int);
+	void refreshPageContent(bool);
+	void hideKrLvAwardDesc(void);
+	void setImageEnable(bool);
+	void NShowEffect(void);
+	void setNLotteryGet(std::vector<int,std::allocator<int>>,int);
+	void setLotteryhistory(std::vector<obj_lotteryhistory, std::allocator<obj_lotteryhistory>>);
+	void onResolveCCBCCMenuItemSelector(cocos2d::CCObject *, char const*);
+	void onMenuItemInvitationCodeUiClicked(cocos2d::CCObject *);
+	void FindCostType(void);
+	void onMenuItemHideDescNodeClicked(cocos2d::CCObject *);
+	void onMenuItemLoginAwardClicked(cocos2d::CCObject *);
+	void onEnter(void);
+	void onDescAwardTouchUpInsideClicked(cocos2d::CCObject *);
+	void onMenuItemCloseClicked(cocos2d::CCObject *);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *, std::string const&);
+	void ~LoginAwardUI();
+	void checkLuckydrawIsOpen(int *);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *,std::string const&);
+	void editBoxEditingDidEnd(cocos2d::extension::CCEditBox *);
+	void showRemainNumAndMoney(int, int,	int);
+	void showDescNode(int,bool);
+	void setSale(int, int);
+	void setAwardState(int,bool,bool);
+	void initEditBox(void);
+	void create(void);
+	void LoginAwardUI(void);
+	void setImageStata(bool);
+	void editBoxReturn(cocos2d::extension::CCEditBox *);
+	void changeAwardTap(awardTap);
+	void onMenuItemLotteryButtonClicked(cocos2d::CCObject *);
+	void onMenuItemNLotteryClicked(cocos2d::CCObject *);
+	void onMenuItemCloseClicked(cocos2d::CCObject	*);
+	void onMenuItemInvitationCodeClicked(cocos2d::CCObject *);
+	void setshowLotteryView(void);
+	void init(void);
+	void callback(cocos2d::CCNode *);
+	void editBoxTextChanged(cocos2d::extension::CCEditBox *, std::string	const&);
+}
+#endif
