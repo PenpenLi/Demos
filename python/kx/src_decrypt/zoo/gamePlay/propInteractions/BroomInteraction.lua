@@ -1,0 +1,64 @@
+require 'zoo.gamePlay.propInteractions.BaseInteraction'
+require 'zoo.itemView.PropsView'
+
+-- 用于刷子道具
+BroomInteraction = class(BaseInteraction)
+
+function BroomInteraction:ctor(boardView, controller)
+    self.itemPos = nil
+    self.waitingState = BaseInteraction.new()
+    self.touchedState = BaseInteraction.new()
+    self:setCurrentState(self.waitingState)
+end
+
+function BroomInteraction:handleTouchBegin(x, y)
+
+    local touchPos = self.boardView:TouchAt(x, y)
+    if not touchPos then
+        return
+    end
+
+    if not self.boardView.gameBoardLogic:isItemInTile(touchPos.x, touchPos.y) then
+        return
+    end
+
+    if self.currentState == self.waitingState then
+        self.itemPos = {r = touchPos.x, c = touchPos.y}
+        self:setCurrentState(self.touchedState)
+    end
+end
+
+function BroomInteraction:handleTouchMove(x, y)
+
+end
+
+function BroomInteraction:handleTouchEnd(x, y)
+    local touchPos = self.boardView:TouchAt(x, y)
+    if not touchPos then
+        return 
+    end
+
+    if self.currentState == self.touchedState then
+        -- 只有开始和结束在同一个格子，才认为是合法的操作
+        if self.itemPos.r == touchPos.x and self.itemPos.c == touchPos.y then
+            self:handleComplete()
+        else
+            -- 操作失败，或视为用户放弃
+            self:setCurrentState(self.waitingState)
+        end
+    end
+end
+
+function BroomInteraction:onEnter()
+    print('>>> enter BroomInteraction')
+end
+
+function BroomInteraction:onExit()
+    print('--- exit  BroomInteraction')
+end
+
+function BroomInteraction:handleComplete()
+    if self.controller then 
+        self.controller:onInteractionComplete({itemPos = self.itemPos})
+    end
+end
