@@ -14,3 +14,4 @@ if __name__ == '__main__':
     log.w('warning: %s', 'xxxxxx')
     log.e('error message')
     log.c("critical message, exit!")
+    log.i("xxx")
