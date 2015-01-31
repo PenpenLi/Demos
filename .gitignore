@@ -18,5 +18,7 @@ game/build/xcode/*
 game/build/xcode/!*.sh
 game/build/make/*
 game/build/make/!*.sh
-cocos/Billard/cocos2d
-cocos/Billard/proj\.ios_mac/Billard\.xcodeproj/project\.xcworkspace/xcuserdata
+cocos/Billiard++/cocos2d
+qt/DevTools/@bin
+qt/DevTools/@lib
+
