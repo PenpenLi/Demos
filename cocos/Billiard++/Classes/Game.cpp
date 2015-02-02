@@ -8,16 +8,16 @@
 
 #include "Game.h"
 #include "Ball.h"
+#include "Hole.h"
+#include "Border.h"
 #include "cocos2d.h"
+#include "RollingState.h"
+
+#define TEST 1
 
 USING_NS_CC;
 
 Game::Game() {
-    for (int i=0; i<16; ++i) {
-        balls.push_back(new Ball(i));
-    }
-    
-    reset();
 }
 
 Game::~Game() {
@@ -25,6 +25,14 @@ Game::~Game() {
         delete ball;
     }
     balls.clear();
+    for (auto border : borders) {
+        delete border;
+    }
+    borders.clear();
+    for (auto hole : holes) {
+        delete hole;
+    }
+    holes.clear();
 }
 
 void Game::reset() {
@@ -36,5 +44,70 @@ void Game::reset() {
         ball->p = Vec2(CCRANDOM_0_1()*(size.width-Ball::D)+Ball::R,
                        CCRANDOM_0_1()*(size.height-Ball::D)+Ball::R);
         CCLOG("ball%d: {%.2f, %.2f}", ball->ballId, ball->p.x, ball->p.y);
+#if TEST
+        auto v = Vec2(CCRANDOM_0_1(), CCRANDOM_0_1());
+        v.normalize();
+        v.scale(CCRANDOM_0_1()*5+5);
+        ball->v = v;
+        ball->isMoving = true;
+        ball->setState(new RollingState(ball));
+#endif
     }
+}
+
+bool Game::init() {
+    for (int i=0; i<16; ++i) {
+        balls.push_back(new Ball(i));
+    }
+    // todo: borders and holes
+    for (int i=0; i<4; ++i) {
+        borders.push_back(new Border(i));
+    }
+    
+    reset();
+    return true;
+}
+
+void Game::update(float dt) {
+    for (auto ball : balls) {
+        ball->update(dt);
+    }
+    
+    // check wall collision
+    for (auto ball : balls) {
+        auto& v = ball->v;
+        auto& p = ball->p;
+        for (auto border : borders) {
+            auto& n = border->normal();
+            if (v.dot(n)<0.f) {
+                float coord = border->getCoord();
+                switch (border->getType()) {
+                    case Border::Type::LEFT:
+                        if (p.x < coord) {
+                            v.x = -v.x;
+                        }
+                        break;
+                    case Border::Type::RIGHT:
+                        if (p.x > coord) {
+                            v.x = -v.x;
+                        }
+                        break;
+                    case Border::Type::TOP:
+                        if (p.y > coord) {
+                            v.y = -v.y;
+                        }
+                        break;
+                    case Border::Type::BOTTOM:
+                        if (p.y < coord) {
+                            v.y = -v.y;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    
+    // check ball collision
 }

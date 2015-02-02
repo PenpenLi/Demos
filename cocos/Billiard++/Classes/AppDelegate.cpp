@@ -1,5 +1,6 @@
 #include "AppDelegate.h"
 #include "GameManager.h"
+#include "LayoutHelper.h"
 
 USING_NS_CC;
 
@@ -36,11 +37,17 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
+    
+#if (CC_TARGET_PLATFORM==CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM==CC_PLATFORM_MAC)
+    glview->setFrameSize(1136.f, 640.f);
+#endif
+    
+    LayoutHelper::layoutWithDesignResolution(1136.f, 640.f);
 
     // init sigleton
     if (!GM.init()) return false;
     
-    GM.go();
+    GM.createMainScene();
 
     return true;
 }

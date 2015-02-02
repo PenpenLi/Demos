@@ -11,11 +11,11 @@
 
 #include <vector>
 #include "cocos2d.h"
-#include "Game.h"
 
 #define GM (GameManager::getInstance())
 
 class Ball;
+class Game;
 
 class GameManager {
 public:
@@ -28,15 +28,25 @@ public:
     
     void deinit();
     
-    void go();
+    void createMainScene();
     
-    Game game;
+    void startGame();
+    void stopGame();
+    void restartGame();
+    void reset();
+    
+    void update(float dt);
+    
+    Game *game;
 protected:
     GameManager();
     ~GameManager();
     
 private:
     cocos2d::Director *_director;
+    cocos2d::Scheduler *_scheduler;
+    bool _init;
+    
 };
 
 #endif /* defined(__Billiard____GameManager__) */

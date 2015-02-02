@@ -60,7 +60,6 @@
 		5222F3A61A7A73AF00B2F18A /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3A41A7A73AF00B2F18A /* Player.cpp */; };
 		5222F3A91A7A73BB00B2F18A /* Ball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3A71A7A73BA00B2F18A /* Ball.cpp */; };
 		5222F3AC1A7A73E700B2F18A /* Border.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3AA1A7A73E700B2F18A /* Border.cpp */; };
-		5222F3AF1A7A73FF00B2F18A /* Desk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3AD1A7A73FF00B2F18A /* Desk.cpp */; };
 		5222F3B41A7A745A00B2F18A /* GameManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3B21A7A745A00B2F18A /* GameManager.cpp */; };
 		5222F3B71A7A74B700B2F18A /* MainLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3B51A7A74B700B2F18A /* MainLayer.cpp */; };
 		5222F3BA1A7A74C100B2F18A /* GameLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3B81A7A74C100B2F18A /* GameLayer.cpp */; };
@@ -72,11 +71,18 @@
 		5222F3C31A7A85CE00B2F18A /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3A41A7A73AF00B2F18A /* Player.cpp */; };
 		5222F3C41A7A85D100B2F18A /* Ball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3A71A7A73BA00B2F18A /* Ball.cpp */; };
 		5222F3C51A7A85D400B2F18A /* Border.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3AA1A7A73E700B2F18A /* Border.cpp */; };
-		5222F3C61A7A85D700B2F18A /* Desk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3AD1A7A73FF00B2F18A /* Desk.cpp */; };
 		5222F3C91A7A877C00B2F18A /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3C71A7A877C00B2F18A /* Game.cpp */; };
 		5222F3CA1A7A877C00B2F18A /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5222F3C71A7A877C00B2F18A /* Game.cpp */; };
-		5268291D1A7BEAE10092E739 /* Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5268291B1A7BEAE10092E739 /* Math.cpp */; };
-		5268291E1A7BEAE90092E739 /* Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5268291B1A7BEAE10092E739 /* Math.cpp */; };
+		5268291D1A7BEAE10092E739 /* GameMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5268291B1A7BEAE10092E739 /* GameMath.cpp */; };
+		5268291E1A7BEAE90092E739 /* GameMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5268291B1A7BEAE10092E739 /* GameMath.cpp */; };
+		52BEC6EF1A7D141900E73F61 /* State.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6ED1A7D141900E73F61 /* State.cpp */; };
+		52BEC6FC1A7FB6D900E73F61 /* Hole.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6FA1A7FB6D900E73F61 /* Hole.cpp */; };
+		52BEC7001A7FC2CA00E73F61 /* LayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6FE1A7FC2CA00E73F61 /* LayoutHelper.cpp */; };
+		52BEC7011A7FC4C600E73F61 /* LayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6FE1A7FC2CA00E73F61 /* LayoutHelper.cpp */; };
+		52BEC7041A7FC85D00E73F61 /* RollingState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC7021A7FC85D00E73F61 /* RollingState.cpp */; };
+		52BEC7051A7FD81E00E73F61 /* Hole.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6FA1A7FB6D900E73F61 /* Hole.cpp */; };
+		52BEC7061A7FDBD700E73F61 /* RollingState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC7021A7FC85D00E73F61 /* RollingState.cpp */; };
+		52BEC7071A7FDBEB00E73F61 /* State.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BEC6ED1A7D141900E73F61 /* State.cpp */; };
 		BF171245129291EC00B8313A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB012928DE900B8313A /* OpenGLES.framework */; };
 		BF1712471292920000B8313A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB412928DE900B8313A /* libz.dylib */; };
 		BF1C47F01293687400B63C5D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1C47EA1293683800B63C5D /* QuartzCore.framework */; };
@@ -171,8 +177,6 @@
 		5222F3A81A7A73BB00B2F18A /* Ball.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ball.h; sourceTree = "<group>"; };
 		5222F3AA1A7A73E700B2F18A /* Border.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Border.cpp; sourceTree = "<group>"; };
 		5222F3AB1A7A73E700B2F18A /* Border.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Border.h; sourceTree = "<group>"; };
-		5222F3AD1A7A73FF00B2F18A /* Desk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Desk.cpp; sourceTree = "<group>"; };
-		5222F3AE1A7A73FF00B2F18A /* Desk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Desk.h; sourceTree = "<group>"; };
 		5222F3B21A7A745A00B2F18A /* GameManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameManager.cpp; sourceTree = "<group>"; };
 		5222F3B31A7A745A00B2F18A /* GameManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameManager.h; sourceTree = "<group>"; };
 		5222F3B51A7A74B700B2F18A /* MainLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MainLayer.cpp; sourceTree = "<group>"; };
@@ -183,8 +187,17 @@
 		5222F3C01A7A7D2000B2F18A /* GLHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLHelper.cpp; sourceTree = "<group>"; };
 		5222F3C71A7A877C00B2F18A /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
 		5222F3C81A7A877C00B2F18A /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
-		5268291B1A7BEAE10092E739 /* Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Math.cpp; sourceTree = "<group>"; };
-		5268291C1A7BEAE10092E739 /* Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Math.h; sourceTree = "<group>"; };
+		5268291B1A7BEAE10092E739 /* GameMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameMath.cpp; sourceTree = "<group>"; };
+		5268291C1A7BEAE10092E739 /* GameMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameMath.h; sourceTree = "<group>"; };
+		52BEC6ED1A7D141900E73F61 /* State.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = State.cpp; sourceTree = "<group>"; };
+		52BEC6EE1A7D141900E73F61 /* State.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = State.h; sourceTree = "<group>"; };
+		52BEC6FA1A7FB6D900E73F61 /* Hole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Hole.cpp; sourceTree = "<group>"; };
+		52BEC6FB1A7FB6D900E73F61 /* Hole.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hole.h; sourceTree = "<group>"; };
+		52BEC6FD1A7FBA1F00E73F61 /* Config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
+		52BEC6FE1A7FC2CA00E73F61 /* LayoutHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LayoutHelper.cpp; sourceTree = "<group>"; };
+		52BEC6FF1A7FC2CA00E73F61 /* LayoutHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayoutHelper.h; sourceTree = "<group>"; };
+		52BEC7021A7FC85D00E73F61 /* RollingState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RollingState.cpp; sourceTree = "<group>"; };
+		52BEC7031A7FC85D00E73F61 /* RollingState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RollingState.h; sourceTree = "<group>"; };
 		BF170DB012928DE900B8313A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BF170DB412928DE900B8313A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		BF1C47EA1293683800B63C5D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -319,6 +332,8 @@
 		46880B8319C43A87006E1F66 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				52BEC7021A7FC85D00E73F61 /* RollingState.cpp */,
+				52BEC7031A7FC85D00E73F61 /* RollingState.h */,
 				5222F3B11A7A743B00B2F18A /* vc */,
 				5222F3B01A7A742200B2F18A /* Common */,
 				5222F3A31A7A739600B2F18A /* Models */,
@@ -383,10 +398,10 @@
 				5222F3A51A7A73AF00B2F18A /* Player.h */,
 				5222F3A71A7A73BA00B2F18A /* Ball.cpp */,
 				5222F3A81A7A73BB00B2F18A /* Ball.h */,
+				52BEC6FA1A7FB6D900E73F61 /* Hole.cpp */,
+				52BEC6FB1A7FB6D900E73F61 /* Hole.h */,
 				5222F3AA1A7A73E700B2F18A /* Border.cpp */,
 				5222F3AB1A7A73E700B2F18A /* Border.h */,
-				5222F3AD1A7A73FF00B2F18A /* Desk.cpp */,
-				5222F3AE1A7A73FF00B2F18A /* Desk.h */,
 				5222F3C71A7A877C00B2F18A /* Game.cpp */,
 				5222F3C81A7A877C00B2F18A /* Game.h */,
 			);
@@ -396,12 +411,17 @@
 		5222F3B01A7A742200B2F18A /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				52BEC6FE1A7FC2CA00E73F61 /* LayoutHelper.cpp */,
+				52BEC6FF1A7FC2CA00E73F61 /* LayoutHelper.h */,
 				5222F3BF1A7A7D2000B2F18A /* GLHelper.h */,
 				5222F3C01A7A7D2000B2F18A /* GLHelper.cpp */,
 				5222F3B21A7A745A00B2F18A /* GameManager.cpp */,
 				5222F3B31A7A745A00B2F18A /* GameManager.h */,
-				5268291B1A7BEAE10092E739 /* Math.cpp */,
-				5268291C1A7BEAE10092E739 /* Math.h */,
+				5268291B1A7BEAE10092E739 /* GameMath.cpp */,
+				5268291C1A7BEAE10092E739 /* GameMath.h */,
+				52BEC6ED1A7D141900E73F61 /* State.cpp */,
+				52BEC6EE1A7D141900E73F61 /* State.h */,
+				52BEC6FD1A7FBA1F00E73F61 /* Config.h */,
 			);
 			name = Common;
 			sourceTree = "<group>";
@@ -563,12 +583,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5222F3AF1A7A73FF00B2F18A /* Desk.cpp in Sources */,
-				5268291D1A7BEAE10092E739 /* Math.cpp in Sources */,
+				52BEC6FC1A7FB6D900E73F61 /* Hole.cpp in Sources */,
+				5268291D1A7BEAE10092E739 /* GameMath.cpp in Sources */,
+				52BEC6EF1A7D141900E73F61 /* State.cpp in Sources */,
 				5222F3A91A7A73BB00B2F18A /* Ball.cpp in Sources */,
+				52BEC7041A7FC85D00E73F61 /* RollingState.cpp in Sources */,
 				5222F3B71A7A74B700B2F18A /* MainLayer.cpp in Sources */,
 				46880B8819C43A87006E1F66 /* AppDelegate.cpp in Sources */,
 				503AE10017EB989F00D1A890 /* AppController.mm in Sources */,
+				52BEC7001A7FC2CA00E73F61 /* LayoutHelper.cpp in Sources */,
 				5222F3B41A7A745A00B2F18A /* GameManager.cpp in Sources */,
 				5222F3C11A7A7D2000B2F18A /* GLHelper.cpp in Sources */,
 				5222F3C91A7A877C00B2F18A /* Game.cpp in Sources */,
@@ -586,14 +609,17 @@
 			files = (
 				5222F3C21A7A7D2000B2F18A /* GLHelper.cpp in Sources */,
 				5222F3C31A7A85CE00B2F18A /* Player.cpp in Sources */,
+				52BEC7071A7FDBEB00E73F61 /* State.cpp in Sources */,
 				5222F3C51A7A85D400B2F18A /* Border.cpp in Sources */,
-				5268291E1A7BEAE90092E739 /* Math.cpp in Sources */,
+				5268291E1A7BEAE90092E739 /* GameMath.cpp in Sources */,
 				46880B8919C43A87006E1F66 /* AppDelegate.cpp in Sources */,
-				5222F3C61A7A85D700B2F18A /* Desk.cpp in Sources */,
 				5222F3BC1A7A78B400B2F18A /* GameLayer.cpp in Sources */,
 				5222F3C41A7A85D100B2F18A /* Ball.cpp in Sources */,
 				5222F3CA1A7A877C00B2F18A /* Game.cpp in Sources */,
 				5222F3BD1A7A78B700B2F18A /* MainLayer.cpp in Sources */,
+				52BEC7011A7FC4C600E73F61 /* LayoutHelper.cpp in Sources */,
+				52BEC7051A7FD81E00E73F61 /* Hole.cpp in Sources */,
+				52BEC7061A7FDBD700E73F61 /* RollingState.cpp in Sources */,
 				5222F3BB1A7A78B100B2F18A /* GameManager.cpp in Sources */,
 				503AE10517EB98FF00D1A890 /* main.cpp in Sources */,
 			);

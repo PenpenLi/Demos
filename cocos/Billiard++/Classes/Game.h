@@ -12,15 +12,23 @@
 #include <vector>
 
 class Ball;
+class Border;
+class Hole;
 
 class Game {
 public:
     Game();
     ~Game();
     
+    bool init();
+    
     void reset();
     
-    std::vector<Ball*> balls;
+    std::vector<Ball*>      balls;
+    std::vector<Border*>    borders;
+    std::vector<Hole*>      holes;
+    
+    void update(float dt);
 };
 
 #endif /* defined(__Billiard____Game__) */

@@ -10,6 +10,7 @@
 #include "Ball.h"
 #include "GameManager.h"
 #include "GLHelper.h"
+#include "Game.h"
 
 USING_NS_CC;
 
@@ -77,19 +78,13 @@ void GameLayer::onDraw(const Mat4& transform, uint32_t flags)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     
-    auto& balls = GM.game.balls;
+    auto& balls = GM.game->balls;
     for (auto i=0; i<balls.size(); ++i) {
         auto ball = balls[i];
         auto& p = ball->p;
         auto& w = ball->w;
         auto& v = ball->v;
         
-        if (ball->isMoving) {
-            Quaternion nw(Vec3(-v.y, v.x, 0), 1);
-            nw.normalize();
-            nw.multiply(w);
-            ball->w = nw;
-        }
         {
             //---------------------------------------------------------------------------
             // draw ball, push

@@ -8,6 +8,7 @@
 
 #include "MainLayer.h"
 #include "GameLayer.h"
+#include "GameManager.h"
 
 USING_NS_CC;
 
@@ -29,6 +30,8 @@ bool MainLayer::init() {
 
 void MainLayer::onEnter() {
     Layer::onEnter();
+    
+    GM.startGame();
 }
 
 void MainLayer::onExit() {
