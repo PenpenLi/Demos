@@ -10,6 +10,7 @@ AppDelegate::AppDelegate() {
 
 AppDelegate::~AppDelegate() 
 {
+    GM.deinit();
 }
 
 //if you want a different context,just modify the value of glContextAttrs

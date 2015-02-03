@@ -56,12 +56,19 @@ void Game::reset() {
 }
 
 bool Game::init() {
+    balls.clear();
+    borders.clear();
+    holes.clear();
     for (int i=0; i<16; ++i) {
-        balls.push_back(new Ball(i));
+        auto ball = new Ball(i);
+        CCASSERT(ball, "new Ball error!");
+        balls.push_back(ball);
     }
     // todo: borders and holes
     for (int i=0; i<4; ++i) {
-        borders.push_back(new Border(i));
+        auto border = new Border(i);
+        CCASSERT(border, "new Border error!");
+        borders.push_back(border);
     }
     
     reset();

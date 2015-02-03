@@ -83,7 +83,7 @@ void GameLayer::onDraw(const Mat4& transform, uint32_t flags)
         auto ball = balls[i];
         auto& p = ball->p;
         auto& w = ball->w;
-        auto& v = ball->v;
+        CC_UNUSED auto& v = ball->v;
         
         {
             //---------------------------------------------------------------------------

@@ -45,8 +45,11 @@ bool GameManager::init() {
 }
 
 void GameManager::deinit() {
+    stopGame();
+    _init = false;
     CC_SAFE_DELETE(game);
     CC_SAFE_RELEASE_NULL(_director);
+    _scheduler = nullptr;
 }
 
 void GameManager::createMainScene() {
