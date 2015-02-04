@@ -22,3 +22,6 @@ cocos/Billiard++/cocos2d
 qt/DevTools/@bin
 qt/DevTools/@lib
 
+cocos/Billiard++/proj.ios_mac/Billiard++.xcodeproj/project.xcworkspace/xcuserdata/*
+
+*.xcuserstate
