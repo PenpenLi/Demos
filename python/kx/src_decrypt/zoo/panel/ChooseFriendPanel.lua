@@ -96,8 +96,12 @@ function ChooseFriendItem:setUserName( name )
 	self.nameLabel:setString(tostring(name))
 end
 
-local function createChooseFriendList(onTileItemTouch, minWidth, minHeight, exceptIds, view)
+local function createChooseFriendList(onTileItemTouch, minWidth, minHeight, exceptIds, view, shareNotilist)
 	local friend = FriendManager.getInstance().friends
+	if shareNotilist then 
+		friend = shareNotilist
+	end
+
 	--print("friends", table.tostring(friend))
 	local friendList = {}
 	local function have(id) for k, v in ipairs(exceptIds) do if v == id then return true end end end
@@ -210,7 +214,7 @@ function ChooseFriendPanel:init(onConfirmCallback, exceptIds)
 		end
 	end
 	local list = VerticalScrollable:create(630, listHeight, true, false)
-	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, listHeight, exceptIds, list)--Sprite:create("materials/logo.png")
+	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, listHeight, exceptIds, list, self.shareNotiList)--Sprite:create("materials/logo.png")
 	if numberOfFriends > 0 then
 		list:setContent(content)
 		list:setPositionXY(listPos.x, listPos.y - 15)

@@ -18,25 +18,32 @@ function ConsumeTipPanel:init( props )
 	self.ui = self:buildInterfaceGroup("consumeTip/panel")
 	BasePanel.init(self, self.ui)
 
-	text= self.ui:getChildByName("text")
+	local text= self.ui:getChildByName("text")
 	self._text = text 
 	local string = Localization:getInstance():getText("consume.tip.panel.text.1",{n=props})
+	text:setDimensions(CCSizeMake(0,0))
 	self:setText(string)
 	-- text:setAnchorPoint(ccp(0,0.5))
 	-- text:setPositionY(text:boundingBox():getMidY())
-	-- text:setDimensions(CCSizeMake(text:getDimensions().width,0))
+	local size = text:getContentSize()
+	local bg = self.ui:getChildByName("bg")
+	if bg then
+		local bgSize = bg:getGroupBounds().size
+		text:setPositionX((bgSize.width - size.width) / 2)
+	end
+
 
 	local text2 = self.ui:getChildByName("text2")
 	local icon = self.ui:getChildByName("icon")
 
-	if MaintenanceManager:getInstance():isEnabled("CustomerServicePhone") then
+	if ConsumeHistoryPanel.isShowCustomerPhone() then
 		text2:setString(Localization:getInstance():getText("consume.tip.panel.text.2"))
 		text2:setAnchorPoint(ccp(0,0.5))
 		text2:setPositionY(icon:boundingBox():getMidY())
 		text2:setDimensions(CCSizeMake(text2:getDimensions().width,0))
 	else
 		icon:setVisible(false)
-		text:setPositionX(text:getPositionX() - 25)
+		-- text:setPositionX(text:getPositionX() - 25)
 		text:setPositionY(text:getPositionY() - 20)
 	end
 

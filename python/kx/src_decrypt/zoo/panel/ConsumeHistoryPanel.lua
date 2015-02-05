@@ -6,6 +6,17 @@ local pageSize = 20
 
 ConsumeHistoryPanel = class(BasePanel)
 
+function ConsumeHistoryPanel.isShowCustomerPhone( ... )
+	if MaintenanceManager:getInstance():isEnabled("CustomerServicePhone") then
+		return true
+	end
+	local province = Cookie.getInstance():read(CookieKey.kLocationProvince)
+	if table.includes({"河北","山东","辽宁","湖北"},province) then
+		return true
+	end
+	return false 
+end
+
 function ConsumeHistoryPanel:create( ... )
 	local panel = ConsumeHistoryPanel.new()
 	panel:loadRequiredResource("ui/consume_history.json")
@@ -54,7 +65,7 @@ function ConsumeHistoryPanel:init( ... )
 	-- "仅显示最近两个月消费记录"
 	-- desc:setString(Localization:getInstance():getText("consume.history.panel.desc"))	
 	
-	if MaintenanceManager:getInstance():isEnabled("CustomerServicePhone") or true then 
+	if self.isShowCustomerPhone() then 
 		desc2:setString(Localization:getInstance():getText("consume.history.panel.desc1",{n="\n"}))	
 		local height = desc2:getDimensions().height
 		desc2:setDimensions(CCSizeMake(desc2:getDimensions().width,0))

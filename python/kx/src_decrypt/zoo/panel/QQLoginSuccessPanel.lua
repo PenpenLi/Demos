@@ -82,6 +82,10 @@ function QQLoginSuccessPanel:popout(...)
 	self.allowBackKeyTap = true
 end
 
+function QQLoginSuccessPanel:setCloseButtonCallback( func )
+	self.closeButtonCallback = func
+end
+
 function QQLoginSuccessPanel:onCloseBtnTapped(...)
 	assert(#{...} == 0)
 
@@ -92,6 +96,10 @@ function QQLoginSuccessPanel:onCloseBtnTapped(...)
 	if scene then 
 		local homeScene = tolua.cast(scene,"HomeScene")
 		if homeScene then homeScene:updateButtons() end
+	end
+
+	if type(self.closeButtonCallback) == "function" then
+		self.closeButtonCallback()
 	end
 end
 

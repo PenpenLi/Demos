@@ -389,6 +389,15 @@ function UserExtendRef:setFlagBit(bitIndex, setToTrue)
 	return self.flag
 end
 
+function UserExtendRef:getLastPayTime()
+	return self.lastPayTime or 0
+end
+
+function UserExtendRef:setLastPayTime(time)
+	if type(time) == "number" then
+		self.lastPayTime = time
+	end
+end
 
 function UserExtendRef:fromLua( src )
 	if not src then
@@ -460,6 +469,30 @@ function PropRef:encode()
 	local dst = {}
 	dst.itemId = self.itemId
 	dst.num = self:getNum()
+	return dst
+end
+
+------------------------
+-- 限时道具
+------------------------
+TimePropRef = class(DataRef)
+function TimePropRef:ctor( ... )
+	self.itemId = 0
+	self.num = 0
+	self.expireTime = 0
+end
+
+function TimePropRef:fromLua(src)
+	self.itemId = src.itemId
+	self.num = src.num or 1 -- 现在没有数量，默认1
+	self.expireTime = tonumber(src.expireTime)
+end
+
+function TimePropRef:encode()
+	local dst = {}
+	dst.itemId = self.itemId
+	dst.num = self.num
+	dst.expireTime = self.expireTime
 	return dst
 end
 

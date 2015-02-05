@@ -852,7 +852,7 @@ function FruitLogic:instantUpgrade(id, successCallback, failCallback)
 	if enough then
 		local tab = {}
 		for i = 1, num do table.insert(tab, 10029) end
-		local logic = UsePropsLogic:create(false, 0, id, tab)
+		local logic = UsePropsLogic:create(UsePropsType.NORMAL, 0, id, tab)
 		logic:setSuccessCallback(onSuccess)
 		logic:setFailedCallback(onFail)
 		logic:start(true)

@@ -37,9 +37,10 @@ function BonusAutoBombState:update(dt)
 	self.timeCount = self.timeCount + 1
 	if self.timeCount >= GamePlayConfig_BonusTime_RandomBomb_CD then
 		self.timeCount = 0
-		if not BombItemLogic:BonusTime_RandomBombOne(self.mainLogic, true) then 			----没有可以引爆的了
+		local result = BombItemLogic:BonusTime_RandomBombOne(self.mainLogic, true)
+		if not result then
 			self.nextState = self:getNextState()
-			if not self.hasItemToHandle then
+			if self.mainLogic.isFallingStable and self.mainLogic.isFallingStablePreFrame then
 				self.context:onEnter()
 			end
 		end
@@ -51,11 +52,9 @@ function BonusAutoBombState:checkTransition()
 end
 
 function BonusAutoBombState:getClassName( ... )
-	-- body
 	return "BonusAutoBombState"
 end
 
 function BonusAutoBombState:getNextState( ... )
-	-- body
 	return self.context.roostReplaceStateInBonusFirst
 end

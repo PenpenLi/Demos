@@ -30,6 +30,7 @@ require "zoo.animation.TileHoneyBottle"
 require "zoo.animation.TileHoney"
 require "zoo.animation.TileAddTime"
 require "zoo.animation.TileMagicTile"
+require "zoo.animation.TileSand"
 
 ItemView = class{}
 
@@ -43,29 +44,31 @@ ItemSpriteType = table.const
 	kTileBlocker = 2,       -- 翻转地格, 传送带, 海洋生物
 	kSnailRoad = 3,         --蜗牛轨迹
 	kRabbitCaveDown = 4,    --兔子洞穴
-	kLight = 5,				-- 冰层
-	kItemBack = 6,			-- 鸟的特效
-	kItem = 7,				-- 物品--动物
-	kItemShow = 8,			-- 物品特效--某个动物的动画，或者是消除特效
-	kDigBlocker = 9,		-- 地块和宝石
-	kItemDestroy = 10,		-- 物品消除特效层---一个雪花	
-	kClipping = 11,			-- 生成口、传送门出口遮罩
-	kEnterClipping = 12,	    -- 传送门入口遮罩
-	kRabbitCaveUp = 13,    --兔子洞穴上层
-	kRope = 14,				-- 绳子
-	kLock = 15,				-- 笼子
-	kFurBall = 16,			-- 毛球, 蜂蜜
-	kBigMonster = 17,       -- 雪怪
-	kLockShow = 18,			-- 笼子消除
-	kSnowShow = 19,			-- 雪花消除
-	kNormalEffect = 20,     -- 毛球消除，毒液扩散, 雪怪的冰层等
-	kTransClipping = 21,    -- 传送带遮罩
-	kPass = 22,	            -- 通道
-	kTransmissionDoor = 23,  -- 传送带出入口
-	kSpecial = 24,			-- 鸟飞行,刷新飞行
-	kRoostFly = 25,			-- 鸡窝飞行,与刷新飞行冲突
-	kSnailMove = 26,       
-	kLast = 27				-- 最上层--------添加层次时请保持这个在最前
+	kSand = 5,			    -- 流沙动画
+	kSandMove = 6,			-- 流沙动画
+	kLight = 7,				-- 冰层, 流沙
+	kItemBack = 8,			-- 鸟的特效
+	kItem = 9,				-- 物品--动物
+	kItemShow = 10,			-- 物品特效--某个动物的动画，或者是消除特效qq
+	kDigBlocker = 11,		-- 地块和宝石
+	kItemDestroy = 12,		-- 物品消除特效层---一个雪花	
+	kClipping = 13,			-- 生成口、传送门出口遮罩
+	kEnterClipping = 14,	    -- 传送门入口遮罩
+	kRabbitCaveUp = 15,    --兔子洞穴上层
+	kRope = 16,				-- 绳子
+	kLock = 17,				-- 笼子
+	kFurBall = 18,			-- 毛球, 蜂蜜
+	kBigMonster = 19,       -- 雪怪
+	kLockShow = 20,			-- 笼子消除
+	kSnowShow = 21,			-- 雪花消除
+	kNormalEffect = 22,     -- 毛球消除，毒液扩散, 雪怪的冰层等
+	kTransClipping = 23,    -- 传送带遮罩
+	kPass = 24,	            -- 通道
+	kTransmissionDoor = 25,  -- 传送带出入口
+	kSpecial = 26,			-- 鸟飞行,刷新飞行
+	kRoostFly = 27,			-- 鸡窝飞行,与刷新飞行冲突
+	kSnailMove = 28,       
+	kLast = 29				-- 最上层--------添加层次时请保持这个在最前
 }
 
 local Max_Item_Y = GamePlayConfig_Max_Item_Y
@@ -157,6 +160,10 @@ function ItemView:initByBoardData(data)
 		self:buildRabbitCave()
 	end
 
+	if data.sandLevel > 0 then
+		self.itemSprite[ItemSpriteType.kSand] = ItemViewUtils:buildSand(data.sandLevel)
+	end
+	
 	if data.iceLevel > 0 then		 --冰
 		self.itemSprite[ItemSpriteType.kLight] = ItemViewUtils:buildLight(data.iceLevel, data.gameModeId)
 	end
@@ -176,8 +183,6 @@ function ItemView:initByBoardData(data)
 	if data.isHalloweenBottle then
 		self:buildHalloweenBoss()
 	end
-
-	
 
 	if data:hasPortal() then		--通道
 		local possImage = nil;
@@ -664,17 +669,19 @@ function ItemView:playFlyingBirdEffect(r, c, delaytime, flyingtime)
 end
 
 ----播放冰层消除特效----
-function ItemView:playIceDecEffect()
+function ItemView:playIceDecEffect(callback)
 	local pos = self:getBasePosition(self.x,self.y);
 	pos.x = pos.x + GamePlayConfig_IceDeleted_Pos_Add_X;
 	pos.y = pos.y + GamePlayConfig_IceDeleted_Pos_Add_Y;
-	local sprite = ItemViewUtils:buildLighttAction();
+	local sprite = ItemViewUtils:buildLighttAction(callback);
 	sprite:setPosition(pos);
 
 	----播放消除特效----
 	if self.itemSprite[ItemSpriteType.kLight] ~= nil then
 		if self.itemSprite[ItemSpriteType.kLight]:getParent() ~= nil then
 			self.itemSprite[ItemSpriteType.kLight]:getParent():addChild(sprite);
+		else
+			if callback then callback() end
 		end
 	elseif self.itemPanel[ItemSpriteType.kLight] ~= nil then ----最后一层冰被干掉了，要靠辅助记录的Panel来添加特效
 		self.itemPanel[ItemSpriteType.kLight]:addChild(sprite);
@@ -1172,8 +1179,8 @@ function ItemView:updateByNewItemData(data)
 	----------------------------------蜗牛------------------------------
 	if data.isSnail then 
 		if self.oldData and (self.oldData.isSnail ~= data.isSnail) then
-			self:removeItemSpriteGameItem();
-			self:buildSnail(data.snailRoadType)
+			-- self:removeItemSpriteGameItem();
+			-- self:buildSnail(data.snailRoadType)
 		end
 	end
 
@@ -2011,7 +2018,7 @@ function ItemView:playChangeCrystalColor(color)
 	local spritenew = ItemViewUtils:buildCrystal(color);
 	local spriteold = self.itemSprite[ItemSpriteType.kItem];
 	local changeLight = Sprite:createWithSpriteFrameName("crystal_anim0000")
-	local changeFrame = SpriteUtil:buildFrames("crystal_anim%04d", 0, 28)
+	local changeFrame = SpriteUtil:buildFrames("crystal_anim%04d", 0, 20)
 	local changeAnim = SpriteUtil:buildAnimate(changeFrame, kCharacterAnimationTime)
 	if spriteold then
 		if spriteold:getParent() then
@@ -2572,7 +2579,13 @@ function ItemView:playSnailOutShellAnimation(direction, callback)
 		self.itemSprite[ItemSpriteType.kSnailMove] = nil
 		self:cleanGameItemView()
 		self:buildSnail(direction)
-		self.isNeedUpdate = true
+		if self.itemPanel ~= nil and self.itemPanel[ItemSpriteType.kItemShow] ~= nil then 
+			self.itemPanel[ItemSpriteType.kItemShow]:addChild(self.itemSprite[ItemSpriteType.kItemShow]);
+		else
+			self.isNeedUpdate = true;
+		end
+
+		-- self.isNeedUpdate = true
 		if callback then callback() end
 	end
 	if item then
@@ -2657,6 +2670,7 @@ end
 
 local needTransLayer = table.const{
 	ItemSpriteType.kTileBlocker,
+	ItemSpriteType.kSand,
 	ItemSpriteType.kLight,
 	ItemSpriteType.kItem, 
 	ItemSpriteType.kItemShow,
@@ -2708,13 +2722,16 @@ function ItemView:transToNext(dp, callback)
 end
 
 
-
 function ItemView:createTransClippingSprite(itemData, boardData)
 	local container = Sprite:createEmpty()
 	if boardData.transType > 0 then
 		local board = Sprite:createWithSpriteFrameName("trans_board")
 		board:setRotation((boardData.transDirect - 1) * 90)
 		container:addChild(board)
+	end
+
+	if boardData.sandLevel > 0 then
+		container:addChild(ItemViewUtils:buildSand(boardData.sandLevel))
 	end
 
 	if boardData.iceLevel > 0 then		 --冰
@@ -2788,7 +2805,6 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		honey:normal()
 		container:addChild(honey)
 	end
-
 
 	return container
 end
@@ -3064,5 +3080,76 @@ end
 function ItemView:clearHalloweenBoss()
 	self.itemSprite[ItemSpriteType.kNormalEffect]:removeFromParentAndCleanup(true)
 	self.itemSprite[ItemSpriteType.kNormalEffect] = nil
+end
 
+function ItemView:addSandView(sandLevel)
+	local sprite = ItemViewUtils:buildSand(sandLevel)
+	local pos = self:getBasePosition(self.x, self.y)
+	sprite:setPosition(pos)
+	self.itemSprite[ItemSpriteType.kSand] = sprite
+	self.isNeedUpdate = true
+end
+
+function ItemView:playSandClean(callback)
+	local sprite = self.itemSprite[ItemSpriteType.kSand]
+	if sprite then 
+		sprite:stopAllActions()
+		sprite:removeFromParentAndCleanup(true) 
+	end
+
+	local function onAnimationFinished()
+		if self.itemSprite[ItemSpriteType.kSand] then
+			-- self.itemSprite[ItemSpriteType.kSand]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kSand] = nil
+		end
+		if callback then callback() end
+	end
+
+	local texture
+	if self.itemPanel[ItemSpriteType.kSand] then 
+		texture = self.itemPanel[ItemSpriteType.kSand].refCocosObj:getTexture()
+	end
+	local anim, posOffset = TileSand:buildCleanAnim(onAnimationFinished, texture)
+	if not anim then
+		print("build sand clean animation failed~")
+		return
+	end
+	posOffset = posOffset or {x=0, y=0}
+	local basePos = self:getBasePosition(self.x, self.y)
+	anim:setPosition(ccp(basePos.x + posOffset.x, basePos.y + posOffset.y))
+
+	self.itemSprite[ItemSpriteType.kSand] = anim
+	self.isNeedUpdate = true
+end
+
+function ItemView:playSandMoveAnim(callback, direction)
+	assert(direction)
+	local function onAnimationFinished()
+		if callback and type(callback)=="function" then callback() end
+	end
+
+	local sprite = self.itemSprite[ItemSpriteType.kSand]
+	if sprite then
+		sprite:stopAllActions()
+		sprite:removeFromParentAndCleanup(true)
+
+		self.itemSprite[ItemSpriteType.kSand] = nil
+	else
+		print("itemSprite[ItemSpriteType.kSand] not exist")
+		onAnimationFinished()
+		return
+	end
+
+	local anim, posOffset = TileSand:buildMoveAnim(direction, onAnimationFinished)
+	if not anim then
+		print("build sand move animation failed~")
+		onAnimationFinished()
+		return
+	end
+	posOffset = posOffset or {x=0, y=0}
+	local basePos = self:getBasePosition(self.x, self.y)
+	anim:setPosition(ccp(basePos.x + posOffset.x, basePos.y + posOffset.y))
+
+	self.itemSprite[ItemSpriteType.kSandMove] = anim
+	self.isNeedUpdate = true
 end

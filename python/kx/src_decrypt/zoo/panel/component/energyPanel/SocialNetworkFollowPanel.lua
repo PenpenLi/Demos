@@ -129,7 +129,7 @@ function SocialNetworkFollowPanel:_calcPosition()
 	print("selfParent", selfParent)
 	if selfParent and self.maxTopPosYInWorldSpace then
 		local pos = selfParent:convertToNodeSpace(ccp(vOrigin.x + deltaWidth / 2, self.maxTopPosYInWorldSpace))
-		local manualAdjustPosY = 140
+		local manualAdjustPosY = 95
 		self:setPosition(ccp(pos.x, pos.y + manualAdjustPosY))
 	end
 

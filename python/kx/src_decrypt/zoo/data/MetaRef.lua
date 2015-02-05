@@ -1027,6 +1027,7 @@ function PropMetaRef:ctor()
 	self.unlock = 0
 	self.useable = false
 	self.value = 0
+	self.expireTime = 0
 end
 function PropMetaRef:fromLua( src )
 	if not src then

@@ -1168,8 +1168,30 @@ function LevelTargetAnimation:updateSeaOrderTargets()
 				if itemNum <= 0 then self:finish() end
 
 				if animate and globalPosition and self.icon then
-
-					getAnimation(self, itemId, itemNum, globalPosition, rotation)
+                    if rotation ~= nil then -- 目标是海洋生物
+    					getAnimation(self, itemId, itemNum, globalPosition, rotation)
+                    else -- 目标不是海洋生物
+                        local cloned = self.icon:clone(true)
+                        local targetPos = self:getParent():convertToNodeSpace(globalPosition)
+                        local position = cloned:getPosition()
+                        local tx, ty = position.x, position.y
+                        local function onIconScaleFinished()
+                            cloned:removeFromParentAndCleanup(true)
+                        end 
+                        local function onIconMoveFinished()         
+                            self:getChildByName("label"):setString(tostring(itemNum or 0))
+                            context:playLeafAnimation(true)
+                            context:playLeafAnimation(false)
+                            shakeObject(self)
+                            local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
+                            cloned:setOpacity(255)
+                            cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
+                        end 
+                        local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
+                        local moveOut = CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150))
+                        cloned:setPosition(targetPos)
+                        cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
+                    end
 				else
 					self:getChildByName("label"):setString(tostring(itemNum or 0))
 				end

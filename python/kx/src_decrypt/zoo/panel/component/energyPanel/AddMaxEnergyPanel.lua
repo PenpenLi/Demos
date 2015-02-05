@@ -387,7 +387,7 @@ function AddMaxEnergyPanel:positionSelf(...)
 		local pos = selfParent:convertToNodeSpace(ccp(visibleOrigin.x + deltaWidth/2, 
 								self.maxTopPosYInWorldSpace))
 
-		local manualAdjustPosY		= 140
+		local manualAdjustPosY		= 80
 		self:setPosition(ccp(pos.x, pos.y + manualAdjustPosY))
 	end
 

@@ -12,7 +12,7 @@ function Processor:start(platform)
     end
 
     _G.kPlayAsGuest = true
-    if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then 
+    if PlatformConfig:isQQPlatform() then 
         local panel = QueryDialogPanel:create(
             Localization:getInstance():getText("loading.tips.start.btn.guest", {platform=platform}),
             Localization:getInstance():getText("loading.tips.guest.mode.warnning", {platform=platform}),

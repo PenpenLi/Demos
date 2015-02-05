@@ -241,10 +241,9 @@ end
 
 function MarkRemindRemarkAnim:_init(position, require, reward)
 	self:initLayer()
-	local builder = InterfaceBuilder:createWithContentsOfFile("flash/gameguide/guideelem.json")
-	local panel = builder:buildGroup("guide_info_panelM")
+	local panel = ResourceManager:sharedInstance():buildGroup("guide_info_panelM")
 	local text = panel:getChildByName("text")
-	text:setText(Localization:getInstance():getText("mark.panel.noti.remark.text",
+	text:setString(Localization:getInstance():getText("mark.panel.noti.remark.text",
 		{need = require, reward = reward, n = '\n'}))
 	panel:setPositionXY(-900, 0)
 	local arr = CCArray:create()

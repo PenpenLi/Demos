@@ -4,7 +4,8 @@ SpecialCoverLogic = class{}
 
 -----在某个位置引起了特效消除-----减除冰层，减除牢笼，减除雪花等等效果
 -- covertype : 1: 上下影响  2：左右影响  3：四周影响
-function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreScale, actId)
+-- noCD: 为false挖地、宝石一帧内多次调用会只调用一次， 为true会多次调用
+function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreScale, actId, noCD)
 	-----成功消除时候会影响周围的东西
 	if SpecialCoverLogic:canEffectAround(mainLogic, r, c) then
 		if covertype == 1 then
@@ -22,7 +23,7 @@ function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreSc
 	end
 
 	if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
-		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
+		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD)
 	end
 end
 
@@ -30,16 +31,51 @@ function SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale,
 	if SpecialCoverLogic:canEffectLightUpAt(mainLogic, r, c, canEffectCoin) then
 		SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
 	end
+	-- 流沙与冰块类似
+	if SpecialCoverLogic:canEffectSandAtPos(mainLogic, r, c, false) then
+		SpecialCoverLogic:doEffectSandAtPos(mainLogic, r, c)
+	end
+end
+
+function SpecialCoverLogic:doEffectSandAtPos(mainLogic, r, c)
+	local board = mainLogic.boardmap[r][c]
+	board.sandLevel = board.sandLevel - 1
+	----1-3.播放特效
+	local sandCleanAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItem_Sand_Clean,
+		IntCoord:create(r,c),				
+		nil,				
+		GamePlayConfig_MaxAction_time)
+	mainLogic:addDestroyAction(sandCleanAction)
+	mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kSand, 1)
+
+	local addScore = GamePlayConfig_Score_Sand_Clean
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+
+	local ScoreAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemScore_Get,
+		IntCoord:create(r,c),				
+		nil,				
+		1)
+	ScoreAction.addInt = addScore
+	ScoreAction.addInt2 = 2
+	mainLogic:addGameAction(ScoreAction)
 end
 
 function SpecialCoverLogic:canEffectLightUpAt(mainLogic, r, c, canEffectCoin)
+	if mainLogic.theGamePlayType ~= GamePlayType.kLightUp
+		and mainLogic.theGamePlayType ~= GamePlayType.kSeaOrder then 
+		return false
+	end
 	if not mainLogic:isPosValid(r, c) then
 		return false
 	end
 	local board = mainLogic.boardmap[r][c];
 	local item = mainLogic.gameItemMap[r][c]
 	if board.iceLevel > 0 then
-		if item and item.isUsed and not item.isBlock and not item:hasFurball() and not item:hasLock() and not item.isEmpty then
+		if item and item:canEffectLightUp() then
 			if item.ItemType == GameItemType.kCoin and not canEffectCoin then 
 				return false
 			else
@@ -49,7 +85,6 @@ function SpecialCoverLogic:canEffectLightUpAt(mainLogic, r, c, canEffectCoin)
 	end 
 	return false
 end
-
 
 ----可以被此处的Special影响到---
 function SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c)
@@ -70,11 +105,12 @@ function SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c)
 		or item.beEffectByMimosa
 		or item.ItemType == GameItemType.kBoss
 		or item.ItemType == GameItemType.kHoneyBottle
+		or item.ItemType == GameItemType.kMagicLamp
 		then
-		return true;
+		return true
 	end
 
-	return false;
+	return false
 end
 
 ----是否可以引起周围的消除----
@@ -113,21 +149,13 @@ function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c
 		or item.ItemType == GameItemType.kDigGround
 		or item.ItemType == GameItemType.kDigJewel)
 		or item.honeyLevel > 0 
-		-- or item.ItemType == GameItemType.kBlackCuteBall
 		then
 		return true
 	end
 	return false
 end
 
-
-
 function SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
-	if mainLogic.theGamePlayType ~= GamePlayType.kLightUp
-	and mainLogic.theGamePlayType ~= GamePlayType.kSeaOrder then 
-		return 
-	end
-
 	if not mainLogic:isPosValid(r, c) then 
 		return false 
 	end
@@ -160,8 +188,8 @@ function SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
 			GameItemActionType.kItemMatchAt_IceDec,
 			IntCoord:create(r,c),	
 			nil,	
-			1)
-		mainLogic:addGameAction(IceAction)
+			GamePlayConfig_MaxAction_time)
+		mainLogic:addDestroyAction(IceAction)
 		item.isNeedUpdate = true
 		board.isNeedUpdate = true
 
@@ -173,11 +201,30 @@ function SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
 	end
 end
 
+function SpecialCoverLogic:canEffectSandAtPos(mainLogic, r, c, canEffectCoin)
+	if not mainLogic:isPosValid(r, c) then
+		return false
+	end
+	local board = mainLogic.boardmap[r][c];
+	local item = mainLogic.gameItemMap[r][c]
+	if board.sandLevel > 0 then
+		if item and item:canEffectLightUp() then
+			if item.ItemType == GameItemType.kCoin and not canEffectCoin then 
+				return false
+			else
+				return true
+			end
+		end
+	end 
+	return false
+end
+
 function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 	if r<=0 or r>#mainLogic.boardmap or c<=0 or c>#mainLogic.boardmap[r] then return false end;
 
 	local item = mainLogic.gameItemMap[r][c];
 	local board = mainLogic.boardmap[r][c];
+	local hasLockOrigin = item:hasLock()
 
 	scoreScale = scoreScale or 1
 	------1.牢笼变化------
@@ -294,12 +341,16 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 		end
 	elseif item.digGroundLevel > 0 then
 		if item.digBlockCanbeDelete then
-			item.digBlockCanbeDelete = false
+			if not noCD then 
+				item.digBlockCanbeDelete = false
+			end
 			GameExtandPlayLogic:decreaseDigGround(mainLogic, r, c,scoreScale)
 		end
 	elseif item.digJewelLevel > 0 then
 		if item.digBlockCanbeDelete then
-			item.digBlockCanbeDelete = false
+			if not noCD then 
+				item.digBlockCanbeDelete = false
+			end
 			GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, scoreScale)
 		end
 	elseif item.bigMonsterFrostingType > 0 then 
@@ -322,7 +373,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 				GameItemActionType.kItem_Monster_frosting_dec,
 				IntCoord:create(r, c),
 				nil,
-				GamePlayConfig_MaxAction_time)
+				GamePlayConfig_MonsterFrosting_Dec)
 			mainLogic:addDestroyAction(decAction)
 		end
 	elseif item.ItemType == GameItemType.kBlackCuteBall then
@@ -344,12 +395,17 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 			ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
 			mainLogic:addGameAction(ScoreAction)
 			--add todo
+			local duringTime = 1
+			if item.blackCuteStrength == 0 then 
+				duringTime = GamePlayConfig_BlackCuteBall_Destroy
+			end
+			
 			local blackCuteAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
 				GameItemActionType.kItem_Black_Cute_Ball_Dec,
 				IntCoord:create(r, c),
 				nil,
-				GamePlayConfig_MaxAction_time)
+				duringTime)
 			blackCuteAction.blackCuteStrength = item.blackCuteStrength
 			mainLogic:addDestroyAction(blackCuteAction)
 		end
@@ -359,6 +415,16 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 		GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, false, actId)
 	elseif item.honeyBottleLevel > 0 and item.honeyBottleLevel <= 3 then
 		GameExtandPlayLogic:increaseHoneyBottle(mainLogic, r, c,1, scoreScale)
+	elseif item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and not hasLockOrigin then
+		local action = GameBoardActionDataSet:createAs(
+                        GameActionTargetType.kGameItemAction,
+                        GameItemActionType.kItem_Magic_Lamp_Charging,
+                        IntCoord:create(r, c),
+                        nil,
+                        GamePlayConfig_MaxAction_time
+                    )
+		action.count = 1
+	    mainLogic:addDestroyAction(action)
 	end
 
 	--毛球
@@ -412,17 +478,5 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 				mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kBrownCuteBall, 1)
 			end
 		end
-	end
-
-	if item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() then
-		local action = GameBoardActionDataSet:createAs(
-                        GameActionTargetType.kGameItemAction,
-                        GameItemActionType.kItem_Magic_Lamp_Charging,
-                        IntCoord:create(r, c),
-                        nil,
-                        GamePlayConfig_MaxAction_time
-                    )
-		action.count = 1
-	    mainLogic:addDestroyAction(action)
 	end
 end

@@ -112,6 +112,8 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionMagicTileChange(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Halloween_Boss_Casting then
 		GameBoardActionRunner:runningGameItemActionHalloweenBossCasting(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Sand_Transfer then
+		GameBoardActionRunner:runningGameItemActionSandTransfer(mainLogic, theAction, actid, actByView)
 	end
 end
 
@@ -879,6 +881,15 @@ function GameBoardActionRunner:runGameItemSpecialFurballUnstable(mainLogic, theA
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		mainLogic:setNeedCheckFalling()
 	elseif theAction.actionStatus == GameActionStatus.kWaitingForDeath then
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionSandTransfer(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == "over" then
+		if theAction.callback and type(theAction.callback) == "function" then
+			theAction.callback()
+		end
 		mainLogic.gameActionList[actid] = nil
 	end
 end

@@ -97,6 +97,7 @@ TileConst = table.const
 	kHoneyBottle = 88,  --蜂蜜罐子
 	kAddTime	= 90, 	--增加时间的动物
 	kMagicTile = 91,	-- 万圣节魔法地格
+	kSand = 92, 	-- 流沙
 	kMaxTile = 100,		--
 	kInvalid = -1,		--
 }

@@ -70,7 +70,7 @@ function UseEnergyBottleLogic:start(popWaitTip, ...)
 
 	end
 
-	local logic = UsePropsLogic:create(false, 0, 0, {self.energyType})
+	local logic = UsePropsLogic:create(UsePropsType.NORMAL, 0, 0, {self.energyType})
 	logic:setSuccessCallback(successCallback)
 	logic:start(popWaitTip)
 end

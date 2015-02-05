@@ -2,6 +2,12 @@ require 'zoo.panel.ChoosePaymentPanel'
 require 'hecore.sns.aps.AndroidPayment'
 require "zoo.panelBusLogic.PaymentLimitLogic"
 
+IngamePaymentDecisionType = table.const {
+	kPayWithType = 1,
+	kChoosePayment = 2,
+	kPayFailed = 3,
+}
+
 IngamePaymentLogic = class()
 
 function IngamePaymentLogic:create(goodsId, goodsType)
@@ -27,35 +33,34 @@ function IngamePaymentLogic:init(goodsId, goodsType)
 	if stageInfo then
 		self.levelId = stageInfo.levelId
 	end
+	local goodsPayCodeId = self.goodsType == 2 and self.goodsId + 10000 or self.goodsId
+	self.goodsMeta = MetaManager:getGoodPayCodeMeta(goodsPayCodeId)
+	self.amount = 1
 
 	return true
 end
 
-function IngamePaymentLogic:buy(successCallback, failCallback, cancelCallback, showLoadingAnim)
-
-	if PrepackageUtil:isPreNoNetWork() then
-		PrepackageUtil:showInGameDialog(cancelCallback)
-		return 
-	end
-	
-	local goodsId = self.goodsType == 2 and self.goodsId + 10000 or self.goodsId
-	local goodsMeta = MetaManager:getGoodPayCodeMeta(goodsId)
-	local amount = 1
-	
-	local paymentCallback = {}	
+function IngamePaymentLogic:buildPaymentCallback(successCallback, failCallback, cancelCallback, showLoadingAnim)
+	local paymentCallback = {}
 	paymentCallback.onSuccess = function(para)
 		print("onPurchaseCallback onSuccess", para)
 		local function onSuccess()
 			print("IngameHttp onSuccess, goodsType="..tostring(self.goodsType))
+			UserManager:getInstance():getUserExtendRef().payUser = true
+			UserService:getInstance():getUserExtendRef().payUser = true
+			UserManager:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
+			UserService:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
 			self:deliverItems()
+			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
+			else print("Did not write user data to the device.") end
 			SyncManager:getInstance():sync(nil, nil, false)
 			if successCallback then successCallback() end
 			-- Q点不提示
  			if self.paymentType ~= Payments.QQ then
 				GlobalEventDispatcher:getInstance():dispatchEvent(
-					Event.new(kGlobalEvents.kConsumeComplete,{price=goodsMeta.price,props=goodsMeta.props})
+					Event.new(kGlobalEvents.kConsumeComplete,{ price = self.goodsMeta.price, props = self.goodsMeta.props})
 				)
-			end		
+			end
 		end
 		local function onFail(evt)
 			if failCallback then failCallback(evt) end
@@ -88,7 +93,7 @@ function IngamePaymentLogic:buy(successCallback, failCallback, cancelCallback, s
 			http:load(self.goodsId, para.orderId, para.channelId, self.goodsType, detail, para.tradeId)
 
 			if PaymentLimitLogic:isNeedLimit(self.paymentType) then 
-				PaymentLimitLogic:buyComplete(self.paymentType,goodsMeta.price)
+				PaymentLimitLogic:buyComplete(self.paymentType, self.goodsMeta.price)
 			end
 		end
 	end
@@ -100,44 +105,66 @@ function IngamePaymentLogic:buy(successCallback, failCallback, cancelCallback, s
 		print("onCancel")
 		if cancelCallback then cancelCallback(...) end
 	end
-	local function thirdPartPay()
-		local thirdPartPayment = AndroidPayment.getInstance():getThirdPartPayment()
-		if not thirdPartPayment or thirdPartPayment == Payments.UNSUPPORT then
-			if failCallback then failCallback("No payment type supported") end
-		else
-			self:buyWithPaymentType(thirdPartPayment, self.goodsType, goodsMeta, amount, paymentCallback)
-		end
-	end
+	return paymentCallback
+end
 
-	if PlatformConfig:getCurrentPayType()==PlatformPayType.kWechat or PlatformConfig:getCurrentPayType()==PlatformPayType.kAlipay then 
-		thirdPartPay()
+function IngamePaymentLogic:buy(successCallback, failCallback, cancelCallback, showLoadingAnim)
+	if PrepackageUtil:isPreNoNetWork() then
+		PrepackageUtil:showInGameDialog(cancelCallback)
+		return 
+	end
+	
+	self.paymentCallback = self:buildPaymentCallback(successCallback, failCallback, cancelCallback, showLoadingAnim)
+
+	local decision, paymentType = self:getPaymentDecision()
+	self:handlePaymentDecision(self.goodsMeta, self.amount, self.paymentCallback, decision, paymentType)
+end
+
+------------------------------------------------
+-- return value
+-- 	arg1 : IngamePaymentDecisionType enum
+--	arg2 : paymentType when arg1 is IngamePaymentDecisionType.kPayWithType
+------------------------------------------------
+function IngamePaymentLogic:getPaymentDecision()
+	if PlatformConfig:getCurrentPayType()==PlatformPayType.kWechat 
+		or PlatformConfig:getCurrentPayType()==PlatformPayType.kAlipay then 
+		return self:getThirdPartPaymentDecision()
 	else
 		local thirdPartPayment = AndroidPayment.getInstance():getThirdPartPayment()
-		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY or thirdPartPayment == PlatformPaymentThirdPartyEnum.kMI then
+		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY 
+			or thirdPartPayment == PlatformPaymentThirdPartyEnum.kMI then
 			-- 如果是联通三网集成/米币支付方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
-			thirdPartPay()
+			return self:getThirdPartPaymentDecision()
 		else
-			if self:isThirdPartPaymentOnly(goodsMeta) then
+			if self:isThirdPartPaymentOnly(self.goodsMeta) then
 				-- 如果是大额支付点，使用三方支付
-				thirdPartPay()
+				return self:getThirdPartPaymentDecision()
 			else
 				local isSmsPaymentSupported = AndroidPayment.getInstance():isSmsPaymentSupported()
 				if isSmsPaymentSupported then 
 					if PlatformConfig:isBaiduPlatform() then 
 						if AndroidPayment:getOperator() == TelecomOperators.CHINA_MOBILE then
-							self:smsPay(goodsMeta, amount, paymentCallback)
+							return self:getSMSPaymentDecision()
 						else
-							thirdPartPay()
+							return self:getThirdPartPaymentDecision()
 						end
 					else 
-						self:smsPay(goodsMeta, amount, paymentCallback)
+						return self:getSMSPaymentDecision()
 					end
 				else -- 如果不支持任何短贷支付方式
-					local supportedPayments = AndroidPayment.getInstance():getPaymentsChoosement() 
-					self:choosePaymentToPay(supportedPayments, goodsMeta, amount, paymentCallback)
+					return IngamePaymentDecisionType.kChoosePayment
 				end
 			end
 		end
+	end
+end
+
+function IngamePaymentLogic:getThirdPartPaymentDecision()
+	local thirdPartPayment = AndroidPayment.getInstance():getThirdPartPayment()
+	if not thirdPartPayment or thirdPartPayment == Payments.UNSUPPORT then
+		return IngamePaymentDecisionType.kPayFailed
+	else
+		return IngamePaymentDecisionType.kPayWithType, thirdPartPayment
 	end
 end
 
@@ -345,7 +372,7 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 
 			if PaymentLimitLogic:isExceedMonthlyLimit(paymentType) then
 				if table.size(supportedPayments) > 0 then 
-					self:choosePaymentToPay(supportedPayments,goodsMeta, amount, callback,
+					self:choosePaymentToPay(supportedPayments, goodsMeta, amount, callback,
 						Localization:getInstance():getText("payment.Limit.title.2")
 					)
 					--"本月话费支付已达上限，请您选择以下支付方式"
@@ -357,7 +384,7 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 				return
 			elseif PaymentLimitLogic:isExceedDailyLimit(paymentType) then 
 				if table.size(supportedPayments) > 0 then 
-					self:choosePaymentToPay(supportedPayments,goodsMeta, amount, callback,
+					self:choosePaymentToPay(supportedPayments, goodsMeta, amount, callback,
 						Localization:getInstance():getText("payment.Limit.title.1")
 					)
 					-- "今日话费支付已达上限，请您选择以下支付方式"					
@@ -444,21 +471,35 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 	end
 end
 
-function IngamePaymentLogic:smsPay(goodsMeta, amount, callback)	
+function IngamePaymentLogic:getSMSPaymentDecision()
 	local defaultSmsPayment = AndroidPayment.getInstance():getDefaultSmsPayment()
-    print("defaultSmsPayment " .. table.tostring(defaultSmsPayment))
-	if defaultSmsPayment then -- 有sim卡且支持与该卡运营商匹配的支付方式
+	if defaultSmsPayment then -- 有sim卡
 		if defaultSmsPayment == Payments.UNSUPPORT then -- 不支持的运营商
-			local supportedPayments = AndroidPayment.getInstance():getPaymentsChoosement() 
-			self:choosePaymentToPay(supportedPayments, goodsMeta, amount, callback)
+			return IngamePaymentDecisionType.kChoosePayment
 		else
-			self:buyWithPaymentType(defaultSmsPayment, self.goodsType, goodsMeta, amount, callback)
+			return IngamePaymentDecisionType.kPayWithType, defaultSmsPayment
 		end
 	else -- 无卡或者未知种类
+		return IngamePaymentDecisionType.kChoosePayment
+	end
+end
+
+function IngamePaymentLogic:smsPay(goodsMeta, amount, callback)	
+	local decision, paymentType = self:getSMSPaymentDecision()
+	self:handlePaymentDecision(goodsMeta, amount, callback, decision, paymentType)
+end
+
+function IngamePaymentLogic:handlePaymentDecision(goodsMeta, amount, callback, decision, paymentType)
+	if decision == IngamePaymentDecisionType.kPayWithType then
+		assert(paymentType)
+		self:buyWithPaymentType(paymentType, self.goodsType, goodsMeta, amount, callback)
+	elseif decision == IngamePaymentDecisionType.kChoosePayment then
 		local supportedPayments = AndroidPayment.getInstance():getPaymentsChoosement() 
-		print("supportedPayments")
-		print(table.tostring(supportedPayments))
 		self:choosePaymentToPay(supportedPayments, goodsMeta, amount, callback)
+	elseif decision == IngamePaymentDecisionType.kPayFailed then
+		if callback.onError then callback.onError(nil, "No payment type supported") end
+	else
+		assert("Unexcepted payment decision " .. decision .. ", " .. paymentType)
 	end
 end
 
@@ -578,7 +619,7 @@ function IngamePaymentLogic:choosePaymentToPay(supportedPayments, goodsMeta, amo
 			local panel = ChoosePaymentPanel:create(supportedPayments,title)
 			local function onChoosen(choosenType)
 				if choosenType then
-					self:buyWithPaymentType(choosenType, self.goodsType, goodsMeta, amount, callback)
+					self:buyWithPaymentType(choosenType, self.goodsType, self.goodsMeta, amount, callback)
 				else
 					if callback then callback.onCancel() end
 				end
@@ -605,10 +646,7 @@ function IngamePaymentLogic:deliverItems()
 	local meta = MetaManager:getInstance():getGoodMeta(self.goodsId)
 	if meta and meta.limit > 0 then
 		UserManager:getInstance():addBuyedGoods(self.goodsId, 1)
-
 		UserService.getInstance():addBuyedGoods(self.goodsId, 1)
-		if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-		else print("Did not write user data to the device.") end
 	end
 end
 

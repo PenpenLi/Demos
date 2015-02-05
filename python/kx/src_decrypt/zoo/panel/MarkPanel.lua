@@ -613,11 +613,11 @@ function MarkPanel:popout()
 		GameGuide:sharedInstance():onPopup(self)
 	end
 	-- end fix
-	PopoutQueue.sharedInstance():push(self)
+	PopoutQueue.sharedInstance():push(self,true,false,function( ... )end)
+	self:setVisible(false)
 end
 
 function MarkPanel:popoutShowTransition()
-	self:setVisible(false)
 	local function onAnimOver() self.allowBackKeyTap = true end
 	local function onTransFinish()
 		if self.signedDay <= 27 then

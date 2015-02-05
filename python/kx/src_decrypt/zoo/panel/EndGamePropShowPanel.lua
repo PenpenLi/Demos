@@ -14,7 +14,7 @@ require 'hecore.sns.SnsProxy'
 require 'zoo.panel.FreeFCashPanel'
 
 require "zoo.panel.TimeLimitPanel"
-
+require "zoo.panelBusLogic.IapBuyPropLogic"
 
 local function setButtonIcon( button, propId )
 	-- body
@@ -30,7 +30,7 @@ local UseButton = class(GroupButtonBase)
 function UseButton:create(groupNode, propId)
 	local button = UseButton.new(groupNode)
 	button:buildUI()
-	setButtonIcon(button, propId)
+	-- setButtonIcon(button, propId)
 	button.redCircle = groupNode:getChildByName("redCircle")
 	button.numberLabel = groupNode:getChildByName("numberLabel")
 	button.fontSize = button.numberLabel:getFontSize()
@@ -58,7 +58,7 @@ local BuyButton = class(ButtonIconNumberBase)
 function BuyButton:create(groupNode, propId)
 	local button = BuyButton.new(groupNode)
 	button:buildUI()
-	setButtonIcon(button, propId)
+	-- setButtonIcon(button, propId)
 	button.discount = groupNode:getChildByName("discount")
 	button.dcNumber = button.discount:getChildByName("num")
 	button.dcText = button.discount:getChildByName("text")
@@ -76,10 +76,18 @@ function BuyButton:setDiscount(number, text)
 		self.discount:setVisible(true)
 		self.dcNumber:setString(number)
 		self.dcText:setString(text)
+		local scaleBase = self.discount:getScale()
+		local actArray = CCArray:create()
+		actArray:addObject(CCDelayTime:create(5))
+		actArray:addObject(CCScaleTo:create(0.1, scaleBase * 0.95))
+		actArray:addObject(CCScaleTo:create(0.1, scaleBase * 1.1))
+		actArray:addObject(CCScaleTo:create(0.2, scaleBase * 1))
+		self.discount:runAction(CCRepeatForever:create(CCSequence:create(actArray)))
 	end
 end
-
-
+function BuyButton:getDiscount(number)
+	return self.dcNumber:getString(), self.dcText:getString()
+end
 
 EndGamePropShowPanel = class(BasePanel)
 
@@ -142,7 +150,7 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 		end
 	end
 
-	if __ANDROID or __WIN32 then
+	if __ANDROID then
 		local shouldShowTimeLimitAddStep = false
 		local prop = UserManager:getInstance():getUserProp(propId)
 		if prop == nil or prop.num <= 0 then 
@@ -162,11 +170,23 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 			return self:initForTimeLimitAddStep(levelId,propId)
 		end
 	end
+
+	if __IOS then
+		local prop = UserManager:getInstance():getUserProp(propId)
+		if prop == nil or prop.num <= 0 then
+			local userExtend = UserManager:getInstance().userExtend
+			if not userExtend then return self:init(levelId, propId) end
+			if MaintenanceManager:getInstance():isEnabled("Cny1Feature") or not userExtend.payUser then
+				return self:initForIapPayAddStep(levelId, propId)	
+			end
+		end
+	end
 	
 	return self:init(levelId, propId)
 end
 
 function EndGamePropShowPanel:initForOneFenAddStep(levelId, propId)
+	print('EndGamePropShowPanel:initForOneFenAddStep')
 	self:init(levelId, propId)
 
 
@@ -193,10 +213,106 @@ function EndGamePropShowPanel:initForOneFenAddStep(levelId, propId)
 	local rotateAction = CCRepeatForever:create(CCRotateBy:create(4, 360))
 	shiningEffect:runAction(rotateAction)
 
+	local dimensions = self.msgLabel:getDimensions()
+	self.msgLabel:setDimensions(CCSizeMake(dimensions.width, 0))
 	self.msgLabel:setString(Localization:getInstance():getText("add.step.panel.msg.1fen.continue", {n='\n'}))
 	self.msgLabel:setFontSize(30)
 	self.msgLabel:setPositionY(self.msgLabel:getPositionY() + 15)
+	local size = self.msgLabel:getContentSize()
+	local phSize = self.msgLabelPh:getGroupBounds().size
+	self.msgLabel:setPositionY(self.msgLabelPh:getPositionY() - (phSize.height - size.height) / 2)
 
+end
+
+function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
+	self:init(levelId, propId)
+
+	self.buyButton2:setNumber(self.buyButton:getNumber())
+	self.buyButton2:setString(self.buyButton:getString())
+	local icon = self.buyButton:getIcon()
+	icon:removeFromParentAndCleanup(false)
+	self.buyButton.icon = nil
+	self.buyButton2:setIcon(icon)
+	self.buyButton2:setColorMode(kGroupButtonColorMode.blue)
+	self.buyButton2:setVisible(true)
+	local function enableButton()
+		self.buyButton2:setEnabled(true)
+		self.buyButton:setEnabled(true)
+	end
+	local function onBuyBtnTapped(evt)
+		self.buyButtonTarget = self.buyButton2
+		self:onBuyBtnTapped(nil, enableButton)
+	end
+	self.buyButton2:addEventListener(DisplayEvents.kTouchTap, onBuyBtnTapped)
+
+	local data = IapBuyPropLogic:addStep()
+	local meta = MetaManager:getInstance():getGoodMeta(data.goodsId)
+
+	self.buyButton:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..tostring(data.price))
+	self.buyButton:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
+	self.buyButton:setDiscount(math.ceil(meta.discountRmb / meta.rmb * 10), Localization:getInstance():getText("buy.gold.panel.discount"))
+	self.buyButton:setVisible(true)
+
+	-- ////////////////
+	local groupNode = self.buyButton.groupNode
+	local number = groupNode:getChildByName("number")
+	local label = groupNode:getChildByName("label")
+	local lSize = label:getContentSize()
+	local sizeX = label:getPositionX() + lSize.width - number:getPositionX()
+	number:setPositionX(-sizeX / 2)
+	label:setPositionX(sizeX / 2 - lSize.width)
+	-- ////////////////
+
+	local function useAddStepSuccess()
+		local function onCallback()
+			if self.onUseTappedCallback then
+				self.onUseTappedCallback(propId, UsePropsType.NORMAL)
+			end
+		end
+		-- animation
+		if self.isDisposed then return end
+		local pos = self.buyButton:getPosition()
+		pos = self.buyButton:getParent():convertToWorldSpace(ccp(pos.x, pos.y))
+		if self.propId == PropList.kAddTime.itemid then
+			self:addPropUseAnimation(pos, onCallback)
+		else
+			onCallback()
+			self:addPropUseAnimation(pos)
+		end
+
+		self:remove(false)
+	end
+
+	local function resumeTimer()
+		if self.isDisposed then return end
+		local function onCountDown() self:countdownCallback() end
+		self:startCountdown(onCountDown)
+		self.buyButton:setEnabled(true)
+	end
+
+	local function onSuccess()
+		useAddStepSuccess()
+	end
+	local function onFail()
+		CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative", resumeTimer)
+		self.buyButton2:setEnabled(true)
+		self.buyButton:setEnabled(true)
+	end
+
+	local function onButton()
+		self.buyButton2:setEnabled(false)
+		self.buyButton:setEnabled(false)
+		self:stopCountdown()
+		IapBuyPropLogic:buy(data, onSuccess, onFail)
+	end
+	self.buyButton:removeAllEventListeners()
+	self.buyButton:addEventListener(DisplayEvents.kTouchTap, onButton)
+
+	local aSize = self.cryingAnimation:getGroupBounds().size
+	local pSize = self.animPh:getGroupBounds().size
+	self.cryingAnimation:setPositionXY(self.animPh:getPositionX() + pSize.width / 2,
+		self.animPh:getPositionY() - pSize.height / 2)
+	self.cryingAnimation:setScale(pSize.height / aSize.height)
 end
 
 function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
@@ -327,13 +443,17 @@ function EndGamePropShowPanel:init(levelId, propId)
 	-- get & create controls
 	self.closeBtnRes = self.ui:getChildByName("closeBtn")
 	self.msgLabel = self.ui:getChildByName("msgLabel")
+	self.msgLabelPh = self.ui:getChildByName("msgLabelph")
 	self.countdownLabelPh = self.ui:getChildByName("countdownLabel")
 	local useBtnRes = self.ui:getChildByName("useBtn")
 	local buyBtnRes = self.ui:getChildByName("buyBtn")
+	local buyBtnRes2 = self.ui:getChildByName("buyBtn2")
 	self.closeBtn	= BubbleCloseBtn:create(self.closeBtnRes)
 	self.buyButton = BuyButton:create(buyBtnRes, self.propId)
 	self.buyButton.groupNode:getChildByName('shiningLocator'):setVisible(false)
 	self.useButton = UseButton:create(useBtnRes, self.propId)
+	self.buyButton2 = ButtonIconNumberBase:create(buyBtnRes2)
+	self.animPh = self.ui:getChildByName("animPh")
 	local cryingAnimation
 	if self.levelType == GameLevelType.kDigWeekly
 	then
@@ -342,12 +462,30 @@ function EndGamePropShowPanel:init(levelId, propId)
 		cryingAnimation = AddEnergyAnimation:create()
 	end
 	self.ui:addChild(cryingAnimation)
+	self.cryingAnimation = cryingAnimation
 
 	-- set control state
-	local prop = UserManager:getInstance():getUserProp(self.propId)
-	local propNum
-	if not prop then propNum = 0
-	else propNum = prop.num end
+	self.msgLabelPh:setVisible(false)
+	local builder = InterfaceBuilder:create(PanelConfigFiles.properties)
+	local sprite = builder:buildGroup("Prop_"..tostring(self.propId))
+	local icon = self.ui:getChildByName("icon")
+	local iSize = icon:getGroupBounds().size
+	local sSize = sprite:getGroupBounds().size
+	sprite:setScale(iSize.height / sSize.height)
+	sprite:setPositionXY(icon:getPositionX(), icon:getPositionY())
+	self.ui:addChild(sprite)
+	icon:removeFromParentAndCleanup(true)
+	local timeProps = UserManager:getInstance():getTimePropsByRealItemId(self.propId)
+	self.timeProps = timeProps
+	local propNum = 0
+	if #self.timeProps > 0 then
+		for _,v in pairs(self.timeProps) do
+			propNum = propNum + v.num
+		end
+	else
+		local prop = UserManager:getInstance():getUserProp(self.propId)
+		if prop then propNum = prop.num end
+	end
 	if propNum > 0 then -- use
 		self.useButton:setNumber(propNum)
 		self.useButton:setString(Localization:getInstance():getText("add.step.panel.use.btn.txt"))
@@ -377,8 +515,12 @@ function EndGamePropShowPanel:init(levelId, propId)
 		self.buyButton:setString(Localization:getInstance():getText("add.step.panel.use.btn.txt"))
 		self.useButton:removeFromParentAndCleanup(true)
 	end
+	self.buyButton2:setVisible(false)
+	self.animPh:setVisible(false)
 
 	-- 周赛用新的文案
+	local dimensions = self.msgLabel:getDimensions()
+	self.msgLabel:setDimensions(CCSizeMake(dimensions.width, 0))
 	if self.levelType == GameLevelType.kDigWeekly then
 		self.msgLabel:setString(Localization:getInstance():getText('add.step.panel.msg.weekly.race'))
 		if _isQixiLevel then
@@ -396,6 +538,9 @@ function EndGamePropShowPanel:init(levelId, propId)
 		self.msgLabel:setString(Localization:getInstance():getText("add.step.panel.msg.txt."..self.propId))
 		cryingAnimation:setPosition(ccp(108, -856))
 	end
+	local size = self.msgLabel:getContentSize()
+	local phSize = self.msgLabelPh:getGroupBounds().size
+	self.msgLabel:setPositionY(self.msgLabelPh:getPositionY() - (phSize.height - size.height) / 2)
 
 	-- countdown animation
 	local charWidth = 153
@@ -427,6 +572,7 @@ function EndGamePropShowPanel:init(levelId, propId)
 	self.useButton:addEventListener(DisplayEvents.kTouchTap, onUseBtnTapped)
 
 	local function onBuyBtnTapped(evt)
+		self.buyButtonTarget = self.buyButton
 		self:onBuyBtnTapped()
 	end
 	self.buyButton:addEventListener(DisplayEvents.kTouchTap, onBuyBtnTapped)
@@ -440,10 +586,17 @@ function EndGamePropShowPanel:init(levelId, propId)
 end
 
 function EndGamePropShowPanel:onUseBtnTapped()
+	local usePropType = UsePropsType.NORMAL
+	local usePropId = self.propId
+	if #self.timeProps > 0 then
+		usePropType = UsePropsType.EXPIRE
+		usePropId = self.timeProps[1].itemId
+	end
+
 	local function onSuccess()
 		local function onCallback()
 			if self.onUseTappedCallback then
-				self.onUseTappedCallback()
+				self.onUseTappedCallback(usePropId, usePropType)
 			end
 		end
 		
@@ -470,23 +623,23 @@ function EndGamePropShowPanel:onUseBtnTapped()
 	end
 	self.useButton:setEnabled(false)
 	self:stopCountdown()
-	local logic = UsePropsLogic:create(false, self.levelId, 0, {self.propId})
+	local logic = UsePropsLogic:create(usePropType, self.levelId, 0, {usePropId})
 	logic:setSuccessCallback(onSuccess)
 	logic:setFailedCallback(onFail)
 	logic:start(true)
 end
 
-function EndGamePropShowPanel:onBuyBtnTapped()
+function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 	local function useAddStepSuccess()
 		local function onCallback()
 			if self.onUseTappedCallback then
-				self.onUseTappedCallback()
+				self.onUseTappedCallback(self.propId, UsePropsType.NORMAL)
 			end
 		end
 		-- animation
 		if self.isDisposed then return end
-		local pos = self.buyButton:getPosition()
-		pos = self.buyButton:getParent():convertToWorldSpace(ccp(pos.x, pos.y))
+		local pos = self.buyButtonTarget:getPosition()
+		pos = self.buyButtonTarget:getParent():convertToWorldSpace(ccp(pos.x, pos.y))
 		if self.propId == PropList.kAddTime.itemid then
 			self:addPropUseAnimation(pos, onCallback)
 		else
@@ -500,7 +653,8 @@ function EndGamePropShowPanel:onBuyBtnTapped()
 		if self.isDisposed then return end
 		local function onCountDown() self:countdownCallback() end
 		self:startCountdown(onCountDown)
-		self.buyButton:setEnabled(true)
+		self.buyButtonTarget:setEnabled(true)
+		if failCallback then failCallback() end
 	end
 	local function onCreateGoldPanel()
 		local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
@@ -530,6 +684,7 @@ function EndGamePropShowPanel:onBuyBtnTapped()
 			DcUtil:UserTrack({ category = 'activity', sub_category = 'buy_failure_panel'})
 
 		end
+		if successCallback then successCallback() end
 	end
 	local function onBuyFail(evt)
 		if evt.data == 730330 then -- not enough gold
@@ -555,12 +710,12 @@ function EndGamePropShowPanel:onBuyBtnTapped()
 			CommonTip:showTip(Localization:getInstance():getText("add.step.panel.buy.cancel.android"), "negative", resumeTimer)
 		end
 	end
-	self.buyButton:setEnabled(false)
+	self.buyButtonTarget:setEnabled(false)
 	self:stopCountdown()
 	local goodsId
 
 	if self.isOneFenAddStep then 
-		goodsId = getOneFenGoodsId(propId)
+		goodsId = getOneFenGoodsId(self.propId)
 	elseif self.isTimeLimitAddStep then
 		goodsId = self.timeLimitGoodsId
 	elseif self.discount then 
@@ -614,8 +769,6 @@ function EndGamePropShowPanel:startCountdown(callback, ...)
 	print("type(callback)", type(callback))
 	assert(type(callback) == "function")
 	assert(#{...} == 0)
-
-	print(debug.traceback())
 
 	local function callbackFunc()
 		self.second = self.second - 1

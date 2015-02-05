@@ -218,28 +218,29 @@ end
 
 PushActivityPanelEnergy = class()
 
-function PushActivityPanelEnergy:create(config)
+function PushActivityPanelEnergy:create(energyPanel, config)
 	if type(config.rewards) == "table" and #config.rewards >= 1 then
-		return PushActivityPanelEnergyR:create(config)
+		return PushActivityPanelEnergyR:create(energyPanel, config)
 	else
-		return PushActivityPanelEnergyN:create(config)
+		return PushActivityPanelEnergyN:create(energyPanel, config)
 	end
 end
 
 PushActivityPanelEnergyR = class(Layer)
 
-function PushActivityPanelEnergyR:create(config)
+function PushActivityPanelEnergyR:create(energyPanel, config)
 	local panel = PushActivityPanelEnergyR.new()
-	if not panel:_init(config) then panel = nil end
+	if not panel:_init(energyPanel, config) then panel = nil end
 	return panel
 end
 
-function PushActivityPanelEnergyR:_init(config)
+function PushActivityPanelEnergyR:_init(energyPanel, config)
 	if type(config) ~= "table" then return false end
 	if type(config.rewards) ~= "table" or #config.rewards < 1 then return false end
 	for k, v in ipairs(config.rewards) do
 		if type(v.itemId) ~= "number" or type(v.num) ~= "number" then return false end
 	end
+	self.energyPanel = energyPanel
 
 	self:initLayer()
 	local builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_push_activity)
@@ -446,17 +447,22 @@ function PushActivityPanelEnergyR:remove()
 	self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(removeSelf)))
 end
 
+function PushActivityPanelEnergyR:onKeyBackClicked()
+	if self.energyPanel then self.energyPanel:onCloseBtnTapped() end
+end
+
 PushActivityPanelEnergyN = class(Layer)
 
-function PushActivityPanelEnergyN:create(config)
+function PushActivityPanelEnergyN:create(energyPanel, config)
 	local panel = PushActivityPanelEnergyN.new()
 	
-	if not panel:_init(config) then panel = nil end
+	if not panel:_init(energyPanel, config) then panel = nil end
 	return panel
 end
 
-function PushActivityPanelEnergyN:_init(config)
+function PushActivityPanelEnergyN:_init(energyPanel, config)
 	if type(config) ~= "table" then print("false") return false end
+	self.energyPanel = energyPanel
 
 	self:initLayer()
 	local builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_push_activity)
@@ -581,4 +587,8 @@ function PushActivityPanelEnergyN:remove(parent, callback)
 	self.panel:runAction(CCSequence:create(arr))
 	local function remove() PopoutManager:sharedInstance():remove(self) end
 	self.anim:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(0.3, ccp(-250, 0)), CCCallFunc:create(remove)))
+end
+
+function PushActivityPanelEnergyN:onKeyBackClicked()
+	if self.energyPanel then self.energyPanel:onCloseBtnTapped() end
 end

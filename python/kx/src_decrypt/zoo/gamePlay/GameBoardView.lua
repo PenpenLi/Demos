@@ -311,6 +311,12 @@ function GameBoardView:initView(container, context, isHalloween)
 			elseif isHalloween and (i == ItemSpriteType.kTileBlocker or i == ItemSpriteType.kRope) then
 				showPanel[i] = SimpleClippingNode:create()
 				showPanel[i]:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * 8))
+			elseif i == ItemSpriteType.kSand then
+				showPanel[i] = CocosObject:create()
+				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_idle_clean.png"), 100));
+			elseif i == ItemSpriteType.kSandMove then
+				showPanel[i] = CocosObject:create()
+				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_move.png"), 100));
 			else
 				showPanel[i] = CocosObject:create()
 			end
@@ -408,79 +414,12 @@ local ProFi = require "zoo.util.ProFi"
 ----游戏逻辑更新循环
 function GameBoardView:updateGame(dt)
 	if self.isPaused == false then 
-		-- if self.debugCounter == 0 then
-		-- 	ProFi:start()
-		-- 	self.debugCounter = self.debugCounter + 1
-		-- else
-		-- 	self.debugCounter = self.debugCounter + 1
-		-- 	if self.debugCounter == 100 then
-		-- 		ProFi:stop()
-		-- 		ProFi:writeReport("sb.txt")
-		-- 		print("stop record profiler")
-		-- 	end
-		-- end
-		-- if not self.gameBoardLogic.isWaitingOperation then
-		-- 	if not self.isRecord then
-		-- 		self.isRecord = true
-		-- 		ProFi:start()
-		-- 	end
-		-- else
-		-- 	if self.isRecord then
-		-- 		self.isRecord = false
-		-- 		self.debugCounter = self.debugCounter + 1
-		-- 		ProFi:stop()
-		-- 		ProFi:writeReport("profile/profileLog" .. self.debugCounter .. ".txt")
-		-- 	end
-		-- end
 		self.gameBoardLogic:updateGame(dt) 		----游戏逻辑推进---1.runAction---2.检测掉落
 		self:updateItemViewByLogic()			----界面展示刷新
 		BoardViewAction:runAllAction(self)		----对应动作变化
 		self:updateItemViewSelf()				----界面自我刷新
-
-		--self:checkEmptyClippingNode();			----减少对空闲裁减区域的绘制
-		--self:outputShowPanelCount() 			----性能检测
 	end
 end
-
-function GameBoardView:checkEmptyClippingNode()
-	-- if self and self.showPanel[ItemSpriteType.kClipping] then
-	-- 	print("ItemSpriteType", ItemSpriteType.kClipping, self, self.showPanel[ItemSpriteType.kClipping]);
-	-- 	--debug.debug();
-	-- 	local count = self.showPanel[ItemSpriteType.kClipping]:getNumOfChildren();
-	-- 	self.showPanel[ItemSpriteType.kClipping]:removeFromParentAndCleanup();
-	-- 	print("count", count)
-	-- 	--debug.debug();
-	-- 	for i = 0, count-1 do 
-	-- 		print("i",i)
-	-- 		local item = self.showPanel[ItemSpriteType.kClipping]:getChildAt(i)
-	-- 		print("item",item)
-	-- 		--debug.debug();
-	-- 		if item then
-	-- 			if item:getNumOfChildren() == 0 then
-	-- 				item:setVisible(false)
-	-- 				print("item setVisible false",i)
-	-- 			else
-	-- 				item:setVisible(true)
-	-- 				print("item setVisible true",i)
-	-- 			end
-	-- 		end
-	-- 	end
-	-- end
-end
-
-local output_cd = 0
-function GameBoardView:outputShowPanelCount()
-	output_cd = output_cd + 1;
-	if output_cd < 120 then return end 				----两秒一次
-	output_cd = 0
-	for i = ItemSpriteType.kBackground, ItemSpriteType.kLast do
-		if (self.showPanel[i]) then
-			local count = self.showPanel[i]:getNumOfChildren();
-			print("outputShowPanelCount i count", i, count)
-		end
-	end
-end
-
 
 function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 	if not self.baseMap then
@@ -567,7 +506,6 @@ function GameBoardView:updateBaseMapViewItem(r,c)
 					self.showPanel[k]:addChild(itemSprite)
 				else
 					print("itemSprite.refCocosObj == nil  r, c, k", r, c, k)
-					print("出错了！！！");
 					self.baseMap[r][c].itemSprite[k] = nil;
 				end
 			end
@@ -587,7 +525,6 @@ function GameBoardView:initBaseMapView()
 								self.showPanel[k]:addChild(itemSprite)
 							else
 								print("itemSprite.refCocosObj == nil  r, c, k", r, c, k)
-								print("出错了！！！");
 								self.baseMap[i][j].itemSprite[k] = nil;
 							end
 						end

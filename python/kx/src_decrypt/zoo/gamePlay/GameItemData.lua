@@ -67,63 +67,61 @@ function GameItemData:ctor()
 	------------------------
 	----添加属性请修改 ------copy()函数
 	------------------------
-	self.isUsed = true; 	--是否可用		--不可用，在显示上隐藏，但是实际是有数据的，物体落稳之后，将此处数据赋值并且变为可用
-	self.ItemType = 0;		--Item的类型
-	self.ItemStatus = 0;	--无状态
-	self.animalDef = 0;		--动物信息
-	self.ItemColorType = 0;	--Item的颜色类型		--0为随机
-	self.ItemSpecialType = 0;--Item特殊类型
-	self.furballLevel = 0;	--毛球等级		--noblock
+	self.isUsed = true 				--是否可用,地形上有没有这个格子
+	self.ItemType = 0				--Item的类型
+	self.ItemStatus = 0				--状态
+	self.ItemColorType = 0			--Item的颜色类型		--0为随机
+	self.ItemSpecialType = 0		--Item特殊类型
+	self.furballLevel = 0			--毛球等级
 	self.furballType = 0
 	self.isBrownFurballUnstable = false --褐色毛球不稳定状态(颤抖)
 	
-	self.isBlock = false;	--是block
-	self.snowLevel = 0;		--雪花层数		--block
-	self.cageLevel = 0;		--牢笼的层数 	--block
-	self.venomLevel = 0;			--毒液等级		--block
-	self.roostLevel = 0 	--鸡窝等级
-	self.digGroundLevel = 0;
-	self.digJewelLevel = 0;
-	self.honeyLevel = 0 ---蜂蜜等级
+	self.isBlock = false			--是block
+	self.snowLevel = 0				--雪花层数
+	self.cageLevel = 0				--牢笼的层数
+	self.venomLevel = 0				--毒液等级
+	self.roostLevel = 0				--鸡窝等级
+	self.digGroundLevel = 0
+	self.digJewelLevel = 0
+	self.honeyLevel = 0				--蜂蜜等级
 
-	self.x = 0;
-	self.y = 0;
-	self.w = GamePlayConfig_Tile_Width;
-	self.h = GamePlayConfig_Tile_Height;
+	self.x = 0
+	self.y = 0
+	self.w = GamePlayConfig_Tile_Width
+	self.h = GamePlayConfig_Tile_Height
 
-	self.isNeedUpdate = false;
-	self.isEmpty = true;
-	self.isItemLock = false; 				--Item被锁定，引爆的特效，在覆盖别人之后，再覆盖回来不会被再次引爆
+	self.isNeedUpdate = false
+	self.isEmpty = true
+	self.isItemLock = false				--Item被锁定，引爆的特效，在覆盖别人之后，再覆盖回来不会被再次引爆
 
-	self.gotoPos = nil		--正在前往某个位置
-	self.comePos = nil		--正在从某个位置引来一个物体
+	self.gotoPos = nil					--正在前往某个位置
+	self.comePos = nil					--正在从某个位置引来一个物体
 	self.itemSpeed = 0
 	self.itemPosAdd = IntCoord:create(0, 0)
 	self.ClippingPosAdd = IntCoord:create(0, 0)
 	self.EnterClippingPosAdd = IntCoord:create(0, 0)
-	self.dataReach = true	--数据到达（+不是Falling）才能参加Match消除计算--数据到达才能参加特效Cover计算
-	self.bombRes = nil		--爆炸来源
-	self.isProduct = false  --正在生产----不参与鸟的爆炸
-	self.lightUpBombMatchPosList = nil --消除冰块时，对于特效禽兽，将引爆该特效的match信息存入这个数组
+	self.dataReach = true				--数据到达（+不是Falling）才能参加Match消除计算--数据到达才能参加特效Cover计算
+	self.bombRes = nil					--爆炸来源
+	self.isProduct = false  			--正在生产----不参与鸟的爆炸
+	self.lightUpBombMatchPosList = nil	--消除冰块时，对于特效禽兽，将引爆该特效的match信息存入这个数组
 	self.hasGivenScore = false
 	self.balloonFrom = 0
-	self.isFromProductBalloon = false  --标志位 用来防止新生成的气球步数减一
+	self.isFromProductBalloon = false  	--标志位 用来防止新生成的气球步数减一
 	self.numAddMove = 0
-	self.digBlockCanbeDelete = true    --地块，宝石块是否可以被消除
+	self.digBlockCanbeDelete = true    	--地块，宝石块是否可以被消除
 	self.isReverseSide = false
 	self.reverseCount = 3
 
 	self.bigMonsterFrostingType = 0    
 	self.bigMonsterFrostingStrength = 0
 
-	self.blackCuteStrength = 0 --黑色毛球血量
+	self.blackCuteStrength = 0			--黑色毛球血量
 	self.lastInjuredStep = 0
 
-	self.mimosaDirection = 0 --0=no direction 1 = left 2 = right 3 = up 4 = down
+	self.mimosaDirection = 0 			--0=no direction 1 = left 2 = right 3 = up 4 = down
 	self.mimosaLevel = 0 
 	self.mimosaHoldGrid = {}
 	self.beEffectByMimosa = false
-
 
 	self.snailRoadType = nil
 	self.isSnail = false
@@ -144,35 +142,27 @@ end
 function GameItemData:dispose()
 end
 
-
 function GameItemData:create()
 	local v = GameItemData.new()
-	v:initData()
 	return v
-end
-
-function GameItemData:initData()
-
 end
 
 function GameItemData:copy()
 	local v = GameItemData.new()
-	v:initData()
 
 	v.isUsed 		= self.isUsed
 	v.ItemType 		= self.ItemType
 	v.ItemStatus 	= self.ItemStatus
-	v.animalDef 	= self.animalDef
 	v.ItemColorType = self.ItemColorType	
-	v.ItemSpecialType = self.ItemSpecialType 	--Item特殊类型
-	v.furballLevel 	= self.furballLevel			--毛球等级		--noblock
+	v.ItemSpecialType = self.ItemSpecialType
+	v.furballLevel 	= self.furballLevel
 	v.furballType   = self.furballType
 	v.isBrownFurballUnstable = self.isBrownFurballUnstable
 	
-	v.isBlock 		 = self.isBlock				--是block
-	v.snowLevel 	 = self.snowLevel			--雪花层数		--block
-	v.cageLevel 	 = self.cageLevel			--牢笼的层数 	--block
-	v.venomLevel 	 = self.venomLevel 				--毒液等级		--block
+	v.isBlock 		 = self.isBlock
+	v.snowLevel 	 = self.snowLevel
+	v.cageLevel 	 = self.cageLevel
+	v.venomLevel 	 = self.venomLevel
 	v.roostLevel 	 = self.roostLevel
 	v.digGroundLevel = self.digGroundLevel
 	v.digJewelLevel  = self.digJewelLevel
@@ -196,7 +186,7 @@ function GameItemData:copy()
 	v.itemSpeed = self.itemSpeed
 	v.itemPosAdd = IntCoord:clone(self.itemPosAdd)
 	v.ClippingPosAdd = self.ClippingPosAdd
-	v.dataReach = self.dataReach 				----数据是否抵达，抵达了则可以参与特效消除运算
+	v.dataReach = self.dataReach
 	v.bombRes = self.bombRes
 	v.isProduct = self.isProduct
 	v.lightUpBombMatchPosList = self.lightUpBombMatchPosList
@@ -231,7 +221,6 @@ function GameItemData:copy()
 	
 	v.rabbitState = self.rabbitState
 	v.rabbitLevel = self.rabbitLevel
-
 
 	-- 章鱼冰道具
 	v.forbiddenLevel = self.forbiddenLevel
@@ -315,7 +304,6 @@ function GameItemData:initByConfig( tileDef )
 end
 
 function GameItemData:initByAnimalDef(animalDef)--animal的相关初始数据
-	self.animalDef = animalDef
 	if self:isColorful() then
 		self.ItemColorType = AnimalTypeConfig.getType(animalDef)
 	end
@@ -377,7 +365,6 @@ end
 function GameItemData:changeToSnail( snailRoadType )
 	-- body
 	self.ItemType = GameItemType.kNone
-	self.isBlock = true
 	self.ItemColorType = 0
 	self.ItemSpecialType = 0
 	self.isEmpty = false
@@ -405,11 +392,6 @@ end
 
 -----为Item增加新状态
 function GameItemData:AddItemStatus(itemStatus)
-	-- if itemStatus == GameItemStatusType.kIsSpecialCover and self.ItemStatus == GameItemStatusType.kIsFalling then
-	-- 	print("add status special cover ( " .. self.y .. ", " .. self.x .. " ) " .. tostring(self.dataReach))
-	-- 	print(debug.traceback())
-	-- 	debug.debug()
-	-- end
 	if self.ItemStatus == GameItemStatusType.kNone then
 		self.ItemStatus = itemStatus
 	elseif self.ItemStatus == GameItemStatusType.kIsMatch then
@@ -437,47 +419,87 @@ function GameItemData:AddItemStatus(itemStatus)
 	end
 end
 
-function GameItemData:canBeMatch()
-	if self.isUsed == false then return false; end;
-
+-- 是否可以参与三消匹配，但不一定被消除(比如神灯)
+function GameItemData:canBeCoverByMatch()
+	if not self:isColorful() then return false end
+	if not self.isUsed then return false end
 	if not self:isAvailable() then return false end
-
-	if self.isEmpty == true then 
-		return false
-	end
-
-	if self.furballLevel > 0 then
-		return false
-	end
+	if self.isEmpty then return false end
+	if self:hasFurball() then return false end
 
 	if self.ItemStatus == GameItemStatusType.kNone
-		or self.ItemStatus == GameItemStatusType.kItemHalfStable then
+	or self.ItemStatus == GameItemStatusType.kItemHalfStable then
 		return true
 	end
 	
 	return false
 end
 
-function GameItemData:canDeleteByMatch()
-	if self:hasLock() then
-		return false
+-- 是否可以影响该物体下的冰块/流沙
+function GameItemData:canEffectLightUp()
+	if (not self.isBlock or self.ItemType == GameItemType.kMagicLamp)
+		and not self.isEmpty
+		and not self:hasFurball()
+		and not self:hasLock()
+		and self:isAvailable()
+		and self.isUsed
+		then
+		return true
 	end
+	return false
+end
 
-	if self.ItemType == GameItemType.kMagicLamp then
-		return false
-	end
+-- 是否可以在三消匹配中被消除
+function GameItemData:canBeEliminateByMatch()
+	if self:hasLock() then return false end
+	if self.ItemType == GameItemType.kMagicLamp then return false end
 
 	return true
 end
 
------可以被鸟和动物交换消除
+-- 是否可以被普通特效(不包含魔力鸟、魔力鸟+魔力鸟)直接消除
+function GameItemData:canBeEliminateBySpecial()
+	if (self.ItemType == GameItemType.kAnimal 		-----动物
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kGift 
+		or self.ItemType == GameItemType.kCoin
+		or self.ItemType == GameItemType.kBalloon 
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRabbit)
+		and not self.isEmpty and not self:hasFurball() and not self:hasLock() and self:isAvailable() 
+		then
+		return true
+	end
+	return false
+end
+
+-----可以被鸟和动物交换的特效影响并且直接消除
+function GameItemData:canBeEliminateByBirdAnimal()
+	if (self.ItemType == GameItemType.kAnimal 		----类型
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kGift
+		or self.ItemType == GameItemType.kBalloon
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRabbit)
+		and not self:hasFurball() and not self:hasLock()
+		and self.isProduct == false 				------不是生产状态/通道通过状态
+		and self:isAvailable()
+		then
+		return true
+	end
+	return false
+end
+
+-----可以被鸟和动物交换的特效影响，但不一定直接消除item，有可能影响了item上的牢笼、毛球等
 function GameItemData:canBeCoverByBirdAnimal()
 	if self.isEmpty == true or not self:isAvailable() then 
 		return false
 	end
-	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor) 	----非魔力鸟的动物
-		or self.ItemType == GameItemType.kCrystal 														----水晶
-		or self.ItemType == GameItemType.kGift 														----礼品
+	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor)
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kGift
 		or self.ItemType == GameItemType.kBalloon
 		or self.ItemType == GameItemType.kAddMove
 		or self.ItemType == GameItemType.kAddTime
@@ -489,12 +511,79 @@ function GameItemData:canBeCoverByBirdAnimal()
 	return false
 end
 
+function GameItemData:isItemCanBeCoverByBirdBrid()
+	if not self:isAvailable() then return false end
+	if self.ItemType == GameItemType.kAnimal
+		or self.ItemType == GameItemType.kGift
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kCoin
+		or self.ItemType == GameItemType.kBalloon
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kBlackCuteBall
+		or self.ItemType == GameItemType.kRabbit
+		then
+		return true
+	end
+	return false
+end
+
+function GameItemData:isBlockerCanBeCoverByBirdBrid()
+	if self.isReverseSide then return false end
+	if self.ItemType == GameItemType.kSnow 
+		or self.ItemType == GameItemType.kVenom
+		or self.ItemType == GameItemType.kDigGround
+		or self.ItemType == GameItemType.kDigJewel
+		or self.ItemType == GameItemType.kRoost
+		or self.bigMonsterFrostingType > 0 
+		or self.ItemType == GameItemType.kMimosa 
+		or self.beEffectByMimosa
+		or self.bossLevel > 0
+		or self.ItemType == GameItemType.kMagicLamp
+		or self.ItemType == GameItemType.kHoneyBottle
+		then
+		return true
+	end
+
+	return false
+end
+
+function GameItemData:isItemCanBeEliminateByBridBird()
+	if (self.ItemType == GameItemType.kAnimal
+		or self.ItemType == GameItemType.kGift
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kBalloon 
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRabbit
+		)
+		and not self:hasLock() 
+		and not self:hasFurball()
+		and self:isAvailable()
+		then
+		return true
+	end
+	return false
+end
+
+function GameItemData:canBeEffectByHammer()
+	if self.ItemType == GameItemType.kNone 
+		or self.ItemType == GameItemType.kIngredient
+		or self.ItemType == GameItemType.kPoisonBottle
+		or (self.bigMonsterFrostingType > 0 and self.bigMonsterFrostingStrength <= 0)
+		or self.isReverseSide
+		or self.isSnail
+		or self.ItemType == GameItemType.kSuperBlocker then
+		return false
+	end
+	return true
+end
+
 ----从另一份数据，获取游戏物件信息---类似动物之类的信息---
 function GameItemData:getAnimalLikeDataFrom(data)
 	self.isEmpty = data.isEmpty
 	self.ItemType = data.ItemType
 	self.ItemStatus = data.ItemStatus
-	self.animalDef = data.animalDef
 	self.ItemColorType = data.ItemColorType
 	self.ItemSpecialType = data.ItemSpecialType
 	self.furballLevel = data.furballLevel
@@ -543,7 +632,6 @@ function GameItemData:cleanAnimalLikeData()
 	self.isEmpty = true
 	self.ItemType = GameItemType.kNone
 	self.ItemStatus = GameItemStatusType.kNone
-	self.animalDef = 0
 	self.ItemColorType = 0
 	self.ItemSpecialType = 0
 	self.furballLevel = 0
@@ -586,6 +674,18 @@ function GameItemData:cleanAnimalLikeData()
 	self.honeyBottleLevel = 0
 	self.honeyLevel = 0
 	self.addTime = 0
+end
+
+function GameItemData:isPermanentBlocker()
+	local ret = false
+	if self.ItemType == GameItemType.kRoost -- 鸡窝
+		or self.ItemType == GameItemType.kMimosa -- 含羞草
+		or self.ItemType == GameItemType.kSuperBlocker -- 无敌障碍
+		or self.ItemType == GameItemType.kPoisonBottle -- 章鱼
+		then 
+		ret = true
+	end
+	return ret
 end
 
 function GameItemData:checkBlock()
@@ -692,7 +792,7 @@ function GameItemData:changeRabbitState(state)
 end
 
 function GameItemData:hasFurball()
-	return self.furballLevel ~= 0
+	return self.furballLevel > 0
 end
 
 function GameItemData:addFurball(furballType)
@@ -738,6 +838,22 @@ function GameItemData:isColorful()
 	return false
 end
 
+-- 是否可以交换移动
+function GameItemData:canBeSwap()
+	if self.isUsed
+		and (not self.isBlock or self.ItemType == GameItemType.kMagicLamp)
+		and not self.isEmpty
+		and not self:hasFurball()
+		and not self:hasLock()
+		and self:isAvailable()
+		and self.ItemType ~= GameItemType.kBlackCuteBall
+		and self.ItemStatus == GameItemStatusType.kNone --稳定状态的东西，才能移动
+		then
+		return true
+	end
+	return false
+end
+
 --鸡窝升级
 function GameItemData:roostUpgrade()
 	if self.ItemType == GameItemType.kRoost then
@@ -772,6 +888,7 @@ end
 function GameItemData:canInfectByHoneyBottle( ... )
 	-- body
 	if not self:isAvailable() or self:hasLock() then return false end
+	if self:hasFurball() then return false end
 
 	if self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor 
 		or self.ItemType == GameItemType.kCrystal

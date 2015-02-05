@@ -51,6 +51,9 @@ function ResourceManager:init(...)
 	addGlobalDynamicFontMap("Lucida Bright", filename)
 	addGlobalDynamicFontMap("LucidaBright", filename) -- for Flash on OS X
 
+	filename = "fnt/share.fnt"
+	--if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/caption.fnt" end
+	addGlobalDynamicFontMap("Lucida Fax", filename)
 	--------------------------
 	-- Used In Panel Button
 	-- -----------------------
@@ -67,6 +70,7 @@ function ResourceManager:init(...)
 	addGlobalDynamicFontMap("LetterGothicStd", "fnt/target_amount.fnt")
 	addGlobalDynamicFontMap("Letter Gothic Std", "fnt/target_amount.fnt")
 	addGlobalDynamicFontMap("LetterGothicStd-Bold", "fnt/target_amount.fnt")
+	addGlobalDynamicFontMap("Letter Gothic Std Bold", "fnt/target_amount.fnt")
 
 	filename = "fnt/objectives.fnt"
 	if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/objectives.fnt" end

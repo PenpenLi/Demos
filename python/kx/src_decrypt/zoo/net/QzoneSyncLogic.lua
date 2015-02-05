@@ -52,7 +52,7 @@ function QzoneSyncLogic:getMappingUserConnectStatus( connectData )
 end
 
 --static
-function QzoneSyncLogic:preconnect( openId, accessToken, onFinish )
+function QzoneSyncLogic:preconnect( openId, accessToken, onFinish,isV1Http)
 	if openId == nil or accessToken == nil then return onFinish(nil) end
 
 	local isNotTimeout = true
@@ -75,7 +75,13 @@ function QzoneSyncLogic:preconnect( openId, accessToken, onFinish )
 		else print("onPreQzoneFinish callback after timeout") end
 	end 
 
-	local http = PreQQConnectHttp.new()
+	local http = nil
+	if isV1Http then 
+		http = PreQQConnectV1Http.new()
+	else
+		http = PreQQConnectHttp.new()
+	end
+
 	http:addEventListener(Events.kComplete, onPreQzoneFinish)
 	http:addEventListener(Events.kError, onPreQzoneError)
 	http:load(openId, accessToken, self:haveUserSyncData())
@@ -121,10 +127,10 @@ function QzoneSyncLogic:sync(onFinish,onSyncCancel,onSyncError)
 		local platform = PlatformConfig:getPlatformNameLocalization()
 		local status = QzoneSyncLogic:getMappingUserConnectStatus( result ) 
 		if result and result.refuse then
-			onTouchNegativeButton()
 			local p = QQLoginSuccessPanel:create( 
 				Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
 				Localization:getInstance():getText("loading.tips.weibo.account.cant.move", {platform=platform}))
+	   		p:setCloseButtonCallback(onTouchNegativeButton)
 	   		p:popout()
 			return
 		end
@@ -170,6 +176,7 @@ function QzoneSyncLogic:sync(onFinish,onSyncCancel,onSyncError)
 	end
 	QzoneSyncLogic:preconnect( self.openId, self.accessToken, onGetPreConnect )
 end
+
 
 function QzoneSyncLogic:connect(onFinish,onSyncError)
 	self.connectStatus = 0

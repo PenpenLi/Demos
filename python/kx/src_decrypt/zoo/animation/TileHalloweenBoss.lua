@@ -43,7 +43,7 @@ function TileHalloweenBoss:playWandering(dir)
 
     self.animate = animationList.kWandering
     self.sprite:stopAllActions()
-    local animate = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('xmas_boss_wander_%04d', 0, 37), kCharacterAnimationTime)
+    local animate = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('xmas_boss_wander_%04d', 0, 18), kCharacterAnimationTime)
     self.sprite:play(animate)
 
     local totalTime = 12
@@ -159,7 +159,7 @@ function TileHalloweenBoss:playHit(fromPosInWorld, callback, isSpecial)
             ball = nil
         end
         local snow = Sprite:createWithSpriteFrameName('xmas_boss_hiticon_0000')
-        local animation = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('xmas_boss_hiticon_%04d', 0, 10), kCharacterAnimationTime)
+        local animation = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('xmas_boss_hiticon_%04d', 0, 20), kCharacterAnimationTime)
         local function remove()
             if snow and snow.refCocosObj then
                 snow:removeFromParentAndCleanup(true)
@@ -178,11 +178,15 @@ function TileHalloweenBoss:playHit(fromPosInWorld, callback, isSpecial)
     local fromPos = self.body:convertToNodeSpace(fromPosInWorld)
     local rotate = math.acos((toPos.y - fromPos.y) / ccpDistance(fromPos, toPos)) * 180 / 3.14
 
+    if toPos.x < fromPos.x then
+        rotate = -rotate
+    end
+
     local array = CCArray:create()
     array:addObject(CCEaseSineOut:create(CCMoveTo:create(1.2, toPos)))
     array:addObject(CCEaseSineIn:create(CCFadeTo:create(1.2, 255)))
     ball:setPosition(fromPos)
-    ball:setRotation(-rotate)
+    ball:setRotation(rotate)
     ball:runAction(CCSequence:createWithTwoActions(CCSpawn:create(array), CCCallFunc:create(arrive)))
     self.body:addChild(ball)
 

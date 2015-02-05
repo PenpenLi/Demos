@@ -576,6 +576,7 @@ function GameGuideRunner:runWeeklyRaceButton(caller, action)
 	layer.success = false
 	local position = trueMask:getPosition()
 	local function onClicked() layer.clicked = true end
+	trueMask:addEventListener(DisplayEvents.kTouchTap, onClicked)
 	layer:addChild(trueMask)
 	layer:addChild(panel)
 	if scene.guideLayer then
@@ -606,6 +607,7 @@ function GameGuideRunner:runRabbitWeeklyButton(caller, action)
 	layer.success = false
 	local position = trueMask:getPosition()
 	local function onClicked() layer.clicked = true end
+	trueMask:addEventListener(DisplayEvents.kTouchTap, onClicked)
 	layer:addChild(trueMask)
 	layer:addChild(panel)
 	if scene.guideLayer then
@@ -620,6 +622,7 @@ function GameGuideRunner:removeWeeklyRaceButton(layer)
 	if layer and not layer.isDisposed then
 		layer:removeChildren(true)
 		layer:removeFromParentAndCleanup(true)
+		return layer.clicked, layer.clicked
 	end
 	return true, true
 end
@@ -630,6 +633,7 @@ function GameGuideRunner:removeRabbitWeeklyButton(layer)
 	if layer and not layer.isDisposed then
 		layer:removeChildren(true)
 		layer:removeFromParentAndCleanup(true)
+		return layer.clicked, layer.clicked
 	end
 	return true, true
 end

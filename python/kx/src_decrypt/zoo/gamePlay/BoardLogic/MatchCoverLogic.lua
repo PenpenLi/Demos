@@ -70,6 +70,7 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 	mainLogic.comboHelpLightUpList = {}
 	mainLogic.comboHelpNumCountBalloonList = {}
 	mainLogic.comboHelpNumCountRabbitList = {}
+	mainLogic.comboHelpNumCountSandList = {}
 	local pcount = 0					----有几组消除
 	local firstOneList = {}
 
@@ -122,6 +123,12 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 				if MatchCoverLogic:doEffectToLightUp(mainLogic, r, c) then
 					mainLogic.comboHelpLightUpList[spd] = mainLogic.comboHelpLightUpList[spd] + 1
 				end
+
+				if MatchCoverLogic:doEffectSandAtPos(mainLogic, r, c) then
+					local sandCount = mainLogic.comboHelpNumCountSandList[spd] or 0
+					mainLogic.comboHelpNumCountSandList[spd] = sandCount + 1
+				end
+
 				SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 			elseif spd == 0 then
 				MatchCoverLogic:trySignAtByAround(mainLogic, r, c)
@@ -138,6 +145,7 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 		local numCountRabbit = mainLogic.comboHelpNumCountRabbitList[spd]
 		local bombScore = mainLogic.comboSumBombScore[spd]			----消除的小动物爆炸统计分数
 		local lightCount = mainLogic.comboHelpLightUpList[spd]
+		local numSand = mainLogic.comboHelpNumCountSandList[spd]
 		local pos = firstOneList[spd]								----消除的小动物首个位置
 
 		if numCount == nil then numCount = 0; end;
@@ -145,6 +153,7 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 		if numCountCrystal == nil then numCountCrystal = 0; end;
 		if numCountBalloon == nil then numCountBalloon = 0 end
 		if numCountRabbit == nil then numCountRabbit = 0 end
+		numSand = numSand or 0
 
 		if pos then
 			local comboScale = ScoreCountLogic:getComboWithCount(mainLogic, k)
@@ -155,6 +164,7 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 				+ bombScore 																									----爆炸加分
 				+ numCountBalloon * GamePlayConfig_Score_Balloon
 				+ numCountRabbit * GamePlayConfig_Score_Rabbit
+				+ numSand * GamePlayConfig_Score_Sand_Clean
 
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)     ----一整次消除所得分数
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -224,8 +234,8 @@ function MatchCoverLogic:doEffectToLightUp(mainLogic, r, c)
 			GameItemActionType.kItemMatchAt_IceDec,
 			IntCoord:create(r,c),				
 			nil,				
-			1)
-		mainLogic:addGameAction(IceAction)
+			GamePlayConfig_MaxAction_time)
+		mainLogic:addDestroyAction(IceAction)
 		board.isNeedUpdate = true
 		item.isNeedUpdate = true
 
@@ -240,6 +250,25 @@ function MatchCoverLogic:doEffectToLightUp(mainLogic, r, c)
 	return false
 end
 
+function MatchCoverLogic:doEffectSandAtPos(mainLogic, r, c)
+	if not mainLogic:isPosValid(r, c) then return false end
+	local board = mainLogic.boardmap[r][c]
+	local item = mainLogic.gameItemMap[r][c]
+
+	if not item:hasLock() and board.sandLevel > 0 then
+		board.sandLevel = board.sandLevel - 1
+		local sandCleanAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Sand_Clean,
+			IntCoord:create(r,c),				
+			nil,				
+			GamePlayConfig_MaxAction_time)
+		mainLogic:addDestroyAction(sandCleanAction)
+		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kSand, 1)
+		return true
+	end
+	return false
+end
 --------响应match的变化-------
 function MatchCoverLogic:doEffectByMatchHelpMap(mainLogic)
 	----1.检测match对棋盘的变化
@@ -327,6 +356,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	if item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, 1 )
 	end
+
 	----1.检测雪花消除----
 	if (item.snowLevel > 0 and t_count > 0) then
 		----1-1.数据变化
@@ -444,12 +474,16 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 			ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
 			mainLogic:addGameAction(ScoreAction)
 			--add todo
+			local duringTime = 1
+			if item.blackCuteStrength == 0 then 
+				duringTime = GamePlayConfig_BlackCuteBall_Destroy
+			end
 			local blackCuteAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
 				GameItemActionType.kItem_Black_Cute_Ball_Dec,
 				IntCoord:create(r, c),
 				nil,
-				GamePlayConfig_MaxAction_time)
+				duringTime)
 			blackCuteAction.blackCuteStrength = item.blackCuteStrength
 			mainLogic:addDestroyAction(blackCuteAction)
 		end
@@ -534,7 +568,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 				GameItemActionType.kItem_Monster_frosting_dec,
 				IntCoord:create(r, c),
 				nil,
-				GamePlayConfig_MaxAction_time)
+				GamePlayConfig_MonsterFrosting_Dec)
 			mainLogic:addDestroyAction(decAction)
 		end
 	elseif item.ItemType == GameItemType.kBoss then

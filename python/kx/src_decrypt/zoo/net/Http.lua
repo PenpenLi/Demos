@@ -63,6 +63,8 @@ kHttpEndPoints = table.const {
   GetIAPCodeInitInfo =  "iapInfo",
   getCashLogs = "getCashLogs",
   GetIAPExchangeCode = "getIapCode",
+  canSendLinkShowOff = "canSendLinkShowOff",
+  getShareRankWithPosition = "getShareRankWithPosition",
 
 --online mode, user data/prop/scores will sync from local to server
 	mark = "mark", --will change props.
@@ -193,7 +195,7 @@ function ConnectionManager:initialize(uid, sessionKey)
 
 	--AssembleConvertor:ctor(amf3Enabled, version, metaVersion, appID, language, platformFinder, clientType, uk, counter, others)
 	transponder:registryConvertor(
-    	rpc.AssembleConvertor.new(true, _G.bundleVersion, "1.0.0", appId, language, platformFinder, 0),
+    	rpc.AssembleConvertor.new(true, _G.bundleVersion, "1.0.0", appId, language, platformFinder, 0, nil, nil, {seqUDID = MetaInfo:getInstance():getUdid()}),
     	{ rpc.CompressConvertor.new(), rpc.HeaderConvertor.new() },
     	{ rpc.PackageConvertor.new() }
   )	
@@ -400,8 +402,8 @@ function HttpBase:onLoadingError(err)
 	self:dispatchEvent(Event.new(Events.kError, err, self))
 
   if err ~= nil and table.exist({-2,-6,101},err) then 
-      if not PrepackageUtil:isPreNoNetWork() then 
-        checkNetwork()  
+      if not PrepackageUtil:isPreNoNetWork() and kUserLogin then 
+        checkNetwork()
       end   
   end
 end
@@ -442,7 +444,7 @@ function RegisterHTTP:load()
   }
   local function safe_get_mid()
     local mid = nil
-    if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then mid = luajava.bindClass("com.happyelements.android.sns.tencent.TencentOpenSdk"):getMtaID() end
+    if PlatformConfig:isQQPlatform() then mid = luajava.bindClass("com.happyelements.android.sns.tencent.TencentOpenSdk"):getMtaID() end
     info.mid = mid
   end
   pcall(safe_get_mid)

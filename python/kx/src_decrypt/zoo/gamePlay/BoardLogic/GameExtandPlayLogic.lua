@@ -361,7 +361,7 @@ function GameExtandPlayLogic:getFurballValidAroundItems(mainLogic, centerItem)
 				or tempItem.ItemType == GameItemType.kCrystal)
 			and not tempItem:hasFurball() 
 			and not tempItem.isBlock 
-			and tempItem:canBeMatch() then
+			and tempItem:canBeCoverByMatch() then
 			table.insert(result, tempItem)
 		end
 	end
@@ -1202,7 +1202,6 @@ function GameExtandPlayLogic:backMimosa(mainLogic, r, c, callback )
 		action.mimosaHoldGrid = item.mimosaHoldGrid
 		action.direction = item.mimosaDirection
 		item.mimosaLevel = 1
-		mainLogic:setNeedCheckFalling()
 		mainLogic:addDestroyAction(action)
 	else
 		if callback then callback() end
@@ -1549,7 +1548,7 @@ function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 			local item = gameItemMap[r][c]
 			if item then 
 				local intCoord = IntCoord:create(r, c)
-				if item.honeyBottleLevel > 3 then
+				if item.honeyBottleLevel > 3 and item:isAvailable() then
 					table.insert(brokenHoneyBottle, intCoord)
 				elseif item:canInfectByHoneyBottle() then
 					table.insert(canBeInfectItemList, intCoord)
@@ -1603,7 +1602,122 @@ function GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, scoreScale )
 		GameItemActionType.kItemDestroy_HoneyDec,
 		IntCoord:create(r,c),				
 		nil,				
-		GamePlayConfig_MaxAction_time)
+		GamePlayConfig_Honey_Disappear)
 	mainLogic:addDestroyAction(honeyAction)
 	
+end
+
+function GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c)
+	assert(mainLogic)
+	assert(type(r)=="number")
+	assert(type(c)=="number")
+
+	if not mainLogic:isPosValid(r, c) then
+		return false
+	end
+
+	local board = mainLogic.boardmap[r][c]
+	if not board or board.sandLevel > 0 then
+		return false 
+	end 
+
+	local item = mainLogic.gameItemMap[r][c]
+	if not item or not item.isUsed or item:isPermanentBlocker() 
+			or item.isReverseSide or item.beEffectByMimosa then -- 
+		return false 
+	end
+
+	return true
+end
+
+function GameExtandPlayLogic:getSandTransferAvailablePosAround(mainLogic, r, c)
+	local result = {}
+	local boardmap = mainLogic.boardmap
+	local board = boardmap[r][c]
+
+	if not board:hasTopRope()
+			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r-1, c) 
+			and not boardmap[r-1][c]:hasBottomRope() then
+		table.insert(result, IntCoord:create(r-1, c))
+	end
+	if not board:hasBottomRope()
+			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r+1, c)
+			and not boardmap[r+1][c]:hasTopRope() then
+		table.insert(result, IntCoord:create(r+1, c))
+	end
+	if not board:hasRightRope()
+			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c+1)
+			and not boardmap[r][c+1]:hasLeftRope() then
+		table.insert(result, IntCoord:create(r, c+1))
+	end
+	if not board:hasLeftRope()
+			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c-1)
+			and not boardmap[r][c-1]:hasRightRope() then
+		table.insert(result, IntCoord:create(r, c-1))
+	end
+	return result
+end
+
+function GameExtandPlayLogic:getRandomTransferSandPos(mainLogic, sands, callback)
+	local result = {}
+	local boardmap = mainLogic.boardmap
+	for _,v in pairs(sands) do
+		local r = v.x
+		local c = v.y
+		local board = boardmap[r][c]
+		if board.sandLevel > 0 and not v.handled then
+			local posAround = self:getSandTransferAvailablePosAround(mainLogic, r, c)
+			if #posAround > 0 then
+				local fromPos = IntCoord:create(r, c)
+				local toPos = posAround[mainLogic.randFactory:rand(1, #posAround)]
+				-- local toPos = posAround[math.random(#posAround)]
+
+				local sandLevel = board.sandLevel
+				boardmap[toPos.x][toPos.y].sandLevel = sandLevel
+				board.sandLevel = 0
+
+				local sandTransferAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItem_Sand_Transfer,
+					IntCoord:clone(fromPos),				
+					IntCoord:clone(toPos),				
+					GamePlayConfig_MaxAction_time)
+				mainLogic:addGameAction(sandTransferAction)
+				sandTransferAction.addInt = sandLevel
+				sandTransferAction.callback = callback
+
+				table.insert(result, toPos)
+				v.handled = true
+			end
+		end
+	end
+	return result
+end
+
+function GameExtandPlayLogic:getSandBoardPos(mainLogic)
+	local result = {}
+	local boardmap = mainLogic.boardmap
+	for r = 1, #boardmap do 
+		for c = 1, #boardmap[r] do 
+			local board = boardmap[r][c]
+			local item = mainLogic.gameItemMap[r][c]
+			if board and board.sandLevel > 0 and not item.isReverseSide and not item.beEffectByMimosa then
+				table.insert(result, IntCoord:create(r,c))
+			end
+		end
+	end
+	return result
+end
+
+function GameExtandPlayLogic:checkSandToTransfer( mainLogic, callback )
+	local result = 0
+	local boardmap = mainLogic.boardmap
+	local sands = GameExtandPlayLogic:getSandBoardPos(mainLogic)
+	local transferPos = GameExtandPlayLogic:getRandomTransferSandPos(mainLogic, sands, callback)
+	while #transferPos > 0 do
+		result = result + #transferPos
+
+		transferPos = GameExtandPlayLogic:getRandomTransferSandPos(mainLogic, sands, callback)
+	end
+	return result
 end

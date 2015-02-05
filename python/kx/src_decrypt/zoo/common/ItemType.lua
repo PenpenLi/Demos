@@ -30,6 +30,14 @@ ItemType = {
 	BROOM 		   = 10056,
 	RABBIT_WEEKLY_PLAY_CARD = 10054,
 
+	TIMELIMIT_BACK 	= 10058,
+	TIMELIMIT_REFRESH 	= 10059,
+	TIMELIMIT_HAMMER 	= 10060,
+	TIMELIMIT_BRUSH 	= 10061,
+	TIMELIMIT_ADD_FIVE_STEP = 10062,
+	TIMELIMIT_SWAP 	= 10063,
+	TIMELIMIT_BROOM 	= 10064,
+
 	-- Energy Lightning
 	ENERGY_LIGHTNING	= 4,
 	COIN			= 2,
@@ -62,6 +70,25 @@ PrePropType = {
 ItemNotInBag = {
 	[ItemType.RABBIT_WEEKLY_PLAY_CARD] = true
 }
+
+TimePropMap = table.const {
+	[ItemType.TIMELIMIT_BACK] = ItemType.INGAME_BACK,
+	[ItemType.TIMELIMIT_REFRESH] = ItemType.INGAME_REFRESH,
+	[ItemType.TIMELIMIT_HAMMER] = ItemType.INGAME_HAMMER,
+	[ItemType.TIMELIMIT_BRUSH] = ItemType.INGAME_BRUSH,
+	[ItemType.TIMELIMIT_ADD_FIVE_STEP] = ItemType.ADD_FIVE_STEP,
+	[ItemType.TIMELIMIT_SWAP] = ItemType.INGAME_SWAP,
+	[ItemType.TIMELIMIT_BROOM] = ItemType.BROOM,
+}
+
+function ItemType:getRealIdByTimePropId( propId )
+	assert(type(propId) == "number")
+	return TimePropMap[propId]
+end
+
+function ItemType:isTimeProp(propId)
+	return ItemType:getRealIdByTimePropId(propId) ~= nil
+end
 
 function ItemType:isPrePropAddStep(itemType)
 

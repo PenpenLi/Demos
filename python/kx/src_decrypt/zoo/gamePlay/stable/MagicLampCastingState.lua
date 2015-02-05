@@ -80,7 +80,7 @@ function MagicLampCastingState:tryHandleCasting()
     for r = 1, #gameItemMap do 
         for c = 1, #gameItemMap[r] do
             local item = gameItemMap[r][c]
-            if item ~= nil and isNormal(item) then
+            if item ~= nil and isNormal(item) and availablePosAllColor[item.ItemColorType] ~= nil then
                 table.insert(availablePosAllColor[item.ItemColorType], {r = r, c = c})
             end
         end

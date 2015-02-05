@@ -268,11 +268,31 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, ...)
 	end
 
 	for k,v in ipairs(inGameProp) do
-		local inGameItem = {}
-		inGameItem.itemId	= tonumber(v)
-		inGameItem.itemNum	= UserManager.getInstance():getUserPropNumber(tonumber(v))
-		inGameItem.temporary	= 0
-		table.insert(addToBarProps, inGameItem)
+		local itemId = tonumber(v)
+		if not ItemType:isTimeProp(itemId) then
+			local inGameItem = {}
+			inGameItem.itemId	= itemId
+			inGameItem.itemNum	= UserManager.getInstance():getUserPropNumber(itemId)
+			inGameItem.temporary	= 0
+			table.insert(addToBarProps, inGameItem)
+		end
+	end
+
+	-- timeProps
+	local timeProps = UserManager:getInstance():getAndUpdateTimeProps()
+	if #timeProps > 0 then
+		for _,v in pairs(timeProps) do
+			if table.exist(inGameProp, v.itemId) then
+				local expireItem = {}
+				expireItem.itemId = v.itemId
+				expireItem.realItemId = ItemType:getRealIdByTimePropId( v.itemId )
+				expireItem.itemNum = v.num 
+				expireItem.expireTime = v.expireTime
+				expireItem.temporary = 0
+				expireItem.isTimeProp = true
+				table.insert(addToBarProps, expireItem)
+			end
+		end
 	end
 
 	assert(inGameProp)
@@ -285,12 +305,12 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, ...)
 	self.propList:show(addToBarProps)
 	self:addChild(self.propList.layer)
 
-	local function usePropCallback(propId, isTempProperty, isRequireConfirm, ...)
+	local function usePropCallback(propId, usePropType, isRequireConfirm, ...)
 		assert(type(propId) == "number")
-		assert(type(isTempProperty) == "boolean")
+		assert(type(usePropType) == "number")
 		assert(type(isRequireConfirm) == "boolean")
 		assert(#{...} == 0)
-		return self:usePropCallback(propId, isTempProperty, isRequireConfirm)
+		return self:usePropCallback(propId, usePropType, isRequireConfirm)
 	end
 
 	local function cancelPropUseCallback(propId, ...)
@@ -412,31 +432,61 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, ...)
 	DcUtil:logStageStart(self.levelId)
 end
 
-function GamePlaySceneUI:usePropCallback(propId, isTempProperty, isRequireConfirm, ...)
+function GamePlaySceneUI:checkPropEnough(usePropType, propId)
+	-- 临时道具
+	if usePropType == UsePropsType.TEMP then
+		return true
+	end
+	-- 限时道具
+	if usePropType == UsePropsType.EXPIRE then
+		local uNum = UserManager:getInstance():getUserTimePropNumber(propId)
+		local sNum = UserService:getInstance():getUserTimePropNumber(propId)
+		if uNum > 0 and sNum > 0 then
+			return true
+		end
+		return false
+	end
+	-- 普通道具
+	if usePropType == UsePropsType.NORMAL then 
+		local uNum = UserManager:getInstance():getUserPropNumber(propId)
+		local sNum = UserService:getInstance():getUserPropNumber(propId)
+		if uNum > 0 and sNum > 0 then
+			return true
+		end
+		return false
+	end
+
+	return false
+end
+
+function GamePlaySceneUI:usePropCallback(propId, usePropType, isRequireConfirm, ...)
 	assert(type(propId) == "number")
-	assert(type(isTempProperty) == "boolean")
+	assert(type(usePropType) == "number")
 	assert(type(isRequireConfirm) == "boolean")
 	assert(#{...} == 0)
 
 	print("GamePlaySceneUI:usePropCallback", isRequireConfirm)
+	self.usePropType = usePropType
+
+	local realItemId = propId
+	if self.usePropType == UsePropsType.EXPIRE then  realItemId = ItemType:getRealIdByTimePropId(propId) end
 	
 	if not isRequireConfirm then -- use directly
 		local function sendUseMsgSuccessCallback()
 			self.propList:confirm(propId)
-			self.gameBoardView:useProp(propId, isRequireConfirm)
+			self.gameBoardView:useProp(realItemId, isRequireConfirm)
 		end
 		local function sendUseMsgFailCallback(evt)
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)))
 		end
-		self:sendUsePropMessage(propId, isTempProperty, sendUseMsgSuccessCallback, sendUseMsgFailCallback)
+		self:sendUsePropMessage(propId, usePropType, sendUseMsgSuccessCallback, sendUseMsgFailCallback)
 		return true
 	else -- can be canceled, must kill the process before use
-		local uNum = UserManager:getInstance():getUserPropNumber(propId)
-		local sNum = UserService:getInstance():getUserPropNumber(propId)
-		if uNum > 0 and sNum > 0 or isTempProperty then
+		
+		if self:checkPropEnough(usePropType, propId) then
 			self.needConfirmPropId = propId
-			self.needConfirmPropIsTempProperty = isTempProperty
-			self.gameBoardView:useProp(propId, isRequireConfirm)
+			-- self.needConfirmPropIsTempProperty = true
+			self.gameBoardView:useProp(realItemId, isRequireConfirm)
 			return true
 		else
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(730311)))
@@ -450,14 +500,14 @@ function GamePlaySceneUI:cancelPropUseCallback(propId, ...)
 	assert(#{...} == 0)
 
 	self.needConfirmPropId 			= false
-	self.needConfirmPropIsTempProperty 	= false
+	-- self.needConfirmPropIsTempProperty 	= false
 
 	self.gameBoardView:usePropCancelled(propId)
 end
 
-function GamePlaySceneUI:sendUsePropMessage(itemType, isTempProperty, sendMsgSuccessCallback, sendMsgFailCallback, ...)
+function GamePlaySceneUI:sendUsePropMessage(itemType, usePropType, sendMsgSuccessCallback, sendMsgFailCallback, ...)
 	assert(type(itemType) == "number")
-	assert(type(isTempProperty) == "boolean")
+	assert(type(usePropType) == "number")
 	assert(sendMsgSuccessCallback == false or type(sendMsgSuccessCallback) == "function")
 	assert(#{...} == 0)
 	
@@ -467,7 +517,7 @@ function GamePlaySceneUI:sendUsePropMessage(itemType, isTempProperty, sendMsgSuc
 		end
 	end
 
-	local logic = UsePropsLogic:create(isTempProperty, self.levelId, 0, {itemType})
+	local logic = UsePropsLogic:create(usePropType, self.levelId, 0, {itemType})
 	logic:setSuccessCallback(successCallback)
 	logic:setFailedCallback(sendMsgFailCallback)
 	logic:start()
@@ -808,7 +858,7 @@ function GamePlaySceneUI:passLevel(levelId, score, star, stageTime, coin, target
 		levelSuccessPanel:registerHideScoreProgressBarStarCallback(hideScoreProgressBarStarCallback)
 
 		levelSuccessPanel:popout()
-		SharePanel:onPassLevel(levelId, score, levelType)
+		--ShareManager:onPassLevel(levelId, score, levelType)
 	end
 
 	local isNewBranchUnlock = self:checkHiddenAreaUnlockAchievement(levelId, levelType, star)
@@ -826,9 +876,10 @@ function GamePlaySceneUI:passLevel(levelId, score, star, stageTime, coin, target
 							onSendPassLevelMessageSuccessCallback)
 	passLevelLogic:start()
 
-	if isNewBranchUnlock then
-		SharePanel:onUnlockHiddenLevel()
-	end
+	print("---------------------------------------------------"..ShareManager.ConditionType.UNLOCK_HIDEN_LEVEL)
+	ShareManager:setShareData(ShareManager.ConditionType.UNLOCK_HIDEN_LEVEL, isNewBranchUnlock)
+	ShareManager:shareWithID(ShareManager.UNLOCK_HIDEN_LEVEL)
+
 end
 
 function GamePlaySceneUI:checkHiddenAreaUnlockAchievement(levelId, levelType, newStar)
@@ -868,19 +919,32 @@ function GamePlaySceneUI:checkScoreAndCompleteAchievement(score)
 	local topLevelId = UserManager:getInstance():getUserRef():getTopLevelId()
 	local function onCompleteSuccess(evt)
 		if self.isDisposed then return end
-		if self.levelId == maxTopLevel and evt.data and evt.data.passNum and evt.data.passNum < 1000 then
-			setTimeOut(function()
-				if not self.isDisposed then SharePanel:onPassAllLevels() end
-			end, 1 / 60)
+		local num = 10000
+		if evt.data and evt.data.passNum  then
+			num = evt.data.passNum
 		end
+		setTimeOut(function()
+				if not self.isDisposed then 
+					ShareManager:setShareData(ShareManager.ConditionType.PASS_NUM, num)
+					ShareManager:shareWithID(ShareManager.HIGHEST_LEVEL)
+				 end
+			end, 1 / 60)
 	end
 	local function onRankSuccess(evt)
 		if self.isDisposed then return end
+
+		local share = false
+
 		if evt.data and evt.data.share then
-			setTimeOut(function()
-				if not self.isDisposed then SharePanel:onBetterRankInServer() end
-			end, 1 / 60)
+			share = evt.data.share
 		end
+
+		setTimeOut(function()
+				if not self.isDisposed then 
+					ShareManager:setShareData(ShareManager.ConditionType.OVER_SELF_RANK, share)
+					ShareManager:shareWithID(ShareManager.OVER_SELF_RANK)
+				 end
+			end, 1 / 60)
 	end
 	local completeRequest = self.levelId == maxTopLevel and self.levelId == topLevelId and (not oldScore or not oldScore.score)
 	local rankRequest = not oldScore or not oldScore.score or oldScore.score < score
@@ -889,12 +953,23 @@ function GamePlaySceneUI:checkScoreAndCompleteAchievement(score)
 		local completeHttp = GetPassNumHttp.new()
 		completeHttp:addEventListener(Events.kComplete, onCompleteSuccess)
 		completeHttp:load(self.levelId)
+	else
+		onCompleteSuccess({})
 	end
-	if rankRequest then
-		local rankHttp = GetShareRankHttp.new()
-		rankHttp:addEventListener(Events.kComplete, onRankSuccess)
-		rankHttp:load(self.levelId, score)
+
+	--服务端优化，在pass level之后获取之前的排名
+	ShareManager.preLevel = self.levelId
+	if oldScore then
+		ShareManager.preScore = oldScore.score
 	end
+
+	-- if rankRequest then
+	-- 	local rankHttp = GetShareRankHttp.new()
+	-- 	rankHttp:addEventListener(Events.kComplete, onRankSuccess)
+	-- 	rankHttp:load(self.levelId, score)
+	-- else
+	-- 	onRankSuccess({})
+	-- end
 	if completeRequest and rankRequest then ConnectionManager:flush() end
 end
 
@@ -929,7 +1004,7 @@ function GamePlaySceneUI:failLevel(levelId, score, star, stageTime, coin, target
 		SyncManager:getInstance():sync()
 		local levelFailPanel = LevelFailPanel:create(levelId, levelType, score, star, isTargetReached, failReason)
 		levelFailPanel:popout(false)
-		SharePanel:onFailLevel(levelId, score)
+		ShareManager:onFailLevel(levelId, score)
 	end
 
 	local function onPassLevelMsgFailed()
@@ -937,7 +1012,7 @@ function GamePlaySceneUI:failLevel(levelId, score, star, stageTime, coin, target
 
 		local levelFailPanel = LevelFailPanel:create(levelId, levelType, score, star, isTargetReached, failReason)
 		levelFailPanel:popout(false)
-		SharePanel:onFailLevel(levelId, score)
+		ShareManager:onFailLevel(levelId, score)
 	end
 
 	PrePropRemindPanelModel:sharedInstance():increaseCounter(self.levelId)
@@ -976,10 +1051,11 @@ function GamePlaySceneUI:addStep(levelId, score, star, isTargetReached, isAddSte
 	assert(#{...} == 0)
 
 	local addStep5Number = UserManager:getInstance():getUserPropNumber(ItemType.ADD_FIVE_STEP)
-	local function onUseBtnTapped()
+	local function onUseBtnTapped(propId, propType)
 		isAddStepCallback(true)
 
-		self.propList:setItemNumber(ItemType.ADD_FIVE_STEP, addStep5Number-1)
+		self.propList:setItemNumber(ItemType.ADD_FIVE_STEP, addStep5Number)
+		self.propList:useItemWithType(propId, propType)
 		self.propList:hideAddMoveItem()
 
 		-- Re Enable Pause Btn
@@ -1006,7 +1082,7 @@ function GamePlaySceneUI:showAddTimePanel(levelId, score, star, isTargetReached,
 	assert(type(isTargetReached)	== "boolean")
 	assert(type(addTimeCallback)	== "function")
 	assert(#{...} == 0)
-	local function onUseBtnTapped()
+	local function onUseBtnTapped(propId, propType)
 		addTimeCallback(true)
 
 		-- Re Enable Pause Btn
@@ -1029,7 +1105,7 @@ end
 function GamePlaySceneUI:showAddRabbitMissilePanel( levelId, score, star, isTargetReached, isAddPropCallback )
 	-- body
 	local propsNumber = UserManager:getInstance():getUserPropNumber(ItemType.RABBIT_MISSILE)
-	local function onUseBtnTapped()
+	local function onUseBtnTapped(propId, propType)
 		isAddPropCallback(true)
 		self:setPauseBtnEnable(true)
 	end
@@ -1091,12 +1167,12 @@ function GamePlaySceneUI:confirmPropUsed(pos, ...)
 	local function onUsePropSuccess()
 		self.propList:confirm(self.needConfirmPropId, pos)
 		self.needConfirmPropId 			= false
-		self.needConfirmPropIsTempProperty 	= false
+		-- self.needConfirmPropIsTempProperty 	= false
 	end
 	local function onUsePropFail(evt)
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)))
 	end
-	self:sendUsePropMessage(self.needConfirmPropId, self.needConfirmPropIsTempProperty, onUsePropSuccess, onUsePropFail)
+	self:sendUsePropMessage(self.needConfirmPropId, self.usePropType, onUsePropSuccess, onUsePropFail)
 end
 
 function GamePlaySceneUI:setPauseBtnEnable(enable, ...)

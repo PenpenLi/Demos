@@ -41,8 +41,12 @@ end
 
 --time
 function Localhost:time()
+	return Localhost:timeInSec() * 1000
+end
+-- add in version 1.20
+function Localhost:timeInSec()
 	local time = __g_utcDiffSeconds or 0
-	return (os.time() + time) * 1000
+	return (os.time() + time)
 end
 function Localhost:getDefaultConfig()
 	local config = self:readFromStorage(kDefaultConfigName)
@@ -74,13 +78,14 @@ function Localhost:saveGmeCenterEnable( v )
 end
 
 -- open Id
-function Localhost:setCurrentUserOpenId( openId )
+function Localhost:setCurrentUserOpenId( openId , accessToken)
 	local uid = UserManager.getInstance().uid
 	if uid then
-		print("setCurrentUserOpenId:uid="..tostring(uid)..",openId="..tostring(openId))
+		print("setCurrentUserOpenId:uid="..tostring(uid)..",openId="..tostring(openId) .. ",accessToken="..tostring(accessToken))
 		local fileName = self:getUserLocalKeyByUserID(uid)
 		local userData = self:readFromStorage(fileName) or {}
 		userData.openId = openId
+		userData.accessToken = accessToken
 		userData.authorType = SnsProxy:getAuthorizeType()
 		--print(table.tostring(userData))
 		self:writeToStorage(userData, fileName)
@@ -412,6 +417,15 @@ function Localhost:useProps( itemType, levelId, gameMode, param, itemList, reque
 
 	if itemType == 1 then
 		StageInfoLocalLogic:subTempProps( uid, itemList )
+	end
+
+	if itemType == 3 then
+		local succeed, err = ItemLocalLogic:hasEnoughTimeProps(uid, itemList)
+		if succeed then
+			ItemLocalLogic:useTimeProps(uid, itemList)
+		else
+			return false, err
+		end
 	end
 	
 	if itemType == 2 then

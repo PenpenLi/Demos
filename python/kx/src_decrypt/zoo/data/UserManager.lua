@@ -63,6 +63,7 @@ function UserManager:reset()
 	-- 
 	self.updateInfo = {}
 	self.updateReward = {}
+	self.timeProps = {}
 
 end
 
@@ -241,6 +242,9 @@ function UserManager:clone(dst)
 	dst.lastCheckTime = self.lastCheckTime
 	dst.userReward = self.userReward
 	dst.rabbitWeekly = self.rabbitWeekly
+	dst.dimePlat = self.dimePlat
+	dst.dimeProvince = self.dimeProvince
+	dst.timeProps = cloneClassTableArray(self.timeProps, TimePropRef)
 end
 
 
@@ -312,6 +316,16 @@ function UserManager:initFromLua( src )
 			self.props[i] = p
 		end
 	end
+
+	-- 限时道具
+	self.timeProps = {}
+	if src.timeProps then
+		for i,v in ipairs(src.timeProps) do
+			local p = TimePropRef.new()
+			p:fromLua(v)
+			self.timeProps[i] = p
+		end
+	end
 		
 	--用户功能信息,只在访问自己信息的时候返回
 
@@ -353,7 +367,7 @@ function UserManager:initFromLua( src )
 	end
 
 	----------- 暂时只针对应用宝平台，重新计算客户端支持的星星数 ----------
-	if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+	if PlatformConfig:isQQPlatform() then
 		local userStars = 0
 		local areaMaxLevel = self:getMaxLevelInOpenedRegion()
 		for k, v in pairs(self.scores) do 
@@ -467,6 +481,20 @@ function UserManager:initFromLua( src )
 	self.rabbitWeekly = src.rabbitWeekly
 	--用户流失类型 RecallRewardType之一
 	self.lostType = src.lostType
+
+	-- android dime middle energy
+	self.dimePlat = src.dimePlat
+	if type(self.dimePlat) == "table" then
+		for k, v in ipairs(self.dimePlat) do
+			self.dimePlat[k] = string.gsub(v, '\"', '')
+		end
+	else self.dimePlat = {} end
+	self.dimeProvince = src.dimeProvince
+	if type(self.dimeProvince) == "table" then
+		for k, v in ipairs(self.dimeProvince) do
+			self.dimeProvince[k] = string.gsub(v, '\"', '')
+		end
+	else self.dimeProvince = {} end
 end
 
 function UserManager:syncUserData( src )
@@ -703,6 +731,67 @@ function UserManager:addUserPropNumber(itemId, deltaNumber, ...)
 	self:setUserPropNumber(itemId, newNumber)
 end
 
+function UserManager:getAndUpdateTimeProps()
+	-- print("getAndUpdateTimeProps:", table.tostring(self.timeProps))
+	local timeProps = {}
+	if self.timeProps and #self.timeProps > 0 then
+		local curTimeInSec = Localhost:timeInSec()
+		for k,v in pairs(self.timeProps) do
+			-- 转为s计算更准确
+			if math.floor(v.expireTime / 1000) > curTimeInSec and v.num > 0 then
+				table.insert(timeProps, v)
+			end
+		end
+		if #timeProps > 0 then
+			table.sort( timeProps, function( a, b )
+				return a.expireTime < b.expireTime
+			end )
+		end
+	end
+	self.timeProps = timeProps
+	return self.timeProps
+end
+
+function UserManager:getTimePropsByRealItemId(realItemId)
+	local ret = {}
+
+	if self.timeProps then
+		for i,v in ipairs(self.timeProps) do
+			if v.num > 0 and ItemType:getRealIdByTimePropId(v.itemId) == realItemId then
+				local p = TimePropRef.new()
+				p:fromLua(v)
+				table.insert(ret, p)
+			end
+		end
+	end
+	return ret
+end
+
+function UserManager:getUserTimePropNumber(itemId)
+	local num = 0
+	if self.timeProps then
+		for _,v in pairs(self.timeProps) do
+			if v.itemId == itemId then
+				num = num + v.num
+			end
+		end
+	end
+	return num
+end
+
+function UserManager:useTimeProp(itemId)
+	-- print("UserManager:useTimeProp:", itemId)
+	if self:getUserTimePropNumber(itemId) < 1 then return false end
+
+	for i,v in ipairs(self.timeProps) do
+		if itemId == v.itemId and v.num > 0 then
+			v.num = v.num - 1
+			return true
+		end
+	end
+	return false
+end
+
 function UserManager:addUserDeco( deco )
 	if self:getUserDeco(deco.itemId) == nil then
 		table.insert(self.decos, deco)
@@ -869,4 +958,12 @@ function UserManager:setUserRewardBit(bitIndex, setToTrue)
 		end
 	end
 	return self.userReward.rewardFlag
+end
+
+function UserManager:getDimePlatforms()
+	return self.dimePlat
+end
+
+function UserManager:getDimeProvinces()
+	return self.dimeProvince
 end

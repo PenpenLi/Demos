@@ -26,7 +26,7 @@ GameItemActionType = table.const	--Item自动播放动画细节
 {
 	kNone = 0,
 	kItemDeletedByMatch = 2,		--因为match消除-----播放消除动画，同时进行相应计算
-	kItemCoverBySpecial = 3,		--Item被特效覆盖----播放消除动画，同时进行相应计算
+	kItemCoverBySpecial = 3,		--已废弃
 
 	kItemSpecial_Line = 4,			--Item处发起直线特效_横排
 	kItemSpecial_Column = 5,		--Item处发起直线特效_竖排
@@ -114,6 +114,8 @@ GameItemActionType = table.const	--Item自动播放动画细节
 	kItem_Halloween_Boss_Create = 113,
 	kItem_Magic_Tile_Change = 114,
 	kItem_Halloween_Boss_Casting = 115,
+	kItem_Sand_Clean	= 116,			-- 流沙消除
+	kItem_Sand_Transfer	= 117,			-- 流沙流动
 }
 
 GamePropsActionType = table.const 	--游戏道具播放动画细节

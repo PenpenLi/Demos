@@ -21,6 +21,7 @@ end
 function MagicLampReinitState:onEnter()
     BaseStableState.onEnter(self)
     self.nextState = nil
+    self.hasItemToHandle = false
     self:tryHandleReinit()
 end
 
@@ -66,6 +67,7 @@ function MagicLampReinitState:tryHandleReinit()
     local function actionCallback ()
         count = count + 1
         if count >= #lamps then
+            self.hasItemToHandle = true
             self:onActionComplete()
         end
     end
@@ -109,10 +111,18 @@ end
 
 function MagicLampReinitState:onActionComplete()
     self.nextState = self:getNextState()
-    self.context:onEnter()
+    if self.hasItemToHandle then
+        self.context:onEnter()
+    end
 end
 
 function MagicLampReinitState:getNextState()
     return self.context.needRefreshState
+end
+
+function MagicLampReinitState:onExit()
+    BaseStableState.onExit(self)
+    self.hasItemToHandle = nil
+    self.nextState = nil
 end
 

@@ -296,8 +296,15 @@ function RankList:init(levelId, panelWithRank, ...)
 		elseif rankType == RankListCacheRankType.FRIEND then
 
 			local curFriendRank = UserManager:getInstance().selfNumberInFriendRank[self.levelId]
-			if self.panelWithRank.panelName == "levelSuccessPanel" and curFriendRank == 1 then
-				SharePanel:onFriendRankFirst()
+			if self.panelWithRank.panelName == "levelSuccessPanel" then
+				ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK, curFriendRank)
+				if self.rankListCache and self.rankListCache.friendRankList then
+					ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK_LIST, self.rankListCache.friendRankList)
+					ShareManager:setShareData(ShareManager.ConditionType.PASS_FRIEND_NUM, #self.rankListCache.friendRankList - 1)
+				end
+				ShareManager:shareWithID(ShareManager.FRIST_RANK_FRIEND)
+				ShareManager:shareWithID(ShareManager.SCORE_OVER_FRIEND)
+				ShareManager:shareWithID(ShareManager.LEVEL_OVER_FRIEND)
 			end
 
 			self.isFriendRankHasData = true

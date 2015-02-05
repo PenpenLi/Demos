@@ -59,6 +59,7 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kHoneyBottle] = {"flash/honey_bottle.plist"},
 	[TileConst.kAddTime]	 = {"flash/add_time.plist"},
 	[TileConst.kMagicTile]	 = {"flash/magic_tile.plist"},
+	-- [TileConst.kSand]	 = {"flash/sand_idle_clean.plist", "flash/sand_move.plist"},
 }
 -----------------------------------------------------------------------------
 -- base map config vo [LevelConfig]

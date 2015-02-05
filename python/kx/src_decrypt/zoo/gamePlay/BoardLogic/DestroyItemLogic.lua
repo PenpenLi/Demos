@@ -76,8 +76,7 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 
 	if theAction.actionType == GameItemActionType.kItemDeletedByMatch then 			--被匹配消除
 		DestroyItemLogic:runGameItemDeletedByMatch(mainLogic, theAction, actid)	
-	elseif theAction.actionType == GameItemActionType.kItemCoverBySpecial
-		or theAction.actionType == GameItemActionType.kItemCoverBySpecial_Color then 			--被特效消除
+	elseif theAction.actionType == GameItemActionType.kItemCoverBySpecial_Color then 			--被特效消除
 		DestroyItemLogic:runGameItemSpecialCoverAction(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItemSpecial_Color_ItemDeleted then 		----鸟和普通动物交换、爆炸---》普通物体最终被消耗掉
 		DestroyItemLogic:runGameItemSpecialBombColorAction_ItemDeleted(mainLogic, theAction, actid)
@@ -111,6 +110,16 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runningGameItemActionHoneyBottleIncrease(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItemDestroy_HoneyDec then
 		DestroyItemLogic:runningGameItemActionHoneyDec(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Sand_Clean then
+		DestroyItemLogic:runningGameItemActionCleanSand(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then
+		DestroyItemLogic:runningGameItemActionIceDec(mainLogic, theAction, actid, actByView)	
+	end
+end
+
+function DestroyItemLogic:runningGameItemActionIceDec(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == "over" then
+		mainLogic.destroyActionList[actid] = nil
 	end
 end
 
@@ -119,9 +128,10 @@ function DestroyItemLogic:runningGameItemActionHoneyDec(mainLogic, theAction, ac
 	if not theAction.hasMatch then
 		theAction.hasMatch = true
 		local r,c  = theAction.ItemPos1.x, theAction.ItemPos1.y
+		mainLogic.gameItemMap[r][c].isNeedUpdate = true
 		mainLogic:checkItemBlock(r, c)
 		mainLogic:addNeedCheckMatchPoint(r, c)
-	elseif theAction.addInfo == "over" then
+	elseif theAction.actionStatus == GameActionStatus.kWaitingForDeath then
 		mainLogic.destroyActionList[actid] = nil
 	end
 end
@@ -225,8 +235,7 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 			DestroyItemLogic:runGameItemDeletedByMatchAction(boardView, theAction)
 		end
-	elseif theAction.actionType == GameItemActionType.kItemCoverBySpecial
-		or theAction.actionType == GameItemActionType.kItemCoverBySpecial_Color then  		----cover消除
+	elseif theAction.actionType == GameItemActionType.kItemCoverBySpecial_Color then  		----cover消除
 		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 			DestroyItemLogic:runGameItemActionCoverBySpecial(boardView, theAction)
 		end
@@ -299,6 +308,46 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		DestroyItemLogic:runGameItemActionHoneyBottleInc(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItemDestroy_HoneyDec then
 		DestroyItemLogic:runGameItemActionHoneyDec(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Sand_Clean then
+		DestroyItemLogic:runGameItemActionSandClean(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then
+		DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)				
+	end
+end
+
+-----播放消除冰层的动画------
+function DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r1 = theAction.ItemPos1.x;
+		local c1 = theAction.ItemPos1.y;
+		local item = boardView.baseMap[r1][c1];
+		local function onAnimCompleted()
+			theAction.addInfo = "over"
+		end
+		item:playIceDecEffect(onAnimCompleted)
+		GamePlayMusicPlayer:playEffect(GameMusicType.kIceBreak)				
+	end
+end
+
+function DestroyItemLogic:runGameItemActionSandClean(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+
+		local function onAnimCompleted()
+			theAction.addInfo = "over"
+		end
+		item:playSandClean(onAnimCompleted)
+	end
+end
+
+function DestroyItemLogic:runningGameItemActionCleanSand(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == "over" then
+		mainLogic.destroyActionList[actid] = nil
 	end
 end
 
@@ -306,14 +355,10 @@ function DestroyItemLogic:runGameItemActionHoneyDec(boardView, theAction)
 	-- body
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning
-		local function callback( ... )
-			-- body
-			theAction.addInfo = "over"
-		end
 		local r = theAction.ItemPos1.x
 		local c = theAction.ItemPos1.y
 		local itemView = boardView.baseMap[r][c]
-		itemView:playHoneyDec(callback)
+		itemView:playHoneyDec()
 	end
 end
 
@@ -398,16 +443,9 @@ function DestroyItemLogic:runGameItemSpecialCoverAction(mainLogic, theAction, ac
 			local c1 = theAction.ItemPos1.y
 			local gameItem = mainLogic.gameItemMap[r1][c1]
 
-			if (gameItem.ItemType == GameItemType.kAnimal 		-----动物
-				or gameItem.ItemType == GameItemType.kCrystal
-				or gameItem.ItemType == GameItemType.kGift 
-				or gameItem.ItemType == GameItemType.kCoin
-				or gameItem.ItemType == GameItemType.kBalloon
-				or gameItem.ItemType == GameItemType.kAddMove
-				or gameItem.ItemType == GameItemType.kAddTime)
+			if gameItem.ItemType == GameItemType.kAnimal 		-----动物
 				and not gameItem:hasFurball()
 				then
- 
 				gameItem:cleanAnimalLikeData()
 				mainLogic:setNeedCheckFalling()
 			end
@@ -732,15 +770,11 @@ end
 
 function DestroyItemLogic:runGameItemViewMonsterFrostingDec(boardView, theAction)
 	-- body
-	local function animationCallback( ... )
-		-- body
-		theAction.actionStatus = GameActionStatus.kWaitingForDeath
-	end
 	theAction.actionStatus = GameActionStatus.kRunning
 	local r = theAction.ItemPos1.x
 	local c = theAction.ItemPos1.y
 	local item = boardView.baseMap[r][c]
-	item:playMonsterFrostingDec(animationCallback)
+	item:playMonsterFrostingDec()
 
 	local r_m , c_m = BigMonsterLogic:findTheMonster( boardView.gameBoardLogic, r, c )
 	if r_m and c_m then
@@ -760,7 +794,7 @@ function DestroyItemLogic:runGameItemViewBlackCuteBallDec(boardView, theAction)
 	-- body
 	local function animationCallback( ... )
 		-- body
-		theAction.actionStatus = GameActionStatus.kWaitingForDeath
+		-- theAction.actionStatus = GameActionStatus.kWaitingForDeath
 	end
 	theAction.actionStatus = GameActionStatus.kRunning
 	local r = theAction.ItemPos1.x

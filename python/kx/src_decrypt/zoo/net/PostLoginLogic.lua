@@ -3,6 +3,7 @@ function PostLoginLogic:ctor()
 	self.syncTimes = 0
 end
 function PostLoginLogic:onError()
+	_G.kUserLogin = false
 	self:dispatchEvent(Event.new(Events.kError, nil, self))
 end
 function PostLoginLogic:onFinish()
@@ -13,17 +14,28 @@ function PostLoginLogic:stopTimeout()
 	if self.timeoutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.timeoutID) end
 	print("PostLoginLogic:: stop timeout check")
 end
+
 function PostLoginLogic:load(timeout)
 	timeout = timeout or 10
 	local function onTimeout()
 		self.isNotTimeout = false
 		self:stopTimeout()
 		self:onError()
-		print("timeout @ PostLoginLogic")
+		-- print("timeout @ PostLoginLogic")
 	end
 	self.isNotTimeout = true
-	self.timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout,timeout,false)
+	self.timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout, timeout,false)
 
+    local localUserConfig = Localhost.getInstance():getLastLoginUserConfig()
+    if localUserConfig and localUserConfig.uid ~= 0 and localUserConfig.uid ~= localUserConfig.sk then
+		local platform = kDefaultSocialPlatform
+    	self:login(localUserConfig.uid, localUserConfig.sk, platform)
+    else
+    	self:registerAndLogin()
+    end
+end
+
+function PostLoginLogic:registerAndLogin()
 	local function onRegisterError( evt )
 		if evt then evt.target:removeAllEventListeners() end
 		print("register error")
@@ -35,7 +47,6 @@ function PostLoginLogic:load(timeout)
 			local userId = kTransformedUserID
 			local sessionKey = kDeviceID
 			local platform = kDefaultSocialPlatform
-			print("post register finished", userId, sessionKey, platform)
 			self:login(userId, sessionKey, platform)
 		else self:onError() end
 	end 
@@ -70,7 +81,7 @@ function PostLoginLogic:login( userId, sessionKey, platform )
 		if self.isNotTimeout then self:onError() end
 	end
 	local function onLoginFinish( evt )
-		evt.target:removeAllEventListeners()		
+		evt.target:removeAllEventListeners()
 		if self.isNotTimeout then
 			_G.kUserLogin = true
 			if type(evt.data) == "table" and type(evt.data.lastSeq) == "number" then

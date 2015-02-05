@@ -134,6 +134,13 @@ function AddFriendPanelLogic:sendRecommendFriendMessage(uid, successCallback, fa
 	local function onFail(evt)
 		if failCallback then failCallback(evt.data, context) end
 	end
+	local count = FriendManager:getInstance():getFriendCount()
+	if count >= FriendManager:getInstance():getMaxFriendCount() then
+		if failCallback then
+			failCallback(731014, context) -- too many friends
+			return
+		end
+	end
 	local http = RequestFriendHttp.new(false)
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFail)
@@ -304,6 +311,13 @@ function AddFriendPanelLogic:sendShakeAddMessage(uid, successCallback, failCallb
 	end
 	local function onFail(evt)
 		if failCallback then failCallback(evt.data, context) end
+	end
+	local count = FriendManager:getInstance():getFriendCount()
+	if count >= FriendManager:getInstance():getMaxFriendCount() then
+		if failCallback then
+			failCallback(731014, context) -- too many friends
+			return
+		end
 	end
 	local http = ConfirmMatchHttp.new(false)
 	http:addEventListener(Events.kComplete, onSuccess)

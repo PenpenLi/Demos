@@ -51,16 +51,18 @@ local function getValidePositions(mainLogic, count)
 end
 
 function HalloweenBossState:onEnter()
+
+    self.hasItemToHandle = false
+
     BaseStableState.onEnter(self)
 
     if not self.mainLogic.gameMode:is(HalloweenMode) then
-        self.bossHandled = true
         self:handleComplete()
         return
     end
 
     local function dieCallback()
-        self.bossHandled = true
+        self.hasItemToHandle = true
         self:handleComplete()
     end
 
@@ -103,17 +105,16 @@ function HalloweenBossState:onEnter()
             if self.mainLogic.isInStep then
                 boss.move = boss.move + 1
             end
-            dieCallback()
+            self:handleComplete()
         end
     else
-        dieCallback()
+        self:handleComplete()
     end
 end
 
 function HalloweenBossState:handleComplete()
-    if self.bossHandled then
-        self.bossHandled = false
-        self.nextState = self:getNextState()
+    self.nextState = self:getNextState()
+    if self.hasItemToHandle then
         self.context:onEnter()
     end
 end
@@ -125,6 +126,8 @@ end
 function HalloweenBossState:onExit()
     BaseStableState.onExit(self)
     self.nextState = nil
+    self.bossHandled = false
+    self.hasItemToHandle = false
 end
 
 function HalloweenBossState:checkTransition()

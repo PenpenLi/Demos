@@ -15,7 +15,7 @@ ResourceConfig = {
 		"flash/mapBaseItem.plist",
 		"flash/link_item.plist",		
 		"flash/mapLight.plist",
-		"flash/gift.plist",
+		"flash/crystal_anim.plist",
 		"flash/destroy_effect.plist",		
 		"flash/tile_select.plist",
 		"flash/mapSnow.plist",
@@ -41,6 +41,8 @@ ResourceConfig = {
 		"flash/gameguide/guidespanImage.plist",
 		"flash/snail_road.plist",
 		"flash/dig_block.plist",
+		"flash/sand_idle_clean.plist",
+		"flash/sand_move.plist",
 	},
 	json={
 		"flash/scenes/homeScene/home.json",		
@@ -128,6 +130,7 @@ ResourceConfigPixelFormat["flash/mapSnow.plist"] = kCCTexture2DPixelFormat_RGBA4
 ResourceConfigPixelFormat["flash/mapLock.plist"] = kCCTexture2DPixelFormat_RGBA4444
 ResourceConfigPixelFormat["flash/gameguide/guidespanImage.plist"] = kCCTexture2DPixelFormat_RGBA8888 
 ResourceConfigPixelFormat["flash/scenes/homeScene/home.plist"] = kCCTexture2DPixelFormat_RGBA4444
+ResourceConfigPixelFormat["flash/sand_move.plist"] = kCCTexture2DPixelFormat_RGBA4444
 
 ResourceFntPixelFormat = {}
 ResourceFntPixelFormat["fnt/tutorial.fnt"] = kCCTexture2DPixelFormat_RGBA4444

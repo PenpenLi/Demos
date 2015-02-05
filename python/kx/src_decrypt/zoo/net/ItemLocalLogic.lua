@@ -362,3 +362,24 @@ function ItemLocalLogic:consumes( uid, consumeItems )
 	
 	return true
 end
+
+function ItemLocalLogic:hasEnoughTimeProps(uid, itemIds)
+	local itemNums = {}
+	for _,v in pairs(itemIds) do
+		local num = itemNums[v] or 0
+		itemNums[v] = num + 1
+	end
+
+	for itemId,num in pairs(itemNums) do
+		if UserService.getInstance():getUserTimePropNumber(itemId) < num then
+			return false, ZooErrorCode.PROP_NOT_ENOUGH
+		end
+	end
+	return true
+end
+
+function ItemLocalLogic:useTimeProps(uid, itemIds)
+	for _,v in pairs(itemIds) do
+		UserService.getInstance():useTimeProp(v)
+	end
+end

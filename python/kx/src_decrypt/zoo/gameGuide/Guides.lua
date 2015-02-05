@@ -1011,7 +1011,9 @@ Guides = table.const
 				maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
 			},
 		},
-		disappear = {}
+		disappear = {
+			{type = "popup"},
+		}
 	},
 	[311] = {
 		appear = {
@@ -1028,7 +1030,9 @@ Guides = table.const
 				maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
 			},
 		},
-		disappear = {}
+		disappear = {
+			{type = "popup"},
+		}
 	},
 	--第47关，目标是直线特效时候的引导
 	[470] = {
@@ -2052,7 +2056,26 @@ Guides = table.const
 			disappear = {
 				{type = "swap", from = ccp(2, 7), to = ccp(2, 8)},
 			},
-		}
+		},
+--第496关，流沙说明
+	[4960] = {
+			appear = {
+				{type = "scene", scene = "game", para = 496},
+				{type = "numMoves", para = 0},
+				{type = "topLevel", para = 496},
+				{type = "noPopup"},
+				{type = "onceOnly"},
+				{type = "onceLevel"}
+			},
+			action = {
+				[1] = {type = "showTile", opacity = 0xCC, 
+					array = {{r = 6, c = 4, countR = 3, countC = 3}}, 
+					text = "tutorial.game.text49600",panType = "up", panAlign = "matrixD", panPosY = 7 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},			
+			},
+			disappear = {},
+		},
 }
 
 GuideSeeds = table.const

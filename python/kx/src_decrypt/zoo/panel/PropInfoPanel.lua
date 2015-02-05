@@ -88,7 +88,9 @@ function PropInfoPanel:init(panelType, levelId)
 		local initialProps = metaManager.gamemode_prop[levelModeTypeId].initProps
 
 		for __, v in ipairs(initialProps) do
-			self:buildPropListItem(v)
+			if not ItemType:isTimeProp(v) then
+				self:buildPropListItem(v)
+			end
 		end
 	else
 		local metaModel = MetaModel:sharedInstance()
@@ -96,7 +98,9 @@ function PropInfoPanel:init(panelType, levelId)
 		local levelModeTypeId = metaModel:getLevelModeTypeId(levelId)
 		local InGamePropsId = metaManager.gamemode_prop[levelModeTypeId].ingameProps
 		for __, v in ipairs(InGamePropsId) do
-			self:buildPropListItem(v)
+			if not ItemType:isTimeProp(v) then
+				self:buildPropListItem(v)
+			end
 		end
 	end
 	for i = 1, #self.propList do

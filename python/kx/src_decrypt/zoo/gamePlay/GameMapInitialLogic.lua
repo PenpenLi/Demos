@@ -108,11 +108,9 @@ function GameMapInitialLogic:initColorAndSpecialData(mainLogic, animalMap, numbe
 			item:initByAnimalDef(animalDef)
 			if item.ItemType == GameItemType.kAnimal then
 				if mainLogic.colortypes[item.ItemColorType] == nil then			--辅助统计颜色
-					if item.ItemColorType ~= 0 then
+					-- 当统计到的物体颜色数量超过了指定颜色数量后，其他的指定颜色不再被统计，并且不会自动生成其他颜色的物体
+					if item.ItemColorType ~= 0 and table.size(mainLogic.colortypes) < numberOfColors then
 						mainLogic.colortypes[item.ItemColorType] = true
-						if table.size(mainLogic.colortypes) >= numberOfColors then
-							return 
-						end
 					end
 				end
 			end
@@ -291,8 +289,8 @@ function GameMapInitialLogic:randomSetColor(mainLogic, r, c)
 	local success = true
 	if mainLogic.gameItemMap[r][c] ~= nil then
 		if mainLogic.gameItemMap[r][c]:isColorful() then 			--可以随机颜色的物体
-			if mainLogic.gameItemMap[r][c].ItemColorType == AnimalTypeConfig.kRandom 
-				and mainLogic.gameItemMap[r][c].ItemSpecialType ~= AnimalTypeConfig.kColor then		--随机类型
+			if mainLogic.gameItemMap[r][c].ItemColorType == AnimalTypeConfig.kRandom 			--随机类型
+				and mainLogic.gameItemMap[r][c].ItemSpecialType ~= AnimalTypeConfig.kColor then	
 				local color = 0
 				local counter = 0
 				while true do 

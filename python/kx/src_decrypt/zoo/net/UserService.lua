@@ -64,6 +64,10 @@ function UserService:encode()
 
 	dst.lastCheckTime = self.lastCheckTime
 
+	dst.dimePlat = self.dimePlat
+	dst.dimeProvince = self.dimeProvince
+	dst.timeProps = encodeListDataRef(self.timeProps)
+
 	return dst
 end
 

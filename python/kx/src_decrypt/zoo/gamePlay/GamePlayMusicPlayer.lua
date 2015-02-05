@@ -62,6 +62,68 @@ function GamePlayMusicPlayer:ctor()
 	self.IsBackgroundMusicOPen = not CCUserDefault:sharedUserDefault():getBoolForKey("game.disable.background.music")
 	self.normalBgMusicVolume = SimpleAudioEngine:sharedEngine():getBackgroundMusicVolume()
 	self.curBgMusicFile = false
+	self.bgMusicDelay = -1
+end
+
+function GamePlayMusicPlayer:enterBackground()
+	if self.IsBackgroundMusicOPen then
+		SimpleAudioEngine:sharedEngine():stopBackgroundMusic(true)
+		self:disposeBgMusicDelay()
+		--SimpleAudioEngine:sharedEngine():pauseBackgroundMusic()
+	end
+
+	if self.IsMusicOpen then
+		SimpleAudioEngine:sharedEngine():pauseAllEffects()
+	end
+
+	self:disposeBgMusicDelay()
+end
+
+function GamePlayMusicPlayer:enterForeground()
+	if self.IsBackgroundMusicOPen then
+		if self.curBgMusicFile then
+			SimpleAudioEngine:sharedEngine():playBackgroundMusic(self.curBgMusicFile, true)
+		end
+	end
+
+	if self.IsMusicOpen then
+		SimpleAudioEngine:sharedEngine():resumeAllEffects()
+	end
+end
+
+function GamePlayMusicPlayer:appPause()
+	if self.IsBackgroundMusicOPen then
+		SimpleAudioEngine:sharedEngine():stopBackgroundMusic(true)
+	end
+
+	if self.IsMusicOpen then
+		SimpleAudioEngine:sharedEngine():pauseAllEffects()
+	end
+end
+
+function GamePlayMusicPlayer:appResume()
+	if self.IsBackgroundMusicOPen then
+		if self.curBgMusicFile then
+			local function cb()
+				if not SimpleAudioEngine:sharedEngine():isBackgroundMusicPlaying() then
+					SimpleAudioEngine:sharedEngine():playBackgroundMusic(self.curBgMusicFile, true)
+				end
+				self:disposeBgMusicDelay()
+			end
+			self.bgMusicDelay = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(cb, 1, false)
+		end
+	end
+
+	if self.IsMusicOpen then
+		SimpleAudioEngine:sharedEngine():resumeAllEffects()
+	end
+end
+
+function GamePlayMusicPlayer:disposeBgMusicDelay()
+	if self.bgMusicDelay >= 0 then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.bgMusicDelay) 
+		self.bgMusicDelay = -1
+	end
 end
 
 function GamePlayMusicPlayer:pauseBackgroundMusic(...)
@@ -73,6 +135,8 @@ function GamePlayMusicPlayer:pauseBackgroundMusic(...)
 	local config = CCUserDefault:sharedUserDefault()
 	config:setBoolForKey("game.disable.background.music", true)
 	config:flush()
+
+	self:disposeBgMusicDelay()
 end
 
 function GamePlayMusicPlayer:resumeBackgroundMusic(...)

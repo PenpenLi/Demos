@@ -10,7 +10,7 @@ function LoginHttp:load()
 	local loadCallback = function(endpoint, data, err)
 		if err then
 	    	he_log_info("game login fail, err: " .. err)
-	    	context:onLoadingComplete()
+	    	context:onLoadingError(err)
 	    else
 	    	he_log_info("game login success")
 	    	context:onLoadingComplete(data)
@@ -561,7 +561,7 @@ function QQConnectHttp:load(openId, accessToken)
 		end
 	end
 	local connectProtocol = "otherConnect"
-	if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+	if PlatformConfig:isQQPlatform() then
 		connectProtocol = "qqConnect"
 	end
 	local params = {openId=openId,accessToken=accessToken}
@@ -587,7 +587,7 @@ function PreQQConnectHttp:load(openId, accessToken, haveSyncCache)
 		end
 	end
 	local connectProtocol = "preOtherConnectV2"
-	if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+	if PlatformConfig:isQQPlatform() then
 		connectProtocol = "preQqConnectV2"
 	end
 	-- print("openId="..openId..",accessToken="..accessToken)
@@ -597,6 +597,34 @@ function PreQQConnectHttp:load(openId, accessToken, haveSyncCache)
 	end
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
+
+PreQQConnectV1Http = class(HttpBase)
+function PreQQConnectV1Http:load(openId, accessToken, haveSyncCache)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("QQConnectHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("QQConnectHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	local connectProtocol = "preOtherConnect"
+	if PlatformConfig:isQQPlatform() then
+		assert(false)
+		-- connectProtocol = "preQqConnect"
+	end
+	-- print("openId="..openId..",accessToken="..accessToken)
+	local params = {openId=openId,accessToken=accessToken,hasCache=haveSyncCache}
+	if __ANDROID then
+		params.snsPlatform = PlatformConfig:getPlatformAuthName()
+	end
+	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+
 -- 
 -- SyncSnsFriendHttp ----------------------------------------------------
 -- 
@@ -915,6 +943,44 @@ function GetShareRankHttp:load(levelId, score)
 	self.transponder:call(kHttpEndPoints.getShareRank, {levelId = levelId, score = score}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
+--
+-- getShareRankWithPosition ---------------------------------------------------------
+--
+getShareRankWithPosition = class(HttpBase)
+function getShareRankWithPosition:load(levelId, score)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("getShareRankWithPosition error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("getShareRankWithPosition success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getShareRankWithPosition, {levelId = levelId, score = score}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--
+-- CanSendLinkShowOff ---------------------------------------------------------
+--
+CanSendLinkShowOff = class(HttpBase)
+function CanSendLinkShowOff:load(levelId, score)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("CanSendLinkShowOff error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("CanSendLinkShowOff success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.canSendLinkShowOff, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
 GetWeekMatchDataHttp = class(HttpBase)
 function GetWeekMatchDataHttp:load(levelId)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
@@ -1012,7 +1078,7 @@ if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) e
 end
 
 MergeConnectHttp = class(HttpBase)
-function MergeConnectHttp:load(openIdFrom, pfFrom, openIdTo, pfTo)
+function MergeConnectHttp:load(weiboOpenId, qqOpenId)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -1024,7 +1090,7 @@ function MergeConnectHttp:load(openIdFrom, pfFrom, openIdTo, pfTo)
 			context:onLoadingComplete(data)
 		end
 	end
-	self.transponder:call(kHttpEndPoints.mergeConnect, {openIdFrom=openIdFrom, openIdTo=openIdTo, snsPlatformFrom=pfFrom, snsPlatformTo=pfTo}, loadCallback, rpc.SendingPriority.kHigh, false)
+	self.transponder:call(kHttpEndPoints.mergeConnect, {weiboOpenId = weiboOpenId, qqOpenId = qqOpenId}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 ClickActivityHttp = class(HttpBase)
@@ -1096,6 +1162,9 @@ end
 
 OpNotifyType = {
 	kShare = 1, --分享
+	kNewYearAsk = 2,
+	kXuanYao = 3,
+	kSpringVideo = 4,--新春点击视频统计
 }
 OpNotifyHttp = class(HttpBase)
 function OpNotifyHttp:load(opType, param)

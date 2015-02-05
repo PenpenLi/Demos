@@ -14,6 +14,10 @@ HomeSceneEvents = {
 	USERMANAGER_ENERGY_CHANGE		= "HomeSceneEvents.USERMANAGER_ENERGY_CHANGE"
 }
 
+OpenUrlEvents = {
+	kActivityShare = "OpenUrlEvents.kActivityShare",
+}
+
 require "hecore.ui.LayoutBuilder"
 
 require "zoo.model.MetaModel"
@@ -427,7 +431,8 @@ function HomeScene:onInit(Scene, ...)
 	end
 
 	self.goldButton:setOnTappedCallback(popBuyGoldPanel)
-	if __IS_TOTAY_FIRST_LOGIN and not isGoldButtonTipShowed() then
+	local userLevel = UserManager:getInstance():getUserRef():getTopLevelId()
+	if __IS_TOTAY_FIRST_LOGIN and not isGoldButtonTipShowed() and userLevel >= 20 then
 		self.goldButton:playOnlyTipAnim();
 		CCUserDefault:sharedUserDefault():setBoolForKey("gold.button.tip.showed", true);
 	end
@@ -473,27 +478,29 @@ function HomeScene:onInit(Scene, ...)
 	pauseBtnBubbleBg:runAction(repeatForever)
 
 	-- cdkey panel's not here anymore.
-	if not CCUserDefault:sharedUserDefault():getBoolForKey("cdkey.panel.change.place") then
-		local user = UserManager:getInstance():getUserRef()
-		if user:getTopLevelId() > 1 then
-			local position = self.pauseBtnRes:getPosition()
-			local size = self.pauseBtnRes:getGroupBounds().size
-			local origin = Director:sharedDirector():getVisibleOrigin()
-			local wPos = self:convertToWorldSpace(ccp(position.x, position.y))
-			wPos = {x = wPos.x - origin.x + size.width / 2, y = wPos.y - origin.y - size.height / 2}
-			local panel = InnerNotiPanel:create({text = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti", {n = '\n'}),
-				btnText = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti.button"),
-				enterPos = wPos, exitPos = wPos})
-			if panel then self:runAction(CCCallFunc:create(function() panel:popout() end)) end
+	if MaintenanceManager:getInstance():isEnabled("CDKeyCode") then
+		if not CCUserDefault:sharedUserDefault():getBoolForKey("cdkey.panel.change.place") then
+			local user = UserManager:getInstance():getUserRef()
+			if user:getTopLevelId() > 1 then
+				local position = self.pauseBtnRes:getPosition()
+				local size = self.pauseBtnRes:getGroupBounds().size
+				local origin = Director:sharedDirector():getVisibleOrigin()
+				local wPos = self:convertToWorldSpace(ccp(position.x, position.y))
+				wPos = {x = wPos.x - origin.x + size.width / 2, y = wPos.y - origin.y - size.height / 2}
+				local panel = InnerNotiPanel:create({text = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti", {n = '\n'}),
+					btnText = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti.button"),
+					enterPos = wPos, exitPos = wPos})
+				if panel then self:runAction(CCCallFunc:create(function() panel:popout() end)) end
+			end
+			CCUserDefault:sharedUserDefault():setBoolForKey("cdkey.panel.change.place", true)
+			CCUserDefault:sharedUserDefault():flush()
 		end
-		CCUserDefault:sharedUserDefault():setBoolForKey("cdkey.panel.change.place", true)
-		CCUserDefault:sharedUserDefault():flush()
 	end
 
 	--------------------
 	---- YingyongBar Button
 	----------------------
-	if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+	if PlatformConfig:isQQPlatform() then
 		self:createYingyongBarButton()
 	end
 
@@ -641,7 +648,9 @@ function HomeScene:popoutLadyBugPanel(showTip)
 	local ladyBugBtnPosInWorldSpace		= ladyBugBtnParent:convertToWorldSpace(ccp(ladyBugBtnPos.x, ladyBugBtnPos.y))
 	
 	local ladyBugPanel = LadyBugPanel:create(ladyBugBtnPosInWorldSpace)
-	if ladyBugPanel then ladyBugPanel:popout(showTip) end
+	ladyBugPanel:popout(showTip)
+
+	return ladyBugPanel
 end
 
 function HomeScene:displayLadyBugHasRewardTip(...)
@@ -789,6 +798,9 @@ function HomeScene:onPauseBtnTapped(...)
 	-- end
 
 	-- he_dumpGLObjectRefs()
+
+	
+	-- self:showMV()
 	
 	GamePlayMusicPlayer:playEffect(GameMusicType.kClickBubble)
 	PopoutManager:sharedInstance():add(GameSettingPanel:create(), false, false)
@@ -1450,65 +1462,76 @@ end
 function HomeScene:startLadyBug(...)
 	assert(#{...} == 0)
 
-	-- Color Layer TO Block The Input
-	local visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
-	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
-	
-	local colorLayerToBlockInput = LayerColor:create()
-	colorLayerToBlockInput:setColor(ccc3(255,0,0))
-	colorLayerToBlockInput:setOpacity(0)
-	colorLayerToBlockInput:changeWidthAndHeight(visibleSize.width, visibleSize.height)
-	colorLayerToBlockInput:setTouchEnabled(true, 0, true)
-	self:addChild(colorLayerToBlockInput)
+	local placeholderPanel = CocosObject:create()
+	placeholderPanel.popoutShowTransition = function ( ... )
+		-- Color Layer TO Block The Input
+		local visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
+		local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
+		
+		local colorLayerToBlockInput = LayerColor:create()
+		colorLayerToBlockInput:setColor(ccc3(255,0,0))
+		colorLayerToBlockInput:setOpacity(0)
+		colorLayerToBlockInput:changeWidthAndHeight(visibleSize.width, visibleSize.height)
+		colorLayerToBlockInput:setTouchEnabled(true, 0, true)
+		self:addChild(colorLayerToBlockInput)
 
-	colorLayerToBlockInput:setPosition(ccp(visibleOrigin.x, visibleOrigin.y))
+		colorLayerToBlockInput:setPosition(ccp(visibleOrigin.x, visibleOrigin.y))
 
 
-	-- -----------------------------------
-	-- Create The Lady Bug Button 
-	-- ------------------------------------
-	local function onLadyBugBtnTapped()
-		print("onLadyBugBtnTapped Called !")
-		if PopoutManager:sharedInstance():haveWindowOnScreen() then return end
-		self:popoutLadyBugPanel()
-	end
-
-	self.ladybugButton	= LadybugButton:create()
-	self.leftRegionLayoutBar:addItem(self.ladybugButton)
-	self.ladybugButton:setVisible(false)
-	self.ladybugButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onLadyBugBtnTapped)
-
-	-- Get The Lady Bug Anim Button Pos
-	-- In World Pos
-	local ladybugBtnPos 		= self.ladybugButton:getPosition()
-	local ladybugBtnParent 		= self.ladybugButton:getParent()
-	local ladybugBtnPosInWorldSpace	= ladybugBtnParent:convertToWorldSpace(ccp(ladybugBtnPos.x, ladybugBtnPos.y))
-	local ladybugBtnSize		= self.ladybugButton.wrapper:getGroupBounds().size
-
-	-----------------------------------
-	-- Create The lady Bug Flying Animation
-	-- ---------------------------------
-	self.ladyBugOnScreen = true
-	local ladyBugFlyInAnim	= LadybugTaskAnimation:create(true)
-
-	--local function on lady bug fly out callback
-	local function onLadyBugFlyOutCallback()
-
-		colorLayerToBlockInput:removeFromParentAndCleanup(true)
-		ladyBugFlyInAnim:removeFromParentAndCleanup(true)
-		self.ladyBugOnScreen = nil
-		self.ladybugButton:setVisible(true)
-		local function firstTimePopoutLadyBug()
-			self:popoutLadyBugPanel(true)
+		-- -----------------------------------
+		-- Create The Lady Bug Button 
+		-- ------------------------------------
+		local function onLadyBugBtnTapped()
+			print("onLadyBugBtnTapped Called !")
+			if PopoutManager:sharedInstance():haveWindowOnScreen() then return end
+			self:popoutLadyBugPanel()
 		end
-		setTimeOut(firstTimePopoutLadyBug, 1)
 
+		self.ladybugButton	= LadybugButton:create()
+		self.leftRegionLayoutBar:addItem(self.ladybugButton)
+		self.ladybugButton:setVisible(false)
+		self.ladybugButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onLadyBugBtnTapped)
+
+		-- Get The Lady Bug Anim Button Pos
+		-- In World Pos
+		local ladybugBtnPos 		= self.ladybugButton:getPosition()
+		local ladybugBtnParent 		= self.ladybugButton:getParent()
+		local ladybugBtnPosInWorldSpace	= ladybugBtnParent:convertToWorldSpace(ccp(ladybugBtnPos.x, ladybugBtnPos.y))
+		local ladybugBtnSize		= self.ladybugButton.wrapper:getGroupBounds().size
+
+		-----------------------------------
+		-- Create The lady Bug Flying Animation
+		-- ---------------------------------
+		self.ladyBugOnScreen = true
+		local ladyBugFlyInAnim	= LadybugTaskAnimation:create(true)
+
+		--local function on lady bug fly out callback
+		local function onLadyBugFlyOutCallback()
+
+			colorLayerToBlockInput:removeFromParentAndCleanup(true)
+			ladyBugFlyInAnim:removeFromParentAndCleanup(true)
+			self.ladyBugOnScreen = nil
+			self.ladybugButton:setVisible(true)
+			local function firstTimePopoutLadyBug()
+				local ladyBugPanel = self:popoutLadyBugPanel(true)
+
+				ladyBugPanel:addEventListener(PopoutEvents.kRemoveOnce,function( ... )
+					PopoutManager.sharedInstance():remove(placeholderPanel)
+				end)
+			end
+			setTimeOut(firstTimePopoutLadyBug, 1)
+
+		end
+		ladyBugFlyInAnim:setFlyOutFinishCallback(onLadyBugFlyOutCallback)
+		self:addChild(ladyBugFlyInAnim)
+
+		ladyBugFlyInAnim:setPosition(ccp(ladybugBtnPosInWorldSpace.x + ladybugBtnSize.width/2, ladybugBtnPosInWorldSpace.y - ladybugBtnSize.height/2))
+		ladyBugFlyInAnim:flyIn()
 	end
-	ladyBugFlyInAnim:setFlyOutFinishCallback(onLadyBugFlyOutCallback)
-	self:addChild(ladyBugFlyInAnim)
 
-	ladyBugFlyInAnim:setPosition(ccp(ladybugBtnPosInWorldSpace.x + ladybugBtnSize.width/2, ladybugBtnPosInWorldSpace.y - ladybugBtnSize.height/2))
-	ladyBugFlyInAnim:flyIn()
+	self:runAction(CCCallFunc:create(function( ... )
+		PopoutQueue.sharedInstance():push(placeholderPanel, false, true)
+	end))
 end
 
 local bootSourceCheck = false
@@ -1575,9 +1598,9 @@ function HomeScene:onEnterHandler(event, ...)
 		self:pocessRecall()
 
 		if not bootSourceCheck then
-			local sdk = UrlSchemeSDK.new()
-			local launchURL = sdk:getCurrentURL()
-			self:onApplicationHandleOpenURL(launchURL)
+			-- local sdk = UrlSchemeSDK.new()
+			-- local launchURL = sdk:getCurrentURL()
+			self:onApplicationHandleOpenURL(_G.launchURL)
 			bootSourceCheck = true
 		end
 
@@ -2082,7 +2105,11 @@ function HomeScene:buildUpdateVersionPanel()
 					end
 					panel:addEventListener(kPanelEvents.kClose, onClose)
 					self.updateVersionButton.wrapper:setTouchEnabled(false)
-					panel:popout()
+					if isAutoPopout and panel.autoPopout then
+						panel:autoPopout()
+					else
+						panel:popout()
+					end
 				end
 
 			-- 2：动态更新
@@ -2364,6 +2391,8 @@ function HomeScene:updateButtons()
 end
 
 function HomeScene:onApplicationHandleOpenURL(launchURL)
+	print("HomeScene:onApplicationHandleOpenURL:"..tostring(launchURL))
+	self.activityShareData = nil
 	if launchURL and string.len(launchURL) > 0 then
 		local res = UrlParser:parseUrlScheme(launchURL)
 		if not res.method then return end
@@ -2391,6 +2420,15 @@ function HomeScene:onApplicationHandleOpenURL(launchURL)
 						elseif tonumber(res.para.uitype) == 1 then end
 					end
 				end
+			end
+		elseif string.lower(res.method) == "activity_wxshare" and res.para then
+			local paraData = {}
+			for k, v in pairs(res.para) do
+				paraData[k] = v
+			end
+			self.activityShareData = paraData
+			if paraData.actId then -- TODO
+				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(OpenUrlEvents.kActivityShare..tostring(paraData.actId), paraData))
 			end
 		end
 	end
@@ -2451,7 +2489,7 @@ function HomeScene:createAndShowFruitTreeButton()
 			else self:addChild(self.fruitTreeButton) end
 
 			self.fruitTreeButtonShown = true
-			if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) and self.yingyongbarButton and not self.yingyongbarButton.isDisposed then -- 调整应用吧按钮位置
+			if PlatformConfig:isQQPlatform() and self.yingyongbarButton and not self.yingyongbarButton.isDisposed then -- 调整应用吧按钮位置
 				local oldPos = self.yingyongbarButton:getPosition()
 				self.yingyongbarButton:setPosition(ccp(oldPos.x - btnSize.width, oldPos.y))
 			end
@@ -2471,7 +2509,7 @@ end
 
 function HomeScene:createYingyongBarButton()
 	local function startAppBar(sub)
-		SharePanel:openAppBar( sub )
+		ShareManager:openAppBar( sub )
 	end
 	
 	local function onYybButtonTapped(evt)

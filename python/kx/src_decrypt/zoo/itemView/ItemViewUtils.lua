@@ -62,7 +62,7 @@ function ItemViewUtils:buildMonsterFootAnimation(boardView, callback )
 	return container
 end
 
-function ItemViewUtils:buildLighttAction()
+function ItemViewUtils:buildLighttAction(callback)
 	local pattern = "Light1%04d.png"
 	local sprite = Sprite:createWithSpriteFrameName("Light10001.png")
 
@@ -71,6 +71,7 @@ function ItemViewUtils:buildLighttAction()
 	local function onRepeatFinishCallback_Ice()
 		sprite:dp(Event.new(Events.kComplete, nil, sprite));
 		sprite:removeFromParentAndCleanup(true);
+		if callback then callback() end
 	end
 	sprite:play(animate, 0, 1, onRepeatFinishCallback_Ice)
 	return sprite;
@@ -180,6 +181,11 @@ function ItemViewUtils:buildFurball(furballType)
 	end
 	local furballsprite = TileCuteBall:create(name)
 	return furballsprite
+end
+
+function ItemViewUtils:buildSand(sandLevel)
+	local sprite = TileSand:createIdleSand()
+	return sprite
 end
 
 function ItemViewUtils:buildSelectBorder()

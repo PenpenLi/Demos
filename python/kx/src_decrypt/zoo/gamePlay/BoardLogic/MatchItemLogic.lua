@@ -45,7 +45,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 		return false
 	end
 
-	if not mainLogic.gameItemMap[r][c]:canBeMatch() then
+	if not mainLogic.gameItemMap[r][c]:canBeCoverByMatch() then
 		return false
 	end
 
@@ -54,7 +54,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 	for i = r-1 , 1, -1 do
 		if (mainLogic.gameItemMap[i][c].ItemColorType == color) 
 			and mainLogic.gameItemMap[i][c].ItemSpecialType ~= AnimalTypeConfig.kColor 		----不是魔力鸟
-			and mainLogic.gameItemMap[i][c]:canBeMatch()
+			and mainLogic.gameItemMap[i][c]:canBeCoverByMatch()
 			then --竖排
 			r_add = r_add + 1
 			sf_start = i
@@ -75,7 +75,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 	for i = r+1 , #mainLogic.gameItemMap do
 		if (mainLogic.gameItemMap[i][c].ItemColorType == color)
 			and mainLogic.gameItemMap[i][c].ItemSpecialType ~= AnimalTypeConfig.kColor		----不是魔力鸟
-			and mainLogic.gameItemMap[i][c]:canBeMatch()
+			and mainLogic.gameItemMap[i][c]:canBeCoverByMatch()
 			then 	--竖排
 			r_add = r_add + 1
 			sf_end = i
@@ -110,7 +110,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 	for j = c-1, 1, -1 do
 		if mainLogic.gameItemMap[r][j].ItemColorType == color 
 			and mainLogic.gameItemMap[r][j].ItemSpecialType ~= AnimalTypeConfig.kColor 		----不是魔力鸟
-			and mainLogic.gameItemMap[r][j]:canBeMatch()
+			and mainLogic.gameItemMap[r][j]:canBeCoverByMatch()
 			then 		--横排
 			c_add = c_add + 1
 			sf_start = j
@@ -131,7 +131,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 	for j = c+1, #mainLogic.gameItemMap[r] do
 		if mainLogic.gameItemMap[r][j].ItemColorType == color 
 			and mainLogic.gameItemMap[r][j].ItemSpecialType ~= AnimalTypeConfig.kColor		----不是魔力鸟
-			and mainLogic.gameItemMap[r][j]:canBeMatch()
+			and mainLogic.gameItemMap[r][j]:canBeCoverByMatch()
 			then		--横排
 			c_add = c_add + 1
 			sf_end = j
@@ -373,7 +373,7 @@ function MatchItemLogic:_MatchSuccessAndMix(mainLogic)
 				----2.播放rc的消除动画
 				if needDeleted then
 					local item = mainLogic.gameItemMap[r][c]
-					if item:canDeleteByMatch() then
+					if item:canBeEliminateByMatch() then
 						item:AddItemStatus(GameItemStatusType.kIsMatch)------作用是注册一个状态，防止播放两次消除动画
 						item.gotoPos = nil
 						item.comePos = nil

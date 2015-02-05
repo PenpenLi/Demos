@@ -45,7 +45,7 @@ function BeginnerPanel:init()
 	if self:isBaiduPlatform() then
 		self.captain:setText(Localization:getInstance():getText("beginner.panel.title.baidu"))
 		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text.baidu"))
-	elseif PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+	elseif PlatformConfig:isQQPlatform() then
 		self.captain:setText(Localization:getInstance():getText("activity.gift.center.panel.title"))
 		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text"))
 	else

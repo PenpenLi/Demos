@@ -117,13 +117,21 @@ function WeChatAndroid:sendImageMessage( message, thumb, image, shareCallback)
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	return self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(finalCallBack, nil))
+	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
+	finalCallBack.onSuccess()
+	--玩家分享就算成功
+	return shareResult
 end
 function WeChatAndroid:sendImageLinkMessage( message, thumb, imageURL, shareCallback )
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	return self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(finalCallBack, nil))
+	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
+	finalCallBack.onSuccess()
+	--玩家分享就算成功
+	return shareResult
 end
 function WeChatAndroid:sendLinkMessage( title, message, thumb, webpageUrl, isSendToFeeds, shareCallback )
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
@@ -131,7 +139,14 @@ function WeChatAndroid:sendLinkMessage( title, message, thumb, webpageUrl, isSen
 	if isSendToFeeds == false then weChatScene = 0 end 
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	return self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
+	if weChatScene==1 then 
+		--weChatScene == 1 是发送到朋友圈 
+		--微信新版（6.0.X）导致分享到朋友圈的链接分享后没回调 
+		finalCallBack.onSuccess()
+		--玩家分享就算成功
+	end
+	return shareResult
 end
 
 function WeChatAndroid:screenShots( saveFile, thumbFile, onFileSaved )
@@ -223,20 +238,44 @@ function WeChatWP8:openWechat()
 	return WeChatProxy:GetInstance():OpenWXApp()
 end
 
-function WeChatWP8:sendTextMessage( message, isSendToFeeds )
-	return WeChatProxy:GetInstance():SendTextMsg(message, isSendToFeeds)
+function WeChatWP8:sendTextMessage( message, isSendToFeeds, callback )
+	if WeChatProxy:GetInstance():SendTextMsg(message, isSendToFeeds) then
+		if callback and type(callback.onSuccess) == "function" then callback.onSuccess() end
+		return true
+	else
+		if callback and type(callback.onError) == "function" then callback.onError() end
+		return false
+	end
 end
 
-function WeChatWP8:sendImageMessage( message, thumb, image )
-	return WeChatProxy:GetInstance():SendImageMsg(message, thumb, image, true)
+function WeChatWP8:sendImageMessage( message, thumb, image, callback )
+	if WeChatProxy:GetInstance():SendImageMsg(message, thumb, image, true) then
+		if callback and type(callback.onSuccess) == "function" then callback.onSuccess() end
+		return true
+	else
+		if callback and type(callback.onError) == "function" then callback.onError() end
+		return false
+	end
 end
 
-function WeChatWP8:sendImageLinkMessage( message, thumb, imageURL )
-	return WeChatProxy:GetInstance():SendImageLinkMsg(message, thumb, imageURL, true) 
+function WeChatWP8:sendImageLinkMessage( message, thumb, imageURL, callback )
+	if WeChatProxy:GetInstance():SendImageLinkMsg(message, thumb, imageURL, true) then
+		if callback and type(callback.onSuccess) == "function" then callback.onSuccess() end
+		return true
+	else
+		if callback and type(callback.onError) == "function" then callback.onError() end
+		return false
+	end
 end
 
-function WeChatWP8:sendLinkMessage( title, message, thumb, webpageUrl, isSendToFeeds )
-	return WeChatProxy:GetInstance():SendLinkMsg(message, title, thumb, webpageUrl, isSendToFeeds) 
+function WeChatWP8:sendLinkMessage( title, message, thumb, webpageUrl, isSendToFeeds, callback )
+	if WeChatProxy:GetInstance():SendLinkMsg(message, title, thumb, webpageUrl, isSendToFeeds) then
+		if callback and type(callback.onSuccess) == "function" then callback.onSuccess() end
+		return true
+	else
+		if callback and type(callback.onError) == "function" then callback.onError() end
+		return false
+	end
 end
 
 function WeChatWP8:screenShots( saveFile, thumbFile, onFileSaved )

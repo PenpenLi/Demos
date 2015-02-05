@@ -9,6 +9,7 @@ ActivityUtil.onActivityStatusChangeCallbacks = {}
 local _rootUrl = nil
 local _activitys = nil
 local _loadFromNetwork = false
+local _lastRequestTime = 0
 
 local function unrequire(m)
 	package.loaded[m] = nil
@@ -270,8 +271,10 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 					end
 				end
 			else
-				writeCacheConfig(response.body)
 				_loadFromNetwork = true
+				_lastRequestTime = Localhost:time()
+				writeCacheConfig(response.body)
+
 				activitys,_rootUrl = parseConfig(response.body)
 			end
 
@@ -293,8 +296,13 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 	    request:setConnectionTimeoutMs(30 * 1000)
 	    request:setTimeoutMs(30 * 1000)
 
+
 	    if not PrepackageUtil:isPreNoNetWork() then 
-	    	HttpClient:getInstance():sendRequest(onCallback, request)
+	    	if _lastRequestTime + 30 * 60 * 1000 < Localhost:time() then 
+	    		HttpClient:getInstance():sendRequest(onCallback, request)
+	    	else
+	    		onSuccess(_activitys)	    		
+	    	end
 	    else
 	    	print("ActivityUtil================no network prepackage")
 	    end

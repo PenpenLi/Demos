@@ -184,7 +184,7 @@ function BuyAndUseAddMaxEnergyLogic:start(onSuccessCallback, onFailedCallback, o
 			--	end
 			--end
 
-			--local useLogic = UsePropsLogic:create(false, 0, 0, {})
+			--local useLogic = UsePropsLogic:create(UsePropsType.NORMAL, 0, 0, {})
 			--useLogic:setSuccessCallback(onUseSuccess)
 			--useLogic:setFailedCallback(onUseFailed)
 			--useLogic:start(true)

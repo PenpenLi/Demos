@@ -1774,8 +1774,10 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 	assert(#{...} == 0)
 
 	local function onGetFriendsIdEnd()
-
+	
 		local function onSuccess()
+			self.lastGetFriendTime = Localhost:time()
+
 			if onSuccessCallback then
 				onSuccessCallback()
 			end
@@ -1816,6 +1818,8 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 		end
 	end
 	if RequireNetworkAlert:popout(onUserLogin, kRequireNetworkAlertAnimation.kNoAnimation) then
-		onUserLogin()
+		if (self.lastGetFriendTime or 0) + 30 * 60 * 1000 < Localhost:time() then
+			onUserLogin()
+		end
 	end
-end
+end 

@@ -6,6 +6,7 @@ require "zoo.panel.component.common.LayoutItem"
 require "zoo.panel.rabbitWeekly.RabbitRulePanel"
 require "zoo.panel.rabbitWeekly.RabbitWeeklyGetFreePlayPanel"
 require "zoo.panel.rabbitWeekly.RabbitStartGameTimeWarningPanel"
+require "zoo.panelBusLogic.IapBuyPropLogic"
 
 -- short hand function
 local function _text(key, replace)
@@ -309,6 +310,31 @@ function RabbitWeeklyLevelInfoPanel:init(parentPanel, levelId, ...)
 	self.coinBuyBtn:setNumber(self.price)
 	self.coinBuyBtn:setString(_text("weekly.race.panel.rabbit.button2"))
 
+	local data = IapBuyPropLogic:rabbitWeeklyPlayCard()
+	local meta = MetaManager:getInstance():getGoodMeta(data.goodsId)
+	local rmbBuyBtnRes = ui:getChildByName("rmbBuyBtn")
+	self.rmbBuyBtn = GroupButtonBase:create(rmbBuyBtnRes)
+	self.rmbBuyBtn:setVisible(false)
+	self.rmbBuyBtn:setString(Localization:getInstance():getText("buy.gold.panel.money.mark")..
+		tostring(data.price)..Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
+	local discount = rmbBuyBtnRes:getChildByName("discount")
+	local disNum = discount:getChildByName("num")
+	local disText = discount:getChildByName("text")
+	disNum:setString(math.ceil(meta.discountRmb / meta.rmb * 10))
+	disText:setString(Localization:getInstance():getText("buy.gold.panel.discount"))
+	local scaleBase = discount:getScale()
+	local actArray = CCArray:create()
+	actArray:addObject(CCDelayTime:create(5))
+	actArray:addObject(CCScaleTo:create(0.1, scaleBase * 0.95))
+	actArray:addObject(CCScaleTo:create(0.1, scaleBase * 1.1))
+	actArray:addObject(CCScaleTo:create(0.2, scaleBase * 1))
+	discount:runAction(CCRepeatForever:create(CCSequence:create(actArray)))
+
+	self.coinBuyBtnPh1 = ui:getChildByName("coinBuyBtnPh1")
+	self.coinBuyBtnPh1:setVisible(false)
+	self.coinBuyBtnPh2 = ui:getChildByName("coinBuyBtnPh2")
+	self.coinBuyBtnPh2:setVisible(false)
+
     self:updatePanel()
 end
 
@@ -380,7 +406,9 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
 
 	self.startBtn:rma()
 	self.coinBuyBtn:rma()
+	self.rmbBuyBtn:rma()
 	self.coinBuyBtn:setVisible(false)
+	self.rmbBuyBtn:setVisible(false)
 	self.startBtn:setVisible(true)
 	self.startBtn:setColorMode(kGroupButtonColorMode.green)
 	self.startBtn.redDot:setVisible(false)
@@ -400,6 +428,7 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
 	    self.startBtn.num:setString(tostring(leftFreePlay))
 	    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onStartBtnTapped() end)
 	elseif _mgr():getRemainingPayCount() > 0 then
+		local userExtend = UserManager:getInstance().userExtend
 		if __ANDROID then
 			local mark = _text("buy.gold.panel.money.mark")
 			local text = _text("weekly.race.panel.rabbit.button2")
@@ -407,14 +436,25 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
     		self.startBtn:setColorMode(kGroupButtonColorMode.blue)
 			self.startBtn:setString(label)
 		    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped() end)
+		elseif false and __IOS and _mgr():getMaxBuyCount() == _mgr():getRemainingPayCount() then
+			-- 计费点藏得太深无法让苹果提审看到为了通过提审所以屏蔽掉
+			self.startBtn:setVisible(false)
+			self.rmbBuyBtn:setVisible(true)
+		    self.rmbBuyBtn:ad(DisplayEvents.kTouchTap, function () self:onRmbForPlayBtnTapped() end)
+		    self.coinBuyBtn:setPositionX(self.coinBuyBtnPh2:getPositionX())
+		    self.coinBuyBtn:setPositionY(self.coinBuyBtnPh2:getPositionY())
+		    self.coinBuyBtn:setVisible(true)
+		    self.coinBuyBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped() end)
 		else
 			self.startBtn:setVisible(false)
+			self.coinBuyBtn:setPositionX(self.coinBuyBtnPh1:getPositionX())
+			self.coinBuyBtn:setPositionY(self.coinBuyBtnPh1:getPositionY())
 			self.coinBuyBtn:setVisible(true)
 		    self.coinBuyBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped() end)
 		end
 	else
 		self.startBtn:setString(_text("weekly.race.panel.rabbit.button1"))
-		-- self.startBtn:setEnabled(false)
+		self.startBtn:setEnabled(false)
 		self.startBtn:setColorMode(kGroupButtonColorMode.grey)
 		local function onDisableBtnTapped(evt)
 			CommonTip:showTip(_text("weekly.race.no.more.play.tip"), "negative")
@@ -525,6 +565,46 @@ function RabbitWeeklyLevelInfoPanel:onReceiveBtnTapped()
 		self:updatePanel()
 	end
 	_mgr():receiveWeeklyReward(self.levelId, successCallback, failCallback)
+end
+
+-- Iap付费开始
+function RabbitWeeklyLevelInfoPanel:onRmbForPlayBtnTapped()
+	if not _mgr():isPlayDay() then
+		CommonTip:showTip(_text("error.tip.730773"), "negative")
+		self:updatePanel()
+		return
+	end
+
+	local function onContinue()
+		local function onSuccess()
+			-- dcutil?
+			if self then self:startGame() end
+			if not self.isDisposed then
+				self.rmbBuyBtn:setEnabled(true)
+				self.coinBuyBtn:setEnabled(true)
+			end
+		end
+
+		local function onFail()
+			if self then self:updatePanel() end
+			if not self.isDisposed then
+				self.rmbBuyBtn:setEnabled(true)
+				self.coinBuyBtn:setEnabled(true)
+			end
+		end
+
+		self.rmbBuyBtn:setEnabled(false)
+		self.coinBuyBtn:setEnabled(false)
+		_mgr():rmbBuyPlayCard(onSuccess, onFail)
+	end
+
+	local function onCancel() end
+
+	if _mgr():isNeedShowTimeWarnPanel() then
+		self:popoutTimeWarningPanel(onContinue, onCancel)
+	else
+		onContinue()
+	end
 end
 
 -- 付费开始

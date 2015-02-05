@@ -35,7 +35,7 @@ function NeedRefreshState:tryRefresh()
 	end
 	
 	if needRefresh then
-		if RefreshItemLogic:refreshGamePlayWith1000Random(self.mainLogic) then		----需要刷新则尝试1000次，看是否能够成功刷新
+		if RefreshItemLogic.tryRefresh(self.mainLogic) then
 			if self.mainLogic.PlayUIDelegate then
 				local winSize = CCDirector:sharedDirector():getWinSize()
 				local panel = CommonEffect:buildRequireSwipePanel()
@@ -46,7 +46,6 @@ function NeedRefreshState:tryRefresh()
 				setTimeOut(doRefresh, 1)
 			end
 		else 
-
 			local gameMode = self.mainLogic.gameMode
 			-- 仅仅在没有达到胜利条件时才失败
 			-- 如果玩家已经达到条件，则不做，于是玩家就会通关
@@ -54,6 +53,7 @@ function NeedRefreshState:tryRefresh()
 				self.mainLogic.gameMode:setFailReason('refresh')
 				self.mainLogic:setGamePlayStatus(GamePlayStatus.kFailed)
 			else
+				self.mainLogic.gameMode.refreshFailedDirectSuccess = true
 				self.mainLogic:refreshComplete()
 			end
 		end

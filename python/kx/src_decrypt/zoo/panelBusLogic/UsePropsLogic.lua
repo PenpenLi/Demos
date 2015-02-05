@@ -8,25 +8,32 @@
 -------------- UsePropsLogic
 ---------------------------------------------------
 
+UsePropsType = table.const {
+	TEMP = 1,
+	NORMAL = 2,
+	EXPIRE = 3,
+}
+
 assert(not UsePropsLogic)
 UsePropsLogic = class()
 
-function UsePropsLogic:init(isTempProperty, levelId, param, itemList, ...)
-	assert(type(isTempProperty) == "boolean")
+function UsePropsLogic:init(usePropType, levelId, param, itemList, ...)
+	assert(type(usePropType) == "number")
 	assert(type(levelId) == "number")
 	assert(param)
 	assert(type(itemList) == "table")
 	assert(#{...} == 0)
 
-	self.itemType = false
-
-	if isTempProperty then
-		self.itemType = 1
-	else
-		-- Not Temp
-		self.itemType = 2
+	local typeValid = false
+	for _,v in pairs(UsePropsType) do
+		if usePropType == v then 
+			typeValid = true
+			break
+		end
 	end
+	assert(typeValid, "usePropType invalid:"..tostring(usePropType))
 
+	self.itemType = usePropType
 	self.levelId	= levelId
 	self.param		= param or 0
 	self.itemList	= itemList
@@ -47,11 +54,18 @@ function UsePropsLogic:start(popWaitTip, ...)
 
 	local function onSendMsgSuccessCallback()
 
-		if self.itemType == 2 then
+		if self.itemType == UsePropsType.NORMAL then
 			-- Decrease Prop Item Number
 			for k,item in pairs(self.itemList) do
 				print("decrease item:" .. item .. " 's number !")
 				UserManager:getInstance():addUserPropNumber(item, -1)
+			end
+		end
+
+		if self.itemType == UsePropsType.EXPIRE then
+			for k,item in pairs(self.itemList) do
+				-- print("decrease item:" .. item .. " 's number !")
+				UserManager:getInstance():useTimeProp(item)
 			end
 		end
 
@@ -138,14 +152,14 @@ function UsePropsLogic:sendUsePropsHttp(popWaitTip, sendMsgSuccessCallback, send
 	http:load(propType, levelId, param, itemList)
 end
 
-function UsePropsLogic:create(isTempProp, levelId, param, itemList, ...)
-	assert(type(isTempProp) == "boolean")
+function UsePropsLogic:create(usePropType, levelId, param, itemList, ...)
+	assert(type(usePropType) == "number")
 	assert(levelId)
 	assert(param)
 	assert(itemList)
 	assert(#{...} == 0)
 
 	local newUsePropsCallback = UsePropsLogic.new()
-	newUsePropsCallback:init(isTempProp, levelId, param, itemList)
+	newUsePropsCallback:init(usePropType, levelId, param, itemList)
 	return newUsePropsCallback
 end

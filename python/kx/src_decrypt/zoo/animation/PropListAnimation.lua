@@ -9,7 +9,7 @@ require "zoo.panel.PropInfoPanel"
 local kAddStepItems = {10004}
 local kCurrentMaxItemInListView = 18
 local kItemGapInListView = 12
-local kMaxItemIdAvailable = 10057
+local kMaxItemIdAvailable = 10064
 local kPreUsedPropItems = {10018, 10015, 10019}
 local kTempPropMapping = {}
 kTempPropMapping["10025"] = 10001
@@ -175,17 +175,17 @@ function PropListAnimation:callBuyPropCallback(itemId, ...)
 	self.buyPropCallback(itemId)
 end
 
-function PropListAnimation:callUsePropCallback(propItemUsed, itemId, isTempProperty, isRequireConfirm, ...)
+function PropListAnimation:callUsePropCallback(propItemUsed, itemId, usePropType, isRequireConfirm, ...)
 	assert(propItemUsed)
 	assert(type(itemId) == "number")
-	assert(type(isTempProperty) == "boolean")
+	assert(type(usePropType) == "number")
 	assert(type(isRequireConfirm) == "boolean")
 	assert(#{...} == 0)
 
 	self.propItemUsed = propItemUsed
 
 	if self.usePropCallback then
-		return self.usePropCallback(itemId, isTempProperty, isRequireConfirm)
+		return self.usePropCallback(itemId, usePropType, isRequireConfirm)
 	end
 	return true
 end
@@ -266,7 +266,7 @@ function PropListAnimation:buildUI(levelId)
       item.onHideCallback = onHideCallback
   		self["item"..i] = item
   	end
-    self.item2.direction = -1
+    self.item2.direction = -1 
     self.item3.direction = -1
     self.item5.direction = -1
     self:getPropPositions()
@@ -293,6 +293,7 @@ function PropListAnimation:show( propItems, delayTime )
   self.addStepItems = {}
   self.content:setPosition(ccp(0,0))
   self.temporaryPops = {}
+  self.timeProps = {}
 
   delayTime = delayTime or 0 --1.35
 
@@ -301,7 +302,9 @@ function PropListAnimation:show( propItems, delayTime )
     for i, v in ipairs(propItems) do
       if v.temporary == 1 then
         table.insert(self.temporaryPops, v)
-      else
+      elseif v.isTimeProp then
+        table.insert(self.timeProps, v)
+      else 
         if isValidItem(v) then
           if isAddStepItem(v) then table.insert(self.addStepItems, v)
           else table.insert(self.propItems, v) end
@@ -331,9 +334,22 @@ function PropListAnimation:show( propItems, delayTime )
         local isInitDisabled = self.propItems[i].itemId == GamePropsType.kBack
         self["item"..i]:enableUnlimited(self.isUnlimited)
         self["item"..i].prop = self.propItems[i] --setup the item's data
+        self["item"..i]:setTimeProps(self:getTimePropsByItemId(self.propItems[i].itemId))
         self["item"..i]:show(0, true, isInitDisabled) 
       else self["item"..i]:hide() end
     end
+end
+
+function PropListAnimation:getTimePropsByItemId(itemId)
+  local ret = {}
+  if self.timeProps and #self.timeProps > 0 then
+    for _,v in pairs(self.timeProps) do
+      if v.realItemId == itemId then
+        table.insert(ret, v)
+      end
+    end
+  end
+  return ret
 end
 
 function PropListAnimation:windover(direction)
@@ -423,6 +439,7 @@ function PropListAnimation:addItemWithAnimation( item, delayTime, useHint )
     if itemIndex >= kCurrentMaxItemInListView then return end
     self["item"..itemIndex]:enableUnlimited(self.isUnlimited)
     self["item"..itemIndex].prop = item
+    self["item"..itemIndex]:setTimeProps(self:getTimePropsByItemId(item.itemId))
     self["item"..itemIndex]:show(delayTime, true) 
    if useHint then self["item"..itemIndex]:pushPropAnimation(2) end
     
@@ -546,6 +563,13 @@ function PropListAnimation:findItemByItemID( itemId )
     if item and item.visible and item:verifyItemId(itemId) then return item, i end
   end
   return nil, -1
+end
+
+function PropListAnimation:useItemWithType(itemId, propType)
+  local item = self:findItemByItemID(itemId)
+  if item then 
+    item:useWithType(itemId, propType)
+  end
 end
 
 function PropListAnimation:setItemNumber( itemId, itemNum )

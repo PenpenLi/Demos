@@ -20,7 +20,7 @@ require "zoo.animation.WinAnimation"
 require "zoo.animation.LadybugTaskAnimation"
 require "zoo.animation.MaxEnergyAnimation"
 
-require "zoo.panel.SharePanel"
+require "zoo.data.ShareManager"
 require "zoo.panel.ChooseFriendPanel"
 require "zoo.panel.RequireNetworkAlert"
 require "zoo.panel.DynamicUpdatePanel"
@@ -544,8 +544,8 @@ function AnimationScene:createLineStar(width, height)
 end
 
 function AnimationScene:testSharePanel( )
-	local panel = SharePanel:create(10)
-	self.layer:addChild(panel)
+	-- local panel = SharePanel:create(10)
+	-- self.layer:addChild(panel)
 end
 function AnimationScene:testMaxEnergyAnimation( )
 	--local animation = CommonSkeletonAnimation:createFailAnimation()--MaxEnergyAnimation:create()

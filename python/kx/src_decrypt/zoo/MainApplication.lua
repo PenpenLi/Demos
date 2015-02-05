@@ -62,6 +62,9 @@ local function onApplicationDidEnterBackground()
 	if scene and scene.onEnterBackground then
 		scene:onEnterBackground()
 	end
+
+	GamePlayMusicPlayer:getInstance():enterBackground()
+
 	pcall(scheduleLocalNotification)
 end
 
@@ -73,16 +76,7 @@ local function onApplicationWillEnterForeground()
 		scene:onEnterForeGround()
 	end
 
-	if GamePlayMusicPlayer:getInstance().IsBackgroundMusicOPen then
-		GamePlayMusicPlayer:getInstance():resumeBackgroundMusic()
-	else
-		GamePlayMusicPlayer:getInstance():pauseBackgroundMusic()
-	end
-	if GamePlayMusicPlayer:getInstance().IsMusicOpen then
-		GamePlayMusicPlayer:getInstance():resumeSoundEffects()
-	else
-		GamePlayMusicPlayer:getInstance():pauseSoundEffects()
-	end
+	GamePlayMusicPlayer:getInstance():enterForeground()
 	
 	if _G.kUserLogin then
 		DcUtil:dailyUser()
@@ -93,6 +87,7 @@ local function onApplicationWillEnterForeground()
 	LocalNotificationManager.getInstance():validateNotificationTime()
 end
 
+_G.launchURL = UrlSchemeSDK.new():getCurrentURL()
 local function onApplicationHandleOpenURL()
 	local sdk = UrlSchemeSDK.new()
 	local launchURL = sdk:getCurrentURL()
@@ -159,12 +154,26 @@ local function popoutInvalidSignatrueAlert()
 		Localization:getInstance():getText("button.ok"), nil, onTouchRedirectButton, nil, onTouchRedirectButton)
 end
 
+local function onAppResume()
+	print("onAppResume")
+	
+	GamePlayMusicPlayer:getInstance():appResume()
+end
+
+local function onAppPause()
+	print("onAppPause")
+	
+	GamePlayMusicPlayer:getInstance():appPause()
+end
+
 local function registerNotificationHandler()
 	local function handleNotificationCenter( eventType )
 		if eventType == "APP_ENTER_BACKGROUND" then onApplicationDidEnterBackground()
 		elseif eventType == "APP_ENTER_FOREGROUND" then onApplicationWillEnterForeground()
 		elseif eventType == "APP_OPEN_URL" then onApplicationHandleOpenURL()
 		elseif eventType == "FB_OPEN_URL" then onApplicationHandleFBOpenURL()
+		elseif eventType == "APP_RESUMED" then onAppResume()
+		elseif eventType == "APP_PAUSE" then onAppPause()
 		else
 			print("Warning: Unhandled Notification, event type:", eventType)
 		end

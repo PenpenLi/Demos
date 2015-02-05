@@ -1,3 +1,5 @@
+require "zoo.panelBusLogic.IapBuyPropLogic"
+
 local function isFlagBitSet(flag, bitIndex)
     if bitIndex < 1 then bitIndex = 1 end
     local mask = math.pow(2, bitIndex - 1) -- e.g.: mask: 0010
@@ -613,6 +615,27 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish 
             logic:start(1, onBuySuccess, onBuyFail)
         end
     end
+end
+
+function RabbitWeeklyManager:rmbBuyPlayCard(successCallback, failCallback)
+    if self:getRemainingPayCount() <= 0 then
+        CommonTip:showTip(_text("weekly.race.no.more.play.tip"), "negative")
+        if failCallback then failCallback() end
+        return
+    end
+
+    local function onSuccess()
+        self:addLeftPlayCount(1)
+        if successCallback then successCallback() end
+    end
+
+    local function onFail()
+        CommonTip:showTip(_text("buy.gold.panel.err.undefined"), "negative")
+        if failCallback then failCallback() end
+    end
+
+    local data = IapBuyPropLogic:rabbitWeeklyPlayCard()
+    IapBuyPropLogic:buy(data, onSuccess, onFail)
 end
 
 function RabbitWeeklyManager:getRemainingPayCount()

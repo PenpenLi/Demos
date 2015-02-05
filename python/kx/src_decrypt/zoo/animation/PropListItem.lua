@@ -12,6 +12,8 @@ function PropListItem:ctor()
   self.onTemporaryItemUsed = nil --function
   self.isTouchEnabled = true
   self.isExplodeing = false --正在播放使用动画
+  self.timePropNum = 0 -- 限时道具数量
+  self.timePropList = nil
 
   self.isOnceUsed =  false
 end
@@ -70,6 +72,8 @@ function PropListItem:buildUI(index, pedicle, item)
 
   item:getChildByName("t_bg_label"):setVisible(false)
   item:getChildByName("name_label"):setVisible(false)
+  item:getChildByName("red_bg_label"):setVisible(false)
+  item:getChildByName("time_limit_flag"):setVisible(false)
 
   local normalSize = bg_normal:getContentSize()
   local normalPos = bg_normal:getPosition()
@@ -149,19 +153,28 @@ function PropListItem:updateItemNumber()
   local icon_add = item:getChildByName("icon_add")
   local bg_label = item:getChildByName("bg_label")  
   local t_bg_label = item:getChildByName("t_bg_label")
+  local red_bg_label = item:getChildByName("red_bg_label")
+  local timeLimitFlag = item:getChildByName("time_limit_flag")
+
+  icon_add:setVisible(false)
+  bg_label:setVisible(false)
+  red_bg_label:setVisible(false)
+  t_bg_label:setVisible(false)
+  self.item_number:setVisible(false)
+  timeLimitFlag:setVisible(false)
+
   if itemNum < 1 then
   	icon_add:setVisible(true)
-  	bg_label:setVisible(false)
-  	self.item_number:setVisible(false)
-    t_bg_label:setVisible(false)
     t_bg_label:stopAllActions()
-  end
-
-  local isTemporaryMode = self:isTemporaryMode()
-  if itemNum > 0 then
-    icon_add:setVisible(false)
-    bg_label:setVisible(not isTemporaryMode)
-    t_bg_label:setVisible(isTemporaryMode)
+  else
+    if self:isTemporaryMode() then
+      t_bg_label:setVisible(true)  
+    elseif self:getTimePropNum() > 0 then
+      red_bg_label:setVisible(true)
+      timeLimitFlag:setVisible(true)
+    else
+      bg_label:setVisible(true)
+    end
     self.item_number:setVisible(true)
   end
 
@@ -174,6 +187,7 @@ end
 function PropListItem:findItemID()
   local temporaryItemList = self.temporaryItemList
   if temporaryItemList and #temporaryItemList > 0 then return temporaryItemList[1].itemId end
+  if self:getTimePropNum() > 0 then return self.timePropList[1].itemId end
   return self.prop.itemId
 end
 function PropListItem:getDefaultItemID()
@@ -204,7 +218,7 @@ function PropListItem:getTotalItemNumber()
       end
     end
   end
-  return itemNum
+  return itemNum + self:getTimePropNum()
 end
 
 function PropListItem:getDisplayItemNumber()
@@ -222,7 +236,12 @@ function PropListItem:getDisplayItemNumber()
   if tempNum > 0 then
     return tempNum
   else
-    return prop.itemNum
+    local timePropNum = self:getTimePropNum()
+    if timePropNum > 0 then
+      return timePropNum
+    else
+      return prop.itemNum
+    end
   end
 end
 
@@ -236,6 +255,58 @@ end
 function PropListItem:isTemporaryMode()
   if self.prop and self.prop.temporary == 1 then return true end
   return false
+end
+
+function PropListItem:updateTimePropNum()
+  local num = 0
+  if self.timePropList then
+    for _,v in pairs(self.timePropList) do
+      if v and v.itemNum then num = num + v.itemNum end
+    end
+  end
+  self.timePropNum = num
+end
+
+function PropListItem:useTimeProp()
+  for i,v in ipairs(self.timePropList) do
+    if v.itemNum > 0 then 
+      v.itemNum = v.itemNum - 1 
+      self:updateTimeProps()
+      return
+    end
+  end
+end
+
+function PropListItem:updateTimeProps()
+  if self.timePropList then
+    local newList = {}
+    for i,v in ipairs(self.timePropList) do
+      if v.itemNum > 0 then
+        table.insert(newList, v)
+      end
+    end
+    self.timePropList = newList
+  end 
+  self:updateTimePropNum()
+end
+
+function PropListItem:getTimePropNum()
+  -- print("getTimePropNum:", self.timePropNum)
+  return self.timePropNum
+end
+
+function PropListItem:setTimeProps(props)
+  self.timePropList = {}
+  if props and #props > 0 then
+    for _,v in pairs(props) do
+      table.insert(self.timePropList, v)
+    end
+    table.sort( self.timePropList, function( a, b )
+      return a.expireTime < b.expireTime
+    end )
+    -- print("addTimeProps ret=", table.tostring(self.timePropList))
+  end
+  self:updateTimePropNum()
 end
 
 function PropListItem:isAddMoveProp()
@@ -255,9 +326,11 @@ function PropListItem:setTemporaryMode(v)
   if itemNum > 0 then
     local t_bg_label = item:getChildByName("t_bg_label")
     local bg_label = item:getChildByName("bg_label")
+    local red_bg_label = item:getChildByName("red_bg_label")
     t_bg_label:setVisible(v)
     t_bg_label:stopAllActions()
     bg_label:setVisible(not v)
+    red_bg_label:setVisible(not v)
     if v and self.disabled then self:lock(false) end
     if v then t_bg_label:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions(CCTintTo:create(0.8, 200,200,200), CCTintTo:create(0.8, 255,255,255)))) end
   end   
@@ -267,6 +340,36 @@ function PropListItem:hintTemporaryMode()
   if self:isTemporaryMode() and not self.isHintMode then
     self.isHintMode = true
   end
+end
+
+function PropListItem:useWithType(itemId, propType)
+  assert(type(itemId)=="number")
+  assert(type(propType) == "number")
+
+  -- print("~~useWithType:", itemId, propType)
+
+  if propType == UsePropsType.NORMAL then
+    if self.prop and self.prop.itemId == itemId then
+      self.prop.itemNum = self.prop.itemNum - 1
+    end
+  elseif propType == UsePropsType.EXPIRE then
+    for _,v in pairs(self.timePropList) do
+      if v.itemId == itemId and v.itemNum > 0 then
+        v.itemNum = v.itemNum - 1
+        break
+      end
+    end
+  elseif propType == UsePropsType.TEMP then
+    local item = nil
+    for _,v in pairs(self.temporaryItemList) do
+      if v.itemId == itemId then 
+        item = v 
+        break
+      end
+    end
+    if item then self:updateTemporaryItemNumber(itemId, item.itemNum - 1) end
+  end
+  self:updateItemNumber()
 end
 
 function PropListItem:show(delayTime, newIcon, initDisable)
@@ -375,16 +478,34 @@ function PropListItem:isItemRequireConfirm()
 	return false
 end
 
-function PropListItem:verifyItemId( itemId )
-  local prop = self.prop
-  if not prop then return false end
+function PropListItem:isTempItem(itemId)
   local temporaryItemList = self.temporaryItemList
   if temporaryItemList and #temporaryItemList > 0 then
     for i,v in ipairs(temporaryItemList) do
       if v.itemId == itemId then return true end
     end
   end
-  if itemId == prop.itemId then return true end
+  return false
+end
+
+function PropListItem:isTimeItem( itemId )
+  if self.timePropList and #self.timePropList > 0 then
+    for i,v in ipairs(self.timePropList) do
+      if v.itemId == itemId then return true end
+    end
+  end
+  return false
+end
+
+function PropListItem:verifyItemId( itemId )
+  local prop = self.prop
+  if not prop then return false end
+
+  if self:isTempItem(itemId) 
+      or self:isTimeItem(itemId) 
+      or itemId == prop.itemId then 
+    return true 
+  end
   
   return false
 end
@@ -419,8 +540,12 @@ function PropListItem:confirm(itemId, usedPositionGlobal)
       end
     self:updateTemporaryItemNumber(itemId, -1)  	
   else
-    prop.itemNum = prop.itemNum - 1
-    if prop.itemNum < 0 then prop.itemNum = 0 end
+    if self:getTimePropNum() > 0 then
+      self:useTimeProp()
+    else
+      prop.itemNum = prop.itemNum - 1
+      if prop.itemNum < 0 then prop.itemNum = 0 end
+    end
     self.usedTimes = self.usedTimes + 1
   end
 	self:updateItemNumber()
@@ -495,14 +620,23 @@ function PropListItem:use()
     return false
   end
 
+  local usePropType = nil
+  if isTempProperty then 
+    usePropType = UsePropsType.TEMP
+  elseif self:getTimePropNum() > 0 then
+    usePropType = UsePropsType.EXPIRE
+  else
+    usePropType = UsePropsType.NORMAL
+  end
+
 	-- Use Prop Callback
 	if self.propListAnimation.usePropCallback then
 
 		local itemId 		= self:findItemID()		
 		local isRequireConfirm	= self:isItemRequireConfirm()
 
-    print("use prop:", itemId, isTempProperty, isRequireConfirm)
-		return self.propListAnimation:callUsePropCallback(self, itemId, isTempProperty, isRequireConfirm)
+    print("use prop:", itemId, usePropType, isRequireConfirm)
+		return self.propListAnimation:callUsePropCallback(self, itemId, usePropType, isRequireConfirm)
 	end
   return true
 end

@@ -22,29 +22,28 @@ end
 
 function CommonTipWithBtn:showTip(text, panType, yesCallback, noCallback, position, isHideCancelBtn)
 	local panel = CommonTipWithBtn:create(text, tType[panType], yesCallback, noCallback, position)
+	if not panel then
+		return
+	end
+
 	if isHideCancelBtn then 
 		panel:hideCancelBtn()
 	end
 
-	panel.mask = panel:createClickableMask()
 	if not position then 
 		panel:centerPosition()
 	end
-	local scene = Director:sharedDirector():getRunningScene()
-	if panel and scene then
-		table.insert(panels, panel)
-		while #panels > 2 do
-			panels[1]:removeFromParentAndCleanup(true)
-			table.remove(panels, 1)
-		end
-		-- scene:addChild(panel.mask)
-		-- scene:addChild(panel)
-		PopoutManager:sharedInstance():add(panel, false, false)
-		-- show free cash panel
-		if showFreeFCash then
-	        FreeFCashPanel:showWithOwnerCheck(panel)
-	    end
+
+	table.insert(panels, panel)
+	while #panels > 2 do
+		panels[1]:removeSelf()
+		table.remove(panels, 1)
 	end
+
+	PopoutManager:sharedInstance():add(panel, false, false)
+	if showFreeFCash then
+        FreeFCashPanel:showWithOwnerCheck(panel)
+    end
 end
 function CommonTipWithBtn:loadRequiredResource( panelConfigFile )
 	self.panelConfigFile = panelConfigFile
@@ -161,15 +160,6 @@ function CommonTipWithBtn:onCloseBtnTapped()
 	self:fadeOut()
 end
 
-function CommonTipWithBtn:createClickableMask()
-	local wSize = Director:sharedDirector():getWinSize()
-	local mask = LayerColor:create()
-	mask:changeWidthAndHeight(wSize.width, wSize.height)
-	mask:setPosition(ccp(0, 0))
-	mask:setOpacity(0)
-	mask:setTouchEnabled(true, 0, true)
-	return mask
-end
 
 function CommonTipWithBtn:fadeOut()
 	print("CommonTipWithBtn:fadeOut")
@@ -193,9 +183,7 @@ function CommonTipWithBtn:fadeOut()
 	local fade = CCSpawn:createWithTwoActions(CCMoveBy:create(0.2, ccp(0, 100)), CCCallFunc:create(doFade))
 	local function removeSelf() self:removeSelf() end
 	self:runAction(CCSequence:createWithTwoActions(fade, CCCallFunc:create(removeSelf)))
-	if self.mask then
-		self.mask:removeFromParentAndCleanup(true)
-	end
+
 end
 
 function CommonTipWithBtn:removeSelf()

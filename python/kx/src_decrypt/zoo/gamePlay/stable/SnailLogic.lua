@@ -89,7 +89,7 @@ function SnailLogic:checkItemCanMove( r, c )
 	return false
 end
 
-function SnailLogic:getMoveList( r, c )
+function SnailLogic:getMoveList( r, c, isOnlyCheck )
 	-- body
 	local list = {}
 	local item = self.mainLogic.gameItemMap[r][c]
@@ -111,8 +111,11 @@ function SnailLogic:getMoveList( r, c )
 		while nextboard and nextboard.isSnailRoadBright and self:checkItemCanMove(nextpos.x, nextpos.y) do       ---连续的路径
 			table.insert(list, nextpos)
 			local item = self.mainLogic.gameItemMap[nextpos.x][nextpos.y]
-			item.snailTarget = true
-			self.mainLogic:checkItemBlock(nextpos.x, nextpos.y)
+			if not isOnlyCheck then
+				item.snailTarget = true
+				self.mainLogic:checkItemBlock(nextpos.x, nextpos.y)
+			end
+			
 			
 			if nextboard.isSnailCollect then 
 				isArriveCollection = true
@@ -135,16 +138,33 @@ function SnailLogic:getMoveList( r, c )
 	return list
 end
 
+function SnailLogic:hasSnailToMove( ... )
+	-- body
+	local itemMap = self.mainLogic.gameItemMap
+	local count = 0
+	local actions = {}
+	for r = 1, #itemMap do 
+		for c = 1, #itemMap[r] do 
+			local item = itemMap[r][c]
+			if item  and item.isSnail and item:isAvailable() then
+				
+				local list = self:getMoveList(r, c, true)
+				if #list > 0 then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
 function SnailLogic:handComplete( ... )
 	-- body
 	self.completeItem = self.completeItem + 1 
 	if self.completeItem >= self.totalItem then
-		if self.hasItemToHandle then
-			self:check()
-		else
+		if not self:hasSnailToMove() then
 			self:resetAllSnailRoad()
 		end
-		
 	end
 end
 

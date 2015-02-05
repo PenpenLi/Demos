@@ -22,6 +22,9 @@ require "zoo.panel.AskForEnergyPanel"
 require "zoo.panel.component.energyPanel.SocialNetworkFollowPanel"
 require "zoo.panel.PushActivityPanel"
 require "zoo.panel.RemindAskingEnergyPanel"
+require "zoo.panelBusLogic.IapBuyPropLogic"
+require "zoo.panel.component.energyPanel.IapBuyMiddleEnergyPanel"
+require "zoo.panel.component.energyPanel.AndroidDimeBuyMiddleEnergyPanel"
 
 local kPanelShowChance = {
 	kAddMaxEnergy = 0,
@@ -87,9 +90,10 @@ function EnergyPanel:init(continueCallback, ...)
 	self.item1			= self.clippingAreaBelow:getChildByName("item1")
 	self.item2			= self.clippingAreaBelow:getChildByName("item2")
 	self.item3			= self.clippingAreaBelow:getChildByName("item3")
-	self.buyEnergyTxt		= self.clippingAreaBelow:getChildByName("useEnergyTxt")
-	self.askFriendBtn		= self.clippingAreaBelow:getChildByName("askFriendBtn")
+	self.buyEnergyTxt	= self.clippingAreaBelow:getChildByName("useEnergyTxt")
+	self.askFriendBtn	= self.clippingAreaBelow:getChildByName("askFriendBtn")
 	self.buyBtn			= self.clippingAreaBelow:getChildByName("buyBtn")
+	self.goldBuyMidBtn	= GroupButtonBase:create(self.clippingAreaBelow:getChildByName("goldBuyMidBtn"))
 
 	local buyBtnBG = self.buyBtn:getChildByName("btnWithoutShadow"):getChildByName("_bg"):getChildByName("bg")
 	buyBtnBG:adjustColor(kColorBlueConfig[1],kColorBlueConfig[2],kColorBlueConfig[3],kColorBlueConfig[4])
@@ -478,6 +482,42 @@ function EnergyPanel:init(continueCallback, ...)
 	--  Scale According To Screen Resolution
 	--  -------------------------------------
 	self:scaleAccordingToResolutionConfig()
+
+	------------------------------
+	-- Buy middle energy on iOS
+	------------------------------
+	if __IOS then
+		local userExtend = UserManager:getInstance().userExtend
+		self.goldBuyMidBtn:setColorMode(kGroupButtonColorMode.blue)
+		self.goldBuyMidBtn:useStaticLabel(44, nil, ccc3(255, 255, 255))
+		self.goldBuyMidBtn:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
+
+		local function onBoughtCallback()
+			if self.isDisposed then return end
+			self.item2:updateItemNumber()
+			HomeScene:sharedInstance().goldButton:updateView()
+		end
+		local function onGoldButton()
+			local panel = BuyPropPanel:create(17)
+			panel:setBoughtCallback(onBoughtCallback)
+			panel:popout()
+		end
+		self.goldBuyMidBtn:addEventListener(DisplayEvents.kTouchTap, onGoldButton)
+
+	 	self.goldBuyMidBtn:setVisible(self.item2:getItemNumber() <= 0)
+
+		local function onChange(num)
+ 			self.goldBuyMidBtn:setVisible(self.item2:getItemNumber() <= 0)
+ 			if self.rmbBuyMidEnergyPanel and self.item2:getItemNumber() > 0 then
+ 				self.rmbBuyMidEnergyPanel:remove()
+ 				self.rmbBuyMidEnergyPanel = nil
+ 				self.bottomBubblePanel = nil
+ 			end
+		end
+		self.item2:registerItemNumberChangeCallback(onChange)
+	else
+		self.goldBuyMidBtn:setVisible(false)
+	end
 end
 
 function EnergyPanel:onCloseBtnTapped()
@@ -1021,6 +1061,24 @@ end
 -----------------------------------------------------
 ---- Two Different Method To Show / Hide Panel
 ------------------------------------------------------
+local popoutSequence;
+
+function EnergyPanel:addPopoutSub(func, index)
+	index = index or #popoutSequence + 1
+	if index <= 0 then index = 1 end
+	if index > #popoutSequence then index = #popoutSequence end
+	table.insert(popoutSequence, index, func)
+end
+
+function EnergyPanel:removePopoutSub(index)
+	if index <= 0 then index = 1 end
+	if index > #popoutSequence then index = #popoutSequence end
+	table.remove(popoutSequence, index)
+end
+
+function EnergyPanel:indexPopoutSub(func)
+	return table.indexOf(popoutSequence, func)
+end
 
 function EnergyPanel:popout(animFinishCallback, ...)
 	assert(animFinishCallback == false or type(animFinishCallback) == "function")
@@ -1031,51 +1089,17 @@ function EnergyPanel:popout(animFinishCallback, ...)
 	self.showed = true
 
 	local function animFinished()
-
-		local function animCallback()
-			self.allowBackKeyTap = true
-			if animFinishCallback then
-				animFinishCallback()
-			end
+		for k, v in ipairs(popoutSequence) do
+			if v(self) then break end
 		end
 
-		-- Check If Can PopOut The AddMaxEnergyPanel
-		local info
-		if UserManager:getInstance():getUserRef():getEnergy() < 10 then
-			info = PushActivity:sharedInstance():onEnergyPanel()
-		end
-		if info then
-			local panel = PushActivityPanelEnergy:create(info)
-			if panel then
-				local popoutPos = self.panelExchangeAnim:getPopShowPos()
-				local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
-				local energyPanelBottomPosY = popoutPos.y - selfSize.height
-				local selfParent = self:getParent()
-				local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
-				posInWorldSpace.y = posInWorldSpace.y - 40
-				panel:popout(self, animCallback, posInWorldSpace.y)
-				self.bottomBubblePanel = panel
-			end
-		else
-			self:chekPopoutBottomBubbleWindow()
-			animCallback()
+		self.allowBackKeyTap = true
+		if animFinishCallback then
+			animFinishCallback()
 		end
 	end
 	self.panelExchangeAnim:popout(animFinished)
 end
-
--- function EnergyPanel:getHCenterInScreenX(...)
--- 	assert(#{...} == 0)
-
--- 	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
--- 	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
--- 	local selfWidth	= self.bg:getGroupBounds().size.width
-
--- 	local deltaWidth = visibleSize.width - selfWidth
--- 	local halfDeltaWidth = deltaWidth / 2
-
--- 	return visibleOrigin.x + halfDeltaWidth
--- end
 
 function EnergyPanel:chekPopoutBottomBubbleWindow(...)
 	assert(#{...} == 0)
@@ -1099,21 +1123,41 @@ function EnergyPanel:chekPopoutBottomBubbleWindow(...)
 			self.curEnergy >= 5 then remindChance = 0 end
 		-- random
 		local up = addMaxChance + wechatChance + weiboChance + nothingChance
-		if up == 0 then return end
+		if up == 0 then return false end
 		local res = math.random(up)
 		while true do
+
 			res = res - addMaxChance
-			if res < 0 then	self:popoutAddMaxEnergyPanel() break end
+			if res < 0 then
+				self:popoutAddMaxEnergyPanel()
+				return true
+			end
+
 			res = res - wechatChance
-			if res < 0 then self:popoutSocialNetworkFollowPanel("wechat") break end
+			if res < 0 then
+				self:popoutSocialNetworkFollowPanel("wechat")
+				return true
+			end
+
 			res = res - weiboChance
-			if res < 0 then self:popoutSocialNetworkFollowPanel("weibo") break end
+			if res < 0 then
+				self:popoutSocialNetworkFollowPanel("weibo")
+				return true
+			end
+
 			res = res - remindChance
-			if res < 0 then self:popoutRemindAskingEnergyPanel() end
+			if res < 0 then
+				self:popoutRemindAskingEnergyPanel()
+				return true
+			end
+
 			res = res - nothingChance
-			if res < 0 then break end
+			if res < 0 then
+				return true
+			end
 		end
 	end
+	return false
 end
 
 function EnergyPanel:popoutSocialNetworkFollowPanel(pnlType)
@@ -1177,6 +1221,25 @@ function EnergyPanel:popoutAddMaxEnergyPanel(...)
 	self.bottomBubblePanel:popout()
 end
 
+local popoutWithoutBgFadeInSequence;
+
+function EnergyPanel:addPopoutWithoutBgFadeInSub(func, index)
+	local index = index or #popoutWithoutBgFadeInSequence + 1
+	if index <= 0 then index = 1 end
+	if index > #popoutWithoutBgFadeInSequence then index = #popoutWithoutBgFadeInSequence end
+	table.insert(popoutWithoutBgFadeInSequence, index, func)
+end
+
+function EnergyPanel:removePopoutWithoutBgFadeInSub(index)
+	if index <= 0 then index = 1 end
+	if index > #popoutWithoutBgFadeInSequence then index = #popoutWithoutBgFadeInSequence end
+	table.remove(popoutWithoutBgFadeInSequence, index)
+end
+
+function EnergyPanel:indexPopoutWithoutBgFadeInSub(func)
+	return table.indexOf(popoutWithoutBgFadeInSequence, func)
+end
+
 function EnergyPanel:popoutWithoutBgFadeIn(animFinishCallback, ...)
 	assert(false == animFinishCallback or type(animFinishCallback) == "function")
 	assert(#{...} == 0)
@@ -1186,32 +1249,13 @@ function EnergyPanel:popoutWithoutBgFadeIn(animFinishCallback, ...)
 	self.showed	= true
 
 	local function animFinished()
-		local function animFinishedFunc()
-			self.allowBackKeyTap = true
-			if animFinishCallback then
-				animFinishCallback()
-			end
+		for k, v in ipairs(popoutWithoutBgFadeInSequence) do
+			if v(self) then break end
 		end
 
-		local info
-		if UserManager:getInstance():getUserRef():getEnergy() < 10 then
-			info = PushActivity:sharedInstance():onEnergyPanel()
-		end
-		if info then
-			local panel = PushActivityPanelEnergy:create(info)
-			if panel then
-				local popoutPos = self.panelExchangeAnim:getPopShowPos()
-				local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
-				local energyPanelBottomPosY = popoutPos.y - selfSize.height
-				local selfParent = self:getParent()
-				local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
-				posInWorldSpace.y = posInWorldSpace.y - 40
-				panel:popout(self, animCallback, posInWorldSpace.y)
-				self.bottomBubblePanel = panel
-			end
-		else
-			self:chekPopoutBottomBubbleWindow()
-			animFinishedFunc()
+		self.allowBackKeyTap = true
+		if animFinishCallback then
+			animFinishCallback()
 		end
 	end
 
@@ -1440,3 +1484,93 @@ function EnergyPanel:create(continueCallback, ...)
 	newEnergyPanel:init(continueCallback)
 	return newEnergyPanel
 end
+
+function EnergyPanel:tryPopoutAndroidDimeBuyMidEnergy()
+	if __ANDROID then
+		if UserManager:getInstance():getUserRef():getEnergy() < 5 and
+			AndroidDimeBuyMiddleEnergyPanel:checkCanPop() then
+			local function boughtCallback()
+				self.item2:updateItemNumber()
+				if self.bottomBubblePanel then
+					self.bottomBubblePanel:remove()
+					self.bottomBubblePanel = nil
+				end
+			end
+			local popoutPos = self.panelExchangeAnim:getPopShowPos()
+			local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
+			local energyPanelBottomPosY = popoutPos.y - selfSize.height
+			local selfParent = self:getParent()
+			local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
+			posInWorldSpace.y = posInWorldSpace.y - 40
+			local panel = AndroidDimeBuyMiddleEnergyPanel:create(self, boughtCallback, posInWorldSpace.y)
+			if panel then
+				self.bottomBubblePanel = panel
+				panel:popout()
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function EnergyPanel:tryPopoutIapBuyMidEnergy()
+	if __IOS then
+		local userExtend = UserManager:getInstance().userExtend
+		if MaintenanceManager:getInstance():isEnabled("Cny1Feature") or self.item2:getItemNumber() <= 0 and
+			type(userExtend.payUser) == "boolean" and not userExtend.payUser then
+			local function boughtCallback()
+				self.item2:updateItemNumber()
+			end
+			local popoutPos = self.panelExchangeAnim:getPopShowPos()
+			local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
+			local energyPanelBottomPosY = popoutPos.y - selfSize.height
+			local selfParent = self:getParent()
+			local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
+			posInWorldSpace.y = posInWorldSpace.y - 40
+			local panel = IapBuyMiddleEnergyPanel:create(self, boughtCallback, posInWorldSpace.y)
+			if panel then
+				self.rmbBuyMidEnergyPanel = panel
+				self.bottomBubblePanel = panel
+				panel:popout()
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function EnergyPanel:tryPopPushActivityPanel()
+	local info
+	if UserManager:getInstance():getUserRef():getEnergy() < 10 then
+		info = PushActivity:sharedInstance():onEnergyPanel()
+	end
+	if info then
+		local panel = PushActivityPanelEnergy:create(self, info)
+		if panel then
+			local popoutPos = self.panelExchangeAnim:getPopShowPos()
+			local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
+			local energyPanelBottomPosY = popoutPos.y - selfSize.height
+			local selfParent = self:getParent()
+			local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
+			posInWorldSpace.y = posInWorldSpace.y - 40
+			panel:popout(self, animCallback, posInWorldSpace.y)
+			self.bottomBubblePanel = panel
+			return true
+		end
+	end
+	return false
+end
+
+popoutSequence = {
+	EnergyPanel.tryPopoutAndroidDimeBuyMidEnergy,
+	EnergyPanel.tryPopoutIapBuyMidEnergy,
+	EnergyPanel.tryPopPushActivityPanel,
+	EnergyPanel.chekPopoutBottomBubbleWindow,
+}
+
+popoutWithoutBgFadeInSequence = {
+	EnergyPanel.tryPopoutAndroidDimeBuyMidEnergy,
+	EnergyPanel.tryPopoutIapBuyMidEnergy,
+	EnergyPanel.tryPopPushActivityPanel,
+	EnergyPanel.chekPopoutBottomBubbleWindow,
+}

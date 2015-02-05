@@ -438,6 +438,21 @@ function UpdatePageagePanel:popout()
 	end
 end
 
+function UpdatePageagePanel:autoPopout( ... )
+	if self:hasLoading() then 
+		self:dispose()
+	else	
+		-- PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
+		self:setVisible(false)
+		self.popoutShowTransition = function( ... )
+			self:setVisible(true)
+			local function onFinish() self.allowBackKeyTap = true end
+			self.showHideAnim:playShowAnim(onFinish)
+		end
+		PopoutQueue:sharedInstance():push(self,true,false,function( ... )end)
+	end
+end
+
 function UpdatePageagePanel:onCloseBtnTapped()
 	if self.isClose then 
 		return
@@ -535,7 +550,8 @@ function UpdateSuccessPanel:init(reward)
 end
 
 function UpdateSuccessPanel:popout()
-	PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
+	-- PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
+	PopoutQueue:sharedInstance():push(self)
 	self.allowBackKeyTap = true
 end
 

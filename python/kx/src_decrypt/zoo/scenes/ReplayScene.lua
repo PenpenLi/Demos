@@ -98,9 +98,9 @@ function ReplayScene:onInit()
 
 	local levelconfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.gamelevel);
 	--he_log_info(string.format("self.gamelevel = %d",self.gamelevel));
-	self.mygameboardlogic = GameBoardLogic:create();
+	levelconfig.randomSeed = self.replayRecords.randomSeed
+	self.mygameboardlogic = GameBoardLogic:create()
 	self.mygameboardlogic:initByConfig(self.gamelevel, levelconfig);
-	self.mygameboardlogic:setWriteReplayOff()
 	--获取处理完之后的map，进行view的初始化
 	self.mygameboardview = GameBoardView:createByGameBoardLogic(self.mygameboardlogic);
 	self:addChild(self.mygameboardview)
@@ -108,16 +108,11 @@ function ReplayScene:onInit()
 	self.mygameboardview:setScaleY(GamePlayConfig_Tile_ScaleY)
 end
 
-function ReplayScene:setReplay(table)
+function ReplayScene:setReplay(records)
 	self.replayMode = true
-	local levelconfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.mygameboardlogic.level)
-	self.mygameboardlogic.randomSeed = table.randomSeed
-	self.mygameboardlogic.replaySteps = table.replaySteps
-	self.mygameboardlogic:ReplayStart(levelconfig)
-	self.mygameboardview:reInitByGameBoardLogic(self.mygameboardlogic);
+	self.mygameboardlogic.replaySteps = records.replaySteps
+	self.mygameboardlogic:ReplayStart()
 	self.mygameboardlogic:onGameInit()
-	
-	-- self.mygameboardlogic:setGamePlayStatus(GamePlayStatus.kNormal)
 end
 
 function ReplayScene:getGameBoardLogic(...)

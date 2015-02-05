@@ -121,11 +121,11 @@ function PageRenderer:setItems(items)
 	assert(#items <= self.pageSize)
 
 	for i=1, #items do
-		self:showBoxIcon(i, 0, 0)
-		self:showBoxIcon(i, items[i].itemId, items[i].num)
+		self:showBoxIcon(i, nil)
+		self:showBoxIcon(i, items[i])
 	end
 	for j=#items + 1, self.pageSize do 
-		self:showBoxIcon(j, 0, 0)
+		self:showBoxIcon(j, nil)
 	end
 end
 
@@ -135,14 +135,16 @@ function PageRenderer:setItemAt(index, item)
 	assert(item.num >= 0)
 	assert(index <= self.pageSize)
 
-	self:showBoxIcon(index, item.itemId, item.num)
+	self:showBoxIcon(index, item)
 end
 
 
-function PageRenderer:showBoxIcon(index, propsId, quantity)
+function PageRenderer:showBoxIcon(index, item)
 	assert(index > 0)
 	assert(index <= self.pageSize)
-	assert(propsId)
+
+	local propsId = item and item.itemId or 0
+	local quantity = item and item.num or 0
 
 	local ib = self.itemBoxes[index]
 	local txt = ib:getChildByName('txt')
@@ -203,10 +205,45 @@ function PageRenderer:showBoxIcon(index, propsId, quantity)
 	                      function(event)
 	                      		self:onItemTap(event)
 	                      end, 
-	                      {index = index, propsId = propsId, isWenHao = isWenHao })
+	                      {index = index, isWenHao = isWenHao, item = item })
 	-- make sure that txt is above the icon
 	txt:removeFromParentAndCleanup(false)
 	ib:addChild(txt)
+
+	if item.expireTime and item.expireTime > 0 then -- 限时道具
+		local function updateFlag(cdInSec)
+			if not ib or ib.isDisposed then return end
+
+			if cdInSec <= 0 then
+				if ib.timeFlag then 
+					ib.timeFlag:removeFromParentAndCleanup(true) 
+					ib.timeFlag = nil
+				end
+
+				local expireFlag = Sprite:createWithSpriteFrameName("bag_expire_flag0000")
+				assert(expireFlag)
+				expireFlag:setAnchorPoint(ccp(0, 1))
+				expireFlag:setPosition(ccp(-7, 10))
+				ib:addChild(expireFlag)
+			else
+				local timeFlag = Sprite:createWithSpriteFrameName("bag_time_limit_flag0000")
+				assert(timeFlag)
+				timeFlag:setAnchorPoint(ccp(0, 1))
+				timeFlag:setPosition(ccp(-7, 10))
+				ib:addChild(timeFlag)
+				ib.timeFlag = timeFlag
+				local function onDelayTimeFinished()
+					updateFlag(0)
+				end
+				local replaceFlagAction = CCSequence:createWithTwoActions(CCDelayTime:create(cdInSec), CCCallFunc:create(onDelayTimeFinished))
+				-- replaceFlagAction:setTag(111111)
+				ib:runAction(replaceFlagAction)
+			end
+		end
+
+		local cdInSec = math.floor((item.expireTime - Localhost:time()) / 1000)
+		updateFlag(cdInSec)
+	end
 end
 
 
@@ -214,7 +251,6 @@ function PageRenderer:onItemTap(event)
 	-- show tips
 	assert(event.context)
 	local index = event.context.index
-	local propsId = event.context.propsId
 	local isWenHao = event.context.isWenHao
 	local ib = self.itemBoxes[index]
 
@@ -233,11 +269,14 @@ function PageRenderer:onItemTap(event)
 			panel:popout()
 		end
 	else 
-		self:showTip(ib,propsId)
+		self:showTip(ib, event.context.item)
 	end
 
 end
-function PageRenderer:showTip(ib,propsId)
+function PageRenderer:showTip(ib, item)
+	assert(item)
+	local propsId = item.itemId
+	local realPropId = item.timePropId or item.itemId
 
 	local content = self.builder:buildGroup('bagItemTipContent')--ResourceManager:sharedInstance():buildGroup('bagItemTipContent')
 	local desc = content:getChildByName('desc')
@@ -258,7 +297,6 @@ function PageRenderer:showTip(ib,propsId)
 	local canSell = false -- CURRENTLY: not supported
 
 
-
 	title:setString(Localization:getInstance():getText("prop.name."..propsId))
 	local originSize = desc:getDimensions()
 	originSize = {width = originSize.width, height = originSize.height}
@@ -267,6 +305,57 @@ function PageRenderer:showTip(ib,propsId)
 	local descSize = desc:getContentSize()
 	descSize = {width = descSize.width, height = descSize.height}
 	-- descSize.height = math.max(descSize.height, originSize.height)
+	-- time prop
+	if item.timePropId then
+		local function getCDTime()
+			local cdTimeInSec = math.floor((item.expireTime - Localhost:time()) / 1000)
+			local h = 0
+			local m = 0
+			local s = 0
+			if cdTimeInSec > 0 then 
+				local cdMin = cdTimeInSec / 60 -- 倒计时的分钟数
+				if cdMin >= 1 then
+					cdMin = math.ceil(cdMin) -- 向上取整
+					h = math.floor(cdMin / 60)
+					m = cdMin % 60
+				else -- 剩余时间少于1分钟时使用秒数倒计时
+					s = math.floor(cdTimeInSec % 60)
+				end
+			end
+			return {h=h,m=m,s=s}
+		end
+
+		local expireDesc = TextField:create("", desc:getFontName(), desc:getFontSize())
+		local function updateCDTime()
+			if expireDesc and not expireDesc.isDisposed then
+				local cdTime = getCDTime()
+				if cdTime.h==0 and cdTime.m==0 and cdTime.s==0 then -- 已过期
+					expireDesc:setString(Localization:getInstance():getText("level.expire.prop.tip2"))
+				else
+					if cdTime.h > 0 or cdTime.m > 0 then
+						local expireDescText = Localization:getInstance():getText("level.expire.prop.tip", {h=cdTime.h, m=cdTime.m})
+						expireDesc:setString(expireDescText)
+					else -- 秒数倒计时
+						local expireDescText = Localization:getInstance():getText("level.expire.prop.tip1", {s=cdTime.s})
+						expireDesc:setString(expireDescText)
+						setTimeOut(updateCDTime, 1)		
+					end
+				end
+			end
+		end
+		updateCDTime()
+
+		expireDesc:setDimensions(CCSizeMake(originSize.width, 0))
+		expireDesc:setColor(ccc3(255,0,0))
+		expireDesc:setAnchorPoint(ccp(0,1))
+		local descPos = desc:getPosition()
+		expireDesc:setPosition(ccp(descPos.x, descPos.y - descSize.height - 5))
+
+		content:addChild(expireDesc)
+
+		local expireDescSize = expireDesc:getContentSize()
+		descSize.height = descSize.height + expireDescSize.height + 5
+	end
 
 	sellBtn:setVisible(false)
 	sellBtn:setEnabled(false)
@@ -280,7 +369,7 @@ function PageRenderer:showTip(ib,propsId)
 		sellBtn:setVisible(true)
 		-- sellBtn:setButtonMode(true)
 		sellBtn:setEnabled(true)
-		sellBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onSellBtnTapped(event) end, propsId )
+		sellBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onSellBtnTapped(event) end, realPropId )
 		sellBtn:setString(Localization:getInstance():getText('bag.panel.button.sell', {}))
 	end
 
@@ -291,7 +380,7 @@ function PageRenderer:showTip(ib,propsId)
 		useBtn:setVisible(true) 
 		-- useBtn:setButtonMode(true)
 		useBtn:setEnabled(true)
-		useBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onUseBtnTapped(event) end, {propsId = propsId, pos = boxPosition} )
+		useBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onUseBtnTapped(event) end, {propsId = realPropId, pos = boxPosition} )
 		-- buildBtnLabel(useBtn, 'txt', 'txt_fontSize', Localization:getInstance():getText('bag.panel.button.use', {}))
 		useBtn:setString(Localization:getInstance():getText('bag.panel.button.use', {}))
 	end

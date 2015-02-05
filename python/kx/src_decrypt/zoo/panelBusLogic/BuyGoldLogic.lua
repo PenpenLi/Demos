@@ -62,6 +62,9 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 					counter = counter + 1
 					goldList[tostring(counter)] = v.productId
 				end
+			elseif __IOS and v.id == 10 then
+			elseif __IOS and v.id == 11 then
+			elseif __IOS and v.id == 12 then
 			else
 				counter = counter + 1
 				goldList[tostring(counter)] = v.productId
@@ -166,6 +169,13 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 		local newCash = oldCash + self.meta[index].cash;
 		user:setCash(newCash)
 		serv:setCash(newCash)
+
+		local userExtend = UserManager:getInstance().userExtend
+		if type(userExtend) == "table" then userExtend.payUser = true end
+		if __IOS or __WIN32 then
+			UserManager:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
+			UserService:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
+		end
 		
 		DcUtil:logCreateCash("charge", self.meta[index].cash, oldCash, -1)
 		

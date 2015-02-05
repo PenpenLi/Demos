@@ -90,10 +90,8 @@ function SnsUtil.sendImageMessage( shareType, title, message, thumb, imageURL, s
 	message = message or ""
 
 	if shareType == PlatformShareEnum.kWechat then
-		if WeChatSDK.new():sendImageMessage(message, thumb, imageURL) then
-			if shareCallback and shareCallback.onSuccess then shareCallback.onSuccess({}) end
-		else
-			if shareCallback and shareCallback.onError then shareCallback.onError() end
+		if shareCallback then
+			WeChatSDK.new():sendImageMessage(message, thumb, imageURL, shareCallback)
 		end
 	else
 		SnsProxy:shareImage( shareType, title, message, imageURL, thumb, shareCallback )

@@ -12,21 +12,25 @@ end
 function MagicTileResetState:onEnter()
     BaseStableState.onEnter(self)
     self.nextState = nil
+    self.hasItemToHandle = false
+    self.handleCount = 0
+    self.completeCount = 0
     self:handleMagicTile()
 
 end
 
 function MagicTileResetState:handleMagicTile()
     if not self.mainLogic.gameMode:is(HalloweenMode) then 
-        self.magicTileHandled = true
         self:handleComplete()
         return 
     end
 
     local function tileChangeCallback()
-        self.magicTileHandled = true
-        self.waitingCallback = false
-        self:handleComplete()
+        self.completeCount = self.completeCount + 1
+        if self.completeCount >= self.handleCount then
+            self.hasItemToHandle = true
+            self:handleComplete()
+        end
     end
 
     local boardmap = self.mainLogic.boardmap
@@ -60,7 +64,7 @@ function MagicTileResetState:handleMagicTile()
                 action.objective = 'color'
                 action.completeCallback = tileChangeCallback
                 self.mainLogic:addGameAction(action)
-                self.waitingCallback = true
+                self.handleCount = self.handleCount + 1
             elseif item and item.isMagicTileAnchor and item.remainingHit <= 0 then
                 local action = GameBoardActionDataSet:createAs(
                     GameActionTargetType.kGameItemAction,
@@ -72,20 +76,19 @@ function MagicTileResetState:handleMagicTile()
                 action.objective = 'die'
                 action.completeCallback = tileChangeCallback
                 self.mainLogic:addGameAction(action)
-                self.waitingCallback = true
+                self.handleCount = self.handleCount + 1
             end
         end
     end
 
-    if self.waitingCallback ~= true then
-        tileChangeCallback()
+    if self.handleCount == 0 then
+        self:handleComplete()
     end
 end
 
 function MagicTileResetState:handleComplete()
-    if self.magicTileHandled == true then
-        self.magicTileHandled = false
-        self.nextState = self.context.magicLampReinitState
+    self.nextState = self.context.magicLampReinitState
+    if self.hasItemToHandle then
         self.context:onEnter()
     end
 end
@@ -93,8 +96,9 @@ end
 function MagicTileResetState:onExit()
     BaseStableState.onExit(self)
     self.nextState = nil
-    self.magicTileHandled = false
-    self.waitingCallback = false
+    self.hasItemToHandle = false
+    self.handleCount = 0
+    self.completeCount = 0
 end
 
 function MagicTileResetState:checkTransition()

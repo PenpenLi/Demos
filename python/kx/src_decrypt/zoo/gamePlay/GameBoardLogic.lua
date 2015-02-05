@@ -173,6 +173,12 @@ function GameBoardLogic:ctor()
 	self.randomAnimalHelpList = {}		----最后随机时屏幕中所有可以被随机到的item
 
 	self.randFactory = HERandomObject:create();
+	-- local oldRandFunc = self.randFactory.rand
+	-- self.randFactory.rand = function(this, s, e)
+	-- 	local result = oldRandFunc(this, s, e)
+	-- 	print(result, debug.traceback())
+	-- 	return result
+	-- end
 	self.PlayUIDelegate = nil;
 
 	-- step stable 相关
@@ -449,7 +455,7 @@ function GameBoardLogic:refreshComplete()
 	ScoreCountLogic:endCombo(self)
 	self.isInStep = false
 	if self.theGamePlayStatus == GamePlayStatus.kNormal then
-		if self.gameMode:reachEndCondition(self) then
+		if self.gameMode.refreshFailedDirectSuccess == true or self.gameMode:reachEndCondition(self) then
 			self.fsm:afterRefreshStable(false)
 			self:setGamePlayStatus(GamePlayStatus.kEnd)
 		else
@@ -465,7 +471,7 @@ function GameBoardLogic:startEliminateAdvise()
 	end
 
 	local possibleSwapList = SwapItemLogic:calculatePossibleSwap(self)
-	targetPossibleSwap = possibleSwapList[math.random(#possibleSwapList)]
+	local targetPossibleSwap = possibleSwapList[math.random(#possibleSwapList)]
 	self.targetPossibleSwap = targetPossibleSwap
 
 	local function showEliminateAdvise(dt)
@@ -542,9 +548,7 @@ function GameBoardLogic:setGamePlayStatus(state)
 				self.gameMode:afterFail()
 			end
 		elseif state == GamePlayStatus.kNormal then
-			-- if self.theGamePlayStatus ~= GamePlayStatus.kPreStart then
-				-- self:startWaitingOperation()
-			-- end
+			-- left empty
 		elseif state == GamePlayStatus.kFailed then
 			local targetCount = nil
 			local opLog = nil
@@ -556,7 +560,9 @@ function GameBoardLogic:setGamePlayStatus(state)
 			elseif self.theGamePlayType == GamePlayType.kRabbitWeekly then
 				targetCount = self.rabbitCount:getValue()
 			end
-			self.PlayUIDelegate:failLevel(self.level, self.totalScore, 0, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
+			if self.PlayUIDelegate then
+				self.PlayUIDelegate:failLevel(self.level, self.totalScore, 0, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
+			end
 		elseif state == GamePlayStatus.kBonus then
 			if BombItemLogic:getNumSpecialBomb(self) > 0 
 				or (self.gameMode:canChangeMoveToStripe() and self.theCurMoves > 0)
@@ -590,18 +596,24 @@ function GameBoardLogic:setGamePlayStatus(state)
 			elseif self.theGamePlayType == GamePlayType.kRabbitWeekly then
 				targetCount = self.rabbitCount:getValue()
 			end
-			self.PlayUIDelegate:passLevel(self.level, self.totalScore, self.gameMode:getScoreStarLevel(), math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, bossCount)			
+			if self.PlayUIDelegate then
+				self.PlayUIDelegate:passLevel(self.level, self.totalScore, self.gameMode:getScoreStarLevel(), math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, bossCount)			
+			end
 			if self.theGamePlayType ~= GamePlayType.kDigTime and 
 				self.theGamePlayType ~= GamePlayType.kClassic and 
 				self.theGamePlayType ~= GamePlayType.kClassicMoves and
 				self.theGamePlayType ~= GamePlayType.kDigMoveEndless and
 				self.theGamePlayType ~= GamePlayType.kRabbitWeekly then
-				if self.leftMoveToWin == 0 then SharePanel:onLastStepPassLevel() end
+				
+				ShareManager:setShareData(ShareManager.ConditionType.LEFT_STEP,self.leftMoveToWin)
+				ShareManager:shareWithID( ShareManager.LAST_STEP_PASS )
+			else
+				ShareManager:setShareData(ShareManager.ConditionType.LEFT_STEP,1)
 			end
-			if self.realCostMove <= 5
-				and self.theGamePlayType ~= GamePlayType.kRabbitWeekly
-			then 
-				SharePanel:onPassLevelWithin5Steps() 
+			
+			if self.theGamePlayType ~= GamePlayType.kRabbitWeekly then 
+				ShareManager:setShareData(ShareManager.ConditionType.PASS_STEP,self.realCostMove)
+				ShareManager:shareWithID( ShareManager.PASS_STEP )
 			end
 		elseif state == GamePlayStatus.kAferBonus then
 			if (self.gameMode:getScoreStarLevel() > 0) then
@@ -716,7 +728,7 @@ function GameBoardLogic:getColorOfGameItem(r, c)--获取动物、水晶、gift�
 	local color = 0
 	if self:isPosValid(r, c) then
 		local item = self.gameItemMap[r][c]
-		if item:isColorful() and item:canBeMatch() then
+		if item:canBeCoverByMatch() then
 			color = item.ItemColorType
 		end
 	end
@@ -796,20 +808,9 @@ function GameBoardLogic:updateFallingAndBlockStatus()
 end
 
 function GameBoardLogic:isItemCanMoved(r,c)		--地图上可以被移动的Item
-	if r > 0 and r<= #self.boardmap and c>0 and c<= #self.boardmap[r] then
-		if self.boardmap[r]
-			and self.boardmap[r][c]
-			and self.boardmap[r][c].isUsed
-			and self.boardmap[r][c].isBlock == false
-			and self.gameItemMap[r]
-			and self.gameItemMap[r][c]
-			and self.gameItemMap[r][c].isUsed
-			and self.gameItemMap[r][c].isBlock == false
-			and not self.gameItemMap[r][c].isEmpty
-			and not self.gameItemMap[r][c]:hasFurball()
-			and self.gameItemMap[r][c].ItemType ~= GameItemType.kBlackCuteBall
-			or (self.gameItemMap[r][c].ItemType == GameItemType.kMagicLamp and not self.gameItemMap[r][c]:hasLock())
-			then
+	if r > 0 and r<= #self.gameItemMap and c>0 and c<= #self.gameItemMap[r] then
+		local item = self.gameItemMap[r][c]
+		if item and item:canBeSwap() then
 			return true
 		end
 	end
@@ -835,16 +836,8 @@ function GameBoardLogic:canBeSwaped(r1,c1,r2,c2)
 end
 
 function GameBoardLogic:canUseHammer(r, c)
-	if self.gameItemMap[r][c].ItemType == GameItemType.kNone 
-		or self.gameItemMap[r][c].ItemType == GameItemType.kIngredient
-		or self.gameItemMap[r][c].ItemType == GameItemType.kPoisonBottle
-		or (self.gameItemMap[r][c].bigMonsterFrostingType > 0 and self.gameItemMap[r][c].bigMonsterFrostingStrength <= 0)
-		or self.gameItemMap[r][c].isReverseSide
-		or self.gameItemMap[r][c].isSnail
-		or self.gameItemMap[r][c].ItemType == GameItemType.kSuperBlocker then
-		return false
-	end
-	return true
+	local item = self.gameItemMap[r][c]
+	return item:canBeEffectByHammer()
 end
 
 function GameBoardLogic:canUseLineBrush(r, c)
@@ -1053,7 +1046,10 @@ function GameBoardLogic:getBirdEliminateColor()
 		end
 	end
 
-	local result = colorTypeList[self.randFactory:rand(1, #colorTypeList)]
+	local result = nil
+	if #colorTypeList > 0 then
+		result = colorTypeList[self.randFactory:rand(1, #colorTypeList)]
+	end
 	return result
 end
 
@@ -1062,7 +1058,7 @@ function GameBoardLogic:getPosListOfColor(theColor)
 	local posList = {}
 	local count = 0
 
-	if (theColor > 0) then 			----正确颜色才会有引爆
+	if theColor and theColor > 0 then 			----正确颜色才会有引爆
 		for r=1,#self.gameItemMap do
 			for c=1,#self.gameItemMap[r] do
 				local item = self.gameItemMap[r][c];
@@ -1094,7 +1090,7 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 			or propsType == GamePropsType.kRefresh_b 
 			or propsType == GamePropsType.kRefresh_l
 			then
-			if RefreshItemLogic:refreshGamePlayWith1000Random(self) then
+			if RefreshItemLogic.tryRefresh(self) then
 				-----成功了----
 				RefreshItemLogic:runRefreshAction(self, true)
 				self.fsm:changeState(self.fsm.usePropState)
@@ -1403,27 +1399,9 @@ function GameBoardLogic:WriteReplay(fileName, base)
 	Localhost:safeWriteStringToFile(text, path)
 end
 
-function GameBoardLogic:ReplayStart(levelconfig)
-	local table = self.replaySteps
-	
-	self:initBoard()
-	levelconfig.randomSeed = self.randomSeed
-	self:initByConfig(self.level, levelconfig)
-	self.replaySteps = table
-
-	for r = 1,#self.boardmap do
-		for c = 1,#self.boardmap[r] do
-			self.boardmap[r][c].isNeedUpdate = true;
-		end
-	end
-	for r = 1,#self.gameItemMap do
-		for c = 1,#self.gameItemMap[r] do
-			self.gameItemMap[r][c].isNeedUpdate = true;
-		end
-	end
+function GameBoardLogic:ReplayStart()
 	self.replaying = true
 	self.replayStep = 1
-	self.isWaitingOperation = false
 end
 
 function GameBoardLogic:Replay()
@@ -1473,13 +1451,6 @@ end
 function GameBoardLogic:preGameProp(propID, animCallback)
 	if propID == GamePropsType.kWrap_b then
 		local y1, x1, t1, y2, x2, t2
-		-- repeat
-		-- 	y1, x1 = math.random(GamePlayConfig_Max_Item_Y - 1), math.random(GamePlayConfig_Max_Item_Y - 1)
-		-- until self.gameItemMap[y1][x1].isUsed and self.gameItemMap[y1][x1].ItemType == GameItemType.kAnimal and self.gameItemMap[y1][x1].ItemSpecialType == 0
-		-- repeat
-		-- 	y2, x2 = math.random(GamePlayConfig_Max_Item_Y - 1), math.random(GamePlayConfig_Max_Item_Y - 1)
-		-- until x1 ~= x2 and y1 ~= y2 and self.gameItemMap[y2][x2].isUsed and self.gameItemMap[y2][x2].ItemType == GameItemType.kAnimal and self.gameItemMap[y2][x2].ItemSpecialType == 0
-
 		local validTargetItemList = {}
 		local validCrystalList = {}
 		for r = 1, #self.gameItemMap do
@@ -1606,29 +1577,20 @@ function GameBoardLogic:testEmpty()
 	for r=1,#self.gameItemMap do
 		for c=1,#self.gameItemMap[r] do
 			local item = self.gameItemMap[r][c]
-			local flag = self.swapHelpMap[r][c]
-			local bool = 0
-			if item.isNeedUpdate then
-				bool = 1
-			else
-				bool = 0
+			local flag = 1
+			if item.isUsed and item.isEmpty and item.comePos == nil then
+				flag = 0
 			end
-			format = format .. flag .. " "
+			format = format .. string.format("%02d", item.ItemStatus) .. " "
 		end
 
-		-- format = format .. " | "
+		format = format .. " | "
 
-		-- for c=1,#self.gameItemMap[r] do
-		-- 	local item = self.gameItemMap[r][c]
-		-- 	local itemView = self.boardView.baseMap[r][c]
-		-- 	local bool = 0
-		-- 	if item.isNeedUpdate then
-		-- 		bool = 1
-		-- 	else
-		-- 		bool = 0
-		-- 	end
-		-- 	format = format .. itemView.oldData.ItemColorType .. " "
-		-- end
+		for c=1,#self.gameItemMap[r] do
+			local item = self.gameItemMap[r][c]
+			local itemView = self.boardView.baseMap[r][c]
+			format = format .. item.ItemColorType .. " "
+		end
 		format = format .. "\n"
 	end
 	print(format)
@@ -1843,6 +1805,18 @@ function GameBoardLogic:updateAllMagicTiles(boardmap)
                         item.magicTileId = id
                         item.remainingHit = max_tile_hit
                         for i = r, r + 1 do 
+                            for j = c, c + 2 do
+                            	if boardmap[i] then
+	                                local otherItem = boardmap[i][j]
+	                                if otherItem then
+	                                    otherItem.magicTileId = id
+	                                end
+	                            end
+                            end
+                        end
+                    else
+                    	local id = item.magicTileId
+                    	for i = r, r + 1 do 
                             for j = c, c + 2 do
                             	if boardmap[i] then
 	                                local otherItem = boardmap[i][j]

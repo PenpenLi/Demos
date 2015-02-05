@@ -157,7 +157,7 @@ function GameSettingPanel:initInput(onBeginCallback)
 	inputSelect:dispose()
 end
 local function startAppBar(sub)
-	SharePanel:openAppBar( sub )
+	ShareManager:openAppBar( sub )
 end
 
 function GameSettingPanel:isNicknameUnmodifiable()
@@ -576,7 +576,7 @@ end
 function GameSettingPanel:onBtn1Tapped(event, ...)
 	PopoutManager:sharedInstance():remove(self, true)
 	if __IOS and kUserLogin then 
-		--GspEnvironment:getCustomerSupportAgent():setFAQurl(getFAQurl()) 
+		GspEnvironment:getCustomerSupportAgent():setFAQurl(getFAQurl()) 
 		GspEnvironment:getCustomerSupportAgent():ShowJiraMain() 
 	elseif __ANDROID then
 		if kUserLogin then
@@ -595,6 +595,41 @@ end
 
 function GameSettingPanel:onBtn2Tapped(event, ...)
 	PopoutManager:sharedInstance():remove(self, true)
+--[[
+local size = CCDirector:sharedDirector():getVisibleSize()
+
+local c = YouKuViewController:create()
+
+local version = "1";
+local vid = "XNTMyMTExODc2";
+local client_id = "3e7ecc095c50c2f0";
+local client_secret = "3d22e6f2bd37ac3a4f1227cdc97548d7";
+
+waxClass{"CallbackLink",NSObject,protocols={"CallbackLink"}}
+function CallbackLink:linkParam(url)
+    print("link:"..url)
+    local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/wechat_icon.png")
+    local shareCallback = {
+        onSuccess = function(result)
+            print("success...")
+        end,
+        onError = function(errCode, errMsg)
+            print("error...")
+        end,
+        onCancel = function()
+            print("error...")
+        end,
+    }
+
+SnsUtil.sendLinkMessage(PlatformShareEnum.kWechat, "test_link", "link", thumb, "http://www.baidu.com", true, shareCallback)
+end
+
+c:setCallbackLink(CallbackLink:init())
+
+c:initHtmlURLStr("http://10.130.136.47/player.html")
+c:presentYouKu()
+do return end
+--]]
 	if __IOS_FB then
 		SnsProxy:inviteFriends(nil)
 	else

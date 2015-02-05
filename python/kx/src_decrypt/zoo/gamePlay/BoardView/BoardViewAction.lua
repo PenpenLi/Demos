@@ -42,17 +42,6 @@ function BoardViewAction:runSwapItemAction(boardView, theAction)
 	sprite2:runAction(MoveToAction2)
 end
 
------播放消除冰层的动画------
-function BoardViewAction:runGameItemActionIceDec(boardView, theAction)
-	theAction.actionStatus = GameActionStatus.kRunning
-
-	local r1 = theAction.ItemPos1.x;
-	local c1 = theAction.ItemPos1.y;
-	local item = boardView.baseMap[r1][c1];
-	item:playIceDecEffect()
-	GamePlayMusicPlayer:playEffect(GameMusicType.kIceBreak)
-end
-
 function BoardViewAction:runGameItemActionScoreGet(boardView, theAction)
 	theAction.actionStatus = GameActionStatus.kRunning
 
@@ -62,11 +51,8 @@ function BoardViewAction:runGameItemActionScoreGet(boardView, theAction)
 	local num = theAction.addInt;
 	local posType = theAction.addInt2;
 
-	if boardView.PlayUIDelegate and boardView.PlayUIDelegate.effectLayer then
-		local spriteGetScore = item:playGetScoreAction(boardView, num, ccp(0,800), posType, boardView.labelBatch)
-		boardView.labelBatch:addChild(spriteGetScore)
-		-- boardView.PlayUIDelegate.effectLayer:addChildAt(spriteGetScore, 0);
-	end
+	local spriteGetScore = item:playGetScoreAction(boardView, num, ccp(0,800), posType, boardView.labelBatch)
+	boardView.labelBatch:addChild(spriteGetScore)
 
 	--------传给UI界面，显示分数星星飞行特效
 	if boardView.PlayUIDelegate then
@@ -1037,13 +1023,37 @@ function BoardViewAction:runGameitemActionHalloweenBossCasting(boardView, theAct
 	end
 end
 
+function BoardViewAction:runGameItemActionSandTransfer(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local tr, tc = theAction.ItemPos2.x, theAction.ItemPos2.y
+		-- print("runGameItemActionSandTransfer:", fr,fc,"->",tr,tc)
+		local fromItem = boardView.baseMap[fr][fc]
+		local toItem = boardView.baseMap[tr][tc]
+		local function callback( ... )
+			theAction.addInfo = "add"
+			toItem:addSandView(theAction.addInt)
+		end
+		local direction = {dr=tr-fr, dc=tc-fc}
+		fromItem:playSandMoveAnim(callback, direction)
+	end
+end
+
+function BoardViewAction:runningGameItemActionSandTransfer(boardView, theAction)
+	if theAction.addInfo == "add" then
+		theAction.addInfo = "over"
+		local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local fromItem = boardView.baseMap[fr][fc]
+		fromItem.itemSprite[ItemSpriteType.kSandMove]:removeFromParentAndCleanup(true)
+		fromItem.itemSprite[ItemSpriteType.kSandMove] = nil
+	end
+end
+
 ----播放Item动画
 function BoardViewAction:runGameItemAction(boardView, theAction)
-	if theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then 			----产生冰消除特效
-		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
-			BoardViewAction:runGameItemActionIceDec(boardView, theAction)				
-		end
-	elseif theAction.actionType == GameItemActionType.kItemScore_Get then
+	if theAction.actionType == GameItemActionType.kItemScore_Get then
 		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 			BoardViewAction:runGameItemActionScoreGet(boardView, theAction)	
 		end
@@ -1155,6 +1165,12 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		BoardViewAction:runGameitemActionMagicTileChange(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Halloween_Boss_Casting then
 		BoardViewAction:runGameitemActionHalloweenBossCasting(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Sand_Transfer then
+		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+			BoardViewAction:runGameItemActionSandTransfer(boardView, theAction)
+		elseif theAction.actionStatus == GameActionStatus.kRunning then
+			BoardViewAction:runningGameItemActionSandTransfer(boardView, theAction)
+		end
 	end
 end
 

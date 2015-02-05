@@ -59,6 +59,7 @@ function GameBoardData:ctor()
 	self.tileBlockType = 0;   --特殊地格类型 0=普通地格 1 = 翻转地格
 	self.isReverseSide = false    --所在地块是否被翻转
 	self.reverseCount = nil
+	self.sandLevel = 0 	-- 流沙等级
 
 	self.snailRoadType = 0   --蜗牛轨迹
 	self.isSnailProducer = false --蜗牛生成口
@@ -110,6 +111,7 @@ function GameBoardData:copy()
 	v.tileBlockType = self.tileBlockType
 	v.isReverseSide = self.isReverseSide
 	v.reverseCount  = self.reverseCount
+	v.sandLevel		= self.sandLevel
 
 	v.x 			= self.x
 	v.y 			= self.y
@@ -141,6 +143,7 @@ function GameBoardData:copy()
 	v.isMagicTileAnchor = self.isMagicTileAnchor
 	v.magicTileId = self.magicTileId
 	v.remainingHit = self.remainingHit
+	v.isHitThisRound = self.isHitThisRound
 
 	return v
 end
@@ -196,7 +199,13 @@ function GameBoardData:initByConfig(tileDef)
 
 	if tileDef:hasProperty(TileConst.kMagicTile) then
 		self.isMagicTileAnchor = true
+		self.isHitThisRound = false
+		self.remainingHit = 7
 	end
+
+	if tileDef:hasProperty(TileConst.kSand) then -- 流沙
+  		self.sandLevel = 1 
+  	end
 
 	if tileDef:hasProperty(TileConst.kTileBlocker) then 
 		self.tileBlockType = 1 self.reverseCount = 3 
@@ -214,6 +223,7 @@ end
 
 function GameBoardData:changeDataAfterTrans(gameBoardData)
 	self.iceLevel = gameBoardData.iceLevel
+	self.sandLevel = gameBoardData.sandLevel
 	self.isNeedUpdate = true
 end
 

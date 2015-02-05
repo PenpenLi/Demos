@@ -176,3 +176,7 @@ function FriendManager:getFriendCount()
 	for k, v in pairs(self.friends) do count = count + 1 end
 	return count
 end
+
+function FriendManager:getMaxFriendCount()
+	return 200
+end

@@ -84,6 +84,15 @@ GamePlayConfig_IceDeleted_Pos_Add_Y = -18						----!!!冰层动画的偏移量�
 GamePlayConfig_LockDeleted_Pos_Add_X = 2
 GamePlayConfig_LockDeleted_Pos_Add_Y = -33						----!!!牢笼动画的偏移量，因为牢笼动画范围比一个格子要大
 
+--黑色毛球消失
+GamePlayConfig_BlackCuteBall_Destroy = 30
+--雪怪被打
+GamePlayConfig_MonsterFrosting_Dec = 16 * GamePlayConfig_Action_FPS / 30 
+
+--蜂蜜消失
+GamePlayConfig_Honey_Disappear = 19 * GamePlayConfig_Action_FPS / 30 
+
+
 -- 雪块
 GamePlayConfig_Score_MatchBy_Snow = 100															-- 消除得分
 GamePlayConfig_GameItemSnowDeleteAction_CD = GamePlayConfig_GameItemBlockerDeleteAction_CD		-- 删除雪块的时间（此时间有问题，暂时仅测试用，提交时注释）
@@ -187,6 +196,7 @@ GamePlayConfig_Score_MatchAt_DigGround = 100                ----消除地块得�
 GamePlayConfig_Score_MatchAt_DigJewel = 1500				----消除宝石块得分
 GamePlayConfig_Score_MatchAt_BlackCuteBall = 5              ----消除一层黑色毛球的得分
 GamePlayConfig_Score_Collect_Snail = 10000                  ----收集蜗牛
+GamePlayConfig_Score_Sand_Clean = 1000 						----消除流沙
 
 GamePlayConfig_Score_MatchDeleted_UP_Time = 20* GamePlayConfig_Action_FPS_Time_Scale				----分数弹起的时间
 GamePlayConfig_Score_MatchDeleted_Stop_Time = 25* GamePlayConfig_Action_FPS_Time_Scale			----分数在空中停留的时间

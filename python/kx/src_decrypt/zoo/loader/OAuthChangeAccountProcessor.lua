@@ -1,6 +1,10 @@
 
 local Processor = class(EventDispatcher)
 
+Processor.Events = {
+    kBeforeChangeAccount = "beforeChangeAccount"
+}
+
 function Processor:changeUserAccount( lastUserData )
     local validData = false
     if lastUserData and lastUserData.uid and lastUserData.udid then
@@ -31,6 +35,8 @@ function Processor:loginNewOAuthAccount(context)
             self:dispatchEvent(Event.new(Events.kError, nil, self))
         end
     end
+
+    self:dispatchEvent(Event.new(Processor.Events.kBeforeChangeAccount,nil,self))
 
     _G.kPlayAsGuest = false
     SnsProxy:changeAccount(onAccountChange)

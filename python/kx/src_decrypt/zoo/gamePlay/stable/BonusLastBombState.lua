@@ -31,28 +31,24 @@ end
 function BonusLastBombState:update(dt)
 	self.timeCount = self.timeCount + 1
 	if self.timeCount > GamePlayConfig_BonusTime_ItemBomb_CD then
-		self.timeCount = 0
 		local bombRet = BombItemLogic:BonusTime_RandomBombOne(self.mainLogic, true)
-		if bombRet then
-			self.timeCount = GamePlayConfig_BonusTime_ItemBomb_CD
+		if not bombRet then
+			self.nextState = self:getNextState()
+			if self.mainLogic.isFallingStable and self.mainLogic.isFallingStablePreFrame then
+				self.context:onEnter()
+			end
 		end
 	end
 end
 
 function BonusLastBombState:checkTransition()
-	local hasItemToHandle = BombItemLogic:BonusTime_RandomBombOne(self.mainLogic, false)
-	if not hasItemToHandle then
-		self.nextState = self:getNextState()
-	end
 	return self.nextState
 end
 
 function BonusLastBombState:getClassName( ... )
-	-- body
 	return "BonusLastBombState"
 end
 
 function BonusLastBombState:getNextState( ... )
-	-- body
 	return self.context.roostReplaceStateInBonusSecond
 end

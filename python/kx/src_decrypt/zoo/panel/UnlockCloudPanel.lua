@@ -297,6 +297,34 @@ function UnlockCloudPanel:onUseWindmillBtnTapped(...)
 	end
 end
 
+function UnlockCloudPanel:sendUnlockMsg()
+	local function onSendUnlockMsgSuccess(event)
+		-- Remove Self 
+		print("onSendUnlockMsgSuccess Called !")
+
+		local function onRemoveSelfFinish()
+			self.cloudCanOpenCallback()
+			print("onRemoveSelfFinish Called !")
+		end
+
+		self:remove(onRemoveSelfFinish)
+	end
+
+	local function onSendUnlockMsgFailed(event)
+		self.btnTappedState = self.BTN_TAPPED_STATE_NONE
+		CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+	end
+
+	local function onSendUnlockMsgCanceled(event)
+		self.btnTappedState = self.BTN_TAPPED_STATE_NONE
+	end
+
+	local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
+	logic:setOnSuccessCallback(onSendUnlockMsgSuccess)
+	logic:setOnFailCallback(onSendUnlockMsgFailed)
+	logic:setOnCancelCallback(onSendUnlockMsgCanceled)
+	logic:start(UnlockLevelAreaLogicUnlockType.USE_FRIEND, {})
+end
 
 function UnlockCloudPanel:onAskFriendBtnTapped(...)
 	assert(#{...} == 0)
@@ -313,95 +341,73 @@ function UnlockCloudPanel:onAskFriendBtnTapped(...)
 			return
 		end
 
-		local function onSendUnlockMsgSuccess(event)
-			-- Remove Self 
-			print("onSendUnlockMsgSuccess Called !")
+		self:sendUnlockMsg()
+	else
+		self:chooseUnlockFriend()
+	end
+end
 
-			local function onRemoveSelfFinish()
-				self.cloudCanOpenCallback()
-				print("onRemoveSelfFinish Called !")
-			end
+function UnlockCloudPanel:chooseUnlockFriend()
+	-- On Friend Choosed
+	local function onFriendChoose(friendIds)
 
-			self:remove(onRemoveSelfFinish)
+		local function onSendFriendRequestSuccess(evt)
+			print("onSendFriendRequestSuccess Called !")
+			DcUtil:requestUnLockCloud(self.lockedCloudId ,#friendIds)
+			local tipKey	= "unlock.cloud.panel.request.friend.success"
+			local tipValue	= Localization:getInstance():getText(tipKey)
+			CommonTip:showTip(tipValue, "positive")
 		end
 
-		local function onSendUnlockMsgFailed(event)
-			self.btnTappedState = self.BTN_TAPPED_STATE_NONE
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+		local function onSendFriendRequestFail(evt)
+			print("onSendFriendRequestFail Called !")
+
+			local tipKey	= "error.tip."..tostring(evt.data)
+			local tipValue	= Localization:getInstance():getText(tipKey)
+			CommonTip:showTip(tipValue, "negative")
 		end
 
-		local function onSendUnlockMsgCanceled(event)
-			self.btnTappedState = self.BTN_TAPPED_STATE_NONE
+		if not friendIds or #friendIds == 0 then
+			CommonTip:showTip(Localization:getInstance():getText("unlock.cloud.panel.request.friend.noselect"), "negative")
+			return
 		end
 
 		local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
-		logic:setOnSuccessCallback(onSendUnlockMsgSuccess)
-		logic:setOnFailCallback(onSendUnlockMsgFailed)
-		logic:setOnCancelCallback(onSendUnlockMsgCanceled)
-		logic:start(UnlockLevelAreaLogicUnlockType.USE_FRIEND, {})
-
-	else
-		-- On Friend Choosed
-		local function onFriendChoose(friendIds)
-
-			local function onSendFriendRequestSuccess(evt)
-				print("onSendFriendRequestSuccess Called !")
-				DcUtil:requestUnLockCloud(self.lockedCloudId ,#friendIds)
-				local tipKey	= "unlock.cloud.panel.request.friend.success"
-				local tipValue	= Localization:getInstance():getText(tipKey)
-				CommonTip:showTip(tipValue, "positive")
-			end
-
-			local function onSendFriendRequestFail(evt)
-				print("onSendFriendRequestFail Called !")
-
-				local tipKey	= "error.tip."..tostring(evt.data)
-				local tipValue	= Localization:getInstance():getText(tipKey)
-				CommonTip:showTip(tipValue, "negative")
-			end
-
-			if not friendIds or #friendIds == 0 then
-				CommonTip:showTip(Localization:getInstance():getText("unlock.cloud.panel.request.friend.noselect"), "negative")
-				return
-			end
-
-			local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
-			logic:setOnSuccessCallback(onSendFriendRequestSuccess)
-			logic:setOnFailCallback(onSendFriendRequestFail)
-			if __IOS_FB then
-				if SnsProxy:isShareAvailable() then
-					local callback = {
-						onSuccess = function(result)
-							logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-							DcUtil:logSendRequest("request",result.id,"request_uplock_area_help")
-						end,
-						onError = function(err)
-							print("failed")
-						end
-					}
-
-					local profile = UserManager.getInstance().profile
-					local userName = ""
-					if profile and profile:haveName() then
-						userName = profile:getDisplayName()
+		logic:setOnSuccessCallback(onSendFriendRequestSuccess)
+		logic:setOnFailCallback(onSendFriendRequestFail)
+		if __IOS_FB then
+			if SnsProxy:isShareAvailable() then
+				local callback = {
+					onSuccess = function(result)
+						logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
+						DcUtil:logSendRequest("request",result.id,"request_uplock_area_help")
+					end,
+					onError = function(err)
+						print("failed")
 					end
-					
-					local reqTitle = Localization:getInstance():getText("facebook.request.unlock.title", {user=userName})
-					local reqMessage = Localization:getInstance():getText("facebook.request.unlock.message", {user=userName})
-					
-					local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(friendIds)
-					SnsProxy:sendRequest(snsIds, reqTitle, reqMessage, false, FBRequestObject.ULOCK_AREA_HELP, callback)
-				end
-			else
-				logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-			end	
-		end
+				}
 
-		-- Pop Out Choose Friend Panel
-		self.curAreaFriendIds = self.curAreaFriendIds or {}
-		local panel = ChooseFriendPanel:create(onFriendChoose, self.curAreaFriendIds)
-		panel:popout()
+				local profile = UserManager.getInstance().profile
+				local userName = ""
+				if profile and profile:haveName() then
+					userName = profile:getDisplayName()
+				end
+				
+				local reqTitle = Localization:getInstance():getText("facebook.request.unlock.title", {user=userName})
+				local reqMessage = Localization:getInstance():getText("facebook.request.unlock.message", {user=userName})
+				
+				local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(friendIds)
+				SnsProxy:sendRequest(snsIds, reqTitle, reqMessage, false, FBRequestObject.ULOCK_AREA_HELP, callback)
+			end
+		else
+			logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
+		end	
 	end
+
+	-- Pop Out Choose Friend Panel
+	self.curAreaFriendIds = self.curAreaFriendIds or {}
+	local panel = ChooseFriendPanel:create(onFriendChoose, self.curAreaFriendIds)
+	panel:popout()
 end
 
 function UnlockCloudPanel:onCloseBtnTapped(...)

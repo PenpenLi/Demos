@@ -30,6 +30,7 @@ require "zoo.gamePlay.stable.HoneyBottleState"
 require "zoo.gamePlay.stable.HalloweenBossState"
 require "zoo.gamePlay.stable.CheckNeedLoopState"
 require "zoo.gamePlay.stable.MagicTileResetState"
+require "zoo.gamePlay.stable.SandTransferState"
 
 StableStateMachine = class()
 
@@ -111,6 +112,8 @@ function StableStateMachine:initStates()
 	self.roostReplaceStateInSwapFirst = RoostReplaceStateInSwapFirst:create(self)
 	-- 不活跃障碍 毒液、水晶球、毒液冰融化等不会造成消除的障碍
 	self.inactiveBlockerState = InactiveBlockerState:create(self)
+	-- 流沙移动逻辑
+	self.sandTransferState = SandTransferState:create(self)	
 	-- 神灯障碍
 	self.magicLampCastingStateInSwapFirst = MagicLampCastingStateInSwapFirst:create(self)
 	-- 褐色毛球分裂

@@ -117,13 +117,11 @@ function DestructionPlanLogic:runGameItemActionSnailMove(boardView, theAction)
 	-- body
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning
-		local function startCallback( ... )
-			-- body
-			theAction.addInfo ="moveStart"
-		end
+		theAction.addInfo ="moveStart"
+		theAction.addInt = 30
 		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local item = boardView.baseMap[r][c]
-		item:playSnailInShellAnimation(theAction.direction, startCallback)
+		item:playSnailInShellAnimation(theAction.direction)
 	elseif theAction.addInfo == "moving" then
 		theAction.addInfo = ""
 		local r1, c1 = theAction.ItemPos1.x, theAction.ItemPos1.y
@@ -140,39 +138,37 @@ function DestructionPlanLogic:runGameItemActionSnailMove(boardView, theAction)
 			elseif c2 - c1 == -1 then rotation = 180
 			elseif r2 - r1 == 1 then rotation = 90
 			elseif r2 - r1 == -1 then rotation = -90 end
-
-			local function moveCallback( ... )
-				-- body
-				theAction.addInfo = "moveEnd"
-			end
-			item2:playSnailMovingAnimation(rotation, moveCallback)
+			theAction.addInfo = "moveEnd"
+			theAction.addInt = 12
+			item2:playSnailMovingAnimation(rotation)
 		end
 
 		
 	elseif theAction.addInfo == "disappear" then
-		local function disappearCallback( ... )
-			-- body
-			theAction.addInfo = "over"
-		end
 		theAction.addInfo = ""
 		local r2, c2 = theAction.ItemPos2.x, theAction.ItemPos2.y
 		local item2 = boardView.baseMap[r2][c2]
-		item2:playSnailDisappearAnimation(disappearCallback)
+		theAction.addInfo = "over"
+		theAction.addInt = 40
+		item2:playSnailDisappearAnimation()
 	elseif theAction.addInfo == "normal" then
-		local function normalCallback( ... )
-			-- body
-			theAction.addInfo = "over"
-		end
 		theAction.addInfo = ""
 		local r2, c2 = theAction.ItemPos2.x, theAction.ItemPos2.y
 		local item2 = boardView.baseMap[r2][c2]
-		item2:playSnailOutShellAnimation(theAction.direction, normalCallback)
+		theAction.addInfo = "over"
+		theAction.addInt = 30
+		item2:playSnailOutShellAnimation(theAction.direction)
 	end
 
 end
 
 function DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theAction, actid)
 	-- body
+	if theAction.addInt > 1 then 
+		theAction.addInt = theAction.addInt - 1
+		return 
+	end
+	
 	if theAction.addInfo == "moveStart" then
 		local list = theAction.moveList
 		
@@ -201,7 +197,7 @@ function DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theActio
 
 		if item1.isSnail then 
 			item1:cleanAnimalLikeData()
-			item1.isBlock = false
+			-- item1.isBlock = false
 			item1.isSnail = false
 		end
 
@@ -223,15 +219,10 @@ function DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theActio
 
 		board2.snailTargetCount = board2.snailTargetCount + 1
 		item2.snailTarget = true
-		-- print(r, c, board2.snailTargetCount)
-		-- debug.debug()
+		SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1)
 		BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
-		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
-		SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, 1)
+		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3)
 		mainLogic:checkItemBlock(r, c)
-
-		FallingItemLogic:preUpdateHelpMap(mainLogic)
-
 	elseif theAction.addInfo == "over" then
 		local r, c = theAction.ItemPos2.x, theAction.ItemPos2.y
 		local board = mainLogic.boardmap[r][c]
@@ -259,11 +250,8 @@ function DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theActio
 		else
 			itemdata:changeToSnail(board.snailRoadType)
 		end
-		-- print(r, c, board.snailTargetCount)
-		-- debug.debug()
 		SnailLogic:resetSnailRoadAtPos( mainLogic, r, c )
 		mainLogic:checkItemBlock(r, c)
-		FallingItemLogic:preUpdateHelpMap(mainLogic)
 		if theAction.completeCallback then
 			theAction.completeCallback()
 		end
@@ -325,11 +313,6 @@ function DestructionPlanLogic:runingGameItemSpecialBombWrapWrapAction(mainLogic,
 end
 
 function DestructionPlanLogic:existInSpecialBombLightUpPos(mainLogic, r, c, lightUpMatchPosList)
-	if mainLogic.theGamePlayType ~= GamePlayType.kLightUp 
-	and mainLogic.theGamePlayType ~= GamePlayType.kSeaOrder 
-		then 
-		return true 
-	end
 	if lightUpMatchPosList then
 		for i,v in ipairs(lightUpMatchPosList) do
 			if v.r == r and v.c == c then
@@ -838,7 +821,8 @@ function DestructionPlanLogic:runingGameItemSpecialBombColorColorAction(mainLogi
 		if theAction.addInt == 1 then
 			for r = 1, #mainLogic.gameItemMap do
 				for c = 1, #mainLogic.gameItemMap[r] do
-					if BombItemLogic:canBeCleanByBirdBird(mainLogic, r, c) then
+					local item = mainLogic.gameItemMap[r][c]
+					if item:isItemCanBeEliminateByBridBird() then
 						local ShakeAction = GameBoardActionDataSet:createAs(
 							GameActionTargetType.kGameItemAction,
 							GameItemActionType.kItemShakeBySpecialColor,

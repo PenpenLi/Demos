@@ -81,6 +81,9 @@ function PassLevelLogic:start(...)
 			self.onSuccessCallback(self.levelId, self.score, rewardItems)
 		end
 		SyncManager:getInstance():sync()
+		
+		ShareManager:onPassLevel(self.levelId, self.score, self.levelType)
+
 		LocalNotificationManager.getInstance():setPassLevelFlag(self.levelId, self.star, self.score)
 	end
 

@@ -27,7 +27,6 @@ local valideIds = {
 }
 
 
-
 function BagManager:isValideItemId(id)
 	if valideIds[id] then 
 		return true
@@ -52,7 +51,7 @@ function BagManager:ctor()
 end
 
 function BagManager:getUserBagData()
-	return self:prepDataForBag(UserManager:getInstance().props)
+	return self:prepDataForBag(UserManager:getInstance().props, UserManager:getInstance():getAndUpdateTimeProps())
 end
 
 function BagManager:getUsedBoxCount()
@@ -63,6 +62,11 @@ function BagManager:getUsedBoxCount()
 
 	for k, v in pairs(props) do 
 		usedCount = usedCount + math.ceil(v.num / stackSize)
+	end
+	if um.timeProps then
+		for k, v in pairs(um.timeProps) do 
+			usedCount = usedCount + math.ceil(v.num / stackSize)
+		end
 	end
 	return usedCount
 end
@@ -129,18 +133,18 @@ function BagManager:sortByIdAsc(items)
 end
 
 -- split props into small stacks
-function BagManager:prepDataForBag(userProps)
+function BagManager:prepDataForBag(userProps, expireProps)
 	assert(userProps)
 
 	local dest = {}
 	local stackSize = self:getStackSize()
 
-	local sort = self:sortByIdAsc(userProps)
-
-	for k, v in pairs(sort) do
+	local function splitPropToStacks(v, copyFunc)
+		assert(copyFunc)
 		local quantity = v.num
 		local itemId = v.itemId
-
+		local realItemId = v.itemId
+		if v.expireTime and v.expireTime > 0 then realItemId = ItemType:getRealIdByTimePropId(v.itemId) end
 		-------------------------------------
 		-- ignore bad IDs
 		-- if itemId <= 10000 
@@ -153,22 +157,45 @@ function BagManager:prepDataForBag(userProps)
 		-- 	-- Lua has no continue !!!
 
 		-- if self:isValideItemId(itemId) then
-		if itemId ~= 10047 and itemId ~= 10048 and itemId ~= 10049 and itemId ~= 10050 and itemId ~= 10051 then
+		if realItemId ~= 10047 and realItemId ~= 10048 and realItemId ~= 10049 and realItemId ~= 10050 and realItemId ~= 10051 then
 			while quantity >= stackSize do 
 
-				local tmp1 = {num = stackSize, itemId = v.itemId}
+				local tmp1 = copyFunc(v)
+				tmp1.num = stackSize
 				table.insert(dest, tmp1)
 				quantity = quantity - stackSize
 			end
 
 			if quantity > 0 then
 
-				local tmp2 = {num = quantity, itemId = v.itemId}
+				local tmp2 = copyFunc(v)
+				tmp2.num = quantity
 				table.insert(dest, tmp2)
 			end
 			
 		end
+	end
 
+	--限时道具优先显示
+	table.sort(expireProps, function(a, b)
+		if a.itemId == b.itemId then
+			return a.expireTime < b.expireTime
+		else
+			return a.itemId < b.itemId
+		end
+	end)
+	for _,v in pairs(expireProps) do
+		splitPropToStacks(v, function(src) 
+			local normalItemId = ItemType:getRealIdByTimePropId(src.itemId)
+			return {itemId = normalItemId, timePropId = src.itemId, expireTime = src.expireTime } 
+			end)
+	end
+
+	local sort = self:sortByIdAsc(userProps)
+	for k, v in pairs(sort) do
+		splitPropToStacks(v, function(src) 
+			return {itemId = src.itemId} 
+			end)
 	end
 
 	local filtered = {}

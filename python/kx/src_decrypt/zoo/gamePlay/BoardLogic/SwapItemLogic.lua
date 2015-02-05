@@ -22,17 +22,7 @@ function SwapItemLogic:_canBeSwaped(_boardmap, _gameItemMap, r1,c1,r2,c2)
 		local item2 = _gameItemMap[r2][c2];
 
 		--相邻两个Item
-		if (board1.isUsed == true and board1.isBlock == false and item1.isBlock == false or item1.ItemType == GameItemType.kMagicLamp) 
-			and (board2.isUsed == true and board2.isBlock == false and item2.isBlock == false or item2.ItemType == GameItemType.kMagicLamp)
-			and (not item1:hasFurball() and not item2:hasFurball())
-			and not (item1:hasLock() or item2:hasLock())
-			and item1.ItemStatus == GameItemStatusType.kNone 							--稳定状态的东西，才能移动
-			and item2.ItemStatus == GameItemStatusType.kNone
-			and item1.isEmpty == false 													--非空的空格可以交换
-			and item2.isEmpty == false
-			and item1.ItemType ~= GameItemType.kBlackCuteBall
-			and item2.ItemType ~= GameItemType.kBlackCuteBall
-			then
+		if item1:canBeSwap() and item2:canBeSwap() then
 			------判断绳子
 			if (r1 == r2 and c1 == c2 + 1) then ----左右
 				if board1:hasLeftRope() or board2:hasRightRope() then
