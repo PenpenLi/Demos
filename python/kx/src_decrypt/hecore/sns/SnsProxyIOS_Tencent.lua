@@ -83,7 +83,7 @@ function SnsProxy:getUserProfile(successCallback,errorCallback,cancelCallback)
 		waxClass{"GetUserProfileCallback",NSObject,protocols={"SimpleCallbackDelegate"}}
 		function GetUserProfileCallback:onSuccess(result)
 			print("GetUserProfileCallback:onSuccess:"..table.tostring(result))
-			SnsProxy.profile = {nick=result.nickname , name=result.nickname , headUrl=result.figureurl_qq_2}
+			SnsProxy.profile = {nick=result.nickname , name=result.nickname , headUrl=result.figureurl_qq_1}
 			-- UserManager.getInstance().profile.nick = result.nickname 
 			-- UserManager.getInstance().profile.headUrl = result.figureurl_qq_2 -- 1.12版本暂不使用QQ头像
 			if self.successCallback then self.successCallback(result) end

@@ -25,3 +25,6 @@ qt/DevTools/@lib
 cocos/Billiard++/proj.ios_mac/Billiard++.xcodeproj/project.xcworkspace/xcuserdata/*
 
 *.xcuserstate
+
+python/kx/src_encrypt/*
+

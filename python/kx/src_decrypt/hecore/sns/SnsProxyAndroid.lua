@@ -63,6 +63,7 @@ function SnsProxy:initPlatformConfig()
     require "hecore.sns.aps.AndroidAuthorize"
     require "hecore.sns.aps.AndroidShare"
     AndroidAuthorize.getInstance():initAuthorizeConfig(PlatformConfig.authConfig)
+    AndroidAuthorize.getInstance():initAuthorizeConfig(PlatformConfig.mergeToAuthConfig)
     AndroidPayment.getInstance():initPaymentConfig(PlatformConfig.paymentConfig)
     AndroidShare.getInstance():initShareConfig(PlatformConfig.shareConfig)
 
@@ -96,21 +97,23 @@ end
 
 -- called
 function SnsProxy:isLogin()
+    print("SnsProxy:isLogin")
     if PrepackageUtil:isPreNoNetWork() then return false end
     
     local lastLoginUser = Localhost.getInstance():getLastLoginUserConfig()
+    print("lastLoginUser. " .. table.tostring(lastLoginUser))
     if not lastLoginUser then
         return false
     end
 
     local userData = Localhost.getInstance():readUserDataByUserID(lastLoginUser.uid)
-    -- print("userData:"..table.tostring(userData))
+    print("userData:"..table.tostring(userData))
     if userData and userData.openId then
-        -- if __ANDROID and PlatformConfig:isPlatform(PlatformNameEnum.kMI) then
-        --     print("userData.snsType:"..table.tostring(userData.authorType))
-        --     if not userData.authorType then return false end
-        --     self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
-        -- end
+        if __ANDROID and PlatformConfig:isWeiboMergeToQQAccount() then
+            print("userData.snsType:"..table.tostring(userData.authorType))
+            if not userData.authorType then return false end
+            self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
+        end
         return authorProxy:isLogin()
     end
     return false
@@ -213,6 +216,7 @@ end
 function SnsProxy:purchaseItem(goodsType, itemId, itemAmount, realAmount, callback)
 end
 
+
 -- called
 function SnsProxy:syncSnsFriend()
     print("SnsProxy:syncSnsFriend")
@@ -250,7 +254,31 @@ function SnsProxy:syncSnsFriend()
             onCancel = function()
             end
         }
-        authorProxy:getFriends(0, 999, convertToInvokeCallback(callback))
+
+        local function qqSyncSnsFriend( ... )
+            local function onRequestError(evt)
+                print("syncSnsFriend onPreQzoneError callback")
+            end
+
+            local function onRequestFinish(evt)
+                print("syncSnsFriend onRequestFinish callback")
+                FriendManager.getInstance().lastSyncTime = os.time()
+                HomeScene:sharedInstance().worldScene:buildFriendPicture()
+            end
+
+            local http = SyncSnsFriendHttp.new()
+            http:addEventListener(Events.kComplete, onRequestFinish)
+            http:addEventListener(Events.kError, onRequestError)
+            if sns_token and sns_token.openId and sns_token.accessToken then
+                http:load(nil, sns_token.openId, sns_token.accessToken)
+            end
+        end
+
+        if authorProxy:getAuthorizeType() == PlatformAuthEnum.kQQ then --服务端获取QQ关系链
+            qqSyncSnsFriend()
+        else
+            authorProxy:getFriends(0, 999, convertToInvokeCallback(callback))
+        end
     end
 end
 -- called

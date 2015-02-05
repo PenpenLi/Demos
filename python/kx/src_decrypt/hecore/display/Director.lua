@@ -16,27 +16,15 @@ local sceneStack={};
 Director = {resourceAnimationFPS = 30, gameFPS = 60, __runningScene = nil};
 
 local function commonKeypadHandler()
-  local runningScene = Director:sharedDirector():getRunningScene();
-  if runningScene then 
-
-	  -- Check If Has Popout Panel
-	  local popoutLayer = PopoutManager:sharedInstance():getPopoutLayer()
-
-	  if popoutLayer then
-
-		  local popoutList = popoutLayer.popoutList
-		  if popoutList and #popoutList > 0 then
-			  local panel = popoutList[#popoutList][1]
-
-			  if panel and panel.onKeyBackClicked then
-				  panel:onKeyBackClicked()
-
-			  end
-		  end
-	  else
-		  runningScene:onKeyBackClicked() 
-	  end
-  end;
+	local runningScene = Director:sharedDirector():getRunningScene()
+	if runningScene then
+		local popoutPanel = PopoutManager:sharedInstance():getLastPopoutPanel()
+		if popoutPanel and type(popoutPanel.onKeyBackClicked) == "function" then
+			popoutPanel:onKeyBackClicked()
+		elseif type(runningScene.onKeyBackClicked) == "function" then
+			runningScene:onKeyBackClicked()
+		end
+	end
 end
 
 function Director.sharedDirector()

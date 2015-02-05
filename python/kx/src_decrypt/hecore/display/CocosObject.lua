@@ -318,9 +318,9 @@ function CocosObject:getAnchorPoint() return self.refCocosObj:getAnchorPoint() e
 function CocosObject:setAnchorPoint(v) self.refCocosObj:setAnchorPoint(v) end
 
 
-function CocosObject:setAnchorPointCenterWhileStayOrigianlPosition()
+function CocosObject:setAnchorPointCenterWhileStayOrigianlPosition(posAdjust)
 
-	self:setAnchorPointWhileStayOriginalPosition(ccp(0.5, 0.5))
+	self:setAnchorPointWhileStayOriginalPosition(ccp(0.5, 0.5), posAdjust)
 end
 
 function CocosObject:setToParentCenterHorizontal(...)
@@ -370,9 +370,8 @@ function CocosObject:setToParentCenterVertical(...)
 	self:setAnchorPointWhileStayOriginalPosition(ccp(oldAnchorPoint.x, oldAnchorPoint.y))
 end
 
-function CocosObject:setAnchorPointWhileStayOriginalPosition(newAnchorPoint, ...)
+function CocosObject:setAnchorPointWhileStayOriginalPosition(newAnchorPoint, posAdjust)
 	assert(newAnchorPoint)
-	assert(#{...} == 0)
 	
 	--local selfSize		= self:getGroupBounds().size
 	local selfSize		= self:getContentSize()
@@ -397,7 +396,11 @@ function CocosObject:setAnchorPointWhileStayOriginalPosition(newAnchorPoint, ...
 	local newPosX		= curPosX + deltaDistanceX
 	local newPosY		= curPosY + deltaDistanceY
 
-	self:setPosition(ccp(newPosX, newPosY))
+	if posAdjust then 
+		self:setPosition(ccp(newPosX+posAdjust.x, newPosY+posAdjust.y))
+	else
+		self:setPosition(ccp(newPosX, newPosY))
+	end
 end
 
 function CocosObject:isIgnoreAnchorPointForPosition() return self.refCocosObj:isIgnoreAnchorPointForPosition() end
@@ -596,6 +599,7 @@ function CocosObject:removeChild(child, cleanup, __not_remove_cocos_child__)
 		table.remove(self.list, cd);
 		child.parent = nil;
 		for i, v in ipairs(self.list) do v.index = i-1 end;
+		self:refreshIndex()
 	end
 
 	if(isCleanup) then child:dispose() end;
