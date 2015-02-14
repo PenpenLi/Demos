@@ -29,6 +29,7 @@ def handelFrame(png, plist):
     outPlist = './res/' + os.path.basename(plist)
     print "handle " + png + " to " + outPng
     os.system(pngcrush + " -revert-iphone-optimizations " + png + " " + outPng)
+    os.system("plutil -convert xml1 " + plist)
     shutil.copy2(plist, outPlist)
 
 
