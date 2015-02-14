@@ -7304,6 +7304,9 @@
             <Image Name="WhiteLightForBG3.png" />
           </Folder>
         </Folder>
+        <Project Name="LoadingScene.csd" />
+        <Project Name="LoadingLayer.csd" />
+        <Project Name="FireYellowAnimation.csd" />
       </RootFolder>
     </Group>
   </SolutionFolder>
