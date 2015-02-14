@@ -3,20 +3,34 @@
 
 import os
 import string
+import shutil
 from Crypto.Cipher import AES
 
 
 key = 'anni_are_you_ok_are_you_ok_anni?'
-
 pad = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
 unpad = lambda s : s[0:-ord(s[-1])]
+pngcrush = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/pngcrush'
 
 def main():
-    print "main``"
-    for root, dirs, files in os.walk('/Users/xiaobin/Desktop/MOF_tongbu.app/'):
+    for root, dirs, files in os.walk('/Users/xiaobin/Desktop/MOF_tongbu/'):
         for f in files:
             if f.endswith('.ini'):
                 decrypt(root, os.path.join(root, f))
+
+            if f.endswith('.png'):
+                plist = os.path.join(root, os.path.basename(f).split('.')[0] + ".plist")
+                if os.path.exists(plist):
+                    handelFrame(os.path.join(root, f), plist)
+
+
+def handelFrame(png, plist):
+    outPng = './res/' + os.path.basename(png)
+    outPlist = './res/' + os.path.basename(plist)
+    print "handle " + png + " to " + outPng
+    os.system(pngcrush + " -revert-iphone-optimizations " + png + " " + outPng)
+    shutil.copy2(plist, outPlist)
+
 
 def decrypt(root, path):
     fileName = os.path.basename(path)
@@ -35,6 +49,7 @@ def decrypt(root, path):
     fout = open(os.path.abspath(decryptFile), "wb")
     fout.write(dec)
     fout.close()
+
 
 if __name__ == '__main__':
     main()
