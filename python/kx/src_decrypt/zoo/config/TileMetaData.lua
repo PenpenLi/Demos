@@ -45,7 +45,6 @@ function TileMetaData:hasProperty(property)
 
 		return true
 	end
-
 	return self.tileProperties[property]
 end
 
@@ -75,6 +74,17 @@ function TileMetaData:removeMultipleTileData(properties)
 	end
 end
 
+function TileMetaData:convertFromStringToTileIndex( value )
+	-- body
+	local propertyList = value:split(",")
+	for k, v in pairs(propertyList) do
+		self:setTileData(tonumber(v) + 1)
+	end
+	if #propertyList > 0 then
+		self:removeTileData(TileConst.kEmpty)
+	end
+end
+
 function TileMetaData:addPropertiesArray(value)
 	local reverse = #value + 1
 	for i = 1, #value do
@@ -94,8 +104,6 @@ end
 function TileMetaData:getProperties()
 	return self.tileProperties
 end
-
-
 
 function TileMetaData:toString()
 	local str = ""
@@ -156,13 +164,17 @@ function TileMetaData:convertFromBitToTileIndex(value, x, y)
 	return t
 end
 
-function TileMetaData:convertArrayFromBitToTile(map)
+function TileMetaData:convertArrayFromBitToTile(bitMap, stringMap)
 	local t = {}
-	for h = 1, #map do
+	for h = 1, #bitMap do
 		local rt = {}
 		table.insert(t, rt)
-		for w = 1, #map[h] do
-			table.insert(rt, TileMetaData:convertFromBitToTileIndex(map[h][w], w, h))
+		for w = 1, #bitMap[h] do
+			local tileData = TileMetaData:convertFromBitToTileIndex(bitMap[h][w], w, h)
+			if stringMap and stringMap[h] and stringMap[h][w] then
+				tileData:convertFromStringToTileIndex(stringMap[h][w])
+			end
+			table.insert(rt, tileData)
 		end
 	end
 	return t

@@ -29,6 +29,7 @@ function BonusLastBombState:onExit()
 end
 
 function BonusLastBombState:update(dt)
+	if self.isUpdateStopped then return end
 	self.timeCount = self.timeCount + 1
 	if self.timeCount > GamePlayConfig_BonusTime_ItemBomb_CD then
 		local bombRet = BombItemLogic:BonusTime_RandomBombOne(self.mainLogic, true)

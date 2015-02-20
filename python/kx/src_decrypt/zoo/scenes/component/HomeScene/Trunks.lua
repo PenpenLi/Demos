@@ -87,6 +87,7 @@ function Trunks:buildTrunk(...)
 	branchRoot:setPositionX(branchRootPosX)
 	branchRoot:setPositionY(branchRootPosY)
 	
+	self.branchRoot = branchRoot
 	self:addChild(branchRoot)
 	
 	---------------------------------------
@@ -106,6 +107,7 @@ function Trunks:buildTrunk(...)
 
 	intermediateSprite:setPositionX(branchRootPosX)
 	intermediateSprite:setPositionY(bottomAvailabelY)
+	self.intermediateSprite = intermediateSprite
 	self:addChild(intermediateSprite)
 
 	local size = intermediateSprite:getGroupBounds().size
@@ -122,6 +124,7 @@ function Trunks:buildTrunk(...)
 	local manualAdjustPosY = -50 
 	trunkRootCloudSprite:setPosition(ccp(branchRootPosX, bottomAvailabelY + manualAdjustPosY))
 	--self:addChild(trunkRootCloudSprite)
+	self.trunkRootCloudSprite = trunkRootCloudSprite
 	backGroundCloudLayer:addChild(trunkRootCloudSprite)
 
 	---------------
@@ -133,6 +136,7 @@ function Trunks:buildTrunk(...)
 
 	local winSize = CCDirector:sharedDirector():getWinSize()
 	bottomAvailabelY = bottomAvailabelY + 10
+	self.bottomAvailabelY = bottomAvailabelY
 
 	for index = 1,self.trunkNumber do
 
@@ -161,8 +165,8 @@ function Trunks:buildTrunk(...)
 		if not batchNode then
 			local texture = tree:getTexture()
 			batchNode = SpriteBatchNode:createWithTexture(texture)
+			batchNode.name = "batchNode"
 		end
-
 		batchNode:addChild(tree)
 	end
 

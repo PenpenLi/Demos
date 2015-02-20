@@ -1,14 +1,22 @@
 MaydayEndlessMode = class(MoveMode)
 
+local function swapInTable(table, i, j)
+    local t = table[i]
+    table[i] = table[j]
+    table[j] = t
+end
 
 local ground_upgrade_interval       = 4     -- upgrade ground per 4 rows
 local add_max_jewel_interval        = 6     -- max_jewel adds 1 per 6 rows
-local generate_add_move_interval    = 2     -- generate 1 add_move per 2 rows
-local max_jewel_limit               = 15    -- max jewel limit is 15
-local initial_max_jewel             = 1
+local generate_add_move_interval    = 5     -- generate 1 add_move per 5 rows
+local max_jewel_limit               = 8    -- max jewel limit is 8
+local initial_max_jewel             = 6
 local max_generate_row              = 2
 local generate_boss_interval        = 4
 local generate_jewel_interval       = 2
+local initial_level2_count          = 4
+local max_level2_count              = 10
+local max_level3_count              = 3
 
 
 function MaydayEndlessMode:initModeSpecial(config)
@@ -17,12 +25,24 @@ function MaydayEndlessMode:initModeSpecial(config)
 
     -- initialize ground pool
     self.groundPool = {}
-    for i=1, 9*max_generate_row do
-        self.groundPool[i] = 1 -- level 1 ground
+    local length = 9*max_generate_row
+    for i=1, length do
+        if i >= 1 and i <= initial_level2_count then
+            self.groundPool[i] = 2 
+        else    
+            self.groundPool[i] = 1 -- level 1 ground
+        end
     end
+    -- 打乱次序
+    for i =1 , 2*length do 
+        local selector = self.mainLogic.randFactory:rand(1, length)
+        swapInTable(self.groundPool, 1, selector)
+    end
+
     self.rowCountSinceLastGroundUpgrade = 0
     self.maxJewel = initial_max_jewel
     self.generatedRowCount = 0
+    self.rowCountSinceLastAddMove = 0
 
 
     self.lastGenBossTimes = 0
@@ -61,9 +81,14 @@ function MaydayEndlessMode:onGameInit()
         context.mainLogic.boardView.isPaused = false
         context.mainLogic.fsm:initState()
 
+        if context.mainLogic.PlayUIDelegate then
+            context.mainLogic.PlayUIDelegate:playFirstShowFireworkGuide()
+        end
+
         self.generatedRowCount = 0
         self.lastGenJewelTimes = 0
         self.lastGenBossTimes  = 0
+
     end
 
     local function playPrePropAnimation()
@@ -330,11 +355,13 @@ function MaydayEndlessMode:generateGroundRow(rowCount)
     if rowCount <= 0 then return result end
 
     self.generatedRowCount = self.generatedRowCount + rowCount
+    self.rowCountSinceLastAddMove = self.rowCountSinceLastAddMove + rowCount
 
     self:upgradeGround(rowCount)
 
     local genBossCount = self:getGenBossCount()
-    local genJewelCount = self:getGenJewelCount()
+    local genJewelCount = self:getGenJewelCount(rowCount)
+    local shouldAddMove = self:shouldAddMove()
 
     print('rowCount', rowCount)
     print('generatedRowCount', self.generatedRowCount)
@@ -343,39 +370,47 @@ function MaydayEndlessMode:generateGroundRow(rowCount)
 
 
     local length = 9 * rowCount
-    local usedIndex = {}
+    local usableIndex = {}
+    for i=1, length do
+        table.insert(usableIndex, i)
+    end
+    local function removeUsableIndex(index)
+        for k, v in pairs(usableIndex) do
+            if v == index then
+                table.remove(usableIndex, k)
+            end
+        end
+    end
+
 
     for i = 1, genBossCount do 
         -- 永远是在倒数第二行生成boss，每行最后一个格子不能生成
         local selector = self.mainLogic.randFactory:rand(length - 17, length - 10)
-        usedIndex[selector]         = true
-        usedIndex[selector + 1]     = true
-        usedIndex[selector + 9]     = true
-        usedIndex[selector + 10]    = true
-        result[selector]         = self:getBossTileDef()
-        result[selector + 1]     = self:getBossEmptyTileDef()
-        result[selector + 9]     = self:getBossEmptyTileDef()
-        result[selector + 10]    = self:getBossEmptyTileDef()
+        local index = usableIndex[selector]
+        result[index]         = self:getBossTileDef()
+        result[index + 1]     = self:getBossEmptyTileDef()
+        result[index + 9]     = self:getBossEmptyTileDef()
+        result[index + 10]    = self:getBossEmptyTileDef()
+        removeUsableIndex(index)
+        removeUsableIndex(index+1)
+        removeUsableIndex(index+9)
+        removeUsableIndex(index+10)
     end
     -- generate add_move
     if shouldAddMove then
-        local selector = self.mainLogic.randFactory:rand(1, length)
-        while usedIndex[selector] == true and #usedIndex < length do
-            selector = self.mainLogic.randFactory:rand(1, length)
-        end
-        usedIndex[selector] = true
-        result[selector] = self:getAddMoveTileDef()
+        local selector = self.mainLogic.randFactory:rand(1, #usableIndex)
+        local index = usableIndex[selector]
+        removeUsableIndex(index)
+        result[index] = self:getAddMoveTileDef()
     end
 
     -- generate jewel
-    print('GEN jewel', self.maxJewel)
-    for i = 1, genJewelCount do
-        local selector = self.mainLogic.randFactory:rand(1, length)
-        while usedIndex[selector] == true and #usedIndex < length do
-            selector = self.mainLogic.randFactory:rand(1, length)
-        end
-        usedIndex[selector] = true
-        result[selector] = self:getJewelTileDef(selector)
+    local maxIndex = math.min(genJewelCount, #usableIndex)
+    for i = 1, maxIndex do
+        local selector = self.mainLogic.randFactory:rand(1, #usableIndex)
+        local index = usableIndex[selector]
+        removeUsableIndex(index)
+        result[index] = self:getJewelTileDef(index)
     end
 
     for i=1, length do 
@@ -388,9 +423,18 @@ function MaydayEndlessMode:generateGroundRow(rowCount)
 
 end
 
-function MaydayEndlessMode:getMaxJewel()
+function MaydayEndlessMode:shouldAddMove()
+    if self.rowCountSinceLastAddMove >= generate_add_move_interval then
+        self.rowCountSinceLastAddMove = self.rowCountSinceLastAddMove - generate_add_move_interval
+        return true
+    else 
+        return false
+    end
+end
+
+function MaydayEndlessMode:getMaxJewelPerTwoRows()
     local maxJewel = initial_max_jewel + math.floor(self.generatedRowCount / add_max_jewel_interval)
-    return maxJewel
+    return math.min(maxJewel, max_jewel_limit)
 end
 
 function MaydayEndlessMode:upgradeGround(rowCount)
@@ -399,10 +443,27 @@ function MaydayEndlessMode:upgradeGround(rowCount)
 
         local counter  = 0
         local length = 9 * max_generate_row
+        local level2_count = 0
+        local level3_count = 0
+
+
+        -- 限制每两行生成的各级云层数量。。。。。
+        for i=1, length do 
+            if self.groundPool[i] == 2 then
+                level2_count = level2_count + 1
+            elseif self.groundPool[i] == 3 then
+                level3_count = level3_count + 1
+            end
+        end
+        if level2_count >= max_level2_count and level3_count >= max_level3_count then
+            return
+        end
+
         while counter <= length do
             counter = counter + 1
             local selector = self.mainLogic.randFactory:rand(1, length)
-            if self.groundPool[selector] and self.groundPool[selector] < 3 then
+            if (self.groundPool[selector] == 1 and level2_count < max_level2_count)
+            or (self.groundPool[selector] == 2 and level3_count < max_level3_count) then
                 self.groundPool[selector] = self.groundPool[selector] + 1
                 break
             end
@@ -422,20 +483,17 @@ function MaydayEndlessMode:getGenBossCount()
     end
 end
 
-function MaydayEndlessMode:getGenJewelCount()
+function MaydayEndlessMode:getGenJewelCount(rowCount)
     local genJewelTimes = math.floor(self.generatedRowCount / generate_jewel_interval)
     -- print('genJewelTimes', genJewelTimes, self.lastGenJewelTimes)
-    if genJewelTimes > self.lastGenJewelTimes then
-        local diff = genJewelTimes - self.lastGenJewelTimes
-        self.lastGenJewelTimes = genJewelTimes
-        return self:getMaxJewel() * diff
-    end
-    return 0
-end
-
-
-function MaydayEndlessMode:shouldAddMove(rowCount)
-    if true then return false end -- 此模式不生成+5
+    -- if genJewelTimes > self.lastGenJewelTimes then
+    --     local diff = genJewelTimes - self.lastGenJewelTimes
+    --     self.lastGenJewelTimes = genJewelTimes
+    --     return self:getMaxJewelPerTwoRows(rowCount) * diff
+    -- end
+    -- return 0
+    local result = self:getMaxJewelPerTwoRows(rowCount) / 2 * rowCount
+    return result
 end
 
 function MaydayEndlessMode:getAddMoveTileDef()
@@ -447,6 +505,9 @@ function MaydayEndlessMode:getAddMoveTileDef()
 end
 
 function MaydayEndlessMode:getGroundTileDef(index)
+    if index > 9*max_generate_row then
+        index = index % (9*max_generate_row)
+    end
     local level = self.groundPool[index] or 1
     local tileDef = TileMetaData.new()
     tileDef:addTileData(TileConst.kDigGround)
@@ -462,6 +523,9 @@ function MaydayEndlessMode:getGroundTileDef(index)
 end
 
 function MaydayEndlessMode:getJewelTileDef(index)
+    if index > 9*max_generate_row then
+        index = index % (9*max_generate_row)
+    end
     local level = self.groundPool[index] or 1
     local tileDef = TileMetaData.new()
     -- print('level', level)

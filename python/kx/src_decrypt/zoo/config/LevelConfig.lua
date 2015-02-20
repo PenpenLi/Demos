@@ -1,6 +1,7 @@
 require "zoo.config.TileMetaData"
 require "zoo.config.SnailConfigData"
 require "zoo.data.LevelMapManager"
+require "zoo.config.UncertainCfgMeta"
 
 
 -----------------------------------------------------------------------------
@@ -50,16 +51,17 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kSnailSpawn] ={"flash/snail.plist"},
 	[TileConst.kSnail] ={"flash/snail.plist"},
 	[TileConst.kSnailCollect] ={"flash/snail.plist"},
-	[TileConst.kMayDayBlocker1] = {"flash/boss_turkey.plist"},
-	[TileConst.kMayDayBlocker2] = {"flash/boss_turkey.plist"},
-	[TileConst.kMayDayBlocker3] = {"flash/boss_turkey.plist"},
-	[TileConst.kMayDayBlocker4] = {"flash/boss_turkey.plist"},
+	[TileConst.kMayDayBlocker1] = {"flash/boss_sheep.plist"},
+	[TileConst.kMayDayBlocker2] = {"flash/boss_sheep.plist"},
+	[TileConst.kMayDayBlocker3] = {"flash/boss_sheep.plist"},
+	[TileConst.kMayDayBlocker4] = {"flash/boss_sheep.plist"},
 	[TileConst.kRabbitProducer] = {"flash/rabbit.plist","flash/scenes/gamePlaySceneUI/rabbitModeText.plist"},
 	[TileConst.kMagicLamp] = {"flash/magic_lamp.plist"},
 	[TileConst.kHoneyBottle] = {"flash/honey_bottle.plist"},
 	[TileConst.kAddTime]	 = {"flash/add_time.plist"},
 	[TileConst.kMagicTile]	 = {"flash/magic_tile.plist"},
 	-- [TileConst.kSand]	 = {"flash/sand_idle_clean.plist", "flash/sand_move.plist"},
+	[TileConst.kQuestionMark] = {"flash/question_mark.plist"}
 }
 -----------------------------------------------------------------------------
 -- base map config vo [LevelConfig]
@@ -107,7 +109,11 @@ function LevelConfig:loadConfig(level, config)
 	self.gameMode = config.gameModeName				--游戏模式
 	self.numberOfColors = config.numberOfColours	--颜色数量
 
-	self.tileMap = TileMetaData:convertArrayFromBitToTile(config.tileMap)	--将配置的数据赋值给tilemap。地形信息
+	self.tileMap = TileMetaData:convertArrayFromBitToTile(config.tileMap, config.tileMap2)	--将配置的数据赋值给tilemap。地形信息
+	if config.uncertainCfg1 and config.uncertainCfg2 then
+		self.uncertainCfg1 = UncertainCfgMeta:create(config.uncertainCfg1)                      --boss掉血产生的问号障碍配置
+		self.uncertainCfg2 = UncertainCfgMeta:create(config.uncertainCfg2)                      --boss死亡产生的问号障碍配置
+	end
 
 	if config.snailCfg then
 		self.snailInitNum = config.snailCfg.initNum
@@ -147,19 +153,19 @@ function LevelConfig:loadConfig(level, config)
 		self.numIngredientsOnScreen = config.numIngredientsOnScreen
 		self.ingredientSpawnDensity = config.ingredientSpawnDensity
 	elseif self.gameMode == AnimalGameMode.kDigTime then			--时间限制型挖掘
-		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {})
+		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.layerAmount = 0						--挖掘层数
 		self.clearTargetLayers = config.clearTargetLayers	--目标层数--达到挖掘目标层数 胜利
 	elseif self.gameMode == AnimalGameMode.kDigMove then			--步数限制型挖掘
-		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {})
+		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.layerAmount = 0						--挖掘层数
 		self.clearTargetLayers = config.clearTargetLayers	--目标层数--达到挖掘目标层数 胜利
 	elseif self.gameMode == AnimalGameMode.kDigMoveEndless then
-		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {})
+		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.clearTargetLayers = config.clearTargetLayers
 		self.layerAmount = 0
 	elseif self.gameMode == AnimalGameMode.kMaydayEndless or self.gameMode == AnimalGameMode.kHalloween then
-		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {})
+		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.clearTargetLayers = config.clearTargetLayers
 		self.layerAmount = 0
 	end
@@ -210,6 +216,24 @@ function LevelConfig:getDependingSpecialAssetsList()
 	end
 
 	calculateTileNeedAssets(self.tileMap)
+
+	----------问号障碍需要素材
+	local function calculateUncertainCfgNeedAssets( uncertainCfg )
+		-- body
+		if not uncertainCfg then return end
+		resNameMap["flash/question_mark.plist"] = true
+		for k, v in pairs(uncertainCfg.allItemList) do
+			for type, resList in pairs(DependingAssetsTypeNameMap) do 
+				if type == v.changeItem + 1 then 
+					for k1, v1 in pairs(resList) do
+						resNameMap[v1] = true
+					end
+				end
+			end
+		end
+	end
+	calculateUncertainCfgNeedAssets(self.uncertainCfg1)
+	calculateUncertainCfgNeedAssets(self.uncertainCfg2)
 	
 	----------掉落素材
 	for k,v in pairs(self.dropRules) do
@@ -252,6 +276,9 @@ function LevelConfig:getDependingSpecialAssetsList()
 	 then
 	 	if self.gameMode == AnimalGameMode.kHalloween  then
 	 		resNameMap["flash/xmas_boss.plist"] = true
+	 	end
+	 	if self.gameMode == AnimalGameMode.kMaydayEndless  then
+	 		resNameMap["flash/animation/spring_festival.plist"] = true
 	 	end
 		resNameMap["flash/add_move.plist"] = true
 		calculateTileNeedAssets(self.digTileMap)

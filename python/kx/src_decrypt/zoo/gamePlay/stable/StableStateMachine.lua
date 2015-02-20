@@ -31,6 +31,7 @@ require "zoo.gamePlay.stable.HalloweenBossState"
 require "zoo.gamePlay.stable.CheckNeedLoopState"
 require "zoo.gamePlay.stable.MagicTileResetState"
 require "zoo.gamePlay.stable.SandTransferState"
+require "zoo.gamePlay.stable.MaydayBossCastingState"
 
 StableStateMachine = class()
 
@@ -53,6 +54,8 @@ end
 
 function StableStateMachine:initStates()
 	self.needLoopCheck = false
+
+	self.maydayBossCastingState = MaydayBossCastingState:create(self)
 
 	self.halloweenBossStateInBonus = HalloweenBossStateInBonus:create(self)
 
@@ -157,22 +160,32 @@ end
 function StableStateMachine:onEnter(isFromFallingMatch)
 	if isFromFallingMatch then 
 		if self.bigMonsterLogic:check() > 0  then
+			if self.currentState then
+				self.currentState:stopUpdate()
+			end
 			return 
 		end---检测处理雪怪逻辑
 
 		if self.maydayBossDieState:onEnter() > 0 then
+			if self.currentState then
+				self.currentState:stopUpdate()
+			end
 			return
 		end
-
 		
 		if self.snailLogic:check() > 0 then 
+			if self.currentState then
+				self.currentState:stopUpdate()
+			end
 			return 
 		end---检测处理蜗牛
 
 		if self.seaAnimalCollectState:onEnter() > 0 then
+			if self.currentState then
+				self.currentState:stopUpdate()
+			end
 			return
 		end
-
 	end
 
 	if self.currentState then

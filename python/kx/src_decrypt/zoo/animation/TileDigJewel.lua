@@ -7,6 +7,7 @@ local JewelType =
 	kCake = 1,
 	kHolycup = 2,
 	kBell = 3,
+	kRedbag = 4,
 }
 
 function TileDigJewel:create(level, texture, jewelType)
@@ -96,6 +97,9 @@ function TileDigJewel:createSprite( level )
 		elseif self.jewelType == JewelType.kBell then
 			self.jewel = Sprite:createWithSpriteFrameName("dig_bell_0000")
 			self.jewel:setPosition(ccp(0, 5))    
+		elseif self.jewelType == JewelType.kRedbag then
+			self.jewel = Sprite:createWithSpriteFrameName("dig_redbag_0000")
+			self.jewel:setPosition(ccp(0, 5))   
 		end
 	end
 	self:addChild(self.jewel)

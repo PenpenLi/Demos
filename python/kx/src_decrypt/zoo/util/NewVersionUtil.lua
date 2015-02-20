@@ -45,7 +45,14 @@ function NewVersionUtil:gotoMarket()
 
 		if __IOS then
 			
-			local nsURL = NSURL:URLWithString(NetworkConfig.appstoreURL)
+			local deviceType = MetaInfo:getInstance():getMachineType() or ""
+		    local systemVersion = AppController:getSystemVersion() or 7
+			local nsURL = nil
+		    if string.find(deviceType, "iPad") and (systemVersion >= 6 and systemVersion < 7) then
+				nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=791532221")
+		    else
+				nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/app/id791532221")
+		    end
 			UIApplication:sharedApplication():openURL(nsURL)
 
 		end

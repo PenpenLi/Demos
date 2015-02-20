@@ -581,3 +581,22 @@ function Localhost:unlockLevelArea(unlockType, friendUids)
 	end
 	return true
 end
+
+function Localhost:clearLastLoginUserData()
+	-- 对于uid不变，SK发生变化的账号（OPPO切换），UserData需要用以同步离线数据，因此不能删除
+	-- local savedConfig = Localhost.getInstance():getLastLoginUserConfig()
+	-- if savedConfig then
+ --        Localhost.getInstance():deleteUserDataByUserID(tostring(savedConfig.uid)) 
+ --    end
+    Localhost.getInstance():deleteLastLoginUserConfig()
+    Localhost.getInstance():deleteGuideRecord()
+    Localhost.getInstance():deleteMarkPriseRecord()
+    Localhost.getInstance():deletePushRecord()
+    LocalNotificationManager.getInstance():cancelAllAndroidNotification()
+
+    CCUserDefault:sharedUserDefault():setStringForKey("game.devicename.userinput", "")
+    CCUserDefault:sharedUserDefault():setIntegerForKey("thisWeekNoSelectAccount",0)
+    CCUserDefault:sharedUserDefault():flush()
+
+    _G.kDeviceID = UdidUtil:revertUdid()
+end

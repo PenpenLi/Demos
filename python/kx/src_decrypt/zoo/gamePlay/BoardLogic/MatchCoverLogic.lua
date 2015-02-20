@@ -323,12 +323,13 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
 			nil,				
 			1)
 		mainLogic:addDestroyAction(LockAction)
-		board.isNeedUpdate = true;
-		item.isNeedUpdate = true;
-		return 
+		return
 	elseif item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, 1 )
-	elseif item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() then
+		return
+	end
+
+	if item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() then
 		local action = GameBoardActionDataSet:createAs(
                         GameActionTargetType.kGameItemAction,
                         GameItemActionType.kItem_Magic_Lamp_Charging,
@@ -338,6 +339,8 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
                     )
 		action.count = 1
 	    mainLogic:addDestroyAction(action)
+	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
+		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	end
 end
 

@@ -113,7 +113,36 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Sand_Clean then
 		DestroyItemLogic:runningGameItemActionCleanSand(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then
-		DestroyItemLogic:runningGameItemActionIceDec(mainLogic, theAction, actid, actByView)	
+		DestroyItemLogic:runningGameItemActionIceDec(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_QuestionMark_Protect then
+		DestroyItemLogic:runGameItemQuestionMarkProtect(mainLogic, theAction, actid, actByView)
+	end
+end
+
+function DestroyItemLogic:runGameItemQuestionMarkProtect(mainLogic, theAction, actid, actByView)
+	-- body
+	local gameItemMap = mainLogic.gameItemMap
+	local leftItem = 0
+	for r = 1, #gameItemMap do 
+		for c = 1, #gameItemMap[r] do 
+			local item = gameItemMap[r][c]
+			if item.questionMarkProduct > 0 then
+
+				item.questionMarkProduct = item.questionMarkProduct - 1
+				if item.questionMarkProduct == 1 then
+					mainLogic:addNeedCheckMatchPoint(r, c)
+				end
+
+				if item.questionMarkProduct > 0 then
+					leftItem = leftItem + 1
+				end
+			end
+		end
+	end
+	
+	if leftItem == 0 then
+		mainLogic.hasQuestionMarkProduct = nil
+		mainLogic.destroyActionList[actid] = nil
 	end
 end
 
@@ -713,7 +742,7 @@ function DestroyItemLogic:runGameItemDigGroundDecLogic( mainLogic,  theAction, a
 	if theAction.actionStatus == GameActionStatus.kWaitingForDeath then
 		
 		local item = mainLogic.gameItemMap[theAction.ItemPos1.x][theAction.ItemPos1.y]
-		if item.digGroundLevel == 0 then
+		if theAction.cleanItem then
 			item:cleanAnimalLikeData()
 			mainLogic:checkItemBlock(theAction.ItemPos1.x, theAction.ItemPos1.y)
 			mainLogic:setNeedCheckFalling()
@@ -747,7 +776,7 @@ function DestroyItemLogic:runGameItemDigJewelDecLogic( mainLogic,  theAction, ac
 		local r = theAction.ItemPos1.x
 		local c = theAction.ItemPos1.y
 		local item = mainLogic.gameItemMap[r][c]
-		if item.digJewelLevel == 0 then
+		if theAction.cleanItem then
 			GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 			item:cleanAnimalLikeData()
 			mainLogic:checkItemBlock(theAction.ItemPos1.x, theAction.ItemPos1.y)

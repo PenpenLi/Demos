@@ -25,6 +25,7 @@ end
 
 function BaseStableState:onEnter()
 	print("---------->>>>>>>>>> " .. self:getClassName() .. " state enter")
+	self.isUpdateStopped = false
 end
 
 function BaseStableState:onExit()
@@ -32,10 +33,14 @@ function BaseStableState:onExit()
 end
 
 function BaseStableState:getClassName( ... )
-	asset(false)
+	assert(false)
 	return "BaseStableState"
 end
 
 function BaseStableState:checkTransition()
 	
+end
+
+function BaseStableState:stopUpdate()
+	self.isUpdateStopped = true
 end

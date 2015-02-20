@@ -52,7 +52,9 @@ GameMusicType = table.const
 	kBonusStepToLine = "music/sound.step.to.line.mp3",
 	kAddEnergy = "music/sound.add.energy.mp3",
 	kPanelVerticalPopout = "music/sound.panel.vertical.popout.mp3",
-	kCoinTick = "music/sound.coin.tick.mp3"
+	kCoinTick = "music/sound.coin.tick.mp3",
+	kFirework = "music/sound.fireworks.mp3",
+	kBlessing = "music/sound.blessing.mp3",
 }
 
 local instance = nil

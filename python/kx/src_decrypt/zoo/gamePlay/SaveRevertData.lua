@@ -59,6 +59,7 @@ function SaveRevertData:create(mainLogic)
 	ret.pm25count = mainLogic.pm25count
 	ret.snailCount = mainLogic.snailCount
 	ret.snailMoveCount = mainLogic.snailMoveCount
+	ret.questionMarkFirstBomb = mainLogic.questionMarkFirstBomb
 
 	mainLogic.gameMode:saveDataForRevert(ret)
 

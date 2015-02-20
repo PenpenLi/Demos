@@ -675,27 +675,84 @@ function BoardViewAction:runGameItemActionMagicLampCasting(boardView, theAction)
 	end	
 end
 
+function BoardViewAction:runGameItemActionMaydayBossCasting(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning 
+
+		local function callback()
+			theAction.addInfo = 'animated'
+		end
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playMaydayBossCast(boardView, callback)
+		GamePlayMusicPlayer:playEffect(GameMusicType.kBlessing)
+
+	elseif theAction.addInfo == 'animated' then
+		theAction.addInfo = ''
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local fromItem = boardView.baseMap[r][c]
+		local targetPositions = theAction.targetPositions
+
+		theAction.completeCount = 0
+		local function dropCallback()
+			theAction.completeCount = theAction.completeCount + 1
+			if theAction.completeCount >= #targetPositions then
+				theAction.addInfo = 'toChange'
+			end
+		end
+		for k, v in pairs(targetPositions) do 
+			local item = boardView.baseMap[v.r][v.c]
+			item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+		end
+	elseif theAction.addInfo == 'toChange' then
+		theAction.addInfo = ''
+		local targetPositions = theAction.targetPositions
+		theAction.completeCount = 0
+		local function changeCallback()
+			theAction.completeCount = theAction.completeCount + 1
+			if theAction.completeCount >= #targetPositions then
+				theAction.addInfo = 'anim_over'
+			end
+
+		end
+		for k, v in pairs(targetPositions) do
+			local item = boardView.baseMap[v.r][v.c]
+			item:playQuestionMarkDestroy(changeCallback)
+		end
+	elseif theAction.addInfo == 'data_over' then
+		theAction.addInfo = 'over'
+	end
+end
+
 function BoardViewAction:runGameItemActionMaydayBossDie(boardView, theAction)
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning 
 
 		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local fromItem = boardView.baseMap[r][c]
-		local toItemPos = theAction.addMoveItemPos
+		local addMoveItems = theAction.addMoveItemPos
+		local questionItems = theAction.questionItemPos
 
 		local function dropCallback()
-			print('dropCallback')
 			if not theAction.completeCount then theAction.completeCount = 0 end
 			theAction.completeCount = theAction.completeCount + 1
-			print('theAction.completeCount', theAction.completeCount)
-			if theAction.completeCount >= #toItemPos then
+			if theAction.completeCount >= #addMoveItems + #questionItems then
 				theAction.addInfo = 'dropped'
 			end
 		end
-		for k, v in pairs(toItemPos) do 
-			local item = boardView.baseMap[v.r][v.c]
-			item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+		if #addMoveItems == 0 and #questionItems == 0 then
+			dropCallback()
+		else
+			for k, v in pairs(addMoveItems) do 
+				local item = boardView.baseMap[v.r][v.c]
+				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+			end
+			for k, v in pairs(questionItems) do 
+				local item = boardView.baseMap[v.r][v.c]
+				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+			end
 		end
+		GamePlayMusicPlayer:playEffect(GameMusicType.kBlessing)
 
 	elseif theAction.addInfo == 'dropped' then
 		theAction.addInfo = ""
@@ -1171,6 +1228,8 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		elseif theAction.actionStatus == GameActionStatus.kRunning then
 			BoardViewAction:runningGameItemActionSandTransfer(boardView, theAction)
 		end
+	elseif theAction.actionType == GameItemActionType.kItem_mayday_boss_casting then
+		BoardViewAction:runGameItemActionMaydayBossCasting(boardView, theAction)
 	end
 end
 

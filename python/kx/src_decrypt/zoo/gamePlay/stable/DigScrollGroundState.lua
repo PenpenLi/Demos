@@ -70,5 +70,6 @@ function DigScrollGroundStateInLoop:getClassName()
 end
 
 function DigScrollGroundStateInLoop:getNextState()
-	return self.context.checkNeedLoopState
+	-- return self.context.checkNeedLoopState
+	return self.context.maydayBossCastingState
 end

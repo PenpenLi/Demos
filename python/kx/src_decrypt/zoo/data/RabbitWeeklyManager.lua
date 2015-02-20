@@ -474,7 +474,7 @@ function RabbitWeeklyManager:receiveDailyRewardBox(levelId, idx, successCallback
     local http = ReceiveRabbitMatchRewardsHttp.new(true)
     http:ad(Events.kComplete, onSuccess)
     http:ad(Events.kError, onFail)
-    http:load(levelId, 3, idxInServer)
+    http:syncLoad(levelId, 3, idxInServer)
 end
 
 function RabbitWeeklyManager:receiveWeeklyReward(levelId, successCallback, failCallback)
@@ -511,7 +511,7 @@ function RabbitWeeklyManager:receiveWeeklyReward(levelId, successCallback, failC
     local http = ReceiveRabbitMatchRewardsHttp.new(true)
     http:ad(Events.kComplete, onSuccess)
     http:ad(Events.kError, onFail)
-    http:load(levelId, 0, 0)
+    http:syncLoad(levelId, 0, 0)
 end
 
 function RabbitWeeklyManager:getRemainingPlayCount()

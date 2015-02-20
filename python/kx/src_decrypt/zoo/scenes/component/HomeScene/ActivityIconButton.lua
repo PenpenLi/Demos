@@ -47,19 +47,29 @@ function ActivityIconButton:init( source,version )
 
 	self.wrapper:getChildByName("placeholder"):removeFromParentAndCleanup(true)
 
-	self.wrapper:addChild(self:buildIcon())
+	self.wrapper:addChildAt(self:buildIcon(),0)
 
 	self.wrapper:setTouchEnabled(true)
 	self.wrapper:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)
+
+ 	self.wrapper:setPositionX(96/2)
+	self.wrapper:setPositionY(-96)
+
+	local manualAdjustX = config.iconManualAdjustX or 0
+	local manualAdjustY = config.iconManualAdjustY or 0
+	for _,v in pairs({"msgNum","msgBg","rewardIcon"}) do
+		local u = self.wrapper:getChildByName(v)
+		u:setPositionX(u:getPositionX() - 96/2 + manualAdjustX)
+		u:setPositionY(u:getPositionY() + 96 + manualAdjustY)
+	end
+
 	if self.tips then 
 		self:setTipString(self.tips)
 	 	self:playHasNotificationAnim()
 	end
 
- 	self.wrapper:setPositionX(96/2)
-	self.wrapper:setPositionY(-96)
 	self.wrapper:addEventListener(DisplayEvents.kTouchTap,function( ... )
 		if PopoutManager:sharedInstance():haveWindowOnScreen() then 
 			return 
@@ -92,8 +102,8 @@ function ActivityIconButton:onActivityStatusChange( source )
 	end
 
 	local function setMsgNum( num )
-		local msgBg = self.ui:getChildByName("msgBg")
-		local msgNum = self.ui:getChildByName("msgNum")
+		local msgBg = self.wrapper:getChildByName("msgBg")
+		local msgNum = self.wrapper:getChildByName("msgNum")
 
 		self.msgNum = num
 
@@ -107,9 +117,9 @@ function ActivityIconButton:onActivityStatusChange( source )
 	end
 
 	local function showRewardIcon( ... )
-		local msgBg = self.ui:getChildByName("msgBg")
-		local msgNum = self.ui:getChildByName("msgNum")
-		local rewardIcon = self.ui:getChildByName("rewardIcon")
+		local msgBg = self.wrapper:getChildByName("msgBg")
+		local msgNum = self.wrapper:getChildByName("msgNum")
+		local rewardIcon = self.wrapper:getChildByName("rewardIcon")
 
 		msgBg:setVisible(false)
 		msgNum:setVisible(false)
@@ -118,7 +128,7 @@ function ActivityIconButton:onActivityStatusChange( source )
 	end
 
 	local function hideRewardIcon( ... )
-		local rewardIcon = self.ui:getChildByName("rewardIcon")
+		local rewardIcon = self.wrapper:getChildByName("rewardIcon")
 
 		setMsgNum(self.msgNum or 0)
 		rewardIcon:setVisible(false)

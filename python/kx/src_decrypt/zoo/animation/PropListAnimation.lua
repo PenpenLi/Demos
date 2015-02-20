@@ -5,6 +5,7 @@
 require "hecore.display.Director"
 require "zoo.animation.PropListItem"
 require "zoo.panel.PropInfoPanel"
+require 'zoo.animation.SpringPropListItem'
  
 local kAddStepItems = {10004}
 local kCurrentMaxItemInListView = 18
@@ -33,6 +34,7 @@ local function isAddStepItem( item )
   return false
 end
 local function isValidItem( item )
+  if item.itemId == 9999 then return true end
   local itemId = item.itemId
   if itemId > kMaxItemIdAvailable then return false end
 
@@ -331,11 +333,17 @@ function PropListAnimation:show( propItems, delayTime )
 
   	for i = 1, kCurrentMaxItemInListView do 
       if i <= currItems then
-        local isInitDisabled = self.propItems[i].itemId == GamePropsType.kBack
-        self["item"..i]:enableUnlimited(self.isUnlimited)
-        self["item"..i].prop = self.propItems[i] --setup the item's data
-        self["item"..i]:setTimeProps(self:getTimePropsByItemId(self.propItems[i].itemId))
-        self["item"..i]:show(0, true, isInitDisabled) 
+        if self.propItems[i].itemId == 9999 then
+          local item = SpringPropListItem:create(i, propsListView:getChildByName("p"..i), propsListView:getChildByName("i"..i), self, self["item"..i].iconSize)
+          self["item"..i] = item
+          self["item"..i]:show(0, true, false) 
+        else
+          local isInitDisabled = self.propItems[i].itemId == GamePropsType.kBack
+          self["item"..i]:enableUnlimited(self.isUnlimited)
+          self["item"..i].prop = self.propItems[i] --setup the item's data
+          self["item"..i]:setTimeProps(self:getTimePropsByItemId(self.propItems[i].itemId))
+          self["item"..i]:show(0, true, isInitDisabled) 
+        end
       else self["item"..i]:hide() end
     end
 end
@@ -704,4 +712,25 @@ function PropListAnimation:setLevelModeType(levelModeType)
     if self.levelModeType == 'MaydayEndless' or self.levelModeType == 'halloween' then
         self.isUnlimited = true
     end
+end
+
+function PropListAnimation:setSpringItemPercent(percent)
+  local item = self.item3
+  if item and item:is(SpringPropListItem) then
+    item:setPercent(percent, true)
+  end
+end
+
+function PropListAnimation:registerSpringItemCallback(callback)
+  self.springItemCallback = callback
+end
+
+function PropListAnimation:getSpringItemGlobalPosition()
+  local item = self.propsListView:getChildByName("i"..3)
+  if item and self.item3:is(SpringPropListItem) then
+    local pos = item:getPosition()
+    pos = ccp(pos.x - 30, pos.y + 60)
+    return item:getParent():convertToWorldSpace(pos)
+  end
+  return ccp(0,0)
 end

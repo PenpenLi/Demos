@@ -2,9 +2,9 @@ local TIP_DURATION = 10 --sec
 
 BubbleTip = class(BasePanel)
 
-function BubbleTip:create(content, propsId)
+function BubbleTip:create(content, propsId, duration)
 	local panel = BubbleTip.new()
-	if panel:init(content, propsId) then
+	if panel:init(content, propsId, duration) then
 		panel:loadRequiredResource(PanelConfigFiles.common_ui)
 		return panel
 	else
@@ -18,11 +18,12 @@ function BubbleTip:loadRequiredResource( panelConfigFile )
 	self.builder = InterfaceBuilder:create(panelConfigFile)
 end
 
-function BubbleTip:init(content, propsId)
+function BubbleTip:init(content, propsId, duration)
 	-- 默认值以及依赖资源的值
 	self.defaultWidth = 287.45
 	self.defaultHeight = 227.15
 	self.contentMargin = 30 --px
+	self.duration = duration or TIP_DURATION
 
 	-- 创建窗口
 	self.ui = ResourceManager:sharedInstance():buildGroup("ui_groups/ui_group_tip_bubble")
@@ -73,7 +74,7 @@ end
 
 function BubbleTip:onTouchTap(event)
 	print('touched')
-	local time = TIP_DURATION --sec
+	local time = self.duration --sec
 	if self.timerId then
 		Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.timerId)
 		self.timerId = 
@@ -193,7 +194,7 @@ function BubbleTip:isPopedOut()
 end
 
 function BubbleTip:show(rect)
-	local time = TIP_DURATION --sec
+	local time = self.duration --sec
 	local function __hideDelegate(event)
 		self:hide()
 	end

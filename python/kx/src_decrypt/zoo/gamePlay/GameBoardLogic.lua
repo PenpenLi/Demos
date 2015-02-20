@@ -54,6 +54,8 @@ GamePropsType = table.const
 	kRandomBird    =  10055, 	--随机魔力鸟
 	kBroom			= 10056,	--女巫扫把
 	kBroom_l		= 10057,    --女巫扫把 临时
+
+	kSpringFirework = 99999, 	--春节爆竹
 }
 
 GamePlayType = table.const
@@ -200,6 +202,7 @@ function GameBoardLogic:ctor()
 	self.setWriteReplayEnable = true     ----------是否可以写replay
 
 	self.honeys = 0        ----------------蜂蜜罐破裂要传染的个数
+	self.questionMarkFirstBomb = true
 end
 
 function GameBoardLogic:encryptionFunc( key, value )
@@ -452,6 +455,14 @@ function GameBoardLogic:refreshComplete()
 		self.isAdviseBannedThisRound = self.isAdviseBannedThisRound or self.PlayUIDelegate:onGameStable()
 	end
 
+	if self.PlayUIDelegate and self.firstProduceQuestionMark and self.gameMode:is(MaydayEndlessMode) then
+		self.PlayUIDelegate:tryFirstQuestionMark(self)
+	end
+
+	if self.PlayUIDelegate and self.firstFullFirework and self.gameMode:is(MaydayEndlessMode) then
+		self.PlayUIDelegate:tryFirstFullFirework()
+	end
+
 	ScoreCountLogic:endCombo(self)
 	self.isInStep = false
 	if self.theGamePlayStatus == GamePlayStatus.kNormal then
@@ -552,6 +563,7 @@ function GameBoardLogic:setGamePlayStatus(state)
 		elseif state == GamePlayStatus.kFailed then
 			local targetCount = nil
 			local opLog = nil
+			local star = 0
 			if self.theGamePlayType == GamePlayType.kDigMoveEndless then 
 				targetCount = self.digJewelCount:getValue()
 			elseif self.theGamePlayType == GamePlayType.kMaydayEndless
@@ -560,8 +572,12 @@ function GameBoardLogic:setGamePlayStatus(state)
 			elseif self.theGamePlayType == GamePlayType.kRabbitWeekly then
 				targetCount = self.rabbitCount:getValue()
 			end
+			if self.theGamePlayType == GamePlayType.kMaydayEndless and self.gameMode:getFailReason() == 'refresh' then
+				star = self.gameMode:getScoreStarLevel()
+			end
+
 			if self.PlayUIDelegate then
-				self.PlayUIDelegate:failLevel(self.level, self.totalScore, 0, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
+				self.PlayUIDelegate:failLevel(self.level, self.totalScore, star, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
 			end
 		elseif state == GamePlayStatus.kBonus then
 			if BombItemLogic:getNumSpecialBomb(self) > 0 
@@ -667,6 +683,9 @@ function GameBoardLogic:initByConfig(level, config)
 			self.addTime = 9
 		end
 	end
+
+	self.uncertainCfg1 = config.uncertainCfg1
+	self.uncertainCfg2 = config.uncertainCfg2
 
 	self.honeys = config.honeys
 	self.hasDropDownUFO = config.hasDropDownUFO or self.theGamePlayType == GamePlayType.kRabbitWeekly
@@ -1021,7 +1040,6 @@ end
 ------返回魔力鸟非主动触发时消除的颜色类型------
 function GameBoardLogic:getBirdEliminateColor()
 	local colorlist = {}
-
 	----1.求每个颜色的动物数量
 	for r=1,#self.gameItemMap do
 		for c=1,#self.gameItemMap[r] do
@@ -1199,6 +1217,15 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 			        nil, 
 			        GamePlayConfig_Back_AnimTime)
 			action.rows = rows
+			self:addPropAction(action)
+			self.fsm:changeState(self.fsm.usePropState)
+		elseif propsType == GamePropsType.kSpringFirework then
+			local action = GameBoardActionDataSet:createAs(
+		        GameActionTargetType.kPropsAction, 
+		        GamePropsActionType.kFirecracker,
+		        nil, 
+		        nil, 
+		        GamePlayConfig_MaxAction_time)
 			self:addPropAction(action)
 			self.fsm:changeState(self.fsm.usePropState)
 		end
@@ -1831,4 +1858,27 @@ function GameBoardLogic:updateAllMagicTiles(boardmap)
             end
         end
     end
+end
+
+function GameBoardLogic:useFirecracker()
+	self.fireworkEnergy = 0
+	self:useProps(GamePropsType.kSpringFirework)
+end
+
+function GameBoardLogic:chargeFirework(count, r, c)
+	if not self.fireworkEnergy then
+		self.fireworkEnergy = 0
+	end
+	self.fireworkEnergy = self.fireworkEnergy + count
+	if self.PlayUIDelegate then
+		self.PlayUIDelegate:setFireworkPercent(self.fireworkEnergy / SpringFireworkTotal)
+		self.PlayUIDelegate:playSpringCollectEffect(self:getGameItemPosInView(r, c))
+	end
+	if self.fireworkEnergy >= SpringFireworkTotal then
+		self.firstFullFirework = true
+	end
+end
+
+function GameBoardLogic:onProduceQuestionMark(r, c)
+    self.firstProduceQuestionMark = true
 end

@@ -213,9 +213,9 @@ function UserService:syncLocal()
 		if element.endpoint == "startlevel" then
 			success = Localhost:startLevel(body.levelId, body.gameMode, body.itemList, body.energyBuff, body.activityFlag, body.requestTime)
 		elseif element.endpoint == "passLevel" then
-			success = Localhost:passLevel(body.levelId, body.score, body.flashStar, body.stageTime, body.coinAmount, body.targetCount, body.opLog, body.activityFlag, body.requestTime)
+			success = Localhost:passLevel(body.levelId, body.score, body.star, body.stageTime, body.coin, body.targetCount, body.opLog, body.activityFlag, body.requestTime)
 		elseif element.endpoint == "useProps" then
-			success = Localhost:useProps(body.itemType, body.levelId, body.gameMode, body.param, body.itemList, body.requestTime)
+			success = Localhost:useProps(body.type, body.levelId, body.gameMode, body.param, body.itemList, body.requestTime)
 		elseif element.endpoint == "openGiftBlocker" then
 			success = Localhost:openGiftBlocker(body.levelId, body.itemList)
 		elseif element.endpoint == "ingame" then

@@ -28,10 +28,11 @@ function MaydayBossJumpState:onEnter()
         for c = 1, #gameItemMap[r] do
             local item = gameItemMap[r][c]
             if item.ItemType == GameItemType.kBoss 
-            and item.bossLevel >= 3 
+            -- and item.bossLevel >= 3 
             and item.blood ~= nil
             and item.blood > 0 
             and self.lastMove < self.mainLogic.realCostMove 
+            and item.maxMoves > 0
             then
                 print('moves', item.moves)
                 if item.moves <= 1 then
@@ -104,8 +105,12 @@ function MaydayBossJumpState:onEnter()
                 table.insert(finalAvailablePos, v)
             end
         end
-        local selector = self.mainLogic.randFactory:rand(1, #finalAvailablePos)
-        return finalAvailablePos[selector].r, finalAvailablePos[selector].c
+        if #finalAvailablePos > 0 then
+            local selector = self.mainLogic.randFactory:rand(1, #finalAvailablePos)
+            return finalAvailablePos[selector].r, finalAvailablePos[selector].c
+        else 
+            return nil, nil
+        end
     end
 
 
@@ -116,19 +121,23 @@ function MaydayBossJumpState:onEnter()
 
     if count > 0 then    
         local jumpToR, jumpToC = newGetJumpTo()
-        
 
-        print('getJumpTo', posR, posC, jumpToR, jumpToC)
+        if jumpToR == nil or jumpToC == nil then -- boss没有地方可跳了
+            self.nextState = self:getNextState()
+        else
 
-        local action = GameBoardActionDataSet:createAs(
-                        GameActionTargetType.kGameItemAction,
-                        GameItemActionType.kItem_Mayday_Boss_Jump,
-                        IntCoord:create(posR, posC),
-                        IntCoord:create(jumpToR, jumpToC),
-                        GamePlayConfig_MaxAction_time
-                    )
-        action.completeCallback = callback
-        self.mainLogic:addGameAction(action)
+            print('getJumpTo', posR, posC, jumpToR, jumpToC)
+
+            local action = GameBoardActionDataSet:createAs(
+                            GameActionTargetType.kGameItemAction,
+                            GameItemActionType.kItem_Mayday_Boss_Jump,
+                            IntCoord:create(posR, posC),
+                            IntCoord:create(jumpToR, jumpToC),
+                            GamePlayConfig_MaxAction_time
+                        )
+            action.completeCallback = callback
+            self.mainLogic:addGameAction(action)
+        end
     else
         self.nextState = self:getNextState()
     end 

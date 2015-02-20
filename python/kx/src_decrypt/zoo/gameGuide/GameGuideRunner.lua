@@ -1422,6 +1422,47 @@ function GameGuideRunner:runShowProp(caller, action)
 	end
 end
 
+function GameGuideRunner:runShowCustomizeArea(caller, action)
+	action.maskDelay = action.maskDelay or 0
+	action.maskFade = action.maskFade or 0.3
+	action.maskPos = action.maskPos or ccp(0, 0)
+	action.opacity = action.opacity or 0xCC
+	action.radius = action.radius or 80
+	action.index = action.index or 1
+	local playUI = Director:sharedDirector():getRunningScene()
+
+	local offsetX = action.offsetX
+	local offsetY = action.offsetY
+
+	local pos = ccp(action.position.x + offsetX, action.position.y + offsetY)
+	local layer = Layer:create()
+	local trueMask = GameGuideRunner:createMask(action.opacity, action.touchDelay, pos, nil, true, action.width, action.height, false)
+	trueMask.setFadeIn(action.maskDelay, action.maskFade)
+	local panel = GameGuideRunner:createPanelS(playUI, action, true)
+	caller.layer = layer
+	layer.success = false
+	local position = trueMask:getPosition()
+	layer:addChild(trueMask)
+	layer:addChild(panel)
+
+	if playUI.guideLayer then
+		playUI.guideLayer:addChild(layer)
+		released = false
+	end
+end
+
+function GameGuideRunner:removeShowCustomizeArea(caller)
+	print('**************** GameGuideRunner:removeShowCustomizeArea')
+	if released then return false, false end
+	released = true
+	local layer = caller.layer
+	if layer and not layer.isDisposed then
+		layer:removeChildren(true)
+		layer:removeFromParentAndCleanup(true)
+	end
+	return true, true
+end
+
 function GameGuideRunner:removeShowProp(caller)
 	print('**************** GameGuideRunner:removeShowProp')
 	if released then return false, false end

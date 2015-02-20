@@ -59,7 +59,18 @@ function UsePropState:runGamePropsActionLogic(mainLogic, theAction, actid)
 			self:runGamePropsRandomBirdAction(mainLogic, theAction, actid)
 		elseif theAction.actionType == GamePropsActionType.kBroom then
 			self:runGamePropsBroomAction(mainLogic, theAction, actid)
+		elseif theAction.actionType == GamePropsActionType.kFirecracker then
+			self:runGamePropsFirecrackerAction(mainLogic, theAction, actid)
 		end
+	end
+end
+
+function UsePropState:runGamePropsFirecrackerAction(mainLogic, theAction, actid)
+	if theAction.addInfo == 'over' then
+		BombItemLogic:springFestivalBombScreen(mainLogic)
+		mainLogic.propActionList[actid] = nil
+		mainLogic:setNeedCheckFalling()
+		self.nextState = self.context.fallingMatchState
 	end
 end
 
@@ -243,6 +254,8 @@ function UsePropState:runPropsActionView(boardView, theAction)
 			self:runGameItemActionRandomBird(boardView, theAction)	
 		elseif theAction.actionType == GamePropsActionType.kBroom then
 			self:runGameItemActionBroom(boardView, theAction)
+		elseif theAction.actionType == GamePropsActionType.kFirecracker then
+			self:runGameItemActionFirecracker(boardView, theAction)
 		end
 	else
 		if theAction.actionType == GameItemActionType.kItemRefresh_Item_Flying then
@@ -250,6 +263,13 @@ function UsePropState:runPropsActionView(boardView, theAction)
 				self:runGameItemActionPassRefreshItemFlyingOver(boardView, theAction)
 			end
 		end
+	end
+end
+
+function UsePropState:runGameItemActionFirecracker(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kWaitingForDeath 
+		theAction.addInfo = 'over'
 	end
 end
 

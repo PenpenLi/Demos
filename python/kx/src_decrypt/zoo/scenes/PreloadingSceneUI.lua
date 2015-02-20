@@ -5,6 +5,8 @@ require "zoo.scenes.ReplayChoiceScene"
 require "zoo.util.AdvertiseSDK"
 require "zoo.panel.component.common.VerticalScrollable"
 
+local showAntiAddict = true
+
 PreloadingSceneUI = class()
 
 local function addSpriteFramesWithFile( plistFilename, textureFileName )
@@ -170,16 +172,29 @@ local function userAgreementTexts()
 	return userAgreementLayer, copyrightLayer
 end
 
+local function antiAddictionText()
+	local text = TextField:create("", nil, 18, nil, kCCTextAlignmentCenter)
+	text:setString(Localization:getInstance():getText("loading.agreement.antiaddiction", {n = '\n'}))
+	text:setColor(ccc3(255, 255, 255))
+	text:enableShadow(CCSizeMake(2, -2), 1, 1)
+	text:setVisible(showAntiAddict)
+	return text
+end
+
 local function createStartButton( label )
 	local button = Layer:create()
+	button:ignoreAnchorPointForPosition(false)
+	button:setAnchorPoint(ccp(0.5, 0.5))
 	
 	local background = Sprite:createWithSpriteFrameName("loading_button0000")
 	local contentSize = background:getContentSize()
 	local filename = "fnt/loading_button.fnt"
 	if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/loading_button.fnt" end
 	local textLabel = BitmapText:create(label, filename)--TextField:create(label, nil, 58)
-	if __use_small_res then textLabel:setPosition(ccp(0, -2))
-	else textLabel:setPosition(ccp(0, 0)) end
+	if __use_small_res then textLabel:setPosition(ccp(contentSize.width / 2, contentSize.height / 2 - 2))
+	else textLabel:setPosition(ccp(contentSize.width / 2, contentSize.height / 2)) end
+
+	background:setPosition(ccp(contentSize.width / 2, contentSize.height / 2))
 
 	background.name = "background"
 	button.textLabel = textLabel
@@ -204,6 +219,23 @@ function PreloadingSceneUI:setFBIconVisible(scene,visible)
 	end
 end
 
+function PreloadingSceneUI:addForCuccwo(parent)
+	if StartupConfig:getInstance():getPlatformName() == "cuccwo" then 
+		self.cuccwoPng = addSpriteFramesWithFile( "materials/cuccwo.plist", "materials/cuccwo.png" )
+		local cuccwo = Sprite:createWithSpriteFrameName("cuccwo10000")
+		cuccwo:setPosition(ccp(720,920))
+		parent:addChild(cuccwo)
+	end
+end
+
+function PreloadingSceneUI:removeForCuccwo()
+	if StartupConfig:getInstance():getPlatformName() == "cuccwo" then
+		if self.cuccwoPng then 
+			CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename(self.cuccwoPng))
+		end
+	end
+end
+
 function PreloadingSceneUI:initUI( scene )
 	local winSize = CCDirector:sharedDirector():getVisibleSize()
 	local origin = CCDirector:sharedDirector():getVisibleOrigin()
@@ -213,6 +245,7 @@ function PreloadingSceneUI:initUI( scene )
 	local loadingPng = addSpriteFramesWithFile( "flash/loading.plist", "flash/loading.png" )
 
 	local logo = Sprite:createWithSpriteFrameName("logo.png")
+	self:addForCuccwo(logo)
 	if _G.useTraditionalChineseRes then logo = Sprite:createWithSpriteFrameName("logo_zh_tw0000") end
 	local logoSize = logo:getContentSize()
 	local scale = winSize.height/logoSize.height
@@ -300,22 +333,24 @@ function PreloadingSceneUI:initUI( scene )
 	scene:addChild(preventWallowLabel)
 	scene.preventWallowLabel = preventWallowLabel
 
-
-	local loginTipsLabel = TextField:create(Localization:getInstance():getText("loading.tips.signup"), "Helvetica", 26, CCSizeMake(winSize.width - 100, 40), kCCTextAlignmentCenter, kCCVerticalTextAlignmentTop)
-	loginTipsLabel:setColor(ccc3(255, 255, 255))
-	loginTipsLabel:setPosition(ccp(winSize.width/2, 110))
-	loginTipsLabel:enableShadow(CCSizeMake(2, -2), 1, 1)
-	scene:addChild(loginTipsLabel)
-	scene.loginTipsLabel = loginTipsLabel
-	scene.loginTipsLabel:setVisible(false) -- default hide
+	if not showAntiAddict then
+		local loginTipsLabel = TextField:create(Localization:getInstance():getText("loading.tips.signup"), "Helvetica", 26, CCSizeMake(winSize.width - 100, 40), kCCTextAlignmentCenter, kCCVerticalTextAlignmentTop)
+		loginTipsLabel:setColor(ccc3(255, 255, 255))
+		loginTipsLabel:setPosition(ccp(winSize.width/2, 110))
+		loginTipsLabel:enableShadow(CCSizeMake(2, -2), 1, 1)
+		scene:addChild(loginTipsLabel)
+		scene.loginTipsLabel = loginTipsLabel
+		scene.loginTipsLabel:setVisible(false) -- default hide
+	end
 
 if not __WP8 then
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename(logoPng))
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename(loadingPng))
+	self:removeForCuccwo()
 end
   
 	local warning = ""
-	if __use_small_res and __IOS then warning = "  "..Localization:getInstance():getText("loading.tips.low.ram") end
+	if __use_small_res and __IOS and not showAntiAddict then warning = "  "..Localization:getInstance():getText("loading.tips.low.ram") end
 	local md5 = ""..warning --"."..tostring(ResourceLoader.getCurVersion())
 	-- local versionLabel = TextField:create("V"..tostring(_G.bundleVersion) .. md5, "Helvetica", 24, CCSizeMake(0,0), kCCTextAlignmentCenter, kCCVerticalTextAlignmentTop)
 	local versionLabel = TextField:create(md5, "Helvetica", 24, CCSizeMake(0,0), kCCTextAlignmentCenter, kCCVerticalTextAlignmentTop)
@@ -361,8 +396,14 @@ function PreloadingSceneUI:buildGuestLoginButton(scene, onTouchCallback)
 	scene:addChild(startButton)
 	scene.startButton = startButton
 	self:createAnimation(startButton)
+	local text = antiAddictionText()
+	text:setPositionXY(winSize.width / 2, startButton:getPositionY() - startButton:getContentSize().height)
+	scene:addChild(text)
+	scene.antiAddictionText = text
 
 	if agreement and copyright then
+		startButton:setPositionY(startButton:getPositionY() + 50)
+		text:setPositionY(text:getPositionY() + 90)
 		agreement:setPositionXY((winSize.width - agreement:getContentSize().width) / 2, origin.y + (300 + progressOffsetY) / 2)
 		scene:addChild(agreement)
 		copyright:setPositionXY((winSize.width - copyright:getContentSize().width) / 2, origin.y + (300 + progressOffsetY) / 4)
@@ -379,8 +420,9 @@ function PreloadingSceneUI:buildOAuthLoginButtons(scene)
 	if __frame_ratio and __frame_ratio < 1.6 then  progressOffsetY = -50 end
 	if __frame_ratio and __frame_ratio < 1.5 then  progressOffsetY = -90 end
 
-	local buttonY = origin.y + 330 + progressOffsetY
+	local buttonY = origin.y + 320 + progressOffsetY
 
+	startButton:setScale(CCDirector:sharedDirector():getVisibleSize().height / 1280)
 	startButton:setPosition(ccp(winSize.width/2, buttonY))
 	startButton:setTouchEnabled(true)
 	scene:addChild(startButton)
@@ -397,24 +439,37 @@ function PreloadingSceneUI:buildOAuthLoginButtons(scene)
 	buttonBlue.textLabel = textLabel
 	buttonBlue:addChild(background)
 	buttonBlue:addChild(textLabel)
+	buttonBlue:setScale(CCDirector:sharedDirector():getVisibleSize().height / 1280)
 	buttonBlue:setTouchEnabled(true)
 	buttonBlue:setButtonMode(true)
-	buttonBlue:setPosition(ccp(winSize.width/2, startButton:getPosition().y - startButton:getContentSize().height + 5))
+	local text = antiAddictionText()
+	local margin = (buttonY - startButton:getContentSize().height / 2 * startButton:getScale() - origin.y -
+			background:getContentSize().height * buttonBlue:getScale() - text:getFontSize() * 2) / 3
+	buttonBlue:setPosition(ccp(winSize.width/2, startButton:getPositionY() - startButton:getContentSize().height * startButton:getScale() / 2 -
+			background:getContentSize().height * buttonBlue:getScale() / 2 - margin))
 	buttonBlue.setString = function ( self, str )
 		self.textLabel:setText(str)
 	end
 	scene:addChild(buttonBlue)
 	self:createAnimation(buttonBlue)
+	text:setPositionXY(winSize.width / 2, buttonBlue:getPositionY() - background:getContentSize().height * buttonBlue:getScale() / 2 -
+			text:getFontSize() - margin)
+	scene:addChild(text)
+	scene.antiAddictionText = text
 
 	local agreement, copyright = userAgreementTexts()
 	if agreement and copyright then
-		local buttonY = origin.y + 360 + progressOffsetY
+		local buttonY = origin.y + 370 + progressOffsetY
 		startButton:setPosition(ccp(winSize.width/2, buttonY))
-		buttonBlue:setPositionXY(winSize.width / 2, startButton:getPositionY() / 2 + origin.y / 2)
-		local posRe = buttonBlue:getPositionY() - origin.y
-		agreement:setPositionXY((winSize.width - agreement:getContentSize().width) / 2, origin.y + posRe * 2 / 3)
+		local margin = (buttonY - startButton:getContentSize().height / 2 * startButton:getScale() - origin.y - 90 -
+			background:getContentSize().height * buttonBlue:getScale() - text:getFontSize() * 2) / 3
+		buttonBlue:setPositionXY(winSize.width / 2, startButton:getPositionY() - startButton:getContentSize().height * startButton:getScale() / 2 -
+			background:getContentSize().height * buttonBlue:getScale() / 2 - margin)
+		text:setPositionXY(winSize.width / 2, buttonBlue:getPositionY() - background:getContentSize().height * buttonBlue:getScale() / 2 -
+			text:getFontSize() - margin)
+		agreement:setPositionXY((winSize.width - agreement:getContentSize().width) / 2, origin.y + 80)
 		scene:addChild(agreement)
-		copyright:setPositionXY((winSize.width - copyright:getContentSize().width) / 2, origin.y + posRe / 3)
+		copyright:setPositionXY((winSize.width - copyright:getContentSize().width) / 2, origin.y + 30)
 		scene:addChild(copyright)
 	end
 
@@ -428,10 +483,11 @@ function PreloadingSceneUI:createAnimation(startButton)
 	startButton:setButtonMode(false)
 	local deltaTime = 0.9
 	local animations = CCArray:create()
-	animations:addObject(CCScaleTo:create(deltaTime, 0.98, 1.03))
-	animations:addObject(CCScaleTo:create(deltaTime, 1.01, 0.96))
-	animations:addObject(CCScaleTo:create(deltaTime, 0.98,1.03))
-	animations:addObject(CCScaleTo:create(deltaTime, 1,1))
+	local originScale = startButton:getScale()
+	animations:addObject(CCScaleTo:create(deltaTime, originScale * 0.98, originScale * 1.03))
+	animations:addObject(CCScaleTo:create(deltaTime, originScale * 1.01, originScale * 0.96))
+	animations:addObject(CCScaleTo:create(deltaTime, originScale * 0.98, originScale * 1.03))
+	animations:addObject(CCScaleTo:create(deltaTime, originScale,originScale))
 	startButton:runAction(CCRepeatForever:create(CCSequence:create(animations)))
 
 	local btnWithoutShadow = startButton:getChildByName("background")

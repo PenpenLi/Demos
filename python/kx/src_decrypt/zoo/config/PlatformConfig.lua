@@ -48,6 +48,8 @@ PlatformNameEnum = {
     kLenovoGame = "lenovogame",
     kSina       = "sina",
     kMobileMM   = "mobilemm",
+    kAndroidMM  = "androidmm",
+    kSpringMM   = "springmm",
     kSogou      = "sogou",
     kLetv       = "letv",
 }
@@ -273,6 +275,18 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+    kCUCCWO_JR = {
+        name = PlatformNameEnum.kCUCCWO,
+        authConfig = PlatformAuthEnum.kWeibo,
+        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
     k3GRoad = {
         name = PlatformNameEnum.k3GRoad,
         authConfig = PlatformAuthEnum.kWeibo,
@@ -372,7 +386,7 @@ local AndroidPlatformConfigs = {
     kOppo = {
         name = PlatformNameEnum.kOppo,
         authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        -- mergeToAuthConfig = PlatformAuthEnum.kQQ,
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
@@ -428,6 +442,19 @@ local AndroidPlatformConfigs = {
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
         },
         shareConfig = { PlatformShareEnum.kWechat }
+    --金立预装包从1.20开始 暂时不支持电信支付  本来它在kPreMM里
+    },
+    kJinliPre = {
+        name = PlatformNameEnum.kJinliPre,
+        authConfig = PlatformAuthEnum.kWeibo,
+        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC},
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
     },
 }
 
@@ -445,7 +472,6 @@ local ForkPlatformMap = {
         PlatformNameEnum.kLetv,
     },
     kPreMM = {
-        PlatformNameEnum.kJinliPre, 
         PlatformNameEnum.kLenovoPre,   
         PlatformNameEnum.kDoovPre, 
          
@@ -453,6 +479,8 @@ local ForkPlatformMap = {
     kCMCCMM = {
         PlatformNameEnum.kSina,
         PlatformNameEnum.kMobileMM,
+        PlatformNameEnum.kSpringMM,
+        PlatformNameEnum.kAndroidMM,
         PlatformNameEnum.kSogou,
     },
     kHEWithCMGame = {
@@ -566,6 +594,20 @@ local function initPlatformConfig()
             PlatformConfig.name = androidPlarformName
             return;
         end
+
+        -------------cuccwo 1.20三网变单网兼容-----------------
+        local function checkClassExist()
+            luajava.bindClass("com.happyelements.android.operatorpayment.uni.UniMultiPayment")
+        end
+        if androidPlarformName == "cuccwo" then 
+            if pcall(checkClassExist) then 
+                PlatformConfig = AndroidPlatformConfigs.kCUCCWO
+            else
+                PlatformConfig = AndroidPlatformConfigs.kCUCCWO_JR
+            end
+            return 
+        end
+        ------------------------------------------------------
         -- 预定义平台
         for k, v in pairs(AndroidPlatformConfigs) do
             if androidPlarformName == v.name then
@@ -678,6 +720,28 @@ function PlatformConfig:isBigPayPlatform()
         or PlatformConfig:isPlatform(PlatformNameEnum.kMiPad)
         or PlatformConfig:isBaiduPlatform()) then
         return true
+    end
+    return false
+end
+
+function PlatformConfig:isWechatPaySupport()
+    if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchWechat") then
+        if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+            if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWECHAT) then 
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function PlatformConfig:isAliPaySupport()
+    if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchAli") then 
+        if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+            if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then 
+                return true
+            end
+        end
     end
     return false
 end

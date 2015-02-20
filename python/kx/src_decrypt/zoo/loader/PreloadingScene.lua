@@ -250,8 +250,10 @@ function PreloadingScene:updateOAuthButtonState()
     local function displayLoginTipLabel()
         local posY = self.blueButton:getPositionY()
         local btnSize = self.blueButton:getGroupBounds().size
-        self.loginTipsLabel:setPositionY(posY - btnSize.height / 2 - 15)
-        self.loginTipsLabel:setVisible(CCUserDefault:sharedUserDefault():getBoolForKey("game.user.agreement.checked"))
+        if self.loginTipsLabel then
+            self.loginTipsLabel:setPositionY(posY - btnSize.height / 2 - 15)
+            self.loginTipsLabel:setVisible(CCUserDefault:sharedUserDefault():getBoolForKey("game.user.agreement.checked"))
+        end
     end
 
     self.redButton:setTouchEnabled(true)
@@ -327,6 +329,9 @@ function PreloadingScene:onGuestButtonTouched()
         end
     end
 
+    if self.antiAddictionText and self.antiAddictionText:isVisible() then
+        self.antiAddictionText:setVisible(false)
+    end
     if self.blueButton.agreement then
         if not self.blueButton.agreement.isDisposed and
             self.blueButton.agreement.checked then
@@ -465,6 +470,9 @@ function PreloadingScene:onOAuthButtonTouched()
         end
     end
 
+    if self.antiAddictionText and self.antiAddictionText:isVisible() then
+        self.antiAddictionText:setVisible(false)
+    end
     if self.redButton.agreement then
         if not self.redButton.agreement.isDisposed and self.redButton.agreement.checked then
             if self.redButton.agreement.touchLayer and not self.redButton.agreement.touchLayer.isDisposed then

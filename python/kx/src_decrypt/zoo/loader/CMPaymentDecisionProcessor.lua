@@ -3,7 +3,9 @@ local Processor = class(EventDispatcher)
 
 function Processor:start()
     if __ANDROID then
-        self:getLocationInfo()
+        if not PrepackageUtil:isPreNoNetWork() then  
+            self:getLocationInfo()
+        end
         self:initDecisionScript()
     end
 end

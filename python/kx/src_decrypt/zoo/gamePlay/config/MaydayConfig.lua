@@ -1,6 +1,14 @@
 BossConfig = {}
 -- real config
-BossConfig[1] = {animal_num = 2, blood = 10, clouds = 0, drop_sapphire = 5, moves = 0, specialHitBlood = 6}
-BossConfig[2] = {animal_num = 2, blood = 15, clouds = 0, drop_sapphire = 8, moves = 0, specialHitBlood = 6}
-BossConfig[3] = {animal_num = 2, blood = 20, clouds = 0, drop_sapphire = 12, moves = 10, specialHitBlood = 6}
-BossConfig[4] = {animal_num = 2, blood = 27, clouds = 0, drop_sapphire = 20, moves = 10, specialHitBlood = 6}
+BossConfig[1] = {animal_num = 1, blood = 10, clouds = 0, drop_sapphire = 10, moves = 0, specialHitBlood = 3, 
+                buffBlood = 4, buffRate = 0.3, buffNum = 1, buffLimit = 3, deadbuffNum = 3}
+BossConfig[2] = {animal_num = 1, blood = 13, clouds = 0, drop_sapphire = 13, moves = 0, specialHitBlood = 3, 
+                buffBlood = 4, buffRate = 0.3, buffNum = 1, buffLimit = 3, deadbuffNum = 3}
+BossConfig[3] = {animal_num = 1, blood = 16, clouds = 0, drop_sapphire = 17, moves = 0, specialHitBlood = 3, 
+                buffBlood = 4, buffRate = 0.3, buffNum = 1, buffLimit = 3, deadbuffNum = 3}
+BossConfig[4] = {animal_num = 1, blood = 22, clouds = 0, drop_sapphire = 25, moves = 13, specialHitBlood = 3, 
+                buffBlood = 4, buffRate = 0.3, buffNum = 1, buffLimit = 3, deadbuffNum = 3}
+BossConfig[5] = {animal_num = 2, blood = 30, clouds = 0, drop_sapphire = 20, moves = 5, specialHitBlood = 3, 
+                buffBlood = 0, buffRate = 0, buffNum = 0, buffLimit = 0, deadbuffNum = 0}
+
+SpringFireworkTotal = 23

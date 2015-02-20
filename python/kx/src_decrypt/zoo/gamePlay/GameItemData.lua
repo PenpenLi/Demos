@@ -33,6 +33,7 @@ GameItemType = table.const
 	kSuperBlocker = 23, 	-- 无敌障碍
 	kHoneyBottle = 24,      --蜂蜜罐子
 	kAddTime	= 25,		--加时间的动物
+	kQuestionMark = 26,     --问号
 }
 
 GameItemStatusType = table.const
@@ -137,6 +138,9 @@ function GameItemData:ctor()
 	self.lampLevel = 0
 	self.honeyBottleLevel = 0
 	self.addTime = 0
+
+	self.isProductByBossDie = false
+	self.questionMarkProduct = 0
 end
 
 function GameItemData:dispose()
@@ -217,7 +221,7 @@ function GameItemData:copy()
 	v.animal_num = self.animal_num
 	v.drop_sapphire = self.drop_sapphire
 	v.speicial_hit_blood = self.speicial_hit_blood
-
+	v.hitCounter = self.hitCounter
 	
 	v.rabbitState = self.rabbitState
 	v.rabbitLevel = self.rabbitLevel
@@ -234,6 +238,9 @@ function GameItemData:copy()
 
 	--增加时间
 	v.addTime = self.addTime
+
+	v.isProductByBossDie = self.isProductByBossDie
+	v.questionMarkProduct = self.questionMarkProduct
 	return v
 end
 
@@ -248,6 +255,7 @@ function GameItemData:initByConfig( tileDef )
 
 	if tileDef:hasProperty(TileConst.kAddMove) then self.ItemType = GameItemType.kAddMove self.isEmpty = false  
 	elseif tileDef:hasProperty(TileConst.kAddTime) then self.ItemType = GameItemType.kAddTime self.isEmpty = false  --TODO
+	elseif tileDef:hasProperty(TileConst.kQuestionMark) then self.ItemType = GameItemType.kQuestionMark self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kAnimal) then self.ItemType = GameItemType.kAnimal self.isEmpty=false
 	elseif tileDef:hasProperty(TileConst.kCrystal) then self.ItemType = GameItemType.kCrystal self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kMagicLamp) then self.ItemType = GameItemType.kMagicLamp self.isEmpty = false self.lampLevel = 1 self.isBlock = true
@@ -266,9 +274,9 @@ function GameItemData:initByConfig( tileDef )
 	elseif tileDef:hasProperty(TileConst.kDigJewel_1) then self.digJewelLevel = 1 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kDigJewel_2) then self.digJewelLevel = 2 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kDigJewel_3) then self.digJewelLevel = 3 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false
-	elseif tileDef:hasProperty(TileConst.kDigJewel_1_blue) then self.digJewelLevel = 1 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 3
-	elseif tileDef:hasProperty(TileConst.kDigJewel_2_blue) then self.digJewelLevel = 2 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 3
-	elseif tileDef:hasProperty(TileConst.kDigJewel_3_blue) then self.digJewelLevel = 3 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 3
+	elseif tileDef:hasProperty(TileConst.kDigJewel_1_blue) then self.digJewelLevel = 1 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 4
+	elseif tileDef:hasProperty(TileConst.kDigJewel_2_blue) then self.digJewelLevel = 2 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 4
+	elseif tileDef:hasProperty(TileConst.kDigJewel_3_blue) then self.digJewelLevel = 3 self.ItemType = GameItemType.kDigJewel self.isBlock = true self.isEmpty = false self.digJewelType = 4
 	elseif tileDef:hasProperty(TileConst.kRoost) then self.ItemType = GameItemType.kRoost self.isBlock = true self.roostLevel = 1 self.isEmpty = false 
 	elseif tileDef:hasProperty(TileConst.kPoisonBottle) then self.ItemType = GameItemType.kPoisonBottle self.forbiddenLevel = 0 self.isBlock = true  self.isEmpty = false   --默认毒液瓶
 	elseif tileDef:hasProperty(TileConst.kBigMonster) then self.ItemType = GameItemType.kBigMonster self.isBlock = true self.bigMonsterFrostingType = 1 self.isEmpty = false self.bigMonsterFrostingStrength = 1
@@ -370,6 +378,7 @@ function GameItemData:changeToSnail( snailRoadType )
 	self.isEmpty = false
 	self.snailRoadType = snailRoadType
 	self.isSnail = true
+	self.isNeedUpdate = true
 end
 
 function GameItemData:changeToRabbit( colortype, level )
@@ -449,11 +458,19 @@ function GameItemData:canEffectLightUp()
 	return false
 end
 
--- 是否可以在三消匹配中被消除
+-- 是否可以在三消匹配中被消除,前置判断是canBeCoverByMatch,此处不需重复过滤
 function GameItemData:canBeEliminateByMatch()
 	if self:hasLock() then return false end
 	if self.ItemType == GameItemType.kMagicLamp then return false end
+	if self.ItemType == GameItemType.kQuestionMark then return false end
 
+	return true
+end
+
+-- 是否可以在三消匹配中参与特效合成,前置判断是canBeCoverByMatch,此处不需重复过滤
+function GameItemData:canBeMixToSpecialByMatch()
+	if self.ItemType == GameItemType.kMagicLamp then return false end
+	if self.ItemType == GameItemType.kQuestionMark then return false end
 	return true
 end
 
@@ -505,6 +522,7 @@ function GameItemData:canBeCoverByBirdAnimal()
 		or self.ItemType == GameItemType.kAddTime
 		or self.ItemType == GameItemType.kRabbit
 		or self.ItemType == GameItemType.kMagicLamp
+		or self.ItemType == GameItemType.kQuestionMark
 		then														
 		return true
 	end
@@ -522,6 +540,7 @@ function GameItemData:isItemCanBeCoverByBirdBrid()
 		or self.ItemType == GameItemType.kAddTime
 		or self.ItemType == GameItemType.kBlackCuteBall
 		or self.ItemType == GameItemType.kRabbit
+		or self.ItemType == GameItemType.kQuestionMark
 		then
 		return true
 	end
@@ -579,6 +598,14 @@ function GameItemData:canBeEffectByHammer()
 	return true
 end
 
+function GameItemData:isQuestionMarkcanBeDestroy()
+	-- body
+	if self:hasFurball() or self:hasLock() or not self:isAvailable() then
+		return false
+	end
+	return true
+end
+
 ----从另一份数据，获取游戏物件信息---类似动物之类的信息---
 function GameItemData:getAnimalLikeDataFrom(data)
 	self.isEmpty = data.isEmpty
@@ -626,6 +653,9 @@ function GameItemData:getAnimalLikeDataFrom(data)
 	self.honeyBottleLevel = data.honeyBottleLevel
 	self.honeyLevel = data.honeyLevel
 	self.addTime = data.addTime
+	self.isProductByBossDie = data.isProductByBossDie
+	self.questionMarkProduct = data.questionMarkProduct
+
 end
 
 function GameItemData:cleanAnimalLikeData()
@@ -674,6 +704,9 @@ function GameItemData:cleanAnimalLikeData()
 	self.honeyBottleLevel = 0
 	self.honeyLevel = 0
 	self.addTime = 0
+	self.isProductByBossDie = false
+	self.questionMarkProduct = 0
+	self.digBlockCanbeDelete = true
 end
 
 function GameItemData:isPermanentBlocker()
@@ -832,6 +865,7 @@ function GameItemData:isColorful()
 		or self.ItemType == GameItemType.kAddTime
 		or self.ItemType == GameItemType.kRabbit
 		or self.ItemType == GameItemType.kMagicLamp
+		or self.ItemType == GameItemType.kQuestionMark
 		then
 		return true
 	end
@@ -883,6 +917,7 @@ function GameItemData:initMaydayBoss(level)
 	self.animal_num = BossConfig[level].animal_num
 	self.drop_sapphire = BossConfig[level].drop_sapphire
 	self.speicial_hit_blood = BossConfig[level].specialHitBlood
+	self.hitCounter = 0
 end
 
 function GameItemData:canInfectByHoneyBottle( ... )
@@ -892,8 +927,51 @@ function GameItemData:canInfectByHoneyBottle( ... )
 
 	if self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor 
 		or self.ItemType == GameItemType.kCrystal
-		or self.ItemType == GameItemType.kMagicLamp then
+		or self.ItemType == GameItemType.kMagicLamp 
+		or self.ItemType == GameItemType.kQuestionMark then
 		return true
 	end
 	return false
+end
+
+function GameItemData:changToSpecial( changeItem, changeColor )
+	-- body
+	self.ItemType = GameItemType.kAnimal
+	self.ItemSpecialType = AnimalTypeConfig.getSpecial(changeItem)
+	self.ItemColorType = changeColor
+end
+
+function GameItemData:changToFallingItems( changeItem,changeColor, addMoveBase )
+	-- body
+	local tile = changeItem + 1
+	if tile == TileConst.kGreyCute then self.ItemType = GameItemType.kAnimal self.furballLevel = 1 self.furballType = GameItemFurballType.kGrey self.ItemColorType = changeColor
+	elseif tile == TileConst.kBrownCute then self.ItemType = GameItemType.kAnimal self.furballLevel = 1 self.furballType = GameItemFurballType.kBrown self.ItemColorType = changeColor
+	elseif tile == TileConst.kBlackCute then self.ItemType = GameItemType.kBlackCuteBall self.isEmpty = false self.blackCuteStrength = 2 self.ItemColorType = 0
+	elseif tile == TileConst.kCoin then self.ItemType = GameItemType.kCoin self.ItemColorType = 0
+	elseif tile == TileConst.kCrystal then self.ItemType = GameItemType.kCrystal self.ItemColorType = changeColor
+	elseif tile == TileConst.kAddMove then self.ItemType = GameItemType.kAddMove self.numAddMove = addMoveBase self.ItemColorType = changeColor
+	end
+end
+
+function GameItemData:changToCannotFallingItems( changeItem )
+	-- body
+	self.ItemColorType = 0
+	local tile = changeItem + 1
+	if tile == TileConst.kPoison then self.ItemType = GameItemType.kVenom  self.venomLevel = 1 
+	elseif tile == TileConst.kPoisonBottle then self.ItemType = GameItemType.kPoisonBottle self.forbiddenLevel = 0
+	elseif tile == TileConst.kDigJewel_1_blue then self.digJewelLevel = 1 self.ItemType = GameItemType.kDigJewel self.digJewelType = 4
+	elseif tile == TileConst.kDigJewel_2_blue then self.digJewelLevel = 2 self.ItemType = GameItemType.kDigJewel self.digJewelType = 4
+	elseif tile == TileConst.kDigJewel_3_blue then self.digJewelLevel = 3 self.ItemType = GameItemType.kDigJewel self.digJewelType = 4
+	end
+end
+
+function GameItemData:changeItemFromQuestionMark( changeType, changeItem, changeColor, addMoveBase)
+	-- body
+	if changeType == UncertainCfgConst.kCanFalling then
+		self:changToFallingItems(changeItem, changeColor, addMoveBase)
+	elseif changeType == UncertainCfgConst.kCannotFalling then
+		self:changToCannotFallingItems(changeItem)
+	elseif changeType == UncertainCfgConst.kSpecial then
+		self:changToSpecial(changeItem, changeColor)
+	end
 end

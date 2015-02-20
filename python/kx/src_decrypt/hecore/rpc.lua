@@ -382,15 +382,12 @@ onChannelCallback = function(event)
         end
         if bytes then
             responses, err, ts = convertorRegistry.assembleConvertor:convertU(bytes)
-            if not processor.timediff then
-                if type(ts) == "number" then
-                    processor.timediff = os.difftime(ts, os.time())                 -- 系统比UTC慢了多少秒
+            if type(ts) == "number" then
+                local diff = os.difftime(ts, os.time())
+                if not processor.timediff or math.abs(processor.timediff - diff) > 300 then
+                    processor.timediff = diff                 -- 系统比UTC慢了多少秒
                     --system.saveString("__g_utcDiffSeconds", tostring(processor.timediff))       -- 提供在弱联网时校准时间
-                    
                     _G.__g_utcDiffSeconds = processor.timediff
-                -- else
-                --     --processor.timediff = tonumber(system.loadString("__g_utcDiffSeconds", "0"))
-                --     -- processor.timediff = 0
                 end
             end
         else

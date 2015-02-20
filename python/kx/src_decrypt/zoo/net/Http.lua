@@ -165,6 +165,7 @@ function DefaultResponseHandler:handleResponse(endpoint, data)
   he_log_info("default handleResponse for " .. endpoint)
 end
 
+local isAlerted = false
 --
 -- ConnectionManager ---------------------------------------------------------
 --
@@ -201,6 +202,14 @@ function ConnectionManager:initialize(uid, sessionKey)
   )	
 	transponder:invalidateSessionKey()
   transponder:changeUID(uid)
+
+  local function handleError(self, endpoints, err, requests)
+    ConnectionManager:handleError(endpoints, err, requests)
+  end
+  local errors = {}
+  errors[108] = "skCheckError"
+  transponder:registryHandler({errors=errors, handleError=handleError})
+
   if not transponder:isBlocked() then transponder:flush() end
 end
 
@@ -232,6 +241,43 @@ end
 function ConnectionManager:syncFlush()
   syncLock = false
   ConnectionManager:flush()
+end
+
+function ConnectionManager:handleError(endpoints, err, requests)
+  if err and tonumber(err) == 108 then
+    if isAlerted then return false end
+
+    local title = Localization:getInstance():getText("error.tip.108") 
+    local okLabel = Localization:getInstance():getText("update.done.confirm")
+    local function onUIAlertViewCallback( alertView, buttonIndex )
+        isAlerted = false
+        Localhost:getInstance():clearLastLoginUserData()
+        Director.sharedDirector():exitGame()
+    end
+
+    if __IOS then
+        isAlerted = true         
+        local UIAlertViewClass = require "zoo.util.UIAlertViewDelegateImpl"
+        local alert = UIAlertViewClass:buildUI(title, "", okLabel, onUIAlertViewCallback)
+        alert:show()
+    end
+    if __ANDROID then 
+        AlertDialogImpl:alert( title, "", okLabel, nil, onUIAlertViewCallback, nil, onUIAlertViewCallback) 
+    end
+    if __WP8 then 
+        local function msgCallback(r)
+          if r and onUIAlertViewCallback then 
+            onUIAlertViewCallback()
+          end
+        end
+        Wp8Utils:ShowMessageBox(title, "", msgCallback) 
+    end
+    if __WIN32 then
+        onUIAlertViewCallback()
+    end
+    return true
+  end
+  return false
 end
 
 --
@@ -336,7 +382,6 @@ function HttpBase:syncLoad(...)
   ConnectionManager:flush()
 end
 
-local isAlerted = false
 function HttpBase:onResponse( endpoint, data, err )
   if err ~= nil and err == 104 then
     --require update to new version
@@ -355,32 +400,36 @@ function HttpBase:onResponse( endpoint, data, err )
     end
   end
 
-  if err ~= nil and err == 110 then
-    local title = Localization:getInstance():getText("error.tip.110") 
-    local okLabel = Localization:getInstance():getText("update.done.confirm")
-    local function onUIAlertViewCallback( alertView, buttonIndex )
-      isAlerted = false
-      Director.sharedDirector():exitGame()
-    end   
+  if err ~= nil then
+    if err == 110 then
+      local title = Localization:getInstance():getText("error.tip.110") 
+      local okLabel = Localization:getInstance():getText("update.done.confirm")
+      local function onUIAlertViewCallback( alertView, buttonIndex )
+        isAlerted = false
+        Director.sharedDirector():exitGame()
+      end   
 
-    if __IOS and not isAlerted then
-      isAlerted = true         
-      local UIAlertViewClass = require "zoo.util.UIAlertViewDelegateImpl"
-      local alert = UIAlertViewClass:buildUI(title, "", okLabel, onUIAlertViewCallback)
-      alert:show()
-    end
-    if __ANDROID then 
-      AlertDialogImpl:alert( title, "", okLabel, nil, onUIAlertViewCallback, nil, onUIAlertViewCallback) 
-    end
-    if __WP8 then 
-  		local function msgCallback(r)
-        if r and onUIAlertViewCallback then 
-          onUIAlertViewCallback()
-        end
+      if __IOS and not isAlerted then
+        isAlerted = true         
+        local UIAlertViewClass = require "zoo.util.UIAlertViewDelegateImpl"
+        local alert = UIAlertViewClass:buildUI(title, "", okLabel, onUIAlertViewCallback)
+        alert:show()
       end
-      Wp8Utils:ShowMessageBox(title, "", msgCallback) 
+      if __ANDROID then 
+        AlertDialogImpl:alert( title, "", okLabel, nil, onUIAlertViewCallback, nil, onUIAlertViewCallback) 
+      end
+      if __WP8 then 
+    		local function msgCallback(r)
+          if r and onUIAlertViewCallback then 
+            onUIAlertViewCallback()
+          end
+        end
+        Wp8Utils:ShowMessageBox(title, "", msgCallback) 
+      end
+      return
+    -- elseif err = 108 then
+    --   return -- 前面已经处理了
     end
-    return
   end
 
   if self.timeout then
@@ -394,6 +443,8 @@ function HttpBase:onResponse( endpoint, data, err )
   end
   self.handler = nil
 end
+
+
 
 function HttpBase:onLoadingComplete(data)
 	self:dispatchEvent(Event.new(Events.kComplete, data, self))

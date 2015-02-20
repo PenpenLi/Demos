@@ -5,25 +5,25 @@ SpecialCoverLogic = class{}
 -----在某个位置引起了特效消除-----减除冰层，减除牢笼，减除雪花等等效果
 -- covertype : 1: 上下影响  2：左右影响  3：四周影响
 -- noCD: 为false挖地、宝石一帧内多次调用会只调用一次， 为true会多次调用
-function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreScale, actId, noCD)
+function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreScale, actId, noCD, noScore)
 	-----成功消除时候会影响周围的东西
 	if SpecialCoverLogic:canEffectAround(mainLogic, r, c) then
 		if covertype == 1 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c)		--上下
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c, noScore)		--上下
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c, noScore)
 		elseif covertype == 2 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1)		--左右
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1, noScore)		--左右
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1, noScore)
 		elseif covertype == 3 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c)		--四方
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c)
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1)
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c, noScore)		--四方
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1, noScore)
 		end
 	end
 
 	if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
-		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD)
+		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD, noScore)
 	end
 end
 
@@ -127,11 +127,11 @@ function SpecialCoverLogic:canEffectAround(mainLogic, r, c)
 	return false
 end
 
-function SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c)
+function SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, noScore)
 	if not mainLogic:isPosValid(r, c) then return end
 
 	if SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c) then
-		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, 1)
+		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, 1, nil, false, noScore)
 	end
 end
 
@@ -219,12 +219,16 @@ function SpecialCoverLogic:canEffectSandAtPos(mainLogic, r, c, canEffectCoin)
 	return false
 end
 
-function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
+function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD, noScore)
 	if r<=0 or r>#mainLogic.boardmap or c<=0 or c>#mainLogic.boardmap[r] then return false end;
 
 	local item = mainLogic.gameItemMap[r][c];
 	local board = mainLogic.boardmap[r][c];
 	local hasLockOrigin = item:hasLock()
+
+	if item.questionMarkProduct > 0 then  ------------从问号障碍生成，需要保护一段时间
+		return 
+	end
 
 	scoreScale = scoreScale or 1
 	------1.牢笼变化------
@@ -233,16 +237,18 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 		item.cageLevel = item.cageLevel - 1
 
 		-----1-2.分数变化
-		local addScore = GamePlayConfig_Score_MatchAt_Lock * scoreScale
-		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
-		local ScoreAction = GameBoardActionDataSet:createAs(
-			GameActionTargetType.kGameItemAction,
-			GameItemActionType.kItemScore_Get,
-			IntCoord:create(r,c),				
-			nil,				
-			1)
-		ScoreAction.addInt = addScore
-		mainLogic:addGameAction(ScoreAction)
+		if not noScore then
+			local addScore = GamePlayConfig_Score_MatchAt_Lock * scoreScale
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+			local ScoreAction = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItemScore_Get,
+				IntCoord:create(r,c),				
+				nil,				
+				1)
+			ScoreAction.addInt = addScore
+			mainLogic:addGameAction(ScoreAction)
+		end
 
 		----1-3.播放特效
 		local LockAction = GameBoardActionDataSet:createAs(
@@ -252,8 +258,8 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 			nil,				
 			GamePlayConfig_GameItemSnowDeleteAction_CD)
 		mainLogic:addDestroyAction(LockAction)
-		item.isNeedUpdate = true
-		board.isNeedUpdate = true
+		-- item.isNeedUpdate = true
+		-- board.isNeedUpdate = true
 	elseif item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, scoreScale )
 	end
@@ -268,17 +274,19 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 			mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kSnowFlower, 1) -------记录消除
 		end
 
-		----1-2.分数统计
-		local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
-		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
-		local ScoreAction = GameBoardActionDataSet:createAs(
-			GameActionTargetType.kGameItemAction,
-			GameItemActionType.kItemScore_Get,
-			IntCoord:create(r,c),				
-			nil,				
-			1)
-		ScoreAction.addInt = addScore
-		mainLogic:addGameAction(ScoreAction)
+		if not noScore then
+			----1-2.分数统计
+			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+			local ScoreAction = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItemScore_Get,
+				IntCoord:create(r,c),				
+				nil,				
+				1)
+			ScoreAction.addInt = addScore
+			mainLogic:addGameAction(ScoreAction)
+		end
 
 		----1-3.播放特效
 		local SnowAction = GameBoardActionDataSet:createAs(
@@ -293,17 +301,20 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 		item.venomLevel = item.venomLevel - 1
 		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kVenom, 1) -------记录消除
-		local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
-		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
-		local ScoreAction = GameBoardActionDataSet:createAs(
-			GameActionTargetType.kGameItemAction,
-			GameItemActionType.kItemScore_Get,
-			IntCoord:create(r, c),
-			nil,
-			1)
-		ScoreAction.addInt = addScore
-		mainLogic:addGameAction(ScoreAction)
+		if not noScore then
+			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+
+			local ScoreAction = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItemScore_Get,
+				IntCoord:create(r, c),
+				nil,
+				1)
+			ScoreAction.addInt = addScore
+			mainLogic:addGameAction(ScoreAction)
+		end
 
 		local VenomAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -318,17 +329,20 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 		item:roostUpgrade()
 		local times = item.roostLevel - roostLevel
 		if times > 0 then
-			local scoreTotal = times * GamePlayConfig_Score_Roost
-			ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)
 
-			local ScoreAction = GameBoardActionDataSet:createAs(
-				GameActionTargetType.kGameItemAction,
-				GameItemActionType.kItemScore_Get,
-				IntCoord:create(r, c),
-				nil,
-				1)
-			ScoreAction.addInt = scoreTotal
-			mainLogic:addGameAction(ScoreAction)
+			if not noScore then
+				local scoreTotal = times * GamePlayConfig_Score_Roost
+				ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)
+
+				local ScoreAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItemScore_Get,
+					IntCoord:create(r, c),
+					nil,
+					1)
+				ScoreAction.addInt = scoreTotal
+				mainLogic:addGameAction(ScoreAction)
+			end
 			
 			local UpgradeAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
@@ -344,27 +358,29 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 			if not noCD then 
 				item.digBlockCanbeDelete = false
 			end
-			GameExtandPlayLogic:decreaseDigGround(mainLogic, r, c,scoreScale)
+			GameExtandPlayLogic:decreaseDigGround(mainLogic, r, c,scoreScale, noScore)
 		end
 	elseif item.digJewelLevel > 0 then
 		if item.digBlockCanbeDelete then
 			if not noCD then 
 				item.digBlockCanbeDelete = false
 			end
-			GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, scoreScale)
+			GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, scoreScale, noScore)
 		end
 	elseif item.bigMonsterFrostingType > 0 then 
-		local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
-		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+		if not noScore then
+			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
-		local ScoreAction = GameBoardActionDataSet:createAs(
-			GameActionTargetType.kGameItemAction,
-			GameItemActionType.kItemScore_Get,
-			IntCoord:create(r, c),
-			nil,
-			1)
-		ScoreAction.addInt = addScore
-		mainLogic:addGameAction(ScoreAction)
+			local ScoreAction = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItemScore_Get,
+				IntCoord:create(r, c),
+				nil,
+				1)
+			ScoreAction.addInt = addScore
+			mainLogic:addGameAction(ScoreAction)
+		end
 
 		if item.bigMonsterFrostingStrength > 0 then 
 			item.bigMonsterFrostingStrength = item.bigMonsterFrostingStrength - 1
@@ -385,15 +401,17 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId)
 				SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 			end
 			
-			ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_BlackCuteBall)
-			local ScoreAction = GameBoardActionDataSet:createAs(
-				GameActionTargetType.kGameItemAction,
-				GameItemActionType.kItemScore_Get,
-				IntCoord:create(r, c),
-				nil,
-				1)
-			ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
-			mainLogic:addGameAction(ScoreAction)
+			if not noScore then
+				ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_BlackCuteBall)
+				local ScoreAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItemScore_Get,
+					IntCoord:create(r, c),
+					nil,
+					1)
+				ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
+				mainLogic:addGameAction(ScoreAction)
+			end
 			--add todo
 			local duringTime = 1
 			if item.blackCuteStrength == 0 then 

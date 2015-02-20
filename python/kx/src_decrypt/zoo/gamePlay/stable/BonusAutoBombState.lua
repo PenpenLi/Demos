@@ -31,6 +31,7 @@ function BonusAutoBombState:onExit()
 end
 
 function BonusAutoBombState:update(dt)
+	if self.isUpdateStopped then return end
 	self.waitCount = self.waitCount + 1
 	if self.waitCount < 120 then return end
 	

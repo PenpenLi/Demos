@@ -8,12 +8,12 @@ local kRewardQzoneItemNum = 2
 local staticUrlRoot = "http://downloadapk.manimal.happyelements.cn/"
 --不支持更新的平台
 local noSupportPlatforms = {
-	--PlatformNameEnum.kHE,
 	PlatformNameEnum.kCMCCMM,
 	PlatformNameEnum.kCUCCWO,
 	PlatformNameEnum.k189Store,
 	PlatformNameEnum.kCMGame,
 	PlatformNameEnum.kHEMM,
+	PlatformNameEnum.kMobileMM,
 }
 -- 新版本更新!!!
 UpdatePageagePanel = class(BasePanel)
@@ -46,7 +46,8 @@ function UpdatePageagePanel:init(btnPosInWorldSpace,tip)
 	tip = tip or tostring(UserManager:getInstance().updateInfo.tips) 
 
 	local version = tostring(UserManager:getInstance().updateInfo.version)
-	
+	local t = tostring(UserManager:getInstance().updateInfo.md5)
+
 	self.ui = self:buildInterfaceGroup('update_pageage_panel')
 	BasePanel.init(self, self.ui)
 
@@ -128,7 +129,7 @@ function UpdatePageagePanel:init(btnPosInWorldSpace,tip)
 
 		if self:isDownloadSupport() then
 			if __ANDROID then 
-				self:downloadApk(version)
+				self:downloadApk(version,t)
 			else
 				NewVersionUtil:gotoMarket()
 			end
@@ -234,7 +235,7 @@ function UpdatePageagePanel:getLpsChannel( ... )
 	return result
 end
 
-function UpdatePageagePanel:downloadApk(version,tryCount)
+function UpdatePageagePanel:downloadApk(version,t,tryCount)
 	
 	tryCount = tryCount or 3
 
@@ -245,7 +246,7 @@ function UpdatePageagePanel:downloadApk(version,tryCount)
 	local isMini = StartupConfig:getInstance():getSmallRes() and "mini." or ""
 	local lpsChannel = self:getLpsChannel()
 	local apkName = _G.packageName .. "." ..isMini.. tostring(version) .. "." .. androidPlarformName ..lpsChannel.. ".apk"
-	local apkUrl = staticUrlRoot .. "apk/" .. apkName .. "?t=" .. tostring(os.date("%y%m%d%H%M", os.time() or 0))
+	local apkUrl = staticUrlRoot .. "apk/" .. apkName .. "?t=" .. t --tostring(os.date("%y%m%d%H%M", os.time() or 0))
 	local md5Url = apkUrl:gsub("%.apk","%.md5")
 	local apkPath = FileUtils:getApkDownloadPath(MainActivityHolder.ACTIVITY:getContext()) .. 	"/" .. apkName
 
@@ -277,7 +278,7 @@ function UpdatePageagePanel:downloadApk(version,tryCount)
 
 		tryCount = tryCount - 1
 		if tryCount > 0 then 
-			self:downloadApk(version,tryCount)
+			self:downloadApk(version,t,tryCount)
 		else
 			if loading then 
 				self:removeLoading()
@@ -324,7 +325,7 @@ end
 local cacheMd5 = {}
 function UpdatePageagePanel:requestApkMd5( md5Url,callback )
 
-	local key = md5Url:gsub("%?t=%d+$","")
+	local key = md5Url:gsub("%?t=.+$","")
 	if cacheMd5[key] then
 		callback(cacheMd5[key])
 		return

@@ -45,10 +45,12 @@ end
 
 function IapBuyPropLogic:buy(data, successCallback, failCallback)
 	local function onSuccess()
-		local user = UserManager:getInstance()
-		local serv = UserService:getInstance()
-		user:addUserPropNumber(data.itemId, data.num)
-		serv:addUserPropNumber(data.itemId, data.num)
+		if data.itemId >= 10000 and data.itemId < 20000 and data.itemId ~= 10054 then
+			local user = UserManager:getInstance()
+			local serv = UserService:getInstance()
+			user:addUserPropNumber(data.itemId, data.num)
+			serv:addUserPropNumber(data.itemId, data.num)
+		end
 
 		local userExtend = UserManager:getInstance().userExtend
 		if userExtend then userExtend.payUser = true end

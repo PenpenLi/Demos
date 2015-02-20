@@ -63,8 +63,6 @@ function RequestMessageItemBase:init()
     local function onTouchConfirm(event) if self.panel then self.panel:setFocusedItem(self) end self:sendAccept(false) end
     self.cancel:ad(DisplayEvents.kTouchTap, onTouchCancel)
     self.confirm:ad(DisplayEvents.kTouchTap, onTouchConfirm)
-
-    self:buildSyncAnimation()
 end
 function RequestMessageItemBase:setPanelRef(ref)
     self.panel = ref
@@ -282,6 +280,13 @@ function FriendRequestItem:setData(requestInfo)
     self.requestInfo = requestInfo
 
     self.msg_text:setString(Localization:getInstance():getText("message.center.text1"))
+end
+function FriendRequestItem:sendAccept(isBatch)
+    if FriendManager:getInstance():getFriendCount() >= FriendManager:getInstance():getMaxFriendCount() then
+        CommonTip:showTip(Localization:getInstance():getText("error.tip.731014"), "negative")
+    else
+        RequestMessageItemBase.sendAccept(self, isBatch)
+    end
 end
 -- override super
 function EnergyRequestItem:setData(requestInfo)

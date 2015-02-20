@@ -2057,6 +2057,58 @@ Guides = table.const
 				{type = "swap", from = ccp(2, 7), to = ccp(2, 8)},
 			},
 		},
+	[190000] = {
+			appear = {
+				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "onceOnly"},
+				{type = "noPopup"},
+				{type = 'waitSignal', name = 'firstShowFirework', value = true}
+			},
+			action = {	
+			    [1] = {type = "showCustomizeArea", opacity = 0xCC, 
+					offsetX = -80, offsetY = -65, width = 150, height = 150,
+					text = "tutorial.game.text190001",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				}	
+			},
+			disappear = {
+			},
+		},
+	[190001] = {
+			appear = {
+				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "onceOnly"},
+				{type = "noPopup"},
+				{type = 'waitSignal', name = 'firstQuestionMark', value = true}
+			},
+			action = {	
+			    [1] = {type = "showTile", opacity = 0xCC, 
+					array = {[1] = {r = 1, c = 1, countR = 1, countC = 1 }}, 
+					offsetY = 4.5,
+					text = "tutorial.game.text190002",panType = "up", panAlign = "matrixD", panPosY = 4.5, panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},	
+			},
+			disappear = {
+			},
+		},
+	[190002] = {
+			appear = {
+				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "onceOnly"},
+				{type = "noPopup"},
+				{type = 'waitSignal', name = 'firstFullFirework', value = true}
+			},
+			action = {	
+			    [1] = {type = "showCustomizeArea", opacity = 0xCC, 
+					offsetX = -80, offsetY = -65, width = 150, height = 150, position = ccp(349, 131), --默认值
+					text = "tutorial.game.text190003",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				}
+			},
+			disappear = {
+			},
+		},
 --第496关，流沙说明
 	[4960] = {
 			appear = {

@@ -358,7 +358,8 @@ function GameExtandPlayLogic:getFurballValidAroundItems(mainLogic, centerItem)
 			and (tempItem.ItemType == GameItemType.kAnimal 
 				or tempItem.ItemType == GameItemType.kGift 
 				or tempItem.ItemType == GameItemType.kAddTime
-				or tempItem.ItemType == GameItemType.kCrystal)
+				or tempItem.ItemType == GameItemType.kCrystal
+				or tempItem.ItemType == GameItemType.kQuestionMark)
 			and not tempItem:hasFurball() 
 			and not tempItem.isBlock 
 			and tempItem:canBeCoverByMatch() then
@@ -677,7 +678,7 @@ end
 ---------------
 --地块削减一层
 ---------------
-function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale )
+function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale, noScore )
 	-- body
 	scoreScale = scoreScale or 1
 	local item = mainLogic.gameItemMap[r][c]
@@ -687,16 +688,18 @@ function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale )
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 	end
 
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigGround * scoreScale)
+	if not noScore then
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigGround * scoreScale)
 
-	local ScoreAction = GameBoardActionDataSet:createAs(
-		GameActionTargetType.kGameItemAction,
-		GameItemActionType.kItemScore_Get,
-		IntCoord:create(r, c),
-		nil,
-		1)
-	ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigGround * scoreScale
-	mainLogic:addGameAction(ScoreAction)
+		local ScoreAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemScore_Get,
+			IntCoord:create(r, c),
+			nil,
+			1)
+		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigGround * scoreScale
+		mainLogic:addGameAction(ScoreAction)
+	end
 
 	 local digGroudDecAction = GameBoardActionDataSet:createAs(
 	 		GameActionTargetType.kGameItemAction,
@@ -704,32 +707,38 @@ function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale )
 	 		IntCoord:create(r,c),
 	 		nil,
 	 		GamePlayConfig_GameItemDigGroundDeleteAction_CD)
+	 digGroudDecAction.cleanItem = item.digGroundLevel == 0 and true or false
 	 mainLogic:addDestroyAction(digGroudDecAction)
 end
 
 --------------------
 --宝石块削减一层
 --------------------
-function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale )
+function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale, noScore, isFromSpringBomb )
 	-- body
 	scoreScale = scoreScale or 1
 	local item = mainLogic.gameItemMap[r][c]
 	item.digJewelLevel = item.digJewelLevel -1
 
 	if item.digJewelLevel == 0 then
+		if mainLogic.theGamePlayType == 12 and not isFromSpringBomb then
+			mainLogic:chargeFirework(1, r, c)
+		end
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 	end
 
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigJewel * scoreScale)
+	if not noScore then
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigJewel * scoreScale)
 
-	local ScoreAction = GameBoardActionDataSet:createAs(
-		GameActionTargetType.kGameItemAction,
-		GameItemActionType.kItemScore_Get,
-		IntCoord:create(r, c),
-		nil,
-		1)
-	ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigJewel * scoreScale
-	mainLogic:addGameAction(ScoreAction)
+		local ScoreAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemScore_Get,
+			IntCoord:create(r, c),
+			nil,
+			1)
+		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigJewel * scoreScale
+		mainLogic:addGameAction(ScoreAction)
+	end
 	
 	local digJewelDecAction = GameBoardActionDataSet:createAs(
 	 		GameActionTargetType.kGameItemAction,
@@ -737,6 +746,7 @@ function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale )
 	 		IntCoord:create(r,c),
 	 		nil,
 	 		GamePlayConfig_GameItemDigJewelDeleteAction_CD)
+	digJewelDecAction.cleanItem = item.digJewelLevel == 0 and true or false
 	mainLogic:addDestroyAction(digJewelDecAction)
 end
 
@@ -1386,7 +1396,7 @@ function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , acti
 
 	if boss ~= nil and boss.blood > 0 and canBeEffectBySpecaial then
 		local addScore = 100
-		boss.digBlockCanbeDelete = false
+		-- boss.digBlockCanbeDelete = false
 		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -1397,6 +1407,12 @@ function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , acti
 		ScoreAction.addInt = addScore
 		mainLogic:addGameAction(ScoreAction)
 		local bloodLoseCount = isMatch and 1 or boss.speicial_hit_blood
+		-- hitCounter的增量不会超过boss当前血量
+		if boss.blood > bloodLoseCount then
+			boss.hitCounter = boss.hitCounter + bloodLoseCount
+		else
+			boss.hitCounter = boss.hitCounter + boss.blood
+		end
 
 		boss.blood = boss.blood - bloodLoseCount
 		if boss.blood < 0 then boss.blood = 0 end
@@ -1556,7 +1572,7 @@ function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 			end 
 		end
 	end
-
+	
 	for k, v in pairs(brokenHoneyBottle) do 
 		local infectList = {}
 		for k = 1, mainLogic.honeys do 
@@ -1721,3 +1737,360 @@ function GameExtandPlayLogic:checkSandToTransfer( mainLogic, callback )
 	end
 	return result
 end
+
+-- useOtherRows:如果指定的行内找不到足够的位置，是否使用其他行填补空缺
+function GameExtandPlayLogic:getNormalPositionsForBoss(mainLogic, count, fromRow, toRow, banList, useOtherRows)
+    local function isNormal(item)
+        if item.ItemType == GameItemType.kAnimal
+        and item.ItemSpecialType == 0 -- not special
+        and item:isAvailable()
+        and not item:hasLock() 
+        and not item:hasFurball()
+        then
+            return true
+        end
+        return false
+    end
+
+	local function isBanned(r, c, banList)
+		for k, v in pairs(banList) do
+			if r == v.r and c == v.c then
+				return true
+			end
+		end
+		return false
+	end
+
+	if not fromRow then fromRow = 1 end
+	if not toRow then toRow = 9	end
+	if not count then count = 1 end
+	if not useOtherRows then useOtherRows = true end
+	if not banList or type(banList) ~= 'table' then banList = {} end
+
+	local gameItemMap = mainLogic.gameItemMap
+
+	local availablePos = {}
+	for r = fromRow, toRow do
+		for c = 1, #gameItemMap[r] do
+			local item = gameItemMap[r][c]
+			if isNormal(item) and not isBanned(r, c, banList) then
+				table.insert(availablePos, {r=r, c=c})
+			end
+		end
+	end
+
+	if #availablePos < count and useOtherRows then
+		local backupPos = {}
+		for r = 1, #gameItemMap do
+			if r < fromRow or r > toRow then
+				for c = 1, #gameItemMap[r] do
+					local item = gameItemMap[r][c]
+					if isNormal(item) and not isBanned(r, c, banList) then
+						table.insert(backupPos, {r=r, c=c})
+					end
+				end
+			end
+		end
+		
+		-- 为了兼容如果其他行也不够的情况
+		local result = table.clone(availablePos)
+		local backupCount = math.min(count - #availablePos, #backupPos)
+		for i = 1, backupCount do
+			local index = mainLogic.randFactory:rand(1, #backupPos)
+			table.insert(result, backupPos[index])
+			table.remove(backupPos, index)
+		end
+		return result
+	end
+
+
+	if #availablePos < count then
+		return availablePos
+	else
+		local result = {}
+		for i = 1, count do 
+			local index = mainLogic.randFactory:rand(1, #availablePos)
+			table.insert(result, availablePos[index])
+			table.remove(availablePos, index)
+		end
+		return result
+	end
+
+end
+
+function GameExtandPlayLogic:checkBossCasting(mainLogic, callback)
+
+
+	local counter = 0
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			if gameItemMap[r][c].ItemType == GameItemType.kBoss and gameItemMap[r][c].bossLevel > 0  then
+				local boss = gameItemMap[r][c]
+				local buffBlood = BossConfig[boss.bossLevel].buffBlood
+				local buffRate = BossConfig[boss.bossLevel].buffRate
+				local buffNum = BossConfig[boss.bossLevel].buffNum
+				local buffLimit = BossConfig[boss.bossLevel].buffLimit
+
+				
+				if boss.hitCounter >= buffBlood then
+					-- local genCount = math.floor(boss.hitCounter / buffBlood) * buffNum
+					local genCount = math.floor(boss.hitCounter / buffBlood)
+					-- print('genCount', genCount)
+					local targetPositions = {}
+					for i = 1, genCount do 
+						local rand = mainLogic.randFactory:rand(1, 100) / 100
+						-- print(rand, buffRate)
+						if rand <= buffRate then
+							local randCount = 0
+							local rand2 = mainLogic.randFactory:rand(1, 100)
+							if rand2 >= 0 and rand2 < 60 then
+								randCount = 1
+							elseif rand2 >= 60 and rand2 < 90 then
+								randCount = 2
+							elseif rand2 >= 90 and rand2 <= 100 then
+								randCount = 3
+							end
+
+							print('randCount', rand2, randCount)
+
+							local result = GameExtandPlayLogic:getNormalPositionsForBoss(mainLogic, randCount, 6, 9, targetPositions)
+							for k, v in pairs(result) do 
+								table.insert(targetPositions, v)
+							end
+						end
+					end
+					-- 最多只保留buffLimit个
+					if #targetPositions > buffLimit then
+						local tmp = {}
+						for i=1, buffLimit do 
+							table.insert(tmp, targetPositions[i])
+						end
+						targetPositions = tmp
+					end
+
+					print('finalCount', #targetPositions)
+
+					if #targetPositions > 0 then
+						counter = counter + 1
+						local action = GameBoardActionDataSet:createAs(
+							GameActionTargetType.kGameItemAction,
+							GameItemActionType.kItem_mayday_boss_casting,
+							IntCoord:create(r, c),
+							nil,
+							GamePlayConfig_MaxAction_time)
+						action.targetPositions = targetPositions
+						action.completeCallback = callback
+						mainLogic:addGameAction(action)
+					end
+					boss.hitCounter = boss.hitCounter - genCount * buffBlood
+				end
+			end
+		end
+	end
+	return counter
+end
+
+function GameExtandPlayLogic:testRateOfQuestionMark( mainLogic, r, c )
+	local tableRate = {}
+	for i = 1, 100 do 
+		local v = GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
+		local changeType = v.changeType
+		local changeItem = v.changeItem
+		if changeType == UncertainCfgConst.kCanFalling then
+			local tile = changeItem + 1
+			if tile == TileConst.kGreyCute then 
+				if not tableRate.kGrey then  
+					tableRate.kGrey = 0 
+				end 
+				tableRate.kGrey = tableRate.kGrey + 1 
+			elseif tile == TileConst.kBrownCute then 
+				if not tableRate.kBrownCute then  
+					tableRate.kBrownCute = 0 
+				end 
+				tableRate.kBrownCute = tableRate.kBrownCute + 1
+			elseif tile == TileConst.kBlackCute then 
+				if not tableRate.kBlackCute then  
+					tableRate.kBlackCute = 0 
+				end 
+				tableRate.kBlackCute = tableRate.kBlackCute + 1
+			elseif tile == TileConst.kCoin then 
+				if not tableRate.kCoin then  
+					tableRate.kCoin = 0 
+				end 
+				tableRate.kCoin = tableRate.kCoin + 1
+			elseif tile == TileConst.kCrystal then 
+				if not tableRate.kCrystal then  
+					tableRate.kCrystal = 0 
+				end 
+				tableRate.kCrystal = tableRate.kCrystal + 1
+			elseif tile == TileConst.kAddMove then 
+				if not tableRate.kAddMove then  
+					tableRate.kAddMove = 0 
+				end 
+				tableRate.kAddMove = tableRate.kAddMove + 1
+			end
+		elseif changeType == UncertainCfgConst.kCannotFalling then
+			local tile = changeItem + 1
+			if tile == TileConst.kPoison then 
+				if not tableRate.kPoison then  
+					tableRate.kPoison = 0 
+				end 
+				tableRate.kPoison = tableRate.kPoison + 1  
+			elseif tile == TileConst.kPoisonBottle then 
+				if not tableRate.kPoisonBottle then  
+					tableRate.kPoisonBottle = 0 
+				end 
+				tableRate.kPoisonBottle = tableRate.kPoisonBottle + 1 
+			elseif tile == TileConst.kDigJewel_1_blue then 
+				if not tableRate.kDigJewel_1_blue then  
+					tableRate.kDigJewel_1_blue = 0 
+				end 
+				tableRate.kDigJewel_1_blue = tableRate.kDigJewel_1_blue + 1 
+			elseif tile == TileConst.kDigJewel_2_blue then 
+				if not tableRate.kDigJewel_2_blue then  
+					tableRate.kDigJewel_2_blue = 0 
+				end 
+				tableRate.kDigJewel_2_blue = tableRate.kDigJewel_2_blue + 1 
+			elseif tile == TileConst.kDigJewel_3_blue then 
+				if not tableRate.kDigJewel_3_blue then  
+					tableRate.kDigJewel_3_blue = 0 
+				end 
+				tableRate.kDigJewel_3_blue = tableRate.kDigJewel_3_blue + 1 
+			end
+		elseif changeType == UncertainCfgConst.kSpecial then
+			local specialType = AnimalTypeConfig.getSpecial(changeItem)
+			if specialType == AnimalTypeConfig.kLine then
+				if not tableRate.kLine then  
+					tableRate.kLine = 0 
+				end 
+				tableRate.kLine = tableRate.kLine + 1 
+			elseif specialType == AnimalTypeConfig.kColumn then
+				if not tableRate.kColumn then  
+					tableRate.kColumn = 0 
+				end 
+				tableRate.kColumn = tableRate.kColumn + 1 
+
+			elseif specialType == AnimalTypeConfig.kWrap then
+				if not tableRate.kWrap then  
+					tableRate.kWrap = 0 
+				end 
+				tableRate.kWrap = tableRate.kWrap + 1 
+
+			elseif specialType == AnimalTypeConfig.kColor then
+				if not tableRate.kColor then  
+					tableRate.kColor = 0 
+				end 
+				tableRate.kColor = tableRate.kColor + 1 
+
+			end
+		end
+		
+
+
+	end
+	for k, v in pairs(tableRate) do
+		print(k, v)
+	end
+end
+
+function GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
+	-- body
+	local item = mainLogic.gameItemMap[r][c]
+	local itemList = nil
+	local isOnlyFallingItem
+	if item.ItemStatus == GameItemStatusType.kNone
+		or item.ItemStatus == GameItemStatusType.kItemHalfStable then
+		itemList = item.isProductByBossDie and mainLogic.uncertainCfg2.allItemList or mainLogic.uncertainCfg1.allItemList
+		isOnlyFallingItem = false
+	else
+		isOnlyFallingItem = true
+		-- print(r, c)
+		-- debug.debug()
+		itemList = item.isProductByBossDie and mainLogic.uncertainCfg2.canfallingItemList or mainLogic.uncertainCfg1.canfallingItemList
+	end
+
+	if itemList and #itemList > 0 then
+		local total = isOnlyFallingItem and itemList[#itemList].limitInCanFallingItem or itemList[#itemList].limitInAllItem
+		local randValue = mainLogic.randFactory:rand(1, total)
+		for k = 1, #itemList do 
+			local limit = isOnlyFallingItem and itemList[k].limitInCanFallingItem or itemList[k].limitInAllItem
+			if randValue <= limit then
+				return itemList[k]
+			end
+		end
+
+	else
+		return nil
+	end
+	
+end
+
+function GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
+	-- body
+	local item = mainLogic.gameItemMap[r][c]
+	local selected = GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
+	while mainLogic.questionMarkFirstBomb do  ----------------------------游戏第一次福袋爆炸不能产生褐色毛球和章鱼
+		if selected.changeItem + 1 == TileConst.kPoisonBottle 
+			or selected.changeItem + 1 == TileConst.kBrownCute then
+			selected = GameExtandPlayLogic:getChangeItemSelected(mainLogic, r, c)
+		else
+			mainLogic.questionMarkFirstBomb = false
+		end
+	end
+	if selected then 
+		mainLogic.addMoveBase = mainLogic.addMoveBase > 0 and mainLogic.addMoveBase or 5
+		item:changeItemFromQuestionMark(selected.changeType, selected.changeItem, mainLogic:randomColor(), mainLogic.addMoveBase)
+		if not mainLogic.hasQuestionMarkProduct then
+			mainLogic.hasQuestionMarkProduct = true
+			local action = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_QuestionMark_Protect,
+			nil,
+			nil,
+			GamePlayConfig_MaxAction_time)
+			mainLogic:addDestroyAction(action)
+		end
+		item.questionMarkProduct = 2
+		mainLogic:checkItemBlock(r, c)
+	else
+		item:cleanAnimalLikeData()
+	end
+end
+
+function GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
+	-- body
+	local item = mainLogic.gameItemMap[r][c]
+	GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
+	GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
+	mainLogic.swapHelpMap[r][c] = -mainLogic.swapHelpMap[r][c]
+
+	local boardView = mainLogic.boardView
+	local itemView = boardView.baseMap[r][c]
+	itemView:playQuestionMarkDestroy()
+	if item.ClippingPosAdd.y > 0 then
+		itemView:FallingDataIntoClipping(item)
+		local boardData = mainLogic.boardmap[r][c]
+		local r1 = boardData.passEnterPoint_x
+		local c1 = boardData.passEnterPoint_y
+		if r1 > 0 and c1 > 0 then
+			local exitItem = boardView.baseMap[r1][c1]
+			exitItem:FallingDataOutOfClipping(item)
+		end
+	else
+		itemView:initByItemData(item)
+	end
+	itemView:upDatePosBoardDataPos(item)
+	mainLogic.gameItemMap[r][c].isNeedUpdate = true
+
+	--add score
+	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Question_Mark_Destory)
+	local ScoreAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemScore_Get,
+		IntCoord:create(r, c),
+		nil,
+		1)
+	ScoreAction.addInt = GamePlayConfig_Score_Question_Mark_Destory
+	mainLogic:addGameAction(ScoreAction)
+end 

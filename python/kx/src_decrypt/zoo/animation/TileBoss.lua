@@ -8,7 +8,8 @@ local animationList = table.const
 	kDestroy = 2,
 	kDisappear = 3,
 	kComeout = 4,
-	kHit = 5
+	kHit = 5,
+	kCast = 6,
 }
 
 --使用的boss类型，方便换皮
@@ -36,6 +37,15 @@ BossType = table.const
 		hit = {name = 'boss_turkey_hit', frame = 30},
 		destroy = {name = 'boss_turkey_destroy', frame = 30},
 		cage = nil,
+	},
+	kSheep = 
+	{
+		name = 'sheep',
+		normal = {name = 'boss_sheep_normal', frame = 40},
+		hit = {name = 'boss_sheep_hit', frame = 40},
+		destroy = {name = 'boss_sheep_destroy', frame = 26},
+		cast = {name = 'boss_sheep_cast', frame = 40},
+
 	},
 }
 
@@ -87,6 +97,16 @@ end
 
 function TileBoss:createBloodBar()
 	local blood = Sprite:createEmpty()
+
+	local dangerBg = Sprite:createWithSpriteFrameName("boss_blood_danger_0000")
+	dangerBg:setAnchorPoint(ccp(0.5, 0.5))
+	dangerBg:setScaleY(0.9)
+	dangerBg:setScaleX(1)
+	dangerBg:setPosition(dangerBg:getGroupBounds().size.width / 2 - 6, -1)
+    blood:addChild(dangerBg)
+    dangerBg:setOpacity(0)
+    self.dangerBg = dangerBg
+
 	local bloodbg = Sprite:createWithSpriteFrameName("boss_blood_bar_0000")
 	bloodbg:setAnchorPoint(ccp(0, 0.5))
 	blood:addChild(bloodbg)
@@ -99,6 +119,9 @@ function TileBoss:createBloodBar()
 	bloodfg_mask:setAnchorPoint(ccp(0, 0.5))
 	bloodfg:setAnchorPoint(ccp(0, 0.5))
 	clipingnode:addChild(bloodfg)
+
+
+
 
 	blood:addChild(clipingnode)
 	self:addChild(blood)
@@ -123,7 +146,9 @@ function TileBoss:setBloodPercent(percent, isPlayAnimation)
 		else
 			self.bloodBar:setPosition(ccp((percent - 1) * self.bloodBarWidth + OFFSET_X, 0))
 		end
-
+		if percent <= 0.3 then
+			self:playDangerEffect()
+		end
 		
 	end
 end
@@ -161,6 +186,60 @@ function TileBoss:destroy(callback)
 	self.currentAnimation = animationList.kDestroy
 	self:createDestroyAnimation(animationComplete)
 	
+end
+
+function TileBoss:cast(callback)
+	local function animationComplete()
+		if callback then callback() end
+		self:normal()
+	end
+	self:reset()
+	self.currentAnimation = animationList.kDestroy
+	self:createCastingAnimation(animationComplete)
+end
+
+function TileBoss:createCastingAnimation(animationComplete)
+	local frames = SpriteUtil:buildFrames(self.bossType.cast.name.."_%04d", 0, self.bossType.hit.frame)
+	local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
+	self.boss:play(animate, 0, 1, animationComplete)
+
+	local action_delay = CCDelayTime:create(0.6)
+	local height = self.fg:getGroupBounds().size.height/2
+	local action_jump = CCJumpBy:create(0.3, ccp(0, 0), height, 1)
+	self.fg:runAction(CCSequence:createWithTwoActions(action_delay, action_jump))
+
+	local max = 5
+	local offset_angle = 30
+	local pos_list = {ccp(-70, 70), ccp(-70, 35), ccp(-70, 0), ccp(70, 0), ccp(70, 20)}
+	local scale_list = {1, 0.5, 0.7, 0.5, 0.4}
+
+	self.star = Sprite:createEmpty()
+	self:addChild(self.star)
+	for k = 1, max do
+		local star = Sprite:createWithSpriteFrameName("boss_star")
+		local function actionRemove()
+			if star then star:removeFromParentAndCleanup(true) end
+		end
+
+		local angle = (k - max/2) * offset_angle
+		local move_action = CCEaseOut:create(CCMoveTo:create(0.5, pos_list[k]), 2) 
+		local arr_move = CCArray:create()
+		arr_move:addObject(CCFadeIn:create(0.1))
+		arr_move:addObject(CCDelayTime:create(0.2))
+		arr_move:addObject(CCFadeOut:create(0.2))
+		local fade_action = CCSequence:create(arr_move)
+		local action = CCSpawn:createWithTwoActions(move_action, fade_action)
+		local arr = CCArray:create()
+		arr:addObject(CCDelayTime:create(0.6))
+		arr:addObject(action)
+		arr:addObject(CCCallFunc:create(actionRemove))
+		star:runAction(CCSequence:create(arr))
+		self.star:addChild(star)
+		local size = self.fg:getGroupBounds().size
+		star:setPosition(ccp(0, -(GamePlayConfig_Tile_Height - size.height/2)))
+		star:setOpacity(0)
+		star:setScale(scale_list[k])
+	end
 end
 
 function TileBoss:addClippingNode()
@@ -275,7 +354,6 @@ function TileBoss:createDisAppearAnimation(animationComplete)
 		self.container:setPosition(ccp(GamePlayConfig_Tile_Width, GamePlayConfig_Tile_Height))
 		if animationComplete then animationComplete() end
 	end
-
 	self.container:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(0.6, ccp(0, -2*GamePlayConfig_Tile_Height)), CCCallFunc:create(callback)))
 end
 
@@ -376,6 +454,8 @@ function TileBoss:createDestroyAnimation(animationComplete)
 
 	local frames = SpriteUtil:buildFrames(self.bossType.destroy.name.."_%04d", 0, self.bossType.destroy.frame)
 	local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
+	-- 春节boss增加的offset 下次删掉
+	self.boss:setPositionY(self.boss:getPositionY()+25)
 	self.boss:play(animate, 0, 1, completeCallback)
 
 	--bg_cloud
@@ -531,4 +611,12 @@ function TileBoss:createZZZ()
 	local nodeAction = CCRepeatForever:create(CCSequence:createWithTwoActions(CCCallFunc:create(playOnce), CCDelayTime:create(2)))
 	node:runAction(nodeAction)
 	return node	
+end
+
+function TileBoss:playDangerEffect()
+	if not self.isInDanger then
+		local action = CCRepeatForever:create(CCSequence:createWithTwoActions(CCFadeIn:create(1), CCFadeOut:create(1)))
+		self.dangerBg:runAction(action)
+		self.isInDanger = true
+	end
 end

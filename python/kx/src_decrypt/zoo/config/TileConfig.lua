@@ -98,6 +98,9 @@ TileConst = table.const
 	kAddTime	= 90, 	--增加时间的动物
 	kMagicTile = 91,	-- 万圣节魔法地格
 	kSand = 92, 	-- 流沙
+	-----------------------------------------------这里开始地图使用新的数据结构
+	kQuestionMark = 93,  --问号
+
 	kMaxTile = 100,		--
 	kInvalid = -1,		--
 }
@@ -156,6 +159,13 @@ RouteConst = table.const{
 
 	kMaxTile = 8,		--
 	kInvalid = -1,		--
+}
+
+---问号障碍可以生成的类型
+UncertainCfgConst = table.const{
+	kCanFalling = 1,      ------可以掉落的
+	kCannotFalling = 2,   ------不能掉落
+	kSpecial = 3,         ------特效
 }
 
 function AnimalTypeConfig.getType(value)

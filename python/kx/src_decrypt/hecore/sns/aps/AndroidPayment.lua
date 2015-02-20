@@ -214,7 +214,17 @@ function AndroidPayment:getPaymentsChoosement()
 	if cmPaymentChoosement and cmPaymentChoosement ~= Payments.UNSUPPORT then result[cmPaymentChoosement] = true end
 
 	for i, v in ipairs(self.thirdPartyPayment) do
-		result[v] = true
+		if v == PlatformPaymentThirdPartyEnum.kWECHAT then 
+			if PlatformConfig:isWechatPaySupport() then 
+				result[v] = true
+			end
+		elseif v == PlatformPaymentThirdPartyEnum.kALIPAY then 
+			if PlatformConfig:isAliPaySupport() then 
+				result[v] = true
+			end
+		else
+			result[v] = true
+		end
 	end
 
 	return result

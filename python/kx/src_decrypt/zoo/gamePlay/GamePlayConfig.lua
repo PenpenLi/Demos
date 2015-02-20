@@ -197,6 +197,7 @@ GamePlayConfig_Score_MatchAt_DigJewel = 1500				----消除宝石块得分
 GamePlayConfig_Score_MatchAt_BlackCuteBall = 5              ----消除一层黑色毛球的得分
 GamePlayConfig_Score_Collect_Snail = 10000                  ----收集蜗牛
 GamePlayConfig_Score_Sand_Clean = 1000 						----消除流沙
+GamePlayConfig_Score_Question_Mark_Destory = 1000           ----消除问号障碍得分
 
 GamePlayConfig_Score_MatchDeleted_UP_Time = 20* GamePlayConfig_Action_FPS_Time_Scale				----分数弹起的时间
 GamePlayConfig_Score_MatchDeleted_Stop_Time = 25* GamePlayConfig_Action_FPS_Time_Scale			----分数在空中停留的时间

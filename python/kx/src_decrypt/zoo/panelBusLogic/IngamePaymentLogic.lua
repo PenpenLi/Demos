@@ -131,8 +131,17 @@ function IngamePaymentLogic:getPaymentDecision()
 		return self:getThirdPartPaymentDecision()
 	else
 		local thirdPartPayment = AndroidPayment.getInstance():getThirdPartPayment()
-		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY 
-			or thirdPartPayment == PlatformPaymentThirdPartyEnum.kMI then
+		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY then 
+			-- 如果是联通三网集成方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
+			local operator = AndroidPayment.getInstance():getOperator()
+			if operator == TelecomOperators.CHINA_MOBILE or 
+			   operator == TelecomOperators.CHINA_UNICOM or
+			   operator == TelecomOperators.CHINA_TELECOM then 
+				return self:getThirdPartPaymentDecision()
+			else
+				return IngamePaymentDecisionType.kChoosePayment
+			end
+		elseif thirdPartPayment == PlatformPaymentThirdPartyEnum.kMI then
 			-- 如果是联通三网集成/米币支付方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
 			return self:getThirdPartPaymentDecision()
 		else

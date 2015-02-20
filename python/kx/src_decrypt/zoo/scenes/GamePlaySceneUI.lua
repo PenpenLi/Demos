@@ -295,6 +295,15 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, ...)
 		end
 	end
 
+	-- 春节爆竹必须要在第三个
+	if self.levelModeType == 'MaydayEndless' then
+		local springItem = {}
+		springItem.itemId = 9999
+		springItem.itemNum = 0
+		springItem.temporary = 0
+		table.insert(addToBarProps, 3, springItem)
+	end
+
 	assert(inGameProp)
 
 	-- -----------
@@ -330,6 +339,7 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, ...)
 	self.propList:registerUsePropCallback(usePropCallback)
 	self.propList:registerCancelPropUseCallback(cancelPropUseCallback)
 	self.propList:registerBuyPropCallback(buyPropCallback)
+	self.propList:registerSpringItemCallback(function () self:useSpringItemCallback() end)
 
 	local levelTargetLayer 	= CocosObject:create()
 	self.levelTargetLayer	= levelTargetLayer
@@ -623,6 +633,8 @@ function GamePlaySceneUI:sendQuitLevelMessage(levelId, totalScore, starLevel, st
 end
 
 function GamePlaySceneUI:onPauseBtnTapped(...)
+
+
 	assert(#{...} == 0)
 	
 	self:pause()
@@ -815,7 +827,7 @@ function GamePlaySceneUI:passLevel(levelId, score, star, stageTime, coin, target
 			rewardItems = tmp
 		elseif levelType == GameLevelType.kMayDay then
 			local tmp = {}
-			table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
+			-- table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
 			table.insert(tmp, {itemId = ItemType.XMAS_BELL, num = targetCount})
 			table.insert(tmp, rewardItems[1])
 			rewardItems = tmp
@@ -994,6 +1006,16 @@ function GamePlaySceneUI:failLevel(levelId, score, star, stageTime, coin, target
 	assert(not self.levelFinished, "only call this function one time !")
 	if not self.levelFinished then
 		self.levelFinished = true
+	end
+
+	if levelType == GameLevelType.kMayDay and star > 0 then
+		GamePlayEvents.dispatchPassLevelEvent(
+			{
+				levelType=self.levelType, 
+				levelId=self.levelId, 
+				rewardsIdAndPos={{itemId = 11, num = targetCount}}, 
+				isPlayNextLevel=false
+			})
 	end
 
 	local function onPassLevelMsgSuccess(event)
@@ -1895,4 +1917,63 @@ function GamePlaySceneUI:promptBackProp()
 	end
 	setTimeOut(remove, 5)
 
+end
+
+function GamePlaySceneUI:setFireworkPercent(percent)
+	self.propList:setSpringItemPercent(percent)
+end
+
+function GamePlaySceneUI:useSpringItemCallback()
+	self.gameBoardLogic:useFirecracker()
+end
+
+function GamePlaySceneUI:playSpringCollectEffect(itemPosition)
+	local targetPosition = self.propList:getSpringItemGlobalPosition()
+	local r = 16 + math.random() * 10
+	local batch = self
+	local localPosition = batch:convertToNodeSpace(itemPosition)
+	for i = 1, 20 do	
+		if math.random() > 0.6 then
+			local angle = i * 36 * 3.1415926 / 180
+			local x = localPosition.x + math.cos(angle) * r
+			local y = localPosition.y + math.sin(angle) * r
+			local sprite = SpriteColorAdjust:createWithSpriteFrameName("game_collect_small_star0000")
+			sprite:adjustColor(1, 1,-0.05,0.1)
+        	sprite:applyAdjustColorShader()
+			sprite:setPosition(ccp(localPosition.x, localPosition.y))
+			sprite:setScale(math.random()*1.5 + 1)
+			sprite:setOpacity(0)
+			local moveTime = 0.3 + math.random() * 0.64
+			local moveTo = CCMoveTo:create(moveTime, ccp(targetPosition.x + math.random(1, 10), targetPosition.y + math.random(1, 10)))
+			local function onMoveFinished( ) sprite:removeFromParentAndCleanup(true) end
+			local moveIn = CCEaseElasticOut:create(CCMoveTo:create(0.25, ccp(x, y)))
+			local array = CCArray:create()
+			array:addObject(CCSpawn:createWithTwoActions(moveIn, CCFadeIn:create(0.25)))
+			array:addObject(CCEaseSineIn:create(moveTo))
+			array:addObject(CCFadeOut:create(0.2))
+			array:addObject(CCCallFunc:create(onMoveFinished))
+			sprite:runAction(CCSequence:create(array))
+			batch:addChild(sprite)
+		end
+	end
+end
+
+function GamePlaySceneUI:tryFirstFullFirework()
+	if GameGuide then
+		local pos = self.propList:getSpringItemGlobalPosition()
+        GameGuide:sharedInstance():tryFirstFullFirework(pos)
+    end
+end
+
+function GamePlaySceneUI:playFirstShowFireworkGuide()
+	if GameGuide then
+        local pos = self.propList:getSpringItemGlobalPosition()
+        GameGuide:sharedInstance():onFirstShowFirework(pos)
+    end
+end
+
+function GamePlaySceneUI:tryFirstQuestionMark(mainLogic)
+	if GameGuide then
+		GameGuide:sharedInstance():tryFirstQuestionMark(mainLogic)
+	end
 end

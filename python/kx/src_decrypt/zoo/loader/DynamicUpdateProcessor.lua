@@ -123,6 +123,15 @@ local function addSpriteFramesWithFile( plistFilename, textureFileName )
     return realPngPath, realPlistPath
 end
 
+function Processor:addForCuccwo(parent)
+    if StartupConfig:getInstance():getPlatformName() == "cuccwo" then 
+        self.cuccwoPng = addSpriteFramesWithFile( "materials/cuccwo.plist", "materials/cuccwo.png" )
+        local cuccwo = CCSprite:createWithSpriteFrameName("cuccwo10000")
+        cuccwo:setPosition(ccp(720,920))
+        parent:addChild(cuccwo)
+    end
+end
+
 function Processor:buildStartupUI()
     print("buildStartupUI")
     local scene = CCScene:create()
@@ -130,6 +139,7 @@ function Processor:buildStartupUI()
     local origin = CCDirector:sharedDirector():getVisibleOrigin()
     local logoPng = addSpriteFramesWithFile( "materials/logo.plist", "materials/logo.png" )
     local logo = CCSprite:createWithSpriteFrameName("logo.png")
+    self:addForCuccwo(logo)
     local logoSize = logo:getContentSize()
     local scale = winSize.height/logoSize.height
     logo:setScale(scale)

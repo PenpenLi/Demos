@@ -109,6 +109,7 @@ _G.__midAutumnFestivalUpdate = true
 _G.__GuoQingUpdate = true
 _G.__ThanksgivingUpdate = true
 _G.__ChristmasUpdate = true
+_G.__SpringFes2015Update = true
 require 'zoo.common.LeaderBoardSubmitUtil'
 
 
@@ -1462,6 +1463,10 @@ end
 function HomeScene:startLadyBug(...)
 	assert(#{...} == 0)
 
+	self.ladybugButton	= LadybugButton:create()
+	self.leftRegionLayoutBar:addItem(self.ladybugButton)
+	self.ladybugButton:setVisible(false)
+
 	local placeholderPanel = CocosObject:create()
 	placeholderPanel.popoutShowTransition = function ( ... )
 		-- Color Layer TO Block The Input
@@ -1487,9 +1492,6 @@ function HomeScene:startLadyBug(...)
 			self:popoutLadyBugPanel()
 		end
 
-		self.ladybugButton	= LadybugButton:create()
-		self.leftRegionLayoutBar:addItem(self.ladybugButton)
-		self.ladybugButton:setVisible(false)
 		self.ladybugButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onLadyBugBtnTapped)
 
 		-- Get The Lady Bug Anim Button Pos

@@ -10,6 +10,7 @@ require "zoo.util.SignatureUtil"
 require "zoo.util.AlertDialogImpl"
 require "zoo.data.RecallManager"
 require "zoo.data.LocalNotificationManager"
+require "zoo.data.WorldSceneShowManager"
 
 kWindowFrameRatio = table.const{
 	iPhone5 = {name="iPhone5", r=1136/640}, --1.775

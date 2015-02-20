@@ -201,6 +201,16 @@ function ActivityScene:onInit(Scene, ...)
 	
 	self.builder = InterfaceBuilder:createWithContentsOfFile("ui/activity_panel.json")
 	
+	self.inAcitivtyTime = WorldSceneShowManager:getInstance():isInAcitivtyTime() 
+	if self.inAcitivtyTime then
+		local plistPath = "ui/activitySpringFestival_panel.plist"
+		if __use_small_res then  
+			plistPath = table.concat(plistPath:split("."),"@2x.")
+		end
+		CCSpriteFrameCache:sharedSpriteFrameCache():removeSpriteFramesFromFile(plistPath)
+		CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
+	end
+
 	-- local panelUI = self.builder:buildGroup("activity_panel")
 	-- panelUI:setPositionXY(visibleOrigin.x,visibleOrigin.y + visibleSize.height)
 
@@ -559,6 +569,28 @@ function ActivityScene:buildItem( idx )
 		item:addChildAt(more,1)
 	end
 
+	if self.inAcitivtyTime then 
+		-- 25,25
+		for i,v in ipairs({
+			ccp(25,-25),
+			ccp(bgBoundingBox.size.width-25,-25),
+			ccp(bgBoundingBox.size.width-25,-(bgBoundingBox.size.height - 25)),
+			ccp(25,-(bgBoundingBox.size.height - 25))
+		}) do
+			local frame = CCSprite:createWithSpriteFrameName("imgs/activity_item_frame0000")
+			frame:setPosition(ccp(46,0))
+			frame:setAnchorPoint(ccp(1,0))
+
+			local container = CocosObject:create()
+			container:setContentSize(CCSizeMake(46,46))
+			container:addChild(CocosObject.new(frame))
+
+			container:setAnchorPoint(ccp(0.5,0.5))
+			container:setPosition(v)
+			container:setRotation((i-1)*90) 
+			item:addChild(container)
+		end
+	end
 	return item
 end
 

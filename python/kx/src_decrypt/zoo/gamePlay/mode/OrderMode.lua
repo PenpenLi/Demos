@@ -24,10 +24,19 @@ end
 function OrderMode:useMove()
     if self._isWaitingBackProp then
         -- fail level
+        self._isVenomFail = true
         self:setFailReason('venom')
-        self.mainLogic:setGamePlayStatus(GamePlayStatus.kFailed)
+        -- self.mainLogic:setGamePlayStatus(GamePlayStatus.kFailed)
     end
     MoveMode.useMove(self)
+end
+
+function OrderMode:afterFail()
+    if self._isWaitingBackProp then
+        self.mainLogic:setGamePlayStatus(GamePlayStatus.kFailed)
+    else
+        MoveMode.afterFail(self)
+    end
 end
 
 function OrderMode:reachEndCondition()
@@ -44,7 +53,12 @@ function OrderMode:reachEndCondition()
         -- 还是要等待回退道具
         self._isWaitingBackProp = true
     else
-        return  MoveMode.reachEndCondition(self) or self:checkOrderListFinished()
+
+        if self._isVenomFail then
+            return true
+        else
+            return  MoveMode.reachEndCondition(self) or self:checkOrderListFinished()
+        end
     end
 end
 

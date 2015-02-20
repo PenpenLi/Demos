@@ -116,6 +116,8 @@ GameItemActionType = table.const	--Item自动播放动画细节
 	kItem_Halloween_Boss_Casting = 115,
 	kItem_Sand_Clean	= 116,			-- 流沙消除
 	kItem_Sand_Transfer	= 117,			-- 流沙流动
+	kItem_mayday_boss_casting = 118,    -- 活动boss发大招
+	kItem_QuestionMark_Protect = 119,   -- 问号障碍变成其他障碍时保护
 }
 
 GamePropsActionType = table.const 	--游戏道具播放动画细节

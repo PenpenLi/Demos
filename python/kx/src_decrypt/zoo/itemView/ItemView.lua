@@ -31,6 +31,7 @@ require "zoo.animation.TileHoney"
 require "zoo.animation.TileAddTime"
 require "zoo.animation.TileMagicTile"
 require "zoo.animation.TileSand"
+require "zoo.animation.TileQuestionMark"
 
 ItemView = class{}
 
@@ -43,32 +44,34 @@ ItemSpriteType = table.const
 	kBackground = 1,		-- 地格--------添加层次时请保持这个在最后
 	kTileBlocker = 2,       -- 翻转地格, 传送带, 海洋生物
 	kSnailRoad = 3,         --蜗牛轨迹
-	kRabbitCaveDown = 4,    --兔子洞穴
+	kRabbitCaveDown = 4,    --兔子洞穴, 问号爆炸背景光
 	kSand = 5,			    -- 流沙动画
 	kSandMove = 6,			-- 流沙动画
 	kLight = 7,				-- 冰层, 流沙
-	kItemBack = 8,			-- 鸟的特效
-	kItem = 9,				-- 物品--动物
-	kItemShow = 10,			-- 物品特效--某个动物的动画，或者是消除特效qq
-	kDigBlocker = 11,		-- 地块和宝石
-	kItemDestroy = 12,		-- 物品消除特效层---一个雪花	
-	kClipping = 13,			-- 生成口、传送门出口遮罩
-	kEnterClipping = 14,	    -- 传送门入口遮罩
-	kRabbitCaveUp = 15,    --兔子洞穴上层
-	kRope = 16,				-- 绳子
-	kLock = 17,				-- 笼子
-	kFurBall = 18,			-- 毛球, 蜂蜜
-	kBigMonster = 19,       -- 雪怪
-	kLockShow = 20,			-- 笼子消除
-	kSnowShow = 21,			-- 雪花消除
-	kNormalEffect = 22,     -- 毛球消除，毒液扩散, 雪怪的冰层等
-	kTransClipping = 23,    -- 传送带遮罩
-	kPass = 24,	            -- 通道
-	kTransmissionDoor = 25,  -- 传送带出入口
-	kSpecial = 26,			-- 鸟飞行,刷新飞行
-	kRoostFly = 27,			-- 鸡窝飞行,与刷新飞行冲突
-	kSnailMove = 28,       
-	kLast = 29				-- 最上层--------添加层次时请保持这个在最前
+	kQuestionMarkDestoryBg = 8, --问号消除背景光 
+	kItemBack = 9,			-- 鸟的特效
+	kItem = 10,				-- 物品--动物
+	kItemShow = 11,			-- 物品特效--某个动物的动画，或者是消除特效qq
+	kDigBlocker = 12,		-- 地块和宝石
+	kItemDestroy = 13,		-- 物品消除特效层---一个雪花	
+	kClipping = 14,			-- 生成口、传送门出口遮罩
+	kEnterClipping = 15,	    -- 传送门入口遮罩
+	kRabbitCaveUp = 16,    --兔子洞穴上层
+	kRope = 17,				-- 绳子
+	kLock = 18,				-- 笼子
+	kFurBall = 19,			-- 毛球, 蜂蜜
+	kBigMonster = 20,       -- 雪怪
+	kLockShow = 21,			-- 笼子消除
+	kSnowShow = 22,			-- 雪花消除
+	kNormalEffect = 23,     -- 毛球消除，毒液扩散, 雪怪的冰层等
+	kTransClipping = 24,    -- 传送带遮罩
+	kPass = 25,	            -- 通道
+	kTransmissionDoor = 26,  -- 传送带出入口
+	kSpecial = 27,			-- 鸟飞行,刷新飞行
+	kRoostFly = 28,			-- 鸡窝飞行,与刷新飞行冲突
+	kSnailMove = 29,       	-- 蜗牛移动，问号爆炸前景光
+	kQuestionMarkDestoryFg = 30, --问号消除前景光 
+	kLast = 31				-- 最上层--------添加层次时请保持这个在最前
 }
 
 local Max_Item_Y = GamePlayConfig_Max_Item_Y
@@ -349,7 +352,7 @@ end
 
 function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 	if data.isUsed == false then return end -- 不可用，跳过，什么都不显示
-
+	self:cleanGameItemView()
 	self.oldData = data:copy()
 
 	self.x = data.x;
@@ -408,6 +411,8 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildHoneyBottle(data.honeyBottleLevel)
 	elseif data.ItemType == GameItemType.kAddTime then
 		self:buildAddTime(data.ItemColorType, data.addTime)
+	elseif data.ItemType == GameItemType.kQuestionMark then
+		self:buildQuestionMark(data.ItemColorType)
 	end 
 
 
@@ -417,6 +422,7 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 
 	--附加属性
 	if data:hasFurball() then
+		self:cleanFurballView()
 		self.itemSprite[ItemSpriteType.kFurBall] = ItemViewUtils:buildFurball(data.furballType)
 		if data.furballType == GameItemFurballType.kBrown and data.isBrownFurballUnstable then
 			self:playFurballUnstableEffect()
@@ -700,7 +706,6 @@ function ItemView:playLockDecEffect()
 	local sprite = ItemViewUtils:buildLockAction()
 	sprite:ad(Events.kComplete, onAnimComplete)
 	sprite:setPosition(pos)
-
 	self.itemSprite[ItemSpriteType.kLockShow] = sprite
 	if self.itemSprite[ItemSpriteType.kLock] then
 		self.itemSprite[ItemSpriteType.kLock]:removeFromParentAndCleanup(true)
@@ -1147,6 +1152,14 @@ function ItemView:updateByNewItemData(data)
 			end
 		end
 	end
+
+	if data.ItemType == GameItemType.kQuestionMark then
+		if self.oldData
+		and (self.oldData.ItemType ~= data.ItemType or self.oldData.ItemColorType ~= data.ItemColorType) then
+			self:removeItemSpriteGameItem()
+			self:buildQuestionMark(data.ItemColorType)
+		end
+	end
 	
 
 	------掉落-------
@@ -1166,6 +1179,7 @@ function ItemView:updateByNewItemData(data)
 			or data.ItemType == GameItemType.kRabbit
 			or data.ItemType == GameItemType.kHoneyBottle
 			or data.ItemType == GameItemType.kAddTime
+			or data.ItemType == GameItemType.kQuestionMark
 			then
 			self.itemPosAdd[ItemSpriteType.kItem] = data.itemPosAdd 			----掉落一个物品
 			self.itemPosAdd[ItemSpriteType.kItemShow] = data.itemPosAdd 		----掉落一个特效
@@ -1179,8 +1193,12 @@ function ItemView:updateByNewItemData(data)
 	----------------------------------蜗牛------------------------------
 	if data.isSnail then 
 		if self.oldData and (self.oldData.isSnail ~= data.isSnail) then
-			-- self:removeItemSpriteGameItem();
-			-- self:buildSnail(data.snailRoadType)
+			self:removeItemSpriteGameItem();
+			if self.itemSprite[ItemSpriteType.kSnailMove] ~= nil then
+				self.itemSprite[ItemSpriteType.kSnailMove]:removeFromParentAndCleanup(true)
+				self.itemSprite[ItemSpriteType.kSnailMove] = nil
+			end
+			self:buildSnail(data.snailRoadType)
 		end
 	end
 
@@ -1340,6 +1358,13 @@ function ItemView:buildNewAnimalItem(colortype, specialtype, autoset, autotype)
 		if (autotype) then self.itemShowType = ItemSpriteItemShowType.kCharacter end;
 		return sprite
 	end
+end
+
+function ItemView:buildQuestionMark( colortype )
+	-- body
+	local sprite = ItemViewUtils:createQuestionMark(colortype)
+	self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	self.itemShowType = ItemSpriteItemShowType.kCharacter
 end
 
 function ItemView:buildAddTime(colortype, addTime, isOnlyGetSprite)
@@ -1551,7 +1576,7 @@ function ItemView:buildMonster()
 end
 
 function ItemView:buildBoss(data)
-	local boss = TileBoss:create(BossType.kTurkey)
+	local boss = TileBoss:create(BossType.kSheep)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -1789,6 +1814,8 @@ function ItemView:CreateFallingClippingSprite(data, autotype)
 		tempsprite = TileHoneyBottle:create(data.honeyBottleLevel)
 	elseif data.ItemType == GameItemType.kAddTime then
 		tempsprite = TileAddTime:create(data.ItemColorType, data.addTime)
+	elseif data.ItemType == GameItemType.kQuestionMark then
+		tempsprite = ItemViewUtils:createQuestionMark(data.ItemColorType)
 	end 
 
 	local container = Sprite:createEmpty()
@@ -2490,8 +2517,16 @@ function ItemView:playMaydayBossDisappear(boardView, callback)
 	boss:disappear(animationCallback)
 end
 
+function ItemView:playMaydayBossCast(boardView, callback)
+	local boss = self.itemSprite[ItemSpriteType.kBigMonster]
+	local function animationCallback( ... )
+		if callback then callback() end
+	end
+	boss:cast(animationCallback)
+end
+
 function ItemView:buildBossAnim(data)
-	local boss = TileBoss:create(BossType.kTurkey)
+	local boss = TileBoss:create(BossType.kSheep)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -2783,6 +2818,10 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		itemSprite = TileHoneyBottle:create(itemData.honeyBottleLevel)
 	elseif itemData.ItemType == GameItemType.kAddTime then
 		itemSprite = self:buildAddTime(itemData.ItemColorType, itemData.addTime, isOnlyGetSprite)
+	elseif itemData.ItemType == GameItemType.kQuestionMark then
+		itemSprite = ItemViewUtils:createQuestionMark(itemData.ItemColorType)
+	elseif itemData.ItemType == GameItemType.kMagicLamp then
+		itemSprite = TileMagicLamp:create(itemData.ItemColorType, itemData.lampLevel)
 	end
 
 	if itemSprite then
@@ -3017,17 +3056,6 @@ end
 
 function ItemView:playHoneyDec( callback )
 	-- body
-	-- local honey = self.itemSprite[ItemSpriteType.kFurBall]
-	-- local function animationCallback( ... )
-	-- 	-- body
-	-- 	if honey then honey:removeFromParentAndCleanup(true) end
-	-- 	self.itemSprite[ItemSpriteType.kFurBall] = nil
-	-- 	if callback then callback() end
-	-- end 
-	-- if honey then
-	-- 	honey:disappear(animationCallback)
-	-- end
-
 	local honeyEffect = TileHoney:create()
 	local function animationCallback( ... )
 		-- body
@@ -3152,4 +3180,61 @@ function ItemView:playSandMoveAnim(callback, direction)
 
 	self.itemSprite[ItemSpriteType.kSandMove] = anim
 	self.isNeedUpdate = true
+end
+
+
+function ItemView:setQuestionMarkChangeItemVisible( value )
+	-- body
+	for k, v in pairs(needUpdateLayers) do 
+		local s = self.itemSprite[v]
+		if s then
+			s:setVisible(value)
+		end
+	end
+end
+
+function ItemView:playQuestionMarkDestroy( callback )
+	-- body
+	local s = self.itemSprite[ItemSpriteType.kItemShow]
+	if s then 
+		s:removeFromParentAndCleanup(true)
+	end
+
+	local isBgCallback = false
+	local isFgCallback = false
+	local function finishCallback()
+		if isBgCallback and isFgCallback then
+			if callback then callback() end
+		end
+	end
+
+	local function bg_callback( ... )
+		isBgCallback = true
+			-- body
+		local s = self.itemSprite[ItemSpriteType.kQuestionMarkDestoryBg]
+		if s then 
+			s:removeFromParentAndCleanup(true)
+		end
+		self.itemSprite[ItemSpriteType.kQuestionMarkDestoryBg] = nil
+		finishCallback()
+	end
+	local bg = TileQuestionMark:getBgLight(bg_callback)
+	bg:setPosition(self:getBasePosition(self.x, self.y))
+	self.itemSprite[ItemSpriteType.kQuestionMarkDestoryBg] = bg
+
+	local function fg_callback( ... )
+		isFgCallback = true
+		-- body
+		local s = self.itemSprite[ItemSpriteType.kQuestionMarkDestoryFg]
+		if s then 
+			s:removeFromParentAndCleanup(true)
+		end
+		self.itemSprite[ItemSpriteType.kQuestionMarkDestoryFg] = nil
+		finishCallback()
+	end 
+	local fg = TileQuestionMark:getFgLight(fg_callback)
+	fg:setPosition(self:getBasePosition(self.x, self.y))
+	self.itemSprite[ItemSpriteType.kQuestionMarkDestoryFg] = fg
+	self.isNeedUpdate = true
+
 end

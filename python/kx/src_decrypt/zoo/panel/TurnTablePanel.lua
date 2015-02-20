@@ -118,31 +118,28 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 	end
 	print(turnRes)
 	if type(turnRes) ~= "number" then return false end
-	if not turnType then 
-		turnType = TURN_TYPE.kWX
-	end
-	if turnType == TURN_TYPE.kRECALL then 
-
-	else
-		DcUtil:UserTrack({category = "wx_share", sub_category = "get_wx_reward", reward_id = turnRes, turn_table = turnTable})
-	end
 
 	self:loadRequiredResource(PanelConfigFiles.panel_turntable)
 	local panel = self:buildInterfaceGroup("turntablepanel")
 	self:init(panel)
 	self.panel = panel
 	self.panelName = "turnTablePanel"
-	panel.userGuideLayer = Layer:create()
-	panel:addChild(panel.userGuideLayer)
+	
 
-	local disk = panel:getChildByName("disk")
-	local close = panel:getChildByName("close")
-	local block = panel:getChildByName("block")
-	local reward = panel:getChildByName("reward")
-	local shine = panel:getChildByName("shine")
-	local button = panel:getChildByName("button")
-	local number = panel:getChildByName("number")
+	local panelContent = panel:getChildByName("panelContent")
+	local panelTip = panel:getChildByName("panelTip")
+
+	local disk = panelContent:getChildByName("disk")
+	local close = panelContent:getChildByName("close")
+	local block = panelContent:getChildByName("block")
+	local reward = panelContent:getChildByName("reward")
+	local shine = panelContent:getChildByName("shine")
+	local button = panelContent:getChildByName("button")
+	local number = panelContent:getChildByName("number")
 	button = GroupButtonBase:create(button)
+
+	panelContent.userGuideLayer = Layer:create()
+	panelContent:addChild(panelContent.userGuideLayer)
 
 	for i = 1, 8 do
 		local width, height = 125, 125
@@ -214,8 +211,8 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 		sprite:setPositionY(disk:getPositionY() + size.height * scale / 2)
 	end
 	sprite:setScale(0)
-	local index = panel:getChildIndex(reward)
-	panel:addChildAt(sprite, index)
+	local index = panelContent:getChildIndex(reward)
+	panelContent:addChildAt(sprite, index)
 	reward:removeFromParentAndCleanup(true)
 	self.reward = sprite
 	shine:setAnchorPointCenterWhileStayOrigianlPosition()
@@ -251,7 +248,6 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 	close:setTouchEnabled(true)
 	close:setButtonMode(true)
 	close:addEventListener(DisplayEvents.kTouchTap, onClose)
-	local function onAnimStart() self.turnTable:setEnabled(false) end
 	local function onAnimFinish()
 		local list = {}
 		block:getVisibleChildrenList(list)
@@ -263,13 +259,16 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 		shine:runAction(CCEaseBackIn:create(CCScaleTo:create(0.3, 1)))
 		number:runAction(CCFadeIn:create(0.3))
 	end
+	local function onTouchEnd(evt)
+		self.turnTable:setEnabled(false)
+		self.turnTable:calcStopping(evt.data.speed)
+	end
 	local function onTouchSlow()
 
 	end
 	self.turnTable:setEnabled(true)
-	self.turnTable:addEventListener(TurnTableEvents.kAnimStart, onAnimStart)
+	self.turnTable:addEventListener(TurnTableEvents.kTouchEnd, onTouchEnd)
 	self.turnTable:addEventListener(TurnTableEvents.kAnimFinish, onAnimFinish)
-	self.turnTable:addEventListener(TurnTableEvents.kTouchSlow, onTouchSlow)
 
 	local function onReward()
 		self:_getReward(result)
@@ -284,7 +283,44 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 	-- self:setPositionY(self:getGroupBounds().size.height)
 	-- self:setPositionY(0)
 
+	if not turnType then 
+		turnType = TURN_TYPE.kWX
+	end
+	if turnType == TURN_TYPE.kRECALL then 
+		self.turnTable:setEnabled(false)
+		self:showRecallTip(panelTip)
+	else
+		panelTip:setVisible(false)
+		DcUtil:UserTrack({category = "wx_share", sub_category = "get_wx_reward", reward_id = turnRes, turn_table = turnTable})
+	end
+
 	return true
+end
+
+function TurnTablePanel:showRecallTip(tipUi)
+	local tipBg = tipUi:getChildByName("bg")	
+	local tip = tipUi:getChildByName("tip")
+	tip:setString(Localization:getInstance():getText("recall_text_16"))
+
+	local array = CCArray:create()
+	array:addObject(CCDelayTime:create(5))
+	local function fadeOut()
+		if tipUi then
+			local childrenList = {}
+			tipUi:getVisibleChildrenList(childrenList)
+			for __, v in pairs(childrenList) do
+				v:runAction(CCFadeOut:create(0.5))
+			end
+		end
+	end
+	array:addObject(CCCallFunc:create(fadeOut))
+	array:addObject(CCDelayTime:create(0.5))
+	local function onComplete() 
+		tipUi:setVisible(false)
+		self.turnTable:setEnabled(true)
+	end
+	array:addObject(CCCallFunc:create(onComplete))
+	tipUi:runAction(CCSequence:create(array))
 end
 
 function TurnTablePanel:popout()

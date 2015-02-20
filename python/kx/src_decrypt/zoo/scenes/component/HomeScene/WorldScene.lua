@@ -26,6 +26,7 @@ function WorldScene:init(homeScene, ...)
 	assert(homeScene)
 	assert(#{...} == 0)
 
+	WorldSceneShowManager.getInstance()
 	-----------------
 	-- Init Base Class
 	-- --------------
@@ -63,13 +64,29 @@ function WorldScene:init(homeScene, ...)
 	self.gradientBackgroundLayer = Layer:create()
 	self.maskedLayer:addParallaxChild(self.gradientBackgroundLayer, 0, self.gradientBackgroundParallaxRatio, ccp(0,0))
 
+	
+	local star1Parallax = 0.007
+	self.star1Parallax = ccp(star1Parallax, star1Parallax)
+	local plistPath = "flash/scenes/homeScene/home_night/home_scene_star.plist"
+	if __use_small_res then  
+		plistPath = table.concat(plistPath:split("."),"@2x.")
+	end
+	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
+	local texture = CCSprite:createWithSpriteFrameName("home_scene_star.png"):getTexture()
+	self.star1Layer = SpriteBatchNode:createWithTexture(texture)
+	self.maskedLayer:addParallaxChild(self.star1Layer, 1, self.star1Parallax, ccp(0,0))
+	if WorldSceneShowManager.getInstance():getShowType() == 2 then 
+		self.star1Layer:setVisible(true)
+	else
+		self.star1Layer:setVisible(false)
+	end
 	------------------------------
 	-- Some Cloud 1 Change Layer
 	-- ---------------------------
 	local cloudLayer1Parallax = config.worldScene_cloudLayer1Parallax
 	self.cloudLayer1Parallax = ccp(cloudLayer1Parallax, cloudLayer1Parallax)
 	self.cloudLayer1Layer = Layer:create()
-	self.maskedLayer:addParallaxChild(self.cloudLayer1Layer, 1, self.cloudLayer1Parallax, ccp(0,0))
+	self.maskedLayer:addParallaxChild(self.cloudLayer1Layer, 2, self.cloudLayer1Parallax, ccp(0,0))
 
 	----------------------
 	---- Cloud 2 Layer
@@ -78,7 +95,7 @@ function WorldScene:init(homeScene, ...)
 	assert(cloudLayer2Parallax)
 	self.cloudLayer2Parallax = ccp(cloudLayer2Parallax, cloudLayer2Parallax)
 	self.cloudLayer2 = Layer:create()
-	self.maskedLayer:addParallaxChild(self.cloudLayer2, 2, self.cloudLayer2Parallax, ccp(0,0))
+	self.maskedLayer:addParallaxChild(self.cloudLayer2, 3, self.cloudLayer2Parallax, ccp(0,0))
 
 	-----------------------------
 	----- Cloud Layer 
@@ -88,7 +105,7 @@ function WorldScene:init(homeScene, ...)
 	local cloudParallax = config.worldScene_cloudParallax
 	self.cloudParallaxRatio = ccp(cloudParallax, cloudParallax)
 	self.cloudLayer = Layer:create()
-	self.maskedLayer:addParallaxChild(self.cloudLayer, 3, self.cloudParallaxRatio, ccp(0,0))
+	self.maskedLayer:addParallaxChild(self.cloudLayer, 4, self.cloudParallaxRatio, ccp(0,0))
 	self.cloudContainer = Layer:create()
 
 	self.cloudLayer:addChild(self.cloudContainer)
@@ -198,11 +215,13 @@ function WorldScene:init(homeScene, ...)
 	-- ------------
 	-- Init Layer
 	-- ----------------
+	WorldSceneShowManager.getInstance():changeCloudColor()
 	local parallaxLayer = ResourceManager:sharedInstance():buildGroup("parallax")
 	self.parallaxLayer = parallaxLayer
 
 	self:buildTreeContainer()
 	self:buildGradientBackground()
+	self:buildStarLayer()
 	self:buildcloudLayer1()
 	self:buildcloudLayer2()
 	self:buildCloudLayer()
@@ -652,15 +671,56 @@ function WorldScene:buildGradientBackground(...)
 
 	local winSize = CCDirector:sharedDirector():getWinSize()
 	local size = background:getGroupBounds().size
+	local posX = winSize.width / 2
 
-	local sprite = Sprite:createWithSpriteFrameName("home_color.png")
-	local spriteSize = sprite:getContentSize()
-	sprite:setScaleX((winSize.width + self:getHorizontalScrollRange() * self.gradientBackgroundParallaxRatio.x + 10) / spriteSize.width)
-	sprite:setScaleY(size.height / spriteSize.height)
-	sprite:setAnchorPoint(ccp(0.5,0))
-	sprite:setPositionX(winSize.width / 2)
-	sprite.name = "background"
-	self.gradientBackgroundLayer:addChild(sprite)
+	local spriteWidth = __use_small_res and 3 or 4
+	local scaleX = (winSize.width + self:getHorizontalScrollRange() * self.gradientBackgroundParallaxRatio.x + 10) / spriteWidth
+	self.gradientBackgroundLayer.childScaleX = scaleX
+
+	if WorldSceneShowManager.getInstance().showType == 2 then
+		local s1 = Sprite:createWithSpriteFrameName("home_color2.png")
+		s1:setScaleX(scaleX)
+		s1:setAnchorPoint(ccp(0.5, 0))
+		s1:setPositionX(posX)
+		self.gradientBackgroundLayer:addChild(s1)
+
+		local s2 = Sprite:createWithSpriteFrameName("home_color1.png")
+		s2:setScaleX(scaleX)
+		s2:setAnchorPoint(ccp(0.5, 0))
+		s2:setPositionX(posX)
+		s2:setPositionY(s1:getContentSize().height)
+		self.gradientBackgroundLayer:addChild(s2)
+	elseif WorldSceneShowManager.getInstance().showType == 1 then
+		local sprite = Sprite:createWithSpriteFrameName("home_color.png")
+		sprite:setScaleX(scaleX)
+		sprite:setAnchorPoint(ccp(0.5, 0))
+		sprite:setPositionX(posX)
+		sprite:setScaleY(2.5)
+		sprite.name = "background"
+		self.gradientBackgroundLayer:addChild(sprite)
+	end
+
+end
+
+function WorldScene:buildStarLayer()
+	local star1Layer = self.parallaxLayer:getChildByName("star1")
+	local groupBounds = star1Layer:getGroupBounds().size
+	assert(star1Layer)
+	math.randomseed(os.time())
+	for i=1,80 do
+		local star = star1Layer:getChildByName("star"..i)
+		if star then 		
+			local scale = star:getScaleX()
+			local pos = star:getPosition()
+			local alpha = math.random(5, 10)/10
+			local realStar = Sprite:createWithSpriteFrameName("home_scene_star.png")
+			realStar:setScale(scale)
+			realStar:setPosition(ccp(pos.x,pos.y+groupBounds.height+200))
+			realStar:setAlpha(alpha)
+			self.star1Layer:addChild(realStar)
+		end
+	end
+	star1Layer:removeFromParentAndCleanup(false)
 end
 
 function WorldScene:buildcloudLayer1(...)
@@ -668,7 +728,17 @@ function WorldScene:buildcloudLayer1(...)
 
 	local cloudLayer1 = self.parallaxLayer:getChildByName("cloud1")
 	assert(cloudLayer1)
-
+	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+		for i=1, 4 do
+			local cloud = cloudLayer1:getChildByName("cloud"..i)
+			if i == 3 then 
+				cloud:setAlpha(0.7)
+			else
+				cloud:setAlpha(0.5)
+			end
+		end
+	end
+	
 	cloudLayer1:removeFromParentAndCleanup(false)
 	self.cloudLayer1Layer:addChild(cloudLayer1)
 end
@@ -678,6 +748,12 @@ function WorldScene:buildcloudLayer2(...)
 
 	local cloudLayer2 = self.parallaxLayer:getChildByName("cloud2")
 	assert(cloudLayer2)
+	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+		for i=1, 2 do
+			local cloud = cloudLayer2:getChildByName("cloud"..i)
+			cloud:setAlpha(0.7)
+		end
+	end
 
 	cloudLayer2:removeFromParentAndCleanup(false)
 	self.cloudLayer2:addChild(cloudLayer2)
@@ -821,6 +897,12 @@ function WorldScene:buildCloudLayer(...)
 
 	local cloudLayer3 = self.parallaxLayer:getChildByName("cloud3")
 	assert(cloudLayer3)
+	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+		for i=1, 3 do
+			local cloud = cloudLayer3:getChildByName("cloud"..i)
+			cloud:setAlpha(0.9)
+		end
+	end
 
 	cloudLayer3:removeFromParentAndCleanup(false)
 	self.cloudContainer:addChild(cloudLayer3)
@@ -1047,7 +1129,7 @@ function WorldScene:recallTaskLevelUnlock()
 			runningScene:checkDataChange()
 			runningScene.starButton:updateView()
 			runningScene.goldButton:updateView()
-			runningScene.worldScene:onAreaUnlocked(self.id)
+			runningScene.worldScene:onAreaUnlocked(lockedCloudId)
 		end
 		local currentCloud = self:getLockedCloudById(lockedCloudId)
 		if currentCloud then 
@@ -1387,6 +1469,7 @@ function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
 		local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
 		actionArray:addObject(onMoveToFinishedAction)
 		local seq = CCSequence:create(actionArray)
+		self.maskedLayer:stopAllActions()
 		self.maskedLayer:runAction(seq)
 	else
 		-- if animFinishCallback then animFinishCallback() end
@@ -1513,7 +1596,8 @@ function WorldScene:onGetNewStarLevel(event, ...)
 	local function unlockHiddenBranch(branchId)
 		-- If Exist A Hidden Branch Based On This Normal Level
 		if branchId then
-			if not self.hiddenBranchArray[branchId] then
+			if not self.hiddenBranchArray[branchId] or WorldSceneShowManager.getInstance():getHideBranchOpenFlag() then
+				WorldSceneShowManager.getInstance():setHideBranchOpenFlag(false)
 				-- Check If This Hidden Branch Can Open
 				if MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
 					local function onHiddenBranchTapped(event)

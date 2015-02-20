@@ -26,18 +26,8 @@ if __ANDROID then
 		local list = {}
 		local function safeGetSignature()
 			local context = MainActivityHolder.ACTIVITY
-			if context:getClass():getName() ~= "com.happyelements.hellolua.MainActivity" then
-				return false
-			end
 			local packageManager = context:getPackageManager()
-			if packageManager:getClass():getName() ~= "android.app.ApplicationPackageManager" 
-				and packageManager:getClass():getName() ~= "android.app.ContextImpl$ApplicationPackageManager" then
-				return false
-			end
 			local info = packageManager:getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
-			if info:getClass():getName() ~= "android.content.pm.PackageInfo" then
-				return false
-			end
 			if info ~= nil then
 				local signatures = SignatureUtil:array2Table(info.signatures) 
 				--print("Signature1:"..table.tostring(signatures))

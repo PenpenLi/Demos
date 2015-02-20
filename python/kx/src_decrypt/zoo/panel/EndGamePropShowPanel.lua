@@ -529,7 +529,6 @@ function EndGamePropShowPanel:init(levelId, propId)
 		cryingAnimation:setPosition(ccp(108, -826))
 	elseif self.levelType == GameLevelType.kMayDay then
 		self.msgLabel:setString(Localization:getInstance():getText('activity.christmas.fail.add.five'))
-		self.msgLabel:setDimensions(CCSizeMake(0,0))
 		cryingAnimation:setPosition(ccp(108, -856))
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		self.msgLabel:setString(Localization:getInstance():getText('add.step.panel.msg.txt.10040.rabbit'))

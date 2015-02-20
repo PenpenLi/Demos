@@ -238,7 +238,7 @@ end
 ----coverFalling是否进行掉落中的东西的爆炸计算
 ----scoreScale分数倍率
 ----bombNoReach炸掉没抵达的东西
-function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale, bombNoReach)
+function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale, bombNoReach, noScore)
 	if r <= 0 or r > #mainLogic.boardmap or c <=0 or c> #mainLogic.boardmap[r] then return 0 end
 	if mainLogic.boardmap[r][c].isUsed == false then return 0 end
 	
@@ -252,7 +252,7 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 		elseif item.ItemStatus == GameItemStatusType.kNone
 			or item.ItemStatus == GameItemStatusType.kWaitBomb then
 			-------普通的,可以被消除-----
-			BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale)
+			BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale, noScore)
 		elseif item.ItemStatus == GameItemStatusType.kIsFalling
 			or item.ItemStatus == GameItemStatusType.kJustStop
 			or item.ItemStatus == GameItemStatusType.kItemHalfStable
@@ -260,7 +260,7 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 			if coverFalling then
 				-----爆炸掉掉落中的东西-----
 				if (item.dataReach or bombNoReach) then 							----数据已经抵达
-					BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale)
+					BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale, noScore)
 				elseif r + 1 <= #mainLogic.gameItemMap then  			----数据未抵达，	但是可以检测下面那个物体是否还处于上方这个物体的爆炸范围内
 					if BombItemLogic:isItemTypeCanBeEliminateByBird(mainLogic, r + 1, c) then 			----如果下面那个是可以爆炸覆盖的类型
 						local item2 = mainLogic.gameItemMap[r + 1][c];
@@ -269,7 +269,7 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 							and item2.comePos.x == r 												----位置正确
 							and item2.comePos.y == c 
 							then 
-							BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r + 1, c, scoreScale)
+							BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r + 1, c, scoreScale, noScore)
 						end
 					end
 				end
@@ -282,6 +282,8 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 			SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 			return 1
 		end
+	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
+		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	elseif item.isEmpty then 
 		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 	end
@@ -289,23 +291,25 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 	return 0
 end
 
-function BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale)
+function BombItemLogic:_removeGameItemBySpecialBomb(mainLogic, r, c, scoreScale, noScore)
 	local item = mainLogic.gameItemMap[r][c]
 	--特效的分数由特效爆炸逻辑计算
 	if not item.hasGivenScore and item.ItemSpecialType == 0 then
-		local scoreAdd = 0
-		local scoreBase = ScoreCountLogic:getItemDestroyBaseScore(mainLogic.gameItemMap[r][c].ItemType)
-		scoreAdd = scoreBase * scoreScale
-		if scoreAdd > 0 then
-			ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
-			local ScoreAction = GameBoardActionDataSet:createAs(
-				GameActionTargetType.kGameItemAction,
-				GameItemActionType.kItemScore_Get,
-				IntCoord:create(r,c),	
-				nil,	
-				1)
-			ScoreAction.addInt = scoreAdd;
-			mainLogic:addGameAction(ScoreAction);
+		if not noScore then
+			local scoreAdd = 0
+			local scoreBase = ScoreCountLogic:getItemDestroyBaseScore(mainLogic.gameItemMap[r][c].ItemType)
+			scoreAdd = scoreBase * scoreScale
+			if scoreAdd > 0 then
+				ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
+				local ScoreAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItemScore_Get,
+					IntCoord:create(r,c),	
+					nil,	
+					1)
+				ScoreAction.addInt = scoreAdd;
+				mainLogic:addGameAction(ScoreAction);
+			end
 		end
 		item.hasGivenScore = true
 	end
@@ -433,6 +437,8 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 				mainLogic:tryDoOrderList(r, c, GameItemOrderType.kAnimal, item.ItemColorType)
 			end
 		end
+	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
+		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	else
 		----其他类别
 	end
@@ -718,6 +724,8 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 						blackCuteAction.blackCuteStrength = item.blackCuteStrength
 						mainLogic:addDestroyAction(blackCuteAction)
 					end
+				elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
+					GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 				end
 			elseif item:isBlockerCanBeCoverByBirdBrid() then
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
@@ -811,4 +819,47 @@ function BombItemLogic:getRandomAnimalChangeToLineSpecial(mainLogic)
 	local ret = IntCoord:create(pos.x, pos.y)
 	table.remove(mainLogic.randomAnimalHelpList, rid)
 	return ret
+end
+
+function BombItemLogic:springFestivalBombScreen(mainLogic)
+
+	local function bombItemMultiTimes(r, c, times, bomb, special)
+		for i=1, times do
+			-- SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1, true)
+			if bomb then
+				BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1, nil, true)
+			end
+			if special then
+				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, nil, nil, true, true) 
+			end
+		end
+	end
+
+	local function bombJewel(mainLogic, r, c)
+		local item = mainLogic.gameItemMap[r][c]
+		if item.digJewelLevel > 0 then
+			if item.digBlockCanbeDelete then
+				GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, nil, true, true)
+			end
+		end
+	end
+
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			local item = gameItemMap[r][c]
+			if item.ItemType == GameItemType.kDigGround then
+				bombItemMultiTimes(r, c, item.digGroundLevel, false, true)
+			elseif item.ItemType == GameItemType.kDigJewel then
+				-- bombItemMultiTimes(r, c, item.digJewelLevel, false, true)
+				for i = 1, item.digJewelLevel do
+					bombJewel(mainLogic, r, c)
+				end
+			elseif item.ItemType == GameItemType.kBoss and item.bossLevel > 0 then
+				bombItemMultiTimes(r, c, item.blood, false, true)
+			else				
+				bombItemMultiTimes(r, c, 1, true, true)					
+			end			
+		end
+	end
 end

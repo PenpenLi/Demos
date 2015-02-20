@@ -75,6 +75,7 @@ function MoveOrTimeCounter:stopShaking()
 end
 
 function MoveOrTimeCounter:init(levelId, counterType, count, ...)
+	self.oldString = ''
 	assert(type(levelId) == "number")
 	assert(counterType == MoveOrTimeCounterType.MOVE_COUNT or counterType == MoveOrTimeCounterType.TIME_COUNT)
 	assert(type(count) == "number")
@@ -284,7 +285,10 @@ function MoveOrTimeCounter:animateString( newString, animate )
 
 	if playAnimation then self:fadeOutLabel() end
 	self.label:setString(newString)
-	self.label:setToParentCenterHorizontal()
+	if string.len(self.oldString) ~= string.len(newString) then
+		self.label:setToParentCenterHorizontal()
+	end
+	self.oldString = newString
 	if playAnimation then
 		self:fadeInLabel()
 		self.label:setVisible(false)

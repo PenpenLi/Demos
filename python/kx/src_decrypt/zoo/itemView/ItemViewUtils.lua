@@ -200,3 +200,10 @@ function ItemViewUtils:buildMonsterFrosting(frostingType)
 	local view = TileMonsterFrosting:create(frostingType)
 	return view
 end
+
+function ItemViewUtils:createQuestionMark(colortype)
+	-- body
+	if colortype == 0 then return nil end;
+	local view = TileQuestionMark:create(colortype)
+	return view
+end

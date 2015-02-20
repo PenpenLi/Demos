@@ -137,7 +137,30 @@ end
 function VelocityMeasurer:stopMeasure(...)
 	assert(#{...} == 0)
 
-	assert(self.scheduledFunc)
+	--assert(self.scheduledFunc)
+	local function scheduledFunc()
+
+		local curPos = self.getCurPosCallback()
+		assert(curPos.x)
+		assert(curPos.y)
+
+		self.prePosX = self.curPosX
+		self.prePosY = self.curPosY
+		self.curPosX = curPos.x
+		self.curPosY = curPos.y
+
+		self.measuredVelocityX = (self.curPosX - self.prePosX) / self.measureInterval
+		self.measuredVelocityY = (self.curPosY - self.prePosY) / self.measureInterval
+
+		self.lastSpeedY = self.curSpeedY
+		self.curSpeedY = self.measuredVelocityY
+	end
+
+	-- IOS上面防止滑动过度灵敏
+	if not __IOS then
+		scheduledFunc()
+	end
+
 	if self.scheduledFunc then
 		local scheduler = CCDirector:sharedDirector():getScheduler()
 		scheduler:unscheduleScriptEntry(self.scheduledFunc)
@@ -325,6 +348,12 @@ function WorldSceneScroller:init(...)
 	self:addEventListener(WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN, onScrolledToOrigin)
 end
 
+function WorldSceneScroller:stopAllScheduler()
+	self:stopAutoRollTimer()
+	for k,measurer in ipairs(self.velocityMeasurerArray) do
+		measurer:stopMeasure()
+	end
+end
 ------------------------------------
 -------- Event Listener
 ------------------------------------
@@ -363,7 +392,6 @@ local function onScrollerTouchMove(event, ...)
 
 		self.fingerPreviousPositionY	= self.fingerPositionY
 		self.fingerPositionY 		= event.globalPosition.y
-
 		local newPositionY		= false
 
 		-- -----------------------------
@@ -419,9 +447,7 @@ local function onScrollerTouchEnd(event, ...)
 	assert(event.name == DisplayEvents.kTouchEnd)
 	assert(event.context)
 	assert(#{...} == 0)
-
 	local self = event.context
-
 	self.clickOffset = nil
 	self.clicked	= false
 
@@ -435,6 +461,7 @@ local function onScrollerTouchEnd(event, ...)
 		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.MOVING_STARTED))
 	end
 
+	self.fingerPositionY 		= event.globalPosition.y
 	-- ---------------------
 	-- Stop Calculate Speed
 	-- -------------------
@@ -447,11 +474,10 @@ local function onScrollerTouchEnd(event, ...)
 	for k,measurer in ipairs(self.velocityMeasurerArray) do
 
 		local velocity = measurer:getMeasuredVelocityY()
-
 		if velocity and velocity ~= 0 then
 			if not self.velocity then
 				self.velocity = velocity
-			elseif math.abs(velocity) < math.abs(self.velocity) then 
+			elseif math.abs(velocity) > math.abs(self.velocity) then 
 				self.velocity = velocity
 			end
 		end
@@ -521,7 +547,6 @@ function WorldSceneScroller:onScrollerTouchBegin(event, ...)
 	assert(event)
 	assert(event.name == DisplayEvents.kTouchBegin)
 	assert(#{...} == 0)
-
 	self:startDelayStopAutoScroll()
 
 	-- Check If Scrollable
@@ -597,7 +622,6 @@ end
 
 function WorldSceneScroller:startAutoRollTimer(...)
 	assert(#{...} == 0)
-
 	local scheduler = CCDirector:sharedDirector():getScheduler()
 
 	local function autoRollTimer()
@@ -650,7 +674,6 @@ end
 
 function WorldSceneScroller:stopAutoRollTimer(...)
 	assert(#{...} == 0)
-
 	-- Stop
 	local scheduler = CCDirector:sharedDirector():getScheduler()
 
@@ -768,7 +791,6 @@ function WorldSceneScroller:autoRollTimer(...)
 
 	elseif CheckSceneOutRangeConstant.TOP_OUT_OF_RANGE == scenePositionState or
 		CheckSceneOutRangeConstant.BOTTOM_OUT_OF_RANGE == scenePositionState then
-
 		self:stopAutoRollTimer()
 		-- Start Restore
 		self:outRangeRestore()

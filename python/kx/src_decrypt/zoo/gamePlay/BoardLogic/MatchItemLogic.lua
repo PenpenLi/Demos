@@ -268,12 +268,12 @@ function MatchItemLogic:calculateSpecialMergePos(mainLogic, setId)
 			local c2 = mainLogic.swapInfo[2].c
 			if mainLogic.swapHelpMap[r1][c1] == setId then
 				local item = mainLogic.gameItemMap[r1][c1]
-				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item.ItemType ~= GameItemType.kMagicLamp then
+				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
 					mainLogic.swapHelpMakePos[setId] = { r = r1, c = c1 }
 				end
 			elseif mainLogic.swapHelpMap[r2][c2] == setId then
 				local item = mainLogic.gameItemMap[r2][c2]
-				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item.ItemType ~= GameItemType.kMagicLamp then
+				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
 					mainLogic.swapHelpMakePos[setId] = { r = r2, c = c2 }
 				end
 			end
@@ -288,7 +288,7 @@ function MatchItemLogic:calculateSpecialMergePos(mainLogic, setId)
 			for c = 1, #mainLogic.swapHelpMap[r] do
 				if mainLogic.swapHelpMap[r][c] == setId then
 					local item = mainLogic.gameItemMap[r][c]
-					if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item.ItemType ~= GameItemType.kMagicLamp then
+					if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
 						table.insert(result, {r = r, c = c})
 					end
 				end

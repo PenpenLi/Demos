@@ -66,6 +66,7 @@ function GameMode:revertDataFromBackProp()
 	mainLogic.pm25count = mainLogic.saveRevertData.pm25count
 	mainLogic.snailCount = mainLogic.saveRevertData.snailCount
 	mainLogic.snailMoveCount = mainLogic.saveRevertData.snailMoveCount
+	mainLogic.questionMarkFirstBomb = mainLogic.saveRevertData.questionMarkFirstBomb
 	mainLogic.saveRevertData = nil
 
 	FallingItemLogic:updateHelpMapByDeleteBlock(mainLogic)

@@ -54,7 +54,11 @@ local function userLoginCheckLogic(scene, onCompleteFunc, animationType)
 	local function onTimeout()
 		if not responsed and  animationType == kRequireNetworkAlertAnimation.kDefault then
 			if layer then layer.onKeyBackClicked = function() removePopout() end end
-			animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
+			if scene and not scene.isDisposed then
+				animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
+			else
+				onCloseButtonTap()
+			end
 		end
 		print("timeout @ userLoginCheckLogic")
 		stopTimeout()

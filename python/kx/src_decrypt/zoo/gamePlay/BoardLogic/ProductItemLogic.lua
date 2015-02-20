@@ -35,6 +35,8 @@ function ProductItemLogic:init(mainLogic, config)
 			itemType = GameItemType.kHoneyBottle
 		elseif v.itemID == TileConst.kAddTime - 1 then
 			itemType = GameItemType.kAddTime
+		elseif v.itemID == TileConst.kQuestionMark - 1 then
+			itemType = GameItemType.kQuestionMark
 		end
 
 		if itemType then 
@@ -371,6 +373,9 @@ function ProductItemLogic:buildBlockData( blockRule, mainLogic)
 	elseif blockRule.itemID == TileConst.kHoneyBottle - 1 then
 		gameItemData.ItemType = GameItemType.kHoneyBottle
 		gameItemData.honeyBottleLevel = 1
+	elseif blockRule.itemID == TileConst.kQuestionMark - 1 then
+		gameItemData.ItemType = GameItemType.kQuestionMark
+		gameItemData.ItemColorType = mainLogic:randomColor()
 	end
 
 	return gameItemData
@@ -450,7 +455,8 @@ function ProductItemLogic:resetStep(mainLogic, type)
 				or (type == GameItemType.kCoin and v.itemID == TileConst.kCoin - 1) 
 				or (type == GameItemType.kBalloon and v.itemID == TileConst.kBalloon - 1)
 				or (type == GameItemType.kBlackCuteBall and v.itemID == TileConst.kBlackCute - 1)
-				or (type == GameItemType.kHoneyBottle and v.itemID == TileConst.kHoneyBottle - 1 ) then
+				or (type == GameItemType.kHoneyBottle and v.itemID == TileConst.kHoneyBottle - 1 )
+				or (type == GameItemType.kQuestionMark and v.itemID == TileConst.kQuestionMark - 1 ) then
 					v.blockMoveCount = 0
 			end
 		end
@@ -468,7 +474,8 @@ function ProductItemLogic:shoundCome(mainLogic, type)
 			or (type == GameItemType.kBalloon and v.itemID == TileConst.kBalloon - 1)
 			or (type == GameItemType.kCoin and v.itemID == TileConst.kCoin -1)
 			or (type == GameItemType.kBlackCuteBall and v.itemID == TileConst.kBlackCute - 1)
-			or (type == GameItemType.kHoneyBottle and v.itemID == TileConst.kHoneyBottle - 1) then 
+			or (type == GameItemType.kHoneyBottle and v.itemID == TileConst.kHoneyBottle - 1) 
+			or (type == GameItemType.kQuestionMark and v.itemID == TileConst.kQuestionMark - 1 ) then 
 
 			v.blockShouldCome = true
 		end

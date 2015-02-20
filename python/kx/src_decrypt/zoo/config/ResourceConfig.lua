@@ -110,6 +110,8 @@ ResourceConfig = {
 		"music/sound.balloon.break.mp3",
 		"music/sound.balloon.runaway.mp3",
 		"music/sound.tileBlocker.turn.mp3",
+		"music/sound.fireworks.mp3",
+		"music/sound.blessing.mp3",
 	},
 	mp3={
 		"music/sound.WorldSceneBGM.mp3",

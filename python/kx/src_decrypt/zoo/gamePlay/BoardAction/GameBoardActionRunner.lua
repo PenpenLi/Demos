@@ -114,6 +114,8 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionHalloweenBossCasting(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Sand_Transfer then
 		GameBoardActionRunner:runningGameItemActionSandTransfer(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_mayday_boss_casting then
+		GameBoardActionRunner:runningGameItemActionMaydayBossCasting(mainLogic, theAction, actid, actByView)
 	end
 end
 
@@ -378,6 +380,26 @@ function GameBoardActionRunner:runningGameItemActionOctopusChangeForbiddenLevel(
 	end
 end
 
+function GameBoardActionRunner:runningGameItemActionMaydayBossCasting(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == 'anim_over' then
+		theAction.addInfo = 'data_over'
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local targetPositions = theAction.targetPositions
+		for k, v in pairs(targetPositions) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kQuestionMark
+			mainLogic:onProduceQuestionMark(v.r, v.c)
+			item.isNeedUpdate = true
+		end
+	elseif theAction.addInfo == 'over' then
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+
+	end	
+end
+
 function GameBoardActionRunner:runnningGameItemActionBossDie(mainLogic, theAction, actid, actByView)
 	local function cleanItem(r, c)
 		local item = mainLogic.gameItemMap[r][c]
@@ -402,11 +424,20 @@ function GameBoardActionRunner:runnningGameItemActionBossDie(mainLogic, theActio
 		mainLogic:setNeedCheckFalling()
 		FallingItemLogic:preUpdateHelpMap(mainLogic)
 	elseif theAction.addInfo == 'dropped' then
-		local toItemPos = theAction.addMoveItemPos
-		for k, v in pairs(toItemPos) do
+		local addMoveItems = theAction.addMoveItemPos
+		local questionItems = theAction.questionItemPos
+		for k, v in pairs(addMoveItems) do
 			local item = mainLogic.gameItemMap[v.r][v.c]
 			item.ItemType = GameItemType.kAddMove
 			item:initAddMoveConfig(mainLogic.addMoveBase)
+			item.isNeedUpdate = true
+		end
+		for k, v in pairs(questionItems) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kQuestionMark
+			item.isProductByBossDie = true
+			mainLogic:onProduceQuestionMark(v.r, v.c)
+			-- item:initAddMoveConfig(mainLogic.addMoveBase)
 			item.isNeedUpdate = true
 		end
 	end

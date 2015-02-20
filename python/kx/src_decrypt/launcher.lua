@@ -34,6 +34,25 @@ local isEmulator = false
 
 if not isLocalDevelopMode then print = function() end end
 
+local ori_he_log_err = he_log_error
+function he_log_error(str)
+    if not PrepackageUtil:isPreNoNetWork() then
+        ori_he_log_err(str)
+    end
+end
+local ori_he_log_warning = he_log_warning
+function he_log_warning(str)
+    if not PrepackageUtil:isPreNoNetWork() then
+        ori_he_log_warning(str)
+    end
+end
+local ori_he_log_info = he_log_info
+function he_log_info(str)
+    if not PrepackageUtil:isPreNoNetWork() then
+        ori_he_log_info(str)
+    end
+end
+
 ---------------------------------------------------------------------------------  Resource Initialize
 if __WP8 then
     _G.__use_low_effect = true

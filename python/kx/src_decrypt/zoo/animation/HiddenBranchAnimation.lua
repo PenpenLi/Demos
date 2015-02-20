@@ -5,7 +5,7 @@ HiddenBranchAnimation = class(Sprite)
 function HiddenBranchAnimation:initStatic()
 	local sprite = CCSprite:create()
 	self:setRefCocosObj(sprite)
-	self.refCocosObj:setTexture(texture)
+	--self.refCocosObj:setTexture(texture)
 
 	local sprite1 = self:buildStatic("hide_branch10000", ccp(-15, -6))
 	local sprite2 = self:buildStatic("hide_branch20000", ccp(-5, -40))
@@ -13,7 +13,10 @@ function HiddenBranchAnimation:initStatic()
 
 	sprite2:setPosition(ccp(0, 10))
 	sprite3:setPosition(ccp(0, 59))
-
+	self.sprite1 = sprite1
+	self.sprite2 = sprite2
+	self.sprite3 = sprite3
+	
 	self:addChild(sprite1)
 	self:addChild(sprite2)
 	self:addChild(sprite3)

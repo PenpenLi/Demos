@@ -67,6 +67,7 @@ function BuyGoldItem:init(itemData, boughtCallback)
 	local currencySymbol = Localization:getInstance():getText("buy.gold.panel.money.mark") -- 货币符号
 	btn = GroupButtonBase:create(btn)
 	btn:setColorMode(kGroupButtonColorMode.blue);
+	self.procClick = true
 	btn:setString(currencySymbol..itemData.iapPrice);
 	self.btnBuy = btn;
 
@@ -77,31 +78,33 @@ function BuyGoldItem:init(itemData, boughtCallback)
 end
 
 function BuyGoldItem:disableClick()
-	self.btnBuy:setEnabled(false) 
+	self.procClick = false
+	if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(false) end
 end
 
 function BuyGoldItem:enableClick()
-	self.btnBuy:setEnabled(true)
+	self.procClick = true
+	if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(true) end
 end
 
 function BuyGoldItem:buyGold(context)
 	local function onOver()
 		--nothing todo;
-		self:enableClick();
+		if self.procClick and not self.btnBuy.isDisposed then self.btnBuy:setEnabled(true) end
 		PlatformConfig:setCurrentPayType()
 	end
 	local function onCancel()
 		if self.itemData.payType == PlatformPayType.kWechat then
 			DcUtil:successEnterWechatBuyGoldItem(context.index)
 		end
-		self:enableClick()
+		if self.procClick and not self.btnBuy.isDisposed then self.btnBuy:setEnabled(true) end
 		PlatformConfig:setCurrentPayType()
 	end
 	local function onFail()
 		if self.itemData.payType == PlatformPayType.kWechat then
 			DcUtil:successEnterWechatBuyGoldItem(context.index)
 		end
-		self:enableClick()
+		if self.procClick and not self.btnBuy.isDisposed then self.btnBuy:setEnabled(true) end
 		CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
 		PlatformConfig:setCurrentPayType()
 	end
@@ -119,7 +122,7 @@ function BuyGoldItem:buyGold(context)
 
 	if __IOS then -- IOS
 		if RequireNetworkAlert:popout() then
-			self:disableClick()
+			if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(false) end
 			self.buyLogic:buy(context.index, context.data, onSuccess, onFail, onCancel)
 		end
 	else -- on ANDROID and PC we don't need to check for network
@@ -127,11 +130,13 @@ function BuyGoldItem:buyGold(context)
 		if self.itemData.payType == PlatformPayType.kWechat then
 			DcUtil:clickWechatBuyGoldItem(context.index)
 			local function enableButton()
-				if not self.isDisposed then self:enableClick() end
+				if not self.isDisposed then
+					if self.procClick and not self.btnBuy.isDisposed then self.btnBuy:setEnabled(true) end
+				end
 			end
 			setTimeOut(enableButton, 3)
 		end
-		self:disableClick()
+		if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(false) end
 		self.buyLogic:buy(context.index, context.data, onSuccess, onFail, onCancel)
 	end
 end

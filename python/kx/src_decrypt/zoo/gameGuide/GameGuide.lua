@@ -169,6 +169,59 @@ function GameGuide:onHalloweenBossFirstComeout(pos)
 	return self:tryRunNewGuide()
 end
 
+function GameGuide:tryFirstQuestionMark(mainLogic)
+
+	self.firstQuestionMark = true
+	local row, col = 0, 0
+	local found = false
+	for r = #mainLogic.gameItemMap, 1, -1  do
+		for c = 1, #mainLogic.gameItemMap[r] do 
+			local item = mainLogic.gameItemMap[r][c]
+			if item.ItemType == GameItemType.kQuestionMark then
+				row = r
+				col = c
+				found = true
+				break
+			end
+		end
+		if found == true then break end
+	end
+
+	self.guides[190001].action[1].array[1].r = row
+	self.guides[190001].action[1].array[1].c = col
+	self.guides[190001].action[1].panPosY = row - self.guides[190001].action[1].offsetY
+	self:tryEndCurrentGuide()
+	local guide = self:tryRunNewGuide()
+	self.firstQuestionMark = false
+	return guide
+end
+
+function GameGuide:onFirstShowFirework(pos)
+	self.firstShowFirework = true
+	self.guides[190000].action[1].position = pos
+	self:tryEndCurrentGuide()
+	local newGuide = self:tryRunNewGuide()
+	self.firstShowFirework = false
+	return newGuide
+end
+
+
+function GameGuide:tryFirstFullFirework(pos)
+	self.firstFullFirework = true
+	-- self.guides[190002].action[1].position = pos
+	local vs = Director:sharedDirector():getVisibleSize()
+	local vo = Director:sharedDirector():getVisibleOrigin()
+	self.guides[190002].action[1].position = ccp(vo.x+10, vo.y+10)
+	self.guides[190002].action[1].offsetX = 0
+	self.guides[190002].action[1].offsetY = 0
+	self.guides[190002].action[1].width = vs.width - 20
+	self.guides[190002].action[1].height = 165
+	self:tryEndCurrentGuide()
+	local newGuide = self:tryRunNewGuide()
+	self.firstFullFirework = false
+	return newGuide
+end
+
 -- 游戏中获得了一个道具
 function GameGuide:onGetGameItem(itemType)
 	self.itemType = itemType
@@ -183,8 +236,10 @@ end
 function GameGuide:onGameStable()
 	self.scene = "game"
 	self.gameStable = true
+
 	self:tryEndCurrentGuide()
-	return self:tryRunNewGuide()
+	local guide = self:tryRunNewGuide()
+	return guide
 end
 
 -- 离开游戏
@@ -401,6 +456,12 @@ function GameGuide:getFirstGuide(from, to)
 					if self.halloweenBossFirstComeout ~= true then
 						return false
 					end
+				elseif v.type == 'waitSignal' then -- 等待名叫name的变量值变成value才行
+					print('waitSignal', self[v.name], index)
+					if self[v.name] ~= v.value then
+						return false
+					end
+
 				else assert(false, "Unsupported type by GameGuide!"..tostring(k)..v.type) end
 			end
 			return true
@@ -545,6 +606,8 @@ function GameGuide:runGuideActions(from, to, index)
 		GameGuideRunner:runShowProp(self, self.currentGuide.action[self.guideIndex])
 	elseif self.currentGuide.action[self.guideIndex].type == "rabbitWeeklyButton" then
 		GameGuideRunner:runRabbitWeeklyButton(self, self.currentGuide.action[self.guideIndex])
+	elseif self.currentGuide.action[self.guideIndex].type == "showCustomizeArea" then
+		GameGuideRunner:runShowCustomizeArea(self, self.currentGuide.action[self.guideIndex])
 	end
 end
 
@@ -597,6 +660,8 @@ function GameGuide:cleanupGuideActions(from, to)
 		return GameGuideRunner:removeShowProp(self)
 	elseif self.currentGuide.action[self.guideIndex].type == "rabbitWeeklyButton" then
 		return GameGuideRunner:removeRabbitWeeklyButton(self.layer)
+	elseif self.currentGuide.action[self.guideIndex].type == "showCustomizeArea" then
+		return GameGuideRunner:removeShowCustomizeArea(self)
 	end
 end
 

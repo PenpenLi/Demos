@@ -22,9 +22,11 @@ function TurnTable:_init(ui)
 	self.ui = ui
 	local function onEnterHandler(event) self:onEnterHandler(event) end
 	ui:registerScriptHandler(onEnterHandler)
-	ui:addEventListener(DisplayEvents.kTouchBegin, function(evt) self:onTouchBegin(evt) end)
-	ui:addEventListener(DisplayEvents.kTouchMove, function(evt) self:onTouchMove(evt) end)
-	ui:addEventListener(DisplayEvents.kTouchEnd, function(evt) self:onTouchEnd(evt) end)
+	local dispose = self.ui.dispose
+	self.ui.dispose = function()
+		self.ui:unscheduleUpdate()
+		if dispose then dispose(self.ui) end
+	end
 end
 
 function TurnTable:setTargetAngle(target, range)
@@ -32,7 +34,6 @@ function TurnTable:setTargetAngle(target, range)
 end
 
 function TurnTable:onEnterHandler(event)
-	print("TurnTable:onEnterHandler", event)
 	if event == "enter" then
 		if GameGuide then
 			GameGuide:sharedInstance():onTurnTableEnabled(self.ui:getParent(), self, self.ui:isTouchEnabled())
@@ -45,7 +46,10 @@ function TurnTable:onEnterHandler(event)
 end
 
 function TurnTable:setEnabled(enabled)
-	self.ui:setTouchEnabled(enabled)
+	self.ui:setTouchEnabled(enabled, 0, true)
+	if enabled then
+		self.ui:addEventListener(DisplayEvents.kTouchBegin, function(evt) self:onTouchBegin(evt) end)
+	end
 	local scene = Director:sharedDirector():getRunningScene()
 	if not scene then return end
 	local parent = self.ui:getParent()
@@ -57,7 +61,7 @@ function TurnTable:setEnabled(enabled)
 end
 
 function TurnTable:onTouchBegin(evt)
-	self.ui:stopAllActions()
+	self.ui:removeEventListenerByName(DisplayEvents.kTouchBegin)
 	local pos = self.ui:getParent():convertToWorldSpace(ccp(self.ui:getPositionX(), self.ui:getPositionY()))
 	self.posX, self.posY = pos.x, pos.y
 	local angle = math.atan((evt.globalPosition.x - self.posX) / (evt.globalPosition.y - self.posY))
@@ -71,6 +75,8 @@ function TurnTable:onTouchBegin(evt)
 	self.startRotation = angle * 180 / math.pi - rotation
 	self.rotationRec = {}
 	self.lastRotation = rotation
+	self.ui:addEventListener(DisplayEvents.kTouchMove, function(evt) self:onTouchMove(evt) end)
+	self.ui:addEventListener(DisplayEvents.kTouchEnd, function(evt) self:onTouchEnd(evt) end)
 	self:dispatchEvent(Event.new(TurnTableEvents.kTouchStart, {}, self))
 end
 
@@ -93,6 +99,8 @@ function TurnTable:onTouchMove(evt)
 end
 
 function TurnTable:onTouchEnd(evt)
+	self.ui:removeEventListenerByName(DisplayEvents.kTouchMove)
+	self.ui:removeEventListenerByName(DisplayEvents.kTouchEnd)
 	if self.schedule then Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedule) end
 	local angle = math.atan((evt.globalPosition.x - self.posX) / (evt.globalPosition.y - self.posY))
 	local distance = ccpDistance(ccp(self.posX, self.posY), evt.globalPosition)
@@ -110,57 +118,76 @@ function TurnTable:onTouchEnd(evt)
 		if rotation > 270 then rotation = rotation - 360
 		else rotation = rotation + 360 end
 	end
-	self:dispatchEvent(Event.new(TurnTableEvents.kTouchEnd, {}, self))
+	self.ui:addEventListener(DisplayEvents.kTouchBegin, function(evt) self:onTouchBegin(evt) end)
 	sum = sum + rotation - self.lastRotation
 	sum = sum / (#self.rotationRec + 1)
-	print("sum", sum)
 	if math.abs(sum) > 7 then
 		if sum > 0 then sum = 7
 		elseif sum < -7 then sum = -7 end
 	end
 	if math.abs(sum) > 1.5 then
-		self:dispatchEvent(Event.new(TurnTableEvents.kAnimStart, {}, self))
-		self:calcStopping(sum)
+		self:dispatchEvent(Event.new(TurnTableEvents.kTouchEnd, {speed = sum}, self))
 	else
-		-- self:notCalcStopping(sum)
-		self:dispatchEvent(Event.new(TurnTableEvents.kTouchSlow, {}, self))
+		self:dispatchEvent(Event.new(TurnTableEvents.kTouchSlow, {speed = sum}, self))
 	end
+end
+
+function TurnTable:stayRotate(sumSpeed)
+	local function onUpdate(deltaTime)
+		self.ui:setRotation(self.ui:getRotation() + sumSpeed * deltaTime * 60)
+	end
+	self.ui:unscheduleUpdate()
+	self.ui:scheduleUpdateWithPriority(onUpdate, 0)
 end
 
 function TurnTable:notCalcStopping(sumSpeed)
 	self.ui:runAction(CCEaseSineOut:create(CCRotateBy:create(math.abs(sumSpeed) / 5, sumSpeed * 50)))
 end
 
+local function standardAngle(angle)
+	if angle < 0 then
+		while angle < 0 do angle = angle + 360 end
+	end
+	if angle > 360 then
+		while angle > 360 do angle = angle - 360 end
+	end
+	return angle
+end
+
 function TurnTable:calcStopping(sumSpeed)
-	local arr = CCArray:create()
-	local finalTarget = self.target + math.random() * self.range - self.range / 2
-	sumSpeed = sumSpeed * 100
-	if sumSpeed == 0 then return end
-	local rotation = self.ui:getRotation()
-	while rotation < -90 or rotation > 270 do
-		if rotation > 270 then rotation = rotation - 360
-		else rotation = rotation + 360 end
+	local finalTarget = standardAngle(self.target + math.random() * self.range - self.range / 2)
+	local count = math.floor(math.abs(sumSpeed) / 1.5) - 1
+	local start = standardAngle(self.ui:getRotation())
+	local clockWise = sumSpeed >= 0
+	if clockWise and finalTarget - start < 0 then
+		count = count + 1
+	elseif not clockWise and finalTarget - start > 0 then
+		count = count + 1
 	end
-	local target = 0
-	if sumSpeed >= 0 then
-		if rotation >= 0 then target = finalTarget + 360
-		else target = finalTarget - 720 end
-	elseif sumSpeed < 0 then
-		if rotation >= 0 then target = finalTarget - 360
-		else target = finalTarget - 720 end
+	local sum = 0
+	if not clockWise then
+		sum = finalTarget - start - count * 360
+	else
+		sum = finalTarget - start + count * 360
 	end
-	local firstTime = (target - rotation) / sumSpeed
-	arr:addObject(CCRotateBy:create(firstTime, (target - rotation)))
-	local lastCount = math.floor(math.abs(sumSpeed) / 100 / 1.5)
-	local lastTarget = 360
-	local lastTime = lastTarget * lastCount / math.abs(sumSpeed / 2)
-	if sumSpeed < 0 then lastTarget = -360 end
-	arr:addObject(CCEaseSineOut:create(CCRotateBy:create(lastTime, lastTarget * lastCount)))
-	local function onFinish()
-		self:dispatchEvent(Event.new(TurnTableEvents.kAnimFinish, {}, self))
+	local time = sum * 2 / sumSpeed / 60
+	local final = self.ui:getRotation() + sum
+	local sumTime = 0
+	local start = self.ui:getRotation()
+	
+	local function onUpdate(deltaTime)
+		sumTime = sumTime + deltaTime
+		local angle = start + sum * math.sin(sumTime / time * math.pi / 2)
+		self.ui:setRotation(angle)
+		if sumTime >= time then
+			self.ui:setRotation(finalTarget)
+			self.ui:unscheduleUpdate()
+			self:dispatchEvent(Event.new(TurnTableEvents.kAnimFinish, {}, self))
+		end
 	end
-	arr:addObject(CCCallFunc:create(onFinish))
-	self.ui:runAction(CCSequence:create(arr))
+	self.ui:unscheduleUpdate()
+	self.ui:scheduleUpdateWithPriority(onUpdate, 0)
+	self:dispatchEvent(Event.new(TurnTableEvents.kAnimStart, {speed = sumSpeed}, self))
 end
 
 function TurnTable:getDiskPosition()
