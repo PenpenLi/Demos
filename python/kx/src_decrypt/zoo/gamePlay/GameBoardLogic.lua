@@ -175,12 +175,6 @@ function GameBoardLogic:ctor()
 	self.randomAnimalHelpList = {}		----最后随机时屏幕中所有可以被随机到的item
 
 	self.randFactory = HERandomObject:create();
-	-- local oldRandFunc = self.randFactory.rand
-	-- self.randFactory.rand = function(this, s, e)
-	-- 	local result = oldRandFunc(this, s, e)
-	-- 	print(result, debug.traceback())
-	-- 	return result
-	-- end
 	self.PlayUIDelegate = nil;
 
 	-- step stable 相关

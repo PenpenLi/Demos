@@ -2,10 +2,7 @@
 #define COCOSWIDGET_H
 
 #include <QWidget>
-
-namespace Ui {
-class CocosWidget;
-}
+#include <QTimer>
 
 class CocosWidget : public QWidget
 {
@@ -16,7 +13,10 @@ public:
     ~CocosWidget();
 
 private:
-    Ui::CocosWidget *ui;
+    QTimer _cocosTimer;
+
+private slots:
+    void cocosLoop();
 };
 
 #endif // COCOSWIDGET_H

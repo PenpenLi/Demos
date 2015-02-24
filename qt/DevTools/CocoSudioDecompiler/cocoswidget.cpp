@@ -1,14 +1,22 @@
 #include "cocoswidget.h"
-#include "ui_cocoswidget.h"
+
+#define LOG_TAG "CocosWidget"
+#include "logger.h"
 
 CocosWidget::CocosWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::CocosWidget)
+    QWidget(parent)
 {
-    ui->setupUi(this);
+    connect(&_cocosTimer, SIGNAL(timeout()),
+            this, SLOT(cocosLoop()));
+    _cocosTimer.start(1 / 60.f * 1000);
 }
 
 CocosWidget::~CocosWidget()
 {
-    delete ui;
+    LOGT("~CocosWidget()");
+}
+
+void CocosWidget::cocosLoop()
+{
+//    LOGT("cocosLoop ...");
 }

@@ -103,7 +103,6 @@ local function startGameDirectly()
     require "zoo.util.DcUtil"
     require "zoo.util.UdidUtil"
     require "zoo.util.SignatureUtil"
-
     require "hecore.WrapAssert"
     require "zoo.common.LogService"
     require "zoo.config.PlatformConfig"
@@ -127,7 +126,7 @@ local function startGameAfterDynamicUpdate()
         local packageName = tostring(k) or ""
         if beginWithString(packageName, "zoo.") or beginWithString(packageName, "hecore.") then unrequire(packageName) end
     end
-    
+
     startGameDirectly()
 end
 

@@ -21,8 +21,10 @@ LIBS +=             \
     -lDevBase
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    cocoswidget.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    cocoswidget.h
 
 FORMS    += mainwindow.ui
