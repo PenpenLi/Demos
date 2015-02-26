@@ -13,18 +13,42 @@ TEMPLATE = app
 
 DESTDIR = $$PWD/../@bin
 
+macx {
+    INCLUDEPATH += \
+        /Users/xiaobin/Documents/codes/cocos2d-x-3.4/cocos \
+        /Users/xiaobin/Documents/codes/cocos2d-x-3.4/external/glfw3/include/mac \
+        /System/Library/Frameworks
+
+    LIBS += \
+        -framework Cocoa \
+        -framework OpenGL \
+        -framework AudioToolbox \
+        -framework OpenAL \
+        -framework QuartzCore \
+        -framework ApplicationServices \
+        -framework IOKit \
+        -framework Foundation
+}
+
 INCLUDEPATH +=  \
     $$PWD/../DevBase
 
 LIBS +=             \
     -L$$PWD/../@lib \
-    -lDevBase
+    -lDevBase   \
+    -lcocos2d   \
+    -lpng   \
+    -lz
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cocoswidget.cpp
+    cocoswidget.cpp \
+    AppDelegate.cpp
 
 HEADERS  += mainwindow.h \
-    cocoswidget.h
+    cocoswidget.h \
+    AppDelegate.h
 
 FORMS    += mainwindow.ui
+
+CONFIG += c++11
