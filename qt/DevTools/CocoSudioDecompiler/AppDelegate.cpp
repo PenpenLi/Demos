@@ -3,6 +3,12 @@
 #include <vector>
 #include <string>
 
+#include "qglviewimpl.h"
+#include "platform/desktop/CCGLViewImpl-desktop.h"
+
+#define LOG_TAG "AppDelegate"
+#include "logger.h"
+
 USING_NS_CC;
 using namespace std;
 
@@ -20,10 +26,12 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
         glview = GLViewImpl::create("Cpp Empty Test");
+        LOGT("glview: " << glview);
         director->setOpenGLView(glview);
     }
 
-    director->setOpenGLView(glview);
+    glview = director->getOpenGLView();
+    LOGT("glview: " << glview);
 	
     // turn on display FPS
     director->setDisplayStats(true);
@@ -53,8 +61,9 @@ void AppDelegate::applicationWillEnterForeground() {
     // SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
 }
 
-int AppDelegate::run() {
-    if(!applicationDidFinishLaunching()) {
-        return 1;
-    }
-}
+//int AppDelegate::run() {
+//    if(!applicationDidFinishLaunching()) {
+//        return 1;
+//    }
+//    return 0;
+//}

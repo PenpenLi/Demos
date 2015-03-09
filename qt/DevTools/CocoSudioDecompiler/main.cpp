@@ -1,9 +1,9 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-//// cocos test
-//#include "AppDelegate.h"
-//USING_NS_CC;
+// cocos test
+#include "AppDelegate.h"
+USING_NS_CC;
 
 #define LOG_TAG "main"
 #include "logger.h"

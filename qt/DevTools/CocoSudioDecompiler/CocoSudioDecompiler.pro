@@ -31,7 +31,8 @@ macx {
 }
 
 INCLUDEPATH +=  \
-    $$PWD/../DevBase
+    $$PWD/../DevBase \
+    $$PWD/../3rd/include
 
 LIBS +=             \
     -L$$PWD/../@lib \
@@ -40,15 +41,17 @@ LIBS +=             \
     -lpng   \
     -lz
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += main.cpp \
+    mainwindow.cpp  \
     cocoswidget.cpp \
-    AppDelegate.cpp
+    AppDelegate.cpp \
+    qglviewimpl.cpp
 
 HEADERS  += mainwindow.h \
     cocoswidget.h \
-    AppDelegate.h
+    AppDelegate.h \
+    qglviewimpl.h
 
-FORMS    += mainwindow.ui
+FORMS += mainwindow.ui
 
 CONFIG += c++11

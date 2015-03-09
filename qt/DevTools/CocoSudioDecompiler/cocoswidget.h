@@ -13,7 +13,8 @@ public:
     ~CocosWidget();
 
 private:
-    QTimer _cocosTimer;
+//    QTimer _cocosTimer;
+    QThread _cocosThread;
 
 private slots:
     void cocosLoop();

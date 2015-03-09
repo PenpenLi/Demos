@@ -33,7 +33,7 @@ public:
     */
     virtual void applicationWillEnterForeground();
 
-    int run();
+//    int run();
 };
 
 #endif // _APP_DELEGATE_H_
