@@ -13,17 +13,21 @@ ___FILEBASENAME___::~___FILEBASENAME___()
 
 bool ___FILEBASENAME___::init()
 {
-    if (!Node::init()) return false;
-    
-    return true;
+	if (!Node::init()) return false;
+	
+	setupUI();
+
+	return true;
 }
 
 void ___FILEBASENAME___::onEnter()
 {
-    Node::onEnter();
+	Node::onEnter();
 }
 
 void ___FILEBASENAME___::onExit()
 {
-    Node::onExit();
+	Node::onExit();
 }
+
+void ___FILEBASENAME___::setupUI(){}
