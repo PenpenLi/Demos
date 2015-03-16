@@ -2,7 +2,9 @@
 #define COCOSWIDGET_H
 
 #include <QWidget>
-#include <QTimer>
+#include <QThread>
+
+class CocosRunner;
 
 class CocosWidget : public QWidget
 {
@@ -12,12 +14,16 @@ public:
     explicit CocosWidget(QWidget *parent = 0);
     ~CocosWidget();
 
+protected:
+    virtual void moveEvent(QMoveEvent *) override;
+    virtual void resizeEvent(QResizeEvent *) override;
+    virtual void closeEvent(QCloseEvent *) override;
+
 private:
-//    QTimer _cocosTimer;
-    QThread _cocosThread;
+    CocosRunner *_runner;
 
 private slots:
-    void cocosLoop();
+    void onCocosReady();
 };
 
 #endif // COCOSWIDGET_H

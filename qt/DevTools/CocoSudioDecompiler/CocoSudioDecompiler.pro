@@ -28,6 +28,9 @@ macx {
         -framework ApplicationServices \
         -framework IOKit \
         -framework Foundation
+
+    OBJECTIVE_SOURCES += \
+        cocoswidget.mm
 }
 
 INCLUDEPATH +=  \
@@ -43,14 +46,13 @@ LIBS +=             \
 
 SOURCES += main.cpp \
     mainwindow.cpp  \
-    cocoswidget.cpp \
     AppDelegate.cpp \
-    qglviewimpl.cpp
+    cocosrunner.cpp
 
 HEADERS  += mainwindow.h \
     cocoswidget.h \
     AppDelegate.h \
-    qglviewimpl.h
+    cocosrunner.h
 
 FORMS += mainwindow.ui
 
