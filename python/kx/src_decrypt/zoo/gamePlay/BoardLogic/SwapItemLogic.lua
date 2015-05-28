@@ -142,7 +142,7 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local color2 = data2.ItemColorType
 
 	if (color1 == color2) then
-        SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2) --lxb ^_^
+        if doSwap then SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2) end --lxb ^_^
         return false
     end --同样的颜色交换，没有意义
 	--1.临时性颜色交换
