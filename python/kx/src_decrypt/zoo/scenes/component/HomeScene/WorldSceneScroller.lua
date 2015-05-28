@@ -9,6 +9,7 @@ require "zoo.ResourceManager"
 require "zoo.scenes.component.HomeScene.LockedCloud"
 require "zoo.scenes.component.HomeScene.hiddenBranch.HiddenBranch"
 require "zoo.scenes.component.HomeScene.hiddenBranch.ExploreCloud"
+require "zoo.scenes.component.HomeScene.WorldMapOptimizer"
 require "zoo.UIConfigManager"
 require "zoo.panel.StartGamePanel"
 require "zoo.common.CallbackChain"
@@ -359,6 +360,7 @@ end
 ------------------------------------
 
 local function onScrollerTouchMove(event, ...)
+
 	assert(event)
 	assert(event.name == DisplayEvents.kTouchMove)
 	assert(event.context)
@@ -443,6 +445,7 @@ local function onScrollerTouchMove(event, ...)
 end
 
 local function onScrollerTouchEnd(event, ...)
+
 	assert(event)
 	assert(event.name == DisplayEvents.kTouchEnd)
 	assert(event.context)
@@ -501,6 +504,7 @@ local function onScrollerTouchEnd(event, ...)
 	if not self.autoRollTimerId then
 		self:startAutoRollTimer()
 	end
+	WorldMapOptimizer:getInstance():update()
 end
 
 -----------------------------------------------
@@ -544,6 +548,7 @@ end
 ----------------------------------------------------
 
 function WorldSceneScroller:onScrollerTouchBegin(event, ...)
+
 	assert(event)
 	assert(event.name == DisplayEvents.kTouchBegin)
 	assert(#{...} == 0)
@@ -627,11 +632,12 @@ function WorldSceneScroller:startAutoRollTimer(...)
 	local function autoRollTimer()
 		self:autoRollTimer()
 	end
-
+	print("WorldSceneScroller:startAutoRollTimer   autoScrollTimerInterval = " .. tostring(self.autoScrollTimerInterval))
 	-- Initially Call autoRollTimer Manually
 	-- After self.autoScrollTimerInterval The Scheduler Then Call It
 	assert(not self.autoRollTimerId)
 	self.autoRollTimerId = scheduler:scheduleScriptFunc(autoRollTimer, self.autoScrollTimerInterval, false)
+	print("WorldSceneScroller:startAutoRollTimer   autoRollTimerId = " .. tostring(self.autoRollTimerId))
 	autoRollTimer()
 end
 
@@ -788,12 +794,14 @@ function WorldSceneScroller:autoRollTimer(...)
 
 		sequenceAction:setTag(WorldSceneScrollerActionTag.AUTO_ROLL_ACTION)
 		self.maskedLayer:runAction(sequenceAction)
+		WorldMapOptimizer:getInstance():update()
 
 	elseif CheckSceneOutRangeConstant.TOP_OUT_OF_RANGE == scenePositionState or
 		CheckSceneOutRangeConstant.BOTTOM_OUT_OF_RANGE == scenePositionState then
 		self:stopAutoRollTimer()
 		-- Start Restore
 		self:outRangeRestore()
+		WorldMapOptimizer:getInstance():update()
 	else 
 		assert(false)
 	end
@@ -825,6 +833,7 @@ function WorldSceneScroller:outRangeRestore(...)
 
 	local function callBack()
 		self:dispatchMoveToPercentageEvent()
+		WorldMapOptimizer:getInstance():update()
 	end
 	local callFuncAction	= CCCallFunc:create(callBack)
 

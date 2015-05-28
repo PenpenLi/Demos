@@ -110,7 +110,7 @@ function BuyAndContinueButton:setWindmillNumber(number, ...)
 	if self.windmillNumber ~= number then
 		self.windmillNumber = number
 		if self.showMoneyMark then
-			self.windmillNumberLabel:setString(Localization:getInstance():getText("buy.gold.panel.money.mark") .. tostring(number))
+			self.windmillNumberLabel:setString(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), number))
 		else
 			self.windmillNumberLabel:setString(tostring(number))
 		end

@@ -95,13 +95,54 @@ TileConst = table.const
 	kMagicLamp = 84, -- 神灯（别名：独眼、增益性障碍）
 	kSuperBlocker = 87,	-- 无敌障碍
 	kHoneyBottle = 88,  --蜂蜜罐子
+	kHoney = 89,        --蜂蜜
 	kAddTime	= 90, 	--增加时间的动物
 	kMagicTile = 91,	-- 万圣节魔法地格
 	kSand = 92, 	-- 流沙
 	-----------------------------------------------这里开始地图使用新的数据结构
 	kQuestionMark = 93,  --问号
+	-- 冰柱 94~118
+	kChain1 = 94,
+	kChain1_Up = 95,
+	kChain1_Right = 96,
+	kChain1_Down = 97,
+	kChain1_Left = 98,
+	kChain2 = 99,
+	kChain2_Up = 100,
+	kChain2_Right = 101,
+	kChain2_Down = 102,
+	kChain2_Left = 103,
+	kChain3 = 104,
+	kChain3_Up = 105,
+	kChain3_Right = 106,
+	kChain3_Down = 107,
+	kChain3_Left = 108,
+	kChain4 = 109,
+	kChain4_Up = 110,
+	kChain4_Right = 111,
+	kChain4_Down = 112,
+	kChain4_Left = 113,
+	kChain5 = 114,
+	kChain5_Up = 115,
+	kChain5_Right = 116,
+	kChain5_Down = 117,
+	kChain5_Left = 118,
+	-- 魔法石 PC:firefly
+	kMagicStone_Up = 119,
+	kMagicStone_Right = 120,
+	kMagicStone_Down = 121,
+	kMagicStone_Left = 122,
 
-	kMaxTile = 100,		--
+	kHoney_Sub_Select = 123,   ---蜂蜜优先级的第二选择
+	kCannonCoin = 124,
+	kCannonCrystallBall = 125,
+	kCannonBalloon = 126,
+	kCannonHoneyBottle = 127,
+	kCannonGreyCuteBall = 128,
+	kCannonBrownCuteBall = 129,
+	kCnanonBlackCuteBall = 130,
+
+	kMaxTile = 140,		--
 	kInvalid = -1,		--
 }
 
@@ -114,6 +155,26 @@ DirConfig = table.const
 	kDown = 2,
 	kLeft = 3,
 	kRight = 4
+}
+
+---------------------------------
+-- 冰柱方向定义
+---------------------------------
+ChainDirConfig = table.const {
+	kUp = 1,
+	kRight = 2,
+	kDown = 3,
+	kLeft = 4,
+}
+
+-------------------------------
+-- 魔法石方向定义
+-------------------------------
+MagicStoneDirConfig = table.const {
+	kUp = 1,
+	kRight = 2,
+	kDown = 3,
+	kLeft = 4,
 }
 
 ------------------------------------------------------------------------------------
@@ -166,6 +227,7 @@ UncertainCfgConst = table.const{
 	kCanFalling = 1,      ------可以掉落的
 	kCannotFalling = 2,   ------不能掉落
 	kSpecial = 3,         ------特效
+	kProps = 4,         	  ------道具
 }
 
 function AnimalTypeConfig.getType(value)

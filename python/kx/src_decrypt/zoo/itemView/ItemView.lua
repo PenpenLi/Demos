@@ -32,6 +32,8 @@ require "zoo.animation.TileAddTime"
 require "zoo.animation.TileMagicTile"
 require "zoo.animation.TileSand"
 require "zoo.animation.TileQuestionMark"
+require "zoo.animation.TileChain"
+require "zoo.animation.TileMagicStone"
 
 ItemView = class{}
 
@@ -58,20 +60,23 @@ ItemSpriteType = table.const
 	kEnterClipping = 15,	    -- 传送门入口遮罩
 	kRabbitCaveUp = 16,    --兔子洞穴上层
 	kRope = 17,				-- 绳子
-	kLock = 18,				-- 笼子
-	kFurBall = 19,			-- 毛球, 蜂蜜
-	kBigMonster = 20,       -- 雪怪
-	kLockShow = 21,			-- 笼子消除
-	kSnowShow = 22,			-- 雪花消除
-	kNormalEffect = 23,     -- 毛球消除，毒液扩散, 雪怪的冰层等
-	kTransClipping = 24,    -- 传送带遮罩
-	kPass = 25,	            -- 通道
-	kTransmissionDoor = 26,  -- 传送带出入口
-	kSpecial = 27,			-- 鸟飞行,刷新飞行
-	kRoostFly = 28,			-- 鸡窝飞行,与刷新飞行冲突
-	kSnailMove = 29,       	-- 蜗牛移动，问号爆炸前景光
-	kQuestionMarkDestoryFg = 30, --问号消除前景光 
-	kLast = 31				-- 最上层--------添加层次时请保持这个在最前
+	kChain = 18,			-- 冰柱
+	kLock = 19,				-- 笼子
+	kFurBall = 20,			-- 毛球, 蜂蜜
+	kBigMonster = 21,       -- 雪怪
+	kLockShow = 22,			-- 笼子消除
+	kSnowShow = 23,			-- 雪花消除
+	kNormalEffect = 24,     -- 毛球消除，毒液扩散, 雪怪的冰层等
+	kTransClipping = 25,    -- 传送带遮罩
+	kPass = 26,	            -- 通道
+	kTransmissionDoor = 27,  -- 传送带出入口
+	kSpecial = 28,			-- 鸟飞行,刷新飞行
+	kRoostFly = 29,			-- 鸡窝飞行,与刷新飞行冲突
+	kSnailMove = 30,       	-- 蜗牛移动，问号爆炸前景光
+	kQuestionMarkDestoryFg = 31, --问号消除前景光 
+	kMagicStoneFire = 32, --魔法石发动动画
+	kDigBlockerBomb = 33,
+	kLast = 34,			-- 最上层--------添加层次时请保持这个在最前
 }
 
 local Max_Item_Y = GamePlayConfig_Max_Item_Y
@@ -90,7 +95,6 @@ local kCharacterAnimationTime = 1/30
 
 function ItemView:ctor()
 	self.itemSprite = nil		-- 真正的显示对象
-	self.itemPanel = nil		-- 辅助记录Sprite的父节点
 	self.itemPosAdd = nil		-- 普通物品的偏移量存储
 	self.RopePosAdd = nil		-- 绳子的偏移量存储
 	self.x = 0
@@ -116,7 +120,6 @@ end
 
 function ItemView:dispose()
 	self.itemSprite = nil
-	self.itemPanel = nil
 	self.itemPosAdd = nil
 	self.RopePosAdd = nil
 
@@ -134,7 +137,6 @@ end
 
 function ItemView:initView()
 	self.itemSprite = {}
-	self.itemPanel = {}
 	self.itemPosAdd = {}
 end
 
@@ -209,22 +211,22 @@ function ItemView:initByBoardData(data)
 		local str_V = "WallV.png"
 		local st_sprite = Sprite:createWithSpriteFrameName(str_H);
 		st_sprite:setOpacity(0)
-		if data:hasTopRope() then --上
+		if data:hasTopRopeProperty() then --上
 			local RopeUP = Sprite:createWithSpriteFrameName(str_H);
 			RopeUP:setPositionXY(self.w / 2.0 + 5, self.h / 2.0 + 5)
 			st_sprite:addChild(RopeUP)
 		end
-		if data:hasBottomRope() then --下
+		if data:hasBottomRopeProperty() then --下
 			local RopeDown = Sprite:createWithSpriteFrameName(str_H);
 			RopeDown:setPositionXY(self.w / 2.0 + 5, -self.h / 2.0 + 7)
 			st_sprite:addChild(RopeDown)
 		end
-		if data:hasLeftRope() then --左
+		if data:hasLeftRopeProperty() then --左
 			local RopeLeft = Sprite:createWithSpriteFrameName(str_V);
 			RopeLeft:setPositionXY(5, 5)
 			st_sprite:addChild(RopeLeft)
 		end
-		if data:hasRightRope() then --右
+		if data:hasRightRopeProperty() then --右
 			local RopeRight = Sprite:createWithSpriteFrameName(str_V);
 			RopeRight:setPositionXY(self.w + 4, 5)
 			st_sprite:addChild(RopeRight)
@@ -232,6 +234,9 @@ function ItemView:initByBoardData(data)
 
 		if st_sprite then self.itemSprite[ItemSpriteType.kRope] = st_sprite end
 	end
+
+	-- chain todo
+	self:addChainsView(data)
 
 	self:initSnailRoad(data)
 end
@@ -373,7 +378,7 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self.itemShowType = ItemSpriteItemShowType.kCharacter
 		self.itemSprite[ItemSpriteType.kItem] = ItemViewUtils:buildGift(data.ItemColorType)
 	elseif data.ItemType == GameItemType.kIngredient then
-		local beanpod = ItemViewUtils:buildBeanpod()
+		local beanpod = ItemViewUtils:buildBeanpod(data.showType)
 		self.itemSprite[ItemSpriteType.kItem] = beanpod
 	elseif data.ItemType == GameItemType.kVenom then
 		self:buildVenom()
@@ -413,8 +418,9 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildAddTime(data.ItemColorType, data.addTime)
 	elseif data.ItemType == GameItemType.kQuestionMark then
 		self:buildQuestionMark(data.ItemColorType)
-	end 
-
+	elseif data.ItemType == GameItemType.kMagicStone then
+		self:buildMagicStone(data.magicStoneDir, data.magicStoneLevel)
+	end
 
 	if data.isHalloweenBottle then
 		self:buildHalloweenBoss()
@@ -451,22 +457,16 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 
 end
 
-function ItemView:buildTransmisson(boardData)
-	local board = Sprite:createWithSpriteFrameName("trans_board")
-	board:setRotation((boardData.transDirect - 1) * 90)
-	self.itemSprite[ItemSpriteType.kTileBlocker] = board
-
-	if boardData.transType >= TransmissionType.kStart then
-		self.itemSprite[ItemSpriteType.kTransmissionDoor] = TileTransDoor:create(boardData.transColor, boardData.transType, boardData.transDirect)
-	end
-
+function ItemView:buildMagicStone(magicStoneDir, magicStoneLevel)
+	local sprite = TileMagicStone:create(magicStoneLevel, magicStoneDir)
+	self.itemSprite[ItemSpriteType.kItemShow] = sprite
 end
 
 function ItemView:buildDigGround( digLevel, isOnlyGetSprite )
 	-- body
 	local texture
-	if self.itemPanel[ItemSpriteType.kDigBlocker] then 
-		texture = self.itemPanel[ItemSpriteType.kDigBlocker].refCocosObj:getTexture()
+	if self.getContainer(ItemSpriteType.kDigBlocker) then 
+		texture = self.getContainer(ItemSpriteType.kDigBlocker).refCocosObj:getTexture()
 	end
 
 	local view = TileDigGround:create(digLevel, texture)
@@ -480,8 +480,8 @@ end
 function ItemView:buildDigJewel( digLevel ,digJewelType, isOnlyGetSprite)
 	-- body
 	local texture
-	if self.itemPanel[ItemSpriteType.kDigBlocker] then 
-		texture = self.itemPanel[ItemSpriteType.kDigBlocker].refCocosObj:getTexture()
+	if self.getContainer(ItemSpriteType.kDigBlocker) then 
+		texture = self.getContainer(ItemSpriteType.kDigBlocker).refCocosObj:getTexture()
 	end
 	local view =  TileDigJewel:create(digLevel, texture, digJewelType)
 
@@ -613,8 +613,8 @@ function ItemView:playAnimationAnimalDestroy_DestroyEffect()
 	self.itemSprite[ItemSpriteType.kItemDestroy] = destroySprite;
 	local pos = self:getBasePosition(self.x,self.y);
 	destroySprite:setPosition(pos);
-	if self.itemPanel ~= nil and self.itemPanel[ItemSpriteType.kItemDestroy] ~= nil then 
-		self.itemPanel[ItemSpriteType.kItemDestroy]:addChild(destroySprite);
+	if self.getContainer(ItemSpriteType.kItemDestroy) ~= nil then 
+		self.getContainer(ItemSpriteType.kItemDestroy):addChild(destroySprite);
 	else
 		self.isNeedUpdate = true;
 	end
@@ -622,6 +622,10 @@ end
 
 function ItemView:playBridBackEffect(isShow, scaleTo)
 	if (isShow) then
+		if self.itemSprite[ItemSpriteType.kItemBack] ~= nil then
+			self.itemSprite[ItemSpriteType.kItemBack]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kItemBack] = nil
+		end
 		self.itemSprite[ItemSpriteType.kItemBack] = TileBird:createBirdDestroyEffectForever(scaleTo)
 		local pos = self:getBasePosition(self.x, self.y)
 		self.itemSprite[ItemSpriteType.kItemBack]:setPosition(pos)
@@ -689,10 +693,10 @@ function ItemView:playIceDecEffect(callback)
 		else
 			if callback then callback() end
 		end
-	elseif self.itemPanel[ItemSpriteType.kLight] ~= nil then ----最后一层冰被干掉了，要靠辅助记录的Panel来添加特效
-		self.itemPanel[ItemSpriteType.kLight]:addChild(sprite);
+	elseif self.getContainer(ItemSpriteType.kLight) ~= nil then ----最后一层冰被干掉了，要靠辅助记录的Panel来添加特效
+		self.getContainer(ItemSpriteType.kLight):addChild(sprite);
 	end
-end
+end                                                                                                                                                                                                                                                                                                                                                                             
 
 function ItemView:playLockDecEffect()
 	local context = self
@@ -766,7 +770,7 @@ function ItemView:playRabbitUpstarirsAnimation(r, c, boardView, isShowDangerous 
 		-- body
 		if s then
 			s:removeFromParentAndCleanup(false)
-			self.itemPanel[ItemSpriteType.kItemShow]:addChild(s)
+			self.getContainer(ItemSpriteType.kItemShow):addChild(s)
 			self.itemSprite[ItemSpriteType.kItemShow] = s
 			s:setScale(1)
 			s:setPosition(self:getBasePosition(c, r))
@@ -1019,7 +1023,6 @@ function ItemView:updateByNewBoardData(data)
 	if (self.oldBoard == nil or self.oldBoard.iceLevel ~= data.iceLevel) then
 		if (self.itemSprite[ItemSpriteType.kLight] ~= nil) then
 			if self.itemSprite[ItemSpriteType.kLight]:getParent() then
-				self.itemPanel[ItemSpriteType.kLight] = self.itemSprite[ItemSpriteType.kLight]:getParent();
 				self.itemSprite[ItemSpriteType.kLight]:removeFromParentAndCleanup(true);
 				self.itemSprite[ItemSpriteType.kLight] = nil;
 			end
@@ -1043,7 +1046,7 @@ function ItemView:updateByNewItemData(data)
 	if data.ItemType == GameItemType.kIngredient then
 		if self.oldData and self.oldData.ItemType ~= data.ItemType then
 			self:removeItemSpriteGameItem();
-			self.itemSprite[ItemSpriteType.kItem] = ItemViewUtils:buildBeanpod();
+			self.itemSprite[ItemSpriteType.kItem] = ItemViewUtils:buildBeanpod(data.showType);
 		end
 	end
 
@@ -1510,11 +1513,19 @@ function ItemView:playRoostReplaceFlyAnimation(fromPos, completeCallback)
 	bezierConfig.endPosition = toCCP
 	local bezierAction = CCBezierTo:create(0.6, bezierConfig)
 	local callbackAction = CCCallFunc:create(completeCallback)
-	local sequenceAction = CCSequence:createWithTwoActions(bezierAction, callbackAction)
+	local delayAction = CCDelayTime:create(0.3)
+
+	local actionList = CCArray:create()
+	actionList:addObject(bezierAction)
+	actionList:addObject(callbackAction)
+	actionList:addObject(delayAction)
+	actionList:addObject(CCCallFunc:create(onAnimComplete))
+	-- local sequenceAction = CCSequence:createWithTwoActions(bezierAction, callbackAction)
+	local sequenceAction = CCSequence:create(actionList)
 
 	sprite = TileRoost:createFlyEffect()
 	sprite:setPosition(fromCCP)
-	sprite:ad(Events.kComplete, onAnimComplete)
+	-- sprite:ad(Events.kComplete, onAnimComplete)
 	sprite:runAction(sequenceAction)
 	self.itemSprite[ItemSpriteType.kRoostFly] = sprite
 	self.isNeedUpdate = true
@@ -1527,15 +1538,15 @@ function ItemView:playDigGroundDecAnimation( boardView )
 	local function callback( ... )
 		-- body
 		sprite:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kDigBlockerBomb] = nil
 	end
 
 	if sprite then 
 		if sprite.level == 1 then
 			self.itemSprite[ItemSpriteType.kDigBlocker] = nil
-			if boardView and boardView.PlayUIDelegate and boardView.PlayUIDelegate.effectLayer then
+			if boardView and container then
 				sprite:removeFromParentAndCleanup(false)
-				boardView.PlayUIDelegate.effectLayer:addChild(sprite)
-				sprite:setPosition(boardView.gameBoardLogic:getGameItemPosInView(self.y, self.x))
+				self.itemSprite[ItemSpriteType.kDigBlockerBomb] = sprite
 			end
 			sprite:changeLevel(sprite.level -1, callback)
 		else 
@@ -1550,15 +1561,15 @@ function ItemView:playDigJewelDecAnimation( boardView )
 	local function callback( ... )
 		-- body
 		sprite:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kDigBlockerBomb] = nil
 	end
 
 	if sprite then 
 		if sprite.level == 1 then
 			self.itemSprite[ItemSpriteType.kDigBlocker] = nil
-			if boardView and boardView.PlayUIDelegate and boardView.PlayUIDelegate.effectLayer then 
+			if boardView and container then 
 				sprite:removeFromParentAndCleanup(false)
-				boardView.PlayUIDelegate.effectLayer:addChild(sprite)
-				sprite:setPosition(boardView.gameBoardLogic:getGameItemPosInView(self.y, self.x))
+				self.itemSprite[ItemSpriteType.kDigBlockerBomb] = sprite
 			end
 			sprite:changeLevel(sprite.level -1, callback)
 		else
@@ -1576,7 +1587,7 @@ function ItemView:buildMonster()
 end
 
 function ItemView:buildBoss(data)
-	local boss = TileBoss:create(BossType.kSheep)
+	local boss = TileBoss:create(BossType.kCat)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -1707,7 +1718,7 @@ function ItemView:playMimosaEffectGrow( direction, delay, callback)
 			mask:setAlpha(0.8)
 			self.itemSprite[ItemSpriteType.kNormalEffect] = container
 			self.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(false)
-			self.itemPanel[ItemSpriteType.kNormalEffect]:addChild(container)
+			self.getContainer(ItemSpriteType.kNormalEffect):addChild(container)
 		end
 		self.itemSprite[ItemSpriteType.kSpecial] = nil
 		self.isNeedUpdate = true
@@ -1800,7 +1811,7 @@ function ItemView:CreateFallingClippingSprite(data, autotype)
 	elseif data.ItemType == GameItemType.kGift then				--由系统统一计算
 		tempsprite = ItemViewUtils:buildGift(data.ItemColorType)
 	elseif data.ItemType == GameItemType.kIngredient then 		--添加一个豆荚
-		local beanpod = ItemViewUtils:buildBeanpod() 			--创建豆荚
+		local beanpod = ItemViewUtils:buildBeanpod(data.showType) 			--创建豆荚
 		tempsprite = beanpod; 		--添加
 	elseif data.ItemType == GameItemType.kCoin then
 		tempsprite = TileCoin:create()
@@ -1816,6 +1827,10 @@ function ItemView:CreateFallingClippingSprite(data, autotype)
 		tempsprite = TileAddTime:create(data.ItemColorType, data.addTime)
 	elseif data.ItemType == GameItemType.kQuestionMark then
 		tempsprite = ItemViewUtils:createQuestionMark(data.ItemColorType)
+	elseif data.ItemType == GameItemType.kAddMove then
+		tempsprite = self:buildAddMove(data.ItemColorType, data.numAddMove, true)
+	else
+		he_log_error("unexcepted item type:"..tostring(data.itemType))
 	end 
 
 	local container = Sprite:createEmpty()
@@ -2015,17 +2030,21 @@ function ItemView:flyingSpriteIntoItemEnd()
 end
 
 ----播放收集豆荚的动画
-function ItemView:playCollectIngredientAction(boardView, posEnd)
+function ItemView:playCollectIngredientAction(itemShowType, boardView, posEnd)
 	if self.itemSprite[ItemSpriteType.kItem] then
 		local item = self.itemSprite[ItemSpriteType.kItem]
-		local sprite = ItemViewUtils:buildBeanpod()
+		local sprite = ItemViewUtils:buildBeanpod(itemShowType)
 		if boardView.PlayUIDelegate and boardView.PlayUIDelegate.effectLayer then
 			boardView.PlayUIDelegate.effectLayer:addChild(sprite, 0)
 			sprite:setPosition(boardView.gameBoardLogic:getGameItemPosInView(self.y, self.x))
 		end
 		item:runAction(CCScaleTo:create(BoardViewAction:getActionTime(GamePlayConfig_DropDown_Ingredient_ScaleTime), 0))
 		local position = boardView.gameBoardLogic:getGameItemPosInView(self.y, self.x)
-		position.y = position.y - GamePlayConfig_DropDown_Ingredient_CollectPos * GamePlayConfig_Tile_Height
+		if itemShowType and itemShowType == IngredientShowType.kAcorn then 
+			position.y = position.y - GamePlayConfig_DropDown_Acorn_CollectPos * GamePlayConfig_Tile_Height
+		else
+			position.y = position.y - GamePlayConfig_DropDown_Ingredient_CollectPos * GamePlayConfig_Tile_Height
+		end
 
 		local function onRepeatFinishCallback_MoveIngredient()
 			sprite:removeFromParentAndCleanup(true)
@@ -2357,8 +2376,8 @@ function ItemView:playRabbitDestroyAnimation()
 
 		s:playDestroyAnimation(onAnimComplete)
 
-		if self.itemPanel and self.itemSprite[ItemSpriteType.kNormalEffect] == nil then
-			self.itemPanel[ItemSpriteType.kNormalEffect]:addChild(s);
+		if self.getContainer(ItemSpriteType.kNormalEffect) and self.itemSprite[ItemSpriteType.kNormalEffect] == nil then
+			self.getContainer(ItemSpriteType.kNormalEffect):addChild(s);
 		else
 			self.isNeedUpdate = true
 		end
@@ -2370,12 +2389,12 @@ end
 function ItemView:setTileBlockCoverSpriteVisible( value )
 	-- body
 	for i = ItemSpriteType.kSnailRoad, ItemSpriteType.kLast do
-			if self.itemSprite[i] ~= nil then
-				if i == ItemSpriteType.kRope or i == ItemSpriteType.kPass then 
-				else
-					self.itemSprite[i]:setVisible(value)
-				end
+		if self.itemSprite[i] ~= nil then
+			if i == ItemSpriteType.kRope or i == ItemSpriteType.kPass or i == ItemSpriteType.kChain then 
+			else
+				self.itemSprite[i]:setVisible(value)
 			end
+		end
 	end
 end
 
@@ -2526,7 +2545,7 @@ function ItemView:playMaydayBossCast(boardView, callback)
 end
 
 function ItemView:buildBossAnim(data)
-	local boss = TileBoss:create(BossType.kSheep)
+	local boss = TileBoss:create(BossType.kCat)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -2614,8 +2633,8 @@ function ItemView:playSnailOutShellAnimation(direction, callback)
 		self.itemSprite[ItemSpriteType.kSnailMove] = nil
 		self:cleanGameItemView()
 		self:buildSnail(direction)
-		if self.itemPanel ~= nil and self.itemPanel[ItemSpriteType.kItemShow] ~= nil then 
-			self.itemPanel[ItemSpriteType.kItemShow]:addChild(self.itemSprite[ItemSpriteType.kItemShow]);
+		if self.getContainer(ItemSpriteType.kItemShow) ~= nil then 
+			self.getContainer(ItemSpriteType.kItemShow):addChild(self.itemSprite[ItemSpriteType.kItemShow]);
 		else
 			self.isNeedUpdate = true;
 		end
@@ -2704,7 +2723,7 @@ function ItemView:playBirdShiftToAnim(destPos, callback)
 end
 
 local needTransLayer = table.const{
-	ItemSpriteType.kTileBlocker,
+	-- ItemSpriteType.kTileBlocker,
 	ItemSpriteType.kSand,
 	ItemSpriteType.kLight,
 	ItemSpriteType.kItem, 
@@ -2716,9 +2735,11 @@ local needTransLayer = table.const{
 
 function ItemView:getTransItemCopy()
 	local container = Sprite:createEmpty()
+	container.items = {}
 	for k, v in pairs(needTransLayer) do
 		local item = self.itemSprite[v]
 		if item then
+			container.items[v] = item
 			item:removeFromParentAndCleanup(false)
 			self.itemSprite[v] = nil
 			item:setPosition(ccp(0,0))
@@ -2728,121 +2749,238 @@ function ItemView:getTransItemCopy()
 	return container
 end
 
-function ItemView:reInitByLogic(gameItemData, boardData)
-	for k,v in pairs(ItemSpriteType)do 
-		if (v ~= ItemSpriteType.kNone or v~= ItemSpriteType.kBackground) and self.itemSprite[v] then 
-			self.itemSprite[v]:removeFromParentAndCleanup(true)
-			self.itemSprite[v] = nil
-		end
+function ItemView:getTransContainer()
+	if self.transContainer:getParent() then
+		self.transContainer:removeFromParentAndCleanup(false)
 	end
-	self.transClippingNode = nil
+	return self.transContainer
+end
 
-	self:initByBoardData(boardData)
-	self:initByItemData(gameItemData)
+--头部直接从自己的transClipping里面去取sprite
+function ItemView:reinitTransHeadByLogic(gameItemData, boardData)
+	-- transContainer留给下一个Item用。。。
+	if self.itemSprite[ItemSpriteType.kItemShow] then
+		self.transContainer:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kItemShow] = nil -- 删除引用
+	end
+	-- 留下container，其他的删除
+	self.transClippingContainer:removeFromParentAndCleanup(false)
+	self.itemSprite[ItemSpriteType.kTransClipping]:removeFromParentAndCleanup(true)
+	self.itemSprite[ItemSpriteType.kTransClipping] = nil
+	self.transClippingNode = nil
+	-- 重建sprite
+	for k, v in pairs(self.transClippingContainer.items) do
+		v:removeFromParentAndCleanup(false)
+		self.itemSprite[k] = v
+	end
+	self.transClippingContainer:dispose()
+	self.transClippingContainer = nil
+
 	self:initPosBoardDataPos(gameItemData, true)
 	self.isNeedUpdate = true
-
 end
 
-function ItemView:transToNext(dp, callback)
-	local function moveCallback()
-		if callback then callback() end
+-- 其他的item要从上一个itemView的transContainer去拿sprite
+function ItemView:reinitTransRoadByLogic(gameItemData, boardData, transContainer)
+	-- transContainer原本是放在ItemShow的，摘下来保留
+	if self.itemSprite[ItemSpriteType.kItemShow] then
+		self.transContainer:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kItemShow] = nil
 	end
-	local container = self:getTransItemCopy()
-	self.itemSprite[ItemSpriteType.kItemShow] = container
-	container:setPosition(self:getBasePosition(self.x, self.y))
-	local action = CCSequence:createWithTwoActions(CCMoveBy:create(1, dp), CCCallFunc:create(moveCallback))
-	container:runAction(action)
+
+	-- 在这个函数中，只有kEnd才会有transClippingContainer
+	if self.transClippingContainer then
+		self.transClippingNode:removeFromParentAndCleanup(true)
+		self.transClippingContainer = nil
+		self.transClippingNode = nil
+		self.itemSprite[ItemSpriteType.kTransClipping] = nil
+	end
+
+	-- 重建sprite
+
+	for k, v in pairs(transContainer.items) do
+		v:removeFromParentAndCleanup(false)
+		self.itemSprite[k] = v
+	end
+
+	transContainer:dispose()
+
+	self:initPosBoardDataPos(gameItemData, true)
 	self.isNeedUpdate = true
 end
 
+function ItemView:buildTransmisson(boardData)
+	local image, rotation, scale
+	local transType = boardData.transType
+	if transType == TransmissionType.kRoad
+	or transType == TransmissionType.kStart
+	or transType == TransmissionType.kEnd then
+		image = 'trans_road_0000'
+		rotation = (boardData.transDirect - 1) * 90
+		scale = 1
+	else
+		image = 'trans_corner_0000'
+		if transType == TransmissionType.kCorner_UR then
+			rotation = 0
+			scale = 1
+		elseif transType == TransmissionType.kCorner_RD then
+			rotation = 90
+			scale = 1
+		elseif transType == TransmissionType.kCorner_DL then
+			rotation = 180
+			scale = 1
+		elseif transType == TransmissionType.kCorner_LU then
+			rotation = 270
+			scale = 1
+		elseif transType == TransmissionType.kCorner_LD then
+			rotation = 270
+			scale = -1
+		elseif transType == TransmissionType.kCorner_DR then
+			rotation = 180
+			scale = -1
+		elseif transType == TransmissionType.kCorner_RU then
+			rotation = 90
+			scale = -1
+		elseif transType == TransmissionType.kCorner_UL then
+			rotation = 0
+			scale = -1
+		end
+	end
+
+
+	local board = Sprite:createWithSpriteFrameName(image)
+	board:setRotation(rotation)
+	board:setScaleX(scale)
+	self.itemSprite[ItemSpriteType.kTileBlocker] = board
+
+	if boardData.transType >= TransmissionType.kStart then
+		self.itemSprite[ItemSpriteType.kTransmissionDoor] = TileTransDoor:create(boardData.transColor, boardData.transType, boardData.transDirect)
+	end
+
+end
 
 function ItemView:createTransClippingSprite(itemData, boardData)
 	local container = Sprite:createEmpty()
-	if boardData.transType > 0 then
-		local board = Sprite:createWithSpriteFrameName("trans_board")
-		board:setRotation((boardData.transDirect - 1) * 90)
-		container:addChild(board)
-	end
+	container.items = {}
 
 	if boardData.sandLevel > 0 then
-		container:addChild(ItemViewUtils:buildSand(boardData.sandLevel))
+		local sprite = ItemViewUtils:buildSand(boardData.sandLevel)
+		container:addChild(sprite)
+		container.items[ItemSpriteType.kSand] = sprite
 	end
 
 	if boardData.iceLevel > 0 then		 --冰
 		local ice = ItemViewUtils:buildLight(boardData.iceLevel, boardData.gameModeId)
 		container:addChild(ice)
+		container.items[ItemSpriteType.kLight] = ice
 	end
 
 	local itemSprite = nil
+	local layer = nil
 	local isOnlyGetSprite = true
 	if itemData.ItemType == GameItemType.kAnimal then
 		itemSprite = self:buildNewAnimalItem(itemData.ItemColorType, itemData.ItemSpecialType, false, false)
+		if itemData.ItemSpecialType >= AnimalTypeConfig.kYellow and itemData.ItemSpecialType <= AnimalTypeConfig.kColor then
+			layer = ItemSpriteType.kItemShow
+		else			
+			layer = ItemSpriteType.kItem
+		end
 	elseif itemData.ItemType == GameItemType.kSnow then	--雪
 		itemSprite = ItemViewUtils:buildSnow(itemData.snowLevel)
+		layer = ItemSpriteType.kItem
 	elseif itemData.ItemType == GameItemType.kCrystal then	--由系统统一计算
 		itemSprite = ItemViewUtils:buildCrystal(itemData.ItemColorType)               ------水晶
+		layer = ItemSpriteType.kItem
 	elseif itemData.ItemType == GameItemType.kGift then		--由系统统一计算
 		itemSprite = ItemViewUtils:buildGift(itemData.ItemColorType)
+		layer = ItemSpriteType.kItem
 	elseif itemData.ItemType == GameItemType.kIngredient then
-		itemSprite = ItemViewUtils:buildBeanpod()
+		itemSprite = ItemViewUtils:buildBeanpod(itemData.showType)
+		layer = ItemSpriteType.kItem
 	elseif itemData.ItemType == GameItemType.kVenom then
 		itemSprite = TileVenom:create()
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kCoin then
 		itemSprite = TileCoin:create()
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kRoost then
 		itemSprite =TileRoost:create(itemData.roostLevel)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kBalloon then
 		itemSprite = TileBalloon:create(itemData.ItemColorType, itemData.balloonFrom)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kDigGround then        ----------挖地障碍 地块 宝石块
 		itemSprite = self:buildDigGround(itemData.digGroundLevel, isOnlyGetSprite)
+		layer = ItemSpriteType.kDigBlocker
 	elseif itemData.ItemType == GameItemType.kDigJewel then 
 		itemSprite = self:buildDigJewel(itemData.digJewelLevel, itemData.digJewelType, isOnlyGetSprite)
+		layer = ItemSpriteType.kDigBlocker
 	elseif itemData.ItemType == GameItemType.kAddMove then
 		itemSprite = self:buildAddMove(itemData.ItemColorType, itemData.numAddMove, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kPoisonBottle then 
 		itemSprite = self:buildPoisonBottle(itemData.forbiddenLevel, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kBigMonster then 
 		-- self:buildMonster()                                        --not support
 	elseif itemData.ItemType == GameItemType.kBlackCuteBall then 
 		itemSprite = self:buildBlackCuteBall(itemData.blackCuteStrength, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kMimosa then
 		itemSprite = self:buildMimosa(itemData, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.isSnail then
 		-- self:buildSnail(itemData.snailRoadType)                    --not support
 	elseif itemData.bossLevel and itemData.bossLevel > 0 then 
 		-- self:buildBoss(itemData)                                    --not support
 	elseif itemData.ItemType == GameItemType.kRabbit then
 		itemSprite = self:buildRabbit(itemData.ItemColorType, itemData.rabbitLevel, false, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kHoneyBottle then
 		itemSprite = TileHoneyBottle:create(itemData.honeyBottleLevel)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kAddTime then
 		itemSprite = self:buildAddTime(itemData.ItemColorType, itemData.addTime, isOnlyGetSprite)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kQuestionMark then
 		itemSprite = ItemViewUtils:createQuestionMark(itemData.ItemColorType)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kMagicLamp then
 		itemSprite = TileMagicLamp:create(itemData.ItemColorType, itemData.lampLevel)
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kSuperBlocker then
+		itemSprite = TileSuperBlocker:create()
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kMagicStone then
+		itemSprite = TileMagicStone:create(itemData.magicStoneLevel, itemData.magicStoneDir)
+		layer = ItemSpriteType.kItemShow
 	end
 
 	if itemSprite then
 		itemSprite:setPositionXY(0,0)
 		container:addChild(itemSprite)
+		container.items[layer] = itemSprite
 	end
 	
 
 	--附加属性
 	if itemData:hasFurball() then
-		container:addChild(ItemViewUtils:buildFurball(itemData.furballType))
+		local sprite = ItemViewUtils:buildFurball(itemData.furballType)
+		container:addChild(sprite)
+		container.items[ItemSpriteType.kFurBall] = sprite
 	end
 
 	if itemData.cageLevel > 0 then
-		container:addChild(ItemViewUtils:buildLocker(itemData.cageLevel))	
+		local sprite = ItemViewUtils:buildLocker(itemData.cageLevel)
+		container:addChild(sprite)	
+		container.items[ItemSpriteType.kLock] = sprite
 	end
 
 	if itemData.honeyLevel > 0 then
 		local honey = TileHoney:create()
 		honey:normal()
 		container:addChild(honey)
+		container.items[ItemSpriteType.kFurBall] = honey
 	end
 
 	return container
@@ -2874,14 +3012,46 @@ function ItemView:addSpriteToTransClippingNode(theSprite)
 	end
 end
 
-function ItemView:transToOut(itemData, boardData, dp, callback)
+function ItemView:roadTransToNext(dp, isCorner, callback)
+	local container = self:getTransItemCopy()
+	self.transContainer = container
+	local function moveCallback()
+		if callback then callback() end
+	end
+	self.itemSprite[ItemSpriteType.kItemShow] = container
+	container:setPosition(self:getBasePosition(self.x, self.y))
+	local action = CCSequence:createWithTwoActions(CCMoveBy:create(GamePlayConfig_Transmission_Time, dp), CCCallFunc:create(moveCallback))
+	container:runAction(action)
+	local bg = self.itemSprite[ItemSpriteType.kTileBlocker]
+	if bg then 
+		local image
+		if isCorner then
+			image = 'trans_corner_%04d'
+		else
+			image = 'trans_road_%04d'
+		end
+		local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames(image, 0, 24), 1/30)
+		bg:play(anim, 0, 1)
+	end
+	self.isNeedUpdate = true
+end
+
+function ItemView:tailTransToOut(itemData, boardData, dp, callback)
 	local function moveCallback()
 		if callback then callback() end
 	end
 	local tempSprite = self:getTransItemCopy()
+	self.transClippingContainer = tempSprite
 	self:addSpriteToTransClippingNode(tempSprite)
-	tempSprite:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(1,dp), CCCallFunc:create(moveCallback)))
+	tempSprite:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(GamePlayConfig_Transmission_Time,dp), CCCallFunc:create(moveCallback)))
 	self.isNeedUpdate = true
+
+	local bg = self.itemSprite[ItemSpriteType.kTileBlocker]
+	if bg then 
+		local image = 'trans_road_%04d'
+		local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames(image, 0, 24), 1/30)
+		bg:play(anim, 0, 1)
+	end
 
 	local transDoor = self.itemSprite[ItemSpriteType.kTransmissionDoor]
 	if transDoor then
@@ -2890,16 +3060,17 @@ function ItemView:transToOut(itemData, boardData, dp, callback)
 
 end
 
-function ItemView:transToIn(itemData, boardData, dp, callback)
+function ItemView:headTransToIn(itemData, boardData, dp, callback)
 	local function moveCallback()
 		if callback then callback() end
 	end
 
 	local tempSprite = self:createTransClippingSprite(itemData, boardData)
+	self.transClippingContainer = tempSprite
 	self:addSpriteToTransClippingNode(tempSprite)
 	local pos = tempSprite:getPosition()
 	tempSprite:setPosition(ccp(pos.x - dp.x, pos.y - dp.y))
-	tempSprite:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(1,dp), CCCallFunc:create(moveCallback)))
+	tempSprite:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(GamePlayConfig_Transmission_Time,dp), CCCallFunc:create(moveCallback)))
 	self.isNeedUpdate = true
 end
 
@@ -2988,7 +3159,7 @@ function ItemView:buildSuperBlocker()
 	local sprite = TileSuperBlocker:create()
 	local pos = self:getBasePosition(self.x, self.y)
 	sprite:setPosition(pos)
-	self.itemSprite[ItemSpriteType.kTileBlocker] = sprite
+	self.itemSprite[ItemSpriteType.kItemShow] = sprite
 end
 
 function ItemView:buildHoneyBottle( level )
@@ -3134,8 +3305,8 @@ function ItemView:playSandClean(callback)
 	end
 
 	local texture
-	if self.itemPanel[ItemSpriteType.kSand] then 
-		texture = self.itemPanel[ItemSpriteType.kSand].refCocosObj:getTexture()
+	if self.getContainer(ItemSpriteType.kSand) then 
+		texture = self.getContainer(ItemSpriteType.kSand).refCocosObj:getTexture()
 	end
 	local anim, posOffset = TileSand:buildCleanAnim(onAnimationFinished, texture)
 	if not anim then
@@ -3236,5 +3407,60 @@ function ItemView:playQuestionMarkDestroy( callback )
 	fg:setPosition(self:getBasePosition(self.x, self.y))
 	self.itemSprite[ItemSpriteType.kQuestionMarkDestoryFg] = fg
 	self.isNeedUpdate = true
+end
 
+function ItemView:addChainsView(data)
+	if data:hasChains() then
+		local texture = nil
+		if self.getContainer(ItemSpriteType.kChain) then 
+			texture = self.getContainer(ItemSpriteType.kChain).refCocosObj:getTexture()
+		end
+		local chainSprite = TileChain:createWithChains(data.chains, texture)
+		self.itemSprite[ItemSpriteType.kChain] = chainSprite
+	end
+end
+
+-- breakLevels = {dir : level}
+function ItemView:playChainBreakAnim(breakLevels, callback)
+	if type(breakLevels) == "table" and table.size(breakLevels) > 0 then
+		local chainSprite = self.itemSprite[ItemSpriteType.kChain]
+		if chainSprite and not chainSprite.isDisposed then
+			chainSprite:playBreakAnimation(breakLevels, callback)
+		else
+			if callback then callback() end
+		end
+	else
+		if callback then callback() end
+	end
+end
+
+function ItemView:playStoneActiveAnim(stoneLevel, targetPos, callback)
+	local stoneSprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if stoneSprite then
+		-- stoneSprite:active(stoneLevel, targetPos)
+		local function onAnimFinish()
+			if stoneSprite and not stoneSprite.isDisposed then
+				stoneSprite:updateStoneSprite()
+				stoneSprite:idle()
+			end
+			if callback then callback() end
+		end
+
+		local texture = nil
+		if self.getContainer(ItemSpriteType.kMagicStoneFire)  then 
+			texture = self.getContainer(ItemSpriteType.kMagicStoneFire).refCocosObj:getTexture()
+		end
+
+		local anim = TileMagicStone:createActiveAnim(texture, stoneLevel, stoneSprite.direction, onAnimFinish, targetPos)
+		anim:setPosition(self:getBasePosition(self.x, self.y))
+		self.itemSprite[ItemSpriteType.kMagicStoneFire] = anim
+
+		stoneSprite:removeStoneSprite()
+		stoneSprite.level = stoneLevel + 1
+		if stoneSprite.level > 2 then stoneSprite.level = 2 end
+
+		self.isNeedUpdate = true
+	else
+		if callback then callback() end
+	end
 end

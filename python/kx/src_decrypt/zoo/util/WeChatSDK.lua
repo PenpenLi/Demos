@@ -113,11 +113,22 @@ function WeChatAndroid:sendTextMessage( message, isSendToFeeds, shareCallback)
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
 	return self.sdk:sendAnimalTextMessage(message, buildCallbackAndroid(finalCallBack, nil))
 end
+
+--防止微信两次回调特殊处理
+local emptyCallback = {
+	onSuccess=function(result)
+	end,
+	onError=function(errCode, msg) 
+	end,
+	onCancel=function()
+	end
+}
+
 function WeChatAndroid:sendImageMessage( message, thumb, image, shareCallback)
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	local shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(emptyCallback, nil))
 	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
 	finalCallBack.onSuccess()
 	--玩家分享就算成功
@@ -127,7 +138,7 @@ function WeChatAndroid:sendImageLinkMessage( message, thumb, imageURL, shareCall
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	local shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(emptyCallback, nil))
 	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
 	finalCallBack.onSuccess()
 	--玩家分享就算成功
@@ -139,12 +150,15 @@ function WeChatAndroid:sendLinkMessage( title, message, thumb, webpageUrl, isSen
 	if isSendToFeeds == false then weChatScene = 0 end 
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	local shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
+	local shareResult = nil
 	if weChatScene==1 then 
+		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(emptyCallback, nil))
 		--weChatScene == 1 是发送到朋友圈 
 		--微信新版（6.0.X）导致分享到朋友圈的链接分享后没回调 
 		finalCallBack.onSuccess()
 		--玩家分享就算成功
+	else
+		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
 	end
 	return shareResult
 end

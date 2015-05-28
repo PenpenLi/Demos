@@ -365,18 +365,19 @@ function MarkPanel:markNew()
 		if self.markCallback then
 			self.markCallback()
 		end
-		MarkModel:getInstance():setGetRewardNotification()
+		MarkModel:getInstance():setGetRewardNotification(self.signDay, self.signedDay)
 	end
 	local function onFail(evt)
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative")
 	end
 
-	if RequireNetworkAlert:popout() then
+	local function sendMarkRequest()
 		local http = MarkHttp.new(true)
 		http:ad(Events.kComplete, onSuccess)
 		http:ad(Events.kError, onFail)
 		http:load()
 	end
+	RequireNetworkAlert:callFuncWithLogged(sendMarkRequest)
 end
 
 function MarkPanel:updateANewMark(finishCallback)
@@ -488,6 +489,11 @@ function MarkPanel:playRewardAnim()
 				local panel = MarkGetEnergyNotiPanel:create(position, checkMarkPrise)
 				callback = true
 				panel:popout()
+
+				--只有最后一个宝箱里会有无限精力瓶 所以把领完最后一个宝箱里的炫耀调起逻辑加在这里
+				ShareManager:checkShareTime()
+				ShareManager:setShareData(ShareManager.ConditionType.GET_MARK_FINAL_CHEST, true)
+				ShareManager:shareWithID(ShareManager.MARK_FINAL_CHEST)
 			else
 				count = count + 1
 				local sprite
@@ -556,7 +562,7 @@ function MarkPanel:remarkNew()
 		local scene = HomeScene:sharedInstance()
 		local button = scene.goldButton
 		if button then button:updateView() end
-		MarkModel:getInstance():setGetRewardNotification()
+		MarkModel:getInstance():setGetRewardNotification(self.signDay, self.signedDay)
 	end
 	local function onFail(evt)
 		self.remark:setEnabled(true)
@@ -567,11 +573,12 @@ function MarkPanel:remarkNew()
 		end
 	end
 
-	if RequireNetworkAlert:popout() then
+	local function startBuyLogic()
 		local logic = BuyLogic:create(15, 2)
 		logic:getPrice()
 		logic:start(1, onSuccess, onFail, nil, self.fillSign[self.addNum + 1])
 	end
+	RequireNetworkAlert:callFuncWithLogged(startBuyLogic)
 end
 
 function MarkPanel:goldNotEnough()
@@ -917,17 +924,24 @@ function MarkModel:writeMarkPriseFile()
 	Localhost:safeWriteStringToFile(text, path)
 end
 
-function MarkModel:setGetRewardNotification()
-	if self.signedDay >= 26 and self.signedDay < 28 then
-		local leftMarkTimesInThisPeriod = 30 - self.signDay -- 当前周期剩余的可以免费签到的次数
-		local timesToGetFinalReward = 28 - self.signedDay -- 距离28天宝箱还需要签到的次数
+function MarkModel:setGetRewardNotification(signDay, signedDay)
+	if signedDay >= 26 and signedDay < 28 then
+		local leftMarkTimesInThisPeriod = 30 - signDay -- 当前周期剩余的可以免费签到的次数
+		local timesToGetFinalReward = 28 - signedDay -- 距离28天宝箱还需要签到的次数
 		if leftMarkTimesInThisPeriod >= timesToGetFinalReward then
 	        LocalNotificationManager.getInstance():setMarkRewardNotification(timesToGetFinalReward)
 		end
 	end
 
-	if self.signedDay >= 27 and self.signedDay <= 28 then
-		LocalNotificationManager.getInstance():cancelMarkNotificationToday()
+	if signedDay == 27 or signedDay == 28 then
+		-- 代表是否清楚明天及后天的推送, [1] = 明天, [2] = 后天
+		local dayToCancel = nil
+		if signedDay == 28 then
+			dayToCancel = {true, true}
+		elseif signedDay == 27 then
+			dayToCancel = {false, true}
+		end
+		LocalNotificationManager.getInstance():cancelMarkNotificationToday(dayToCancel)
 	end
 end
 

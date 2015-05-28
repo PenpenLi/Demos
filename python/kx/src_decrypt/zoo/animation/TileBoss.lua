@@ -47,9 +47,16 @@ BossType = table.const
 		cast = {name = 'boss_sheep_cast', frame = 40},
 
 	},
+	kCat = {
+		name = 'cat',
+		normal = {name = 'boss_cat_normal', frame = 38},
+		hit = {name = 'boss_cat_hit', frame = 40},
+		cast = {name = 'boss_cat_cast', frame = 40},
+		destroy = {name = 'boss_cat_destroy', frame = 26},
+	},
 }
 
-OFFSET_Y = 10
+OFFSET_Y = 2 -- 10
 OFFSET_X = 1
 
 function TileBoss:create(bossType)
@@ -202,6 +209,9 @@ function TileBoss:createCastingAnimation(animationComplete)
 	local frames = SpriteUtil:buildFrames(self.bossType.cast.name.."_%04d", 0, self.bossType.hit.frame)
 	local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
 	self.boss:play(animate, 0, 1, animationComplete)
+	if self.bossType == BossType.kCat then
+		self.boss:setPosition(ccp(3, OFFSET_Y + 5))
+	end
 
 	local action_delay = CCDelayTime:create(0.6)
 	local height = self.fg:getGroupBounds().size.height/2
@@ -363,6 +373,8 @@ function TileBoss:createHitAnimation(animationComplete)
 	local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
 	if self.bossType == BossType.kTurkey then
 		self.boss:setPositionY(OFFSET_Y + 7)
+	elseif self.bossType == BossType.kCat then
+		self.boss:setPosition(ccp(3, OFFSET_Y + 5))
 	end
 	self.boss:play(animate, 0, 1, animationComplete)
 

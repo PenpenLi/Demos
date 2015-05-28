@@ -103,6 +103,9 @@ function MetaManager:initialize()
 
 		self.activity_rewards = parseItemDict(metaXML,'activity_rewards',ActivityRewardsMetaRef)
 		self.rewards = parseItemDict(metaXML, "rewards", RewardsRef)
+
+		self.level_status = parseItemDict(metaXML, "level_status", LevelStatusRef)
+		
 	end
 	if __WP8 then
 		self.product_wp8 = {
@@ -282,6 +285,30 @@ function MetaManager:getMaxNormalLevelByLevelArea()
 		end
 	end
 	return maxLevel
+end
+
+function MetaManager:getTaskLevelId(areaId)
+	for k, v in pairs(self.level_area) do 
+		if tonumber(areaId) == tonumber(v.id) then 
+			return v.unlockTaskLevelId
+		end
+	end
+end
+
+function MetaManager:isTaskCanUnlockLevalArea(areaId)
+	if self:getTaskLevelId(areaId) then 
+		return true
+	else
+		return false
+	end
+end
+
+function MetaManager:getAreaIdByTaskLevelId(taskLevelId)
+	for k, v in pairs(self.level_area) do 
+		if v.unlockTaskLevelId and v.unlockTaskLevelId == taskLevelId then 
+			return v.id 
+		end
+	end
 end
 
 function MetaManager:getHideAreaLevelIds()

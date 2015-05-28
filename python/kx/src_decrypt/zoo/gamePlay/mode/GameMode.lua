@@ -16,6 +16,9 @@ end
 function GameMode:afterStable(r, c)
 end
 
+function GameMode:afterChainBreaked(r,c)
+end
+
 function GameMode:afterFail()
   self.mainLogic:setGamePlayStatus(GamePlayStatus.kFailed)
 end
@@ -62,6 +65,7 @@ function GameMode:revertDataFromBackProp()
 	mainLogic.totalScore = mainLogic.saveRevertData.totalScore
 	mainLogic.theCurMoves = mainLogic.saveRevertData.theCurMoves
 	mainLogic.blockProductRules = mainLogic.saveRevertData.blockProductRules
+	mainLogic.cachePool = mainLogic.saveRevertData.cachePool
 	mainLogic.tileBlockCount = mainLogic.saveRevertData.tileBlockCount
 	mainLogic.pm25count = mainLogic.saveRevertData.pm25count
 	mainLogic.snailCount = mainLogic.saveRevertData.snailCount
@@ -117,4 +121,12 @@ end
 
 function GameMode:setFailReason(failReason)
 	self.failReason = failReason
+end
+
+function GameMode:getStageIndex()
+    return 0
+end
+
+function GameMode:getStageMoveLimit()
+	return 0
 end

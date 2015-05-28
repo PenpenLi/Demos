@@ -124,6 +124,9 @@ local function createChooseFriendList(onTileItemTouch, minWidth, minHeight, exce
 		layoutItem:setContent(askItem)
 		layoutItem:setParentView(view)
 		container:addItem(layoutItem, false)
+		if shareNotilist then 
+			askItem:select(true)
+		end
 	end
 
 	container.getSelectedFriendID = function ( self )

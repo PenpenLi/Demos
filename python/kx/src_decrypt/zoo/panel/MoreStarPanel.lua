@@ -52,15 +52,17 @@ function MoreStarPanel:getData()
     local scores = UserManager:getInstance():getScoreRef()
     local result = {}
     local counter = 0
-    for k, v in pairs(scores) do
-        if LevelType:isMainLevel(v.levelId)
-        and v.star < 3 and v.star > 0 then
-            table.insert(result, v)
-            availableStarCount = availableStarCount + (3 - v.star)
+
+    for levelId = LevelConstans.MAIN_LEVEL_ID_START, LevelConstans.MAIN_LEVEL_ID_END do 
+        local levelScore = UserManager:getInstance():getUserScore(levelId)
+        if levelScore and levelScore.star > 0 and levelScore.star < 3 then
+            table.insert(result, levelScore)
+            availableStarCount = availableStarCount + (3 - levelScore.star)
             counter = counter + 1
             if counter == 16 then break end
         end
     end
+
     print('availableStarCount', availableStarCount)
     self.availableStarCount = availableStarCount
     self.title:setString(_text('more.star.panel.title', {num = availableStarCount}))

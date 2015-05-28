@@ -269,7 +269,7 @@ function GroupButtonBase:buildUI()
 	labelSize:removeFromParentAndCleanup(true)
 
 	local function onTouchTap( evt )
-		self:dispatchEvent(DisplayEvent.new(DisplayEvents.kTouchTap, self, evt.worldPosition))
+		self:dispatchEvent(DisplayEvent.new(DisplayEvents.kTouchTap, self, evt.globalPosition))
 		GamePlayMusicPlayer:playEffect(GameMusicType.kClickCommonButton)
 	end
 	groupNode:addEventListener(DisplayEvents.kTouchTap, onTouchTap)

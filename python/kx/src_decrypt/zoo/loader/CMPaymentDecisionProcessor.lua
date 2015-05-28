@@ -3,10 +3,10 @@ local Processor = class(EventDispatcher)
 
 function Processor:start()
     if __ANDROID then
+        self:initDecisionScript()
         if not PrepackageUtil:isPreNoNetWork() then  
             self:getLocationInfo()
         end
-        self:initDecisionScript()
     end
 end
 
@@ -19,15 +19,19 @@ function Processor:getLocationInfo()
                     local province = tab.province
                     if type(province) == "string" and string.len(province) > 0 then
                         Cookie.getInstance():write(CookieKey.kLocationProvince, province)
+                        print("province init:" .. province)
                     end
                 end
             end
+            self:dispatchEvent(Event.new(Events.kComplete, nil, self))
+        else
+            self:dispatchEvent(Event.new(Events.kError, nil, self))
         end
     end
 
     local request = HttpRequest:createPost("http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json")
     request:setConnectionTimeoutMs(1000)
-    request:setTimeoutMs(1000)
+    request:setTimeoutMs(3000)
     HttpClient:getInstance():sendRequest(callbackHanler, request)
 
 end

@@ -156,7 +156,9 @@ function FallingItemLogic:getPosFallingSourceType(mainLogic, r, c)
 		local enterR = exitBoard.passEnterPoint_x
 		local enterC = exitBoard.passEnterPoint_y
 		local enterBoard = mainLogic.boardmap[enterR][enterC]
-		return enterBoard.isBlock
+		return enterBoard.isBlock 
+			or enterBoard:hasChainInDirection(ChainDirConfig.kDown) 
+			or exitBoard:hasChainInDirection(ChainDirConfig.kUp) 
 	end
 	
 	if item.isBlock or not item.isUsed then
@@ -972,12 +974,13 @@ function FallingItemLogic:checkStopFallingDown(mainLogic, r, c)
 			else
 				local fcBottomBoard = mainLogic.boardmap[fc.start.r + fc.len - 1][fc.start.c]
 				-- falling column最下方有传送门
-				if fcBottomBoard:hasEnterPortal() then
+				if fcBottomBoard:hasEnterPortal() and not fcBottomBoard:hasChainInDirection(ChainDirConfig.kDown) then
 					local exitX = fcBottomBoard.passExitPoint_x
 					local exitY = fcBottomBoard.passExitPoint_y
+					local exitBoard = mainLogic.boardmap[exitX][exitY]
 
 					local exitFC = FallingItemLogic:getFallingColumnByPos(mainLogic, exitX, exitY)
-					if exitFC then
+					if exitFC and not exitBoard:hasChainInDirection(ChainDirConfig.kUp) then
 						local numExitFCEmptyTile = FallingItemLogic:getNumFallingColumnEmptyTile(mainLogic, exitFC)
 						local numFCBelowItem = FallingItemLogic:getNumFallingColumnBelowItem(mainLogic, fc, r)
 						local numFCBelowTile = FallingItemLogic:getNumFallingColumnBelowTile(mainLogic, fc, r)

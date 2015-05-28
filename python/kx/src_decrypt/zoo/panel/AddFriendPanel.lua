@@ -363,7 +363,7 @@ function AddFriendPanel:_tabSearch_init(ui)
 		end
 	end
 	local config = {
-		max = 9,
+		max = 10,
 		changeCallback = onChangeCallback,
 		enterCallback = onEnterCallback,
 		emptyCallback = onEmptyCallback,
@@ -457,17 +457,23 @@ function AddFriendPanel:_tabSearch_searchFriend(code, length)
 	self.tabSearch.userLevel:setVisible(true)
 	self.tabSearch.input.btnCancel:setVisible(false)
 	self.tabSearch.input.btnLoad:setVisible(true)
+	local noUserTextStr = ""
 	local function fakeLoadEnd()
 		self.tabSearch.userName:setVisible(false)
 		self.tabSearch.userLevel:setVisible(false)
 		self.tabSearch.userImg:setVisible(false)
 		if self.tabSearch.userHead then self.tabSearch.userHead:removeFromParentAndCleanup(true) end
 		self.tabSearch.noUserImg:setVisible(true)
-		self.tabSearch.noUserText:setVisible(true)
+		self.tabSearch.noUserText:setString(noUserTextStr)
 		self.tabSearch.input.btnLoad:setVisible(false)
 		self.tabSearch.input.btnCancel:setVisible(true)
 	end
 	if length < 9 then
+		noUserTextStr = Localization:getInstance():getText("add.friend.panel.no.user.text")
+		self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(fakeLoadEnd)))
+	elseif not UserManager:getInstance():isSameInviteCodePlatform(code) then 
+		CommonTip:showTip(Localization:getInstance():getText("error.tip.add.friends"), "negative", nil, 3 )
+		noUserTextStr = Localization:getInstance():getText("add.friend.panel.find.other.text")
 		self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(fakeLoadEnd)))
 	else
 		self:_tabSearch_doSearchFriend(code)
@@ -526,7 +532,7 @@ function AddFriendPanel:_tabSearch_updateFriendInfo(dataTable)
 			self.tabSearch.userName:setVisible(false)
 			self.tabSearch.userLevel:setVisible(false)
 			self.tabSearch.noUserImg:setVisible(true)
-			self.tabSearch.noUserText:setVisible(true)
+			self.tabSearch.noUserText:setString(Localization:getInstance():getText("add.friend.panel.no.user.text"))
 		end
 	else
 		self.tabSearch.bgResultBG:setVisible(false)
@@ -534,14 +540,14 @@ function AddFriendPanel:_tabSearch_updateFriendInfo(dataTable)
 		self.tabSearch.userName:setVisible(false)
 		self.tabSearch.userLevel:setVisible(false)
 		self.tabSearch.noUserImg:setVisible(false)
-		self.tabSearch.noUserText:setVisible(false)
+		self.tabSearch.noUserText:setString("")
 	end
 end
 
 function AddFriendPanel:_tabSearch_removeSearchResult()
 	self.tabSearch.input.btnLoad:setVisible(false)
 	self.tabSearch.noUserImg:setVisible(false)
-	self.tabSearch.noUserText:setVisible(false)
+	self.tabSearch.noUserText:setString("")
 	self.tabSearch.userImg:setVisible(false)
 	if self.tabSearch.userHead then self.tabSearch.userHead:removeFromParentAndCleanup(true) end
 	self.tabSearch.userName:setVisible(false)

@@ -21,7 +21,12 @@ function InterfaceBuilder:preloadJson(filePath)
 	if not config then
 		local path = CCFileUtils:sharedFileUtils():fullPathForFilename(filePath) 
 		local t, fsize = lua_read_file(path)   
-		config = table.deserialize(t)--simplejson.decode(t)
+		config = table.deserialize(t) --simplejson.decode(t)
+		if not config then -- 解析失败
+			he_log_error("InterfaceBuilder fail, preloadJson: "..filePath)
+	     	assert(false)
+	     	return nil
+	    end
 		configCached[filePath] = config
 	end
 	return config

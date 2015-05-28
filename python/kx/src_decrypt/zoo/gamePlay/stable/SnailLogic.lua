@@ -75,14 +75,17 @@ function SnailLogic:checkSnailList( callback )
 	return count
 end
 
-function SnailLogic:checkItemCanMove( r, c )
+function SnailLogic:checkItemCanMove( prePos, nextpos )
 	-- body
-	if not self.mainLogic.gameItemMap[r] then return false end
-	local nextItem = self.mainLogic.gameItemMap[r][c]
+	if not self.mainLogic.gameItemMap[nextpos.x] then return false end
+	local nextItem = self.mainLogic.gameItemMap[nextpos.x][nextpos.y]
 	if nextItem and nextItem.ItemType ~= GameItemType.kCoin 
 		and  nextItem.ItemType ~= GameItemType.kBlackCuteBall 
 		and  nextItem.ItemType ~= GameItemType.kIngredient
+		and  nextItem.ItemType ~= GameItemType.kMagicLamp
+		and  nextItem.ItemType ~= GameItemType.kHoneyBottle
 		and not nextItem:hasFurball()
+		and not self.mainLogic:hasChainInNeighbors(prePos.x, prePos.y, nextpos.x, nextpos.y)
 		then 
 		return true
 	end
@@ -94,13 +97,15 @@ function SnailLogic:getMoveList( r, c, isOnlyCheck )
 	local list = {}
 	local item = self.mainLogic.gameItemMap[r][c]
 	local board = self.mainLogic.boardmap[r][c]
+	local prePos = IntCoord:create(r, c)
 	local nextpos = board:getNextSnailRoad()
 	local nextboard  = nil
-	if nextpos and self:checkItemCanMove(nextpos.x, nextpos.y) then
+	if nextpos and self:checkItemCanMove(prePos, nextpos) then
 		local nextboard = self.mainLogic.boardmap[nextpos.x][nextpos.y]
 		local nextItem = self.mainLogic.gameItemMap[nextpos.x][nextpos.y]
-		while nextItem.isSnail do  -- 处理连续的蜗牛
+		while nextItem.isSnail and not self.mainLogic:hasChainInNeighbors(prePos.x, prePos.y, nextpos.x, nextpos.y) do  -- 处理连续的蜗牛
 			table.insert(list, nextpos)
+			prePos = nextpos
 			nextpos = nextboard:getNextSnailRoad()
 			nextItem = self.mainLogic.gameItemMap[nextpos.x][nextpos.y]
 			nextboard = self.mainLogic.boardmap[nextpos.x][nextpos.y]
@@ -108,7 +113,7 @@ function SnailLogic:getMoveList( r, c, isOnlyCheck )
 		local combSnailCount = #list
 
 		local isArriveCollection = false
-		while nextboard and nextboard.isSnailRoadBright and self:checkItemCanMove(nextpos.x, nextpos.y) do       ---连续的路径
+		while nextboard and nextboard.isSnailRoadBright and self:checkItemCanMove(prePos, nextpos) do       ---连续的路径
 			table.insert(list, nextpos)
 			local item = self.mainLogic.gameItemMap[nextpos.x][nextpos.y]
 			if not isOnlyCheck then
@@ -120,9 +125,10 @@ function SnailLogic:getMoveList( r, c, isOnlyCheck )
 			if nextboard.isSnailCollect then 
 				isArriveCollection = true
 			end
+			prePos = nextpos
 			nextpos = nextboard:getNextSnailRoad()
 
-			if nextpos and self:checkItemCanMove(nextpos.x, nextpos.y) then
+			if nextpos and self:checkItemCanMove(prePos, nextpos) then
 				nextboard = self.mainLogic.boardmap[nextpos.x][nextpos.y]
 			else
 				nextboard = nil
@@ -209,6 +215,7 @@ function SnailLogic:canEffectSnailRoadAt( mainLogic, r, c )
 			and not item:hasFurball() 
 			and not item:hasLock() 
 			and item:isAvailable()
+			and item.ItemType ~= GameItemType.kMagicLamp
 			-- and not item.isEmpty  
 			then
 			return true

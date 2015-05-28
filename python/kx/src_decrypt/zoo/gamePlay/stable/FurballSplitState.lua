@@ -82,7 +82,7 @@ function FurballSplitStateInPropFirst:create( context )
 end
 
 function FurballSplitStateInPropFirst:getNextState()
-	return self.context.roostReplaceStateInLoop
+	return self.context.endCycleStateEnter
 end
 
 function FurballSplitStateInPropFirst:getClassName( ... )
@@ -105,7 +105,7 @@ function FurballSplitStateInSwapFirst:getClassName()
 end
 
 function FurballSplitStateInSwapFirst:getNextState()
-	return self.context.tileBlockerState
+	return self.context.productRabbitState
 end
 
 FurballSplitStateInLoop = class(FurballSplitState)

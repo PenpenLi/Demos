@@ -123,6 +123,7 @@ function GameExtandPlayLogic:checkVenomSpread(mainLogic, completeCallback)
 					or item.ItemType == GameItemType.kAddTime
 					or item.ItemType == GameItemType.kGift 
 					or item.ItemType == GameItemType.kCrystal) 
+				and not mainLogic:hasChainInNeighbors(venom.y, venom.x, v.y + venom.y, v.x + venom.x)
 				then
 
 				if not positionMap[item.x .. "_" .. item.y] then
@@ -362,11 +363,12 @@ function GameExtandPlayLogic:getFurballValidAroundItems(mainLogic, centerItem)
 				or tempItem.ItemType == GameItemType.kQuestionMark)
 			and not tempItem:hasFurball() 
 			and not tempItem.isBlock 
-			and tempItem:canBeCoverByMatch() then
+			and tempItem:canBeCoverByMatch()
+			and not mainLogic:hasChainInNeighbors(cy, cx, cy + coord.y, cx + coord.x) then
 			table.insert(result, tempItem)
 		end
 	end
-	
+
 	return result
 end
 
@@ -763,8 +765,8 @@ function GameExtandPlayLogic:getUFOPosition( mainLogic )
 				if r < r_ufo then 
 					r_ufo = r c_ufo = c 
 				elseif r == r_ufo then 
-					local r_up = GameExtandPlayLogic:upstairsItemsByUfo( itemMap, r, c )
-					local r_ufo_up = GameExtandPlayLogic:upstairsItemsByUfo( itemMap, r_ufo, c_ufo )
+					local r_up = GameExtandPlayLogic:upstairsItemsByUfo(mainLogic, itemMap, r, c )
+					local r_ufo_up = GameExtandPlayLogic:upstairsItemsByUfo(mainLogic, itemMap, r_ufo, c_ufo )
 					if r_ufo_up < 0 then
 						if r_up > 0 then r_ufo = r c_ufo = c end
 					elseif r_up < r_ufo_up and r_up > 0 then 
@@ -775,6 +777,29 @@ function GameExtandPlayLogic:getUFOPosition( mainLogic )
 		end
 	end
 	return mainLogic:getGameItemPosInView(1, c_ufo)
+end
+
+function GameExtandPlayLogic:getSquirrelPosYinBoard( mainLogic, old_c )
+	-- body
+	local r_squirrel = 1
+	local c_squirrel = 10
+	local itemMap = mainLogic.gameItemMap
+	for r = 1, #itemMap do 
+		for c = 1, #itemMap[r] do 
+			local itemData = itemMap[r][c]
+			if itemData:canBeEffectByUFO() then 
+				if  r_squirrel <= r then 
+					r_squirrel = r c_squirrel = c
+				end
+			end
+		end
+	end
+
+	local isDangerours = true
+	if r_squirrel <= 3 then 
+		isDangerours  = false
+	end
+	return c_squirrel, isDangerours
 end
 
 
@@ -795,7 +820,7 @@ function GameExtandPlayLogic:checkUFOItemUpdate( mainLogic, completeCallback )
 	-- body
 	local item_count = 0
 	local item_top = false
-	if mainLogic.gameMode:reachEndCondition(mainLogic) then ---产品的需求，如果达到胜利条件则 不再判断, 直接返回
+	if mainLogic.gameMode:reachEndCondition() then ---产品的需求，如果达到胜利条件则 不再判断, 直接返回
 		return item_count, item_top
 	end
 	if mainLogic.gameMode:is(RabbitWeeklyMode) and mainLogic.gameMode:isNeedChangeState(nil, false) then 
@@ -820,7 +845,7 @@ function GameExtandPlayLogic:checkUFOItemUpdate( mainLogic, completeCallback )
 				if item:canBeEffectByUFO() 
 					and item:isAvailable() and item.rabbitState ~= GameItemRabbitState.kSpawn then
 
-					local r_up, isTop, isShowDangerous = GameExtandPlayLogic:upstairsItemsByUfo( itemList_copy, r, c )
+					local r_up, isTop, isShowDangerous = GameExtandPlayLogic:upstairsItemsByUfo(mainLogic, itemList_copy, r, c )
 					item.isTop = isTop
 					if isTop then hasTopItem = true end
 					item.isShowDangerous = isShowDangerous
@@ -877,24 +902,37 @@ end
 --------------------
 --get upstairs r c  by ufo
 --------------------
-function GameExtandPlayLogic:upstairsItemsByUfo( itemList_copy, r, c )
+function GameExtandPlayLogic:upstairsItemsByUfo(mainLogic, itemList_copy, r, c )
 	-- body
 	local item = itemList_copy[r][c]
 	local tempGoUpstairOneStep = r > 1 and itemList_copy[r-1][c]
 	local tempGoUpstairTwoStep = r > 2 and itemList_copy[r-2][c]
-	local canGoUpstairOneStep = tempGoUpstairOneStep and tempGoUpstairOneStep.isUsed 
-							and not (tempGoUpstairOneStep:hasLock()
-								or tempGoUpstairOneStep:hasFurball()
-								or tempGoUpstairOneStep:canBeEffectByUFO()
-								or tempGoUpstairOneStep.isBlock
-								or tempGoUpstairOneStep.ItemType == GameItemType.kNone)
-	local canGoUpstairTwoStep = tempGoUpstairTwoStep and tempGoUpstairTwoStep.isUsed
-							 and not(--canGoUpstairOneStep or
-								tempGoUpstairTwoStep:hasFurball()
-								or tempGoUpstairTwoStep:hasLock()
-								or tempGoUpstairTwoStep:canBeEffectByUFO()
-								or tempGoUpstairTwoStep.isBlock
-								or tempGoUpstairTwoStep.ItemType == GameItemType.kNone)
+
+	local function checkItemAvailable(item)
+		if not item or not item.isUsed then return false end
+
+		if item:hasLock()
+			or item:hasFurball()
+			or item:canBeEffectByUFO()
+			or item.isBlock
+			or item.ItemType == GameItemType.kNone then 
+			return false
+		else
+			return true
+		end
+	end
+	local canGoUpstairOneStep = false
+	local canGoUpstairTwoStep = false
+	if checkItemAvailable(tempGoUpstairOneStep) 
+		and not mainLogic:hasChainInNeighbors(r, c, r-1, c) then
+		canGoUpstairOneStep = true
+	end
+	if checkItemAvailable(tempGoUpstairTwoStep)
+		and not mainLogic:hasChainInNeighbors(r, c, r-1, c)
+		and not mainLogic:hasChainInNeighbors(r-1, c, r-2, c) then
+		canGoUpstairTwoStep = true
+	end
+	
 	local isTop = false
 	local top_num = 1
 	for k = 1, 9 do 
@@ -1244,6 +1282,10 @@ function GameExtandPlayLogic:getMimosaToHoldGrid( mainLogic, r, c )
 		grid = IntCoord:create(r + i * rAdd, c + i * cAdd)
 	end
 
+	if mainLogic:hasChainInNeighbors(grid.x - i * rAdd, grid.y - i * cAdd, grid.x, grid.y) then
+		return nil
+	end
+
 	if mainLogic.gameItemMap[grid.x] and mainLogic.gameItemMap[grid.x][grid.y] then
 		local item_select = mainLogic.gameItemMap[grid.x][grid.y]
 		if item_select and item_select.isUsed
@@ -1556,9 +1598,11 @@ end
 function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 	-- body
 	local gameItemMap = mainLogic.gameItemMap
+	local boardMap = mainLogic.boardmap
 	--select item to run
 	local brokenHoneyBottle = {}
 	local canBeInfectItemList = {}
+	local subCanBeInfectItemList = {}
 	for r = 1, #gameItemMap do 
 		for c = 1, #gameItemMap[r] do
 			local item = gameItemMap[r][c]
@@ -1567,7 +1611,11 @@ function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 				if item.honeyBottleLevel > 3 and item:isAvailable() then
 					table.insert(brokenHoneyBottle, intCoord)
 				elseif item:canInfectByHoneyBottle() then
-					table.insert(canBeInfectItemList, intCoord)
+					if boardMap[r][c].honeySubSelect then 
+						table.insert(subCanBeInfectItemList, intCoord)
+					else
+						table.insert(canBeInfectItemList, intCoord)
+					end
 				end
 			end 
 		end
@@ -1576,12 +1624,17 @@ function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 	for k, v in pairs(brokenHoneyBottle) do 
 		local infectList = {}
 		for k = 1, mainLogic.honeys do 
+			local item 
 			if #canBeInfectItemList > 0 then
 				--todo
-				local item = table.remove(canBeInfectItemList, mainLogic.randFactory:rand(1, #canBeInfectItemList))
+				item = table.remove(canBeInfectItemList, mainLogic.randFactory:rand(1, #canBeInfectItemList))
+				table.insert(infectList, item)
+			elseif #subCanBeInfectItemList > 0 then 
+				item = table.remove(subCanBeInfectItemList, mainLogic.randFactory:rand(1, #subCanBeInfectItemList))
 				table.insert(infectList, item)
 			end
 		end
+		
 		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigJewel)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -1639,6 +1692,7 @@ function GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c)
 
 	local item = mainLogic.gameItemMap[r][c]
 	if not item or not item.isUsed or item:isPermanentBlocker() 
+			or item.ItemType == GameItemType.kMagicStone
 			or item.isReverseSide or item.beEffectByMimosa then -- 
 		return false 
 	end
@@ -1651,25 +1705,20 @@ function GameExtandPlayLogic:getSandTransferAvailablePosAround(mainLogic, r, c)
 	local boardmap = mainLogic.boardmap
 	local board = boardmap[r][c]
 
-	if not board:hasTopRope()
-			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r-1, c) 
-			and not boardmap[r-1][c]:hasBottomRope() then
-		table.insert(result, IntCoord:create(r-1, c))
-	end
-	if not board:hasBottomRope()
-			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r+1, c)
-			and not boardmap[r+1][c]:hasTopRope() then
-		table.insert(result, IntCoord:create(r+1, c))
-	end
-	if not board:hasRightRope()
-			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c+1)
-			and not boardmap[r][c+1]:hasLeftRope() then
-		table.insert(result, IntCoord:create(r, c+1))
-	end
-	if not board:hasLeftRope()
-			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c-1)
-			and not boardmap[r][c-1]:hasRightRope() then
-		table.insert(result, IntCoord:create(r, c-1))
+	local aroundDirections = {
+		{ dr = -1, dc = 0 }, 
+		{ dr = 1, dc = 0 }, 
+		{ dr = 0, dc = -1 }, 
+		{ dr = 0, dc = 1 }
+	}
+
+	for _, dir in pairs(aroundDirections) do
+		if not mainLogic:hasRopeInNeighbors(r, c, r + dir.dr, c + dir.dc)
+			and not mainLogic:hasChainInNeighbors(r, c, r + dir.dr, c + dir.dc)
+			and GameExtandPlayLogic:canSandTransferToPos(mainLogic, r + dir.dr, c + dir.dc) 
+			then
+			table.insert(result, IntCoord:create(r + dir.dr, c + dir.dc))
+		end
 	end
 	return result
 end
@@ -1998,32 +2047,92 @@ function GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
 	-- body
 	local item = mainLogic.gameItemMap[r][c]
 	local itemList = nil
+	local dropPropsPercent = nil -- 0 ~ 100，nil表示不予干预
 	local isOnlyFallingItem
-	if item.ItemStatus == GameItemStatusType.kNone
-		or item.ItemStatus == GameItemStatusType.kItemHalfStable then
-		itemList = item.isProductByBossDie and mainLogic.uncertainCfg2.allItemList or mainLogic.uncertainCfg1.allItemList
-		isOnlyFallingItem = false
+
+	local uncertainCfg = nil
+	if item.isProductByBossDie then 
+		uncertainCfg = mainLogic.uncertainCfg2
 	else
-		isOnlyFallingItem = true
-		-- print(r, c)
-		-- debug.debug()
-		itemList = item.isProductByBossDie and mainLogic.uncertainCfg2.canfallingItemList or mainLogic.uncertainCfg1.canfallingItemList
+		uncertainCfg = mainLogic.uncertainCfg1
 	end
 
-	if itemList and #itemList > 0 then
-		local total = isOnlyFallingItem and itemList[#itemList].limitInCanFallingItem or itemList[#itemList].limitInAllItem
-		local randValue = mainLogic.randFactory:rand(1, total)
-		for k = 1, #itemList do 
-			local limit = isOnlyFallingItem and itemList[k].limitInCanFallingItem or itemList[k].limitInAllItem
-			if randValue <= limit then
-				return itemList[k]
+	if not uncertainCfg then
+		print("getChangeItemSelected:uncertainCfg not exsit while BossDie=", item.isProductByBossDie)
+		return 
+	end
+
+	local canDropProps = false
+	if uncertainCfg:hasDropProps() then
+		if mainLogic.laborDayData then -- 强制指定道具掉落的百分比
+			dropPropsPercent = mainLogic.laborDayData.dropPropsPercent
+		end
+
+		local user = UserManager:getInstance().user
+		local dropPropCount = StageInfoLocalLogic:getTotalDropPropCount( user.uid )
+		if dropPropCount >= 1 then -- 本次关卡掉落过一次后不再掉落
+			dropPropsPercent = 0
+		end
+
+		if not dropPropsPercent or dropPropsPercent > 0 then -- 未强制指定或指定的掉落百分比大于0
+			canDropProps = true
+		end
+	end
+
+	if item.ItemStatus == GameItemStatusType.kNone
+			or item.ItemStatus == GameItemStatusType.kItemHalfStable then
+		isOnlyFallingItem = false
+		itemList = uncertainCfg.allItemList
+	else
+		isOnlyFallingItem = true
+		itemList = uncertainCfg.canfallingItemList
+	end
+
+	local itemListNotEmpty = itemList and #itemList > 0
+	if itemListNotEmpty or canDropProps then
+		local total = 0
+		local onlyProps = false
+		if itemListNotEmpty then
+			total = isOnlyFallingItem and itemList[#itemList].limitInCanFallingItem or itemList[#itemList].limitInAllItem
+		end
+		if canDropProps then 
+			if dropPropsPercent == nil then -- 不需要调整概率，使用默认权重
+				total = total + uncertainCfg.dropPropTotalWeight
+			else -- 根据概率计算是否掉落道具
+				if mainLogic.randFactory:rand(1, 10000) <= dropPropsPercent * 100 then
+					onlyProps = true
+				end
 			end
 		end
 
-	else
-		return nil
+		-- print(canDropProps, dropPropsPercent, total)
+
+		if itemListNotEmpty and not onlyProps then
+			local randValue = mainLogic.randFactory:rand(1, total)
+			-- print("randValue:", randValue, table.tostring(itemList))
+			for k = 1, #itemList do 
+				local limit = isOnlyFallingItem and itemList[k].limitInCanFallingItem or itemList[k].limitInAllItem
+				if randValue <= limit then
+					return itemList[k]
+				end
+			end
+		end
+		-- 随机到的是掉落道具
+		if canDropProps then
+			local dropPropList = uncertainCfg.dropPropList
+			local propTotalWeight = dropPropList[#dropPropList].limitInProps
+			local propRandValue = mainLogic.randFactory:rand(1, propTotalWeight)
+			-- print("propRandValue:", propRandValue, table.tostring(dropPropList))
+			for k = 1, #itemList do 
+				local limit = dropPropList[k].limitInProps
+				if propRandValue <= limit then
+					return dropPropList[k]
+				end
+			end
+		end
 	end
-	
+
+	return nil
 end
 
 function GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
@@ -2039,7 +2148,13 @@ function GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
 		end
 	end
 	if selected then 
-		mainLogic.addMoveBase = mainLogic.addMoveBase > 0 and mainLogic.addMoveBase or 5
+		mainLogic.addMoveBase = mainLogic.addMoveBase > 0 and mainLogic.addMoveBase or GamePlayConfig_Add_Move_Base
+		if selected.changeType == UncertainCfgConst.kProps then
+			local pos = mainLogic:getGameItemPosInView(r, c)
+			if mainLogic.PlayUIDelegate then
+				mainLogic.PlayUIDelegate:addTimeProp(selected.changeItem, 1, pos, mainLogic.activityId)
+			end
+		end
 		item:changeItemFromQuestionMark(selected.changeType, selected.changeItem, mainLogic:randomColor(), mainLogic.addMoveBase)
 		if not mainLogic.hasQuestionMarkProduct then
 			mainLogic.hasQuestionMarkProduct = true
@@ -2094,3 +2209,28 @@ function GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	ScoreAction.addInt = GamePlayConfig_Score_Question_Mark_Destory
 	mainLogic:addGameAction(ScoreAction)
 end 
+
+function GameExtandPlayLogic:resetMagicStone(mainLogic)
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item.ItemType == GameItemType.kMagicStone and item.magicStoneLevel >= TileMagicStoneConst.kMaxLevel then
+				item.magicStoneActiveTimes = 0
+			end
+		end
+	end
+end
+
+function GameExtandPlayLogic:calcMagicStoneEffectPositions(mainLogic, r, c)
+	local item = mainLogic.gameItemMap[r][c]
+	local posOffset = TileMagicStone:calcEffectPositions(item.magicStoneDir)
+	local validPos = {}
+	for _, v in pairs(posOffset) do
+		local tr, tc = r + v.x, c + v.y
+		if mainLogic:isPosValid(tr, tc) and mainLogic.boardmap[tr][tc].isUsed then
+			table.insert(validPos, v)
+		end
+	end
+	return validPos
+end

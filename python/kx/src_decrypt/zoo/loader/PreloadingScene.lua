@@ -39,17 +39,15 @@ kLoginErrorType = table.const {
 local PreloadingScene = class(Scene)
 
 function PreloadingScene:onInit()
-    ArmatureFactory:setUseTexturePacker(false)
-    LevelMapManager.getInstance():initialize()
-    MetaManager.getInstance():initialize()
-    GameCenterSDK:getInstance():authenticateLocalUser()
-    self:handleCMPaymentDecision()
-    if __ANDROID then SnsProxy:initPlatformConfig() end
-    PreloadingSceneUI:initUI(self)
-    self:checkNeedRegister()
-    self:preloadResource()
-    -- 
-    self:loadAnnouncement()
+        ArmatureFactory:setUseTexturePacker(false)
+        LevelMapManager.getInstance():initialize()
+        MetaManager.getInstance():initialize()
+        GameCenterSDK:getInstance():authenticateLocalUser()
+        self:handleCMPaymentDecision()
+        PreloadingSceneUI:initUI(self)
+        self:checkNeedRegister()
+        self:preloadResource() 
+        self:loadAnnouncement()
 end
 
 function PreloadingScene:updateConfig()
@@ -81,7 +79,13 @@ function PreloadingScene:getPlatformNameLocalization()
 end
 
 function PreloadingScene:handleCMPaymentDecision()
-    local decisionProcessor = require("zoo.loader.CMPaymentDecisionProcessor")
+    local function onComplete(evt)
+        if __ANDROID then SnsProxy:initPlatformConfig() end
+    end
+
+    local decisionProcessor = require("zoo.loader.CMPaymentDecisionProcessor").new()
+    decisionProcessor:addEventListener(Events.kComplete, onComplete)
+    decisionProcessor:addEventListener(Events.kError, onComplete)
     decisionProcessor:start()
 end
 
@@ -142,6 +146,8 @@ function PreloadingScene:preloadResource()
             AnnouncementPanel:create(self.announcements,self):popout()
         end
         self.isLoadResourceComplete = true
+
+        _G.kResourceLoadComplete = true
     end
 
     local loadResourceProcess = require("zoo.loader.LoadResourceProcessor").new() 
@@ -166,6 +172,8 @@ function PreloadingScene:buildAuthUI()
         local redButton, blueButton = PreloadingSceneUI:buildOAuthLoginButtons(self)
         self:redefineButtonForPlatform(redButton, blueButton)
     end
+
+    he_log_info("auto_test_apk_start_success")
     self.requireButtons = true
 end
 
@@ -1127,7 +1135,6 @@ function PreloadingScene:recommendChangeToMiAccount(onChangeFinish)
     local function onError(evt)
         evt.target:rma()
         self:logout()
-        self:logout()
         self:clearStatus()
         self:updateOAuthButtonState()
     end
@@ -1228,6 +1235,9 @@ function PreloadingScene:_logout(deleteUserData)
     _G.kDeviceID = UdidUtil:revertUdid()
     _G.sns_token = nil
     _G.kUserSNSLogin = false
+
+    if SnsProxy then SnsProxy.profile = {} end
+
     return result 
 end
 

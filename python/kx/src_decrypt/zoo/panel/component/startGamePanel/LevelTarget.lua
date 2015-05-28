@@ -44,6 +44,8 @@ function LevelTarget:init(gameModeName, orderList, ...)
 		table.insert(targetResNames, "target.score")
 	elseif gameModeName == "DigMove" then
 		table.insert(targetResNames, "target.dig_move")
+	elseif gameModeName == "Mobile Drop down" then 
+		table.insert(targetResNames, "target.key")
 	else
 		assert(false)
 	end

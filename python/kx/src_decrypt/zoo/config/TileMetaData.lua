@@ -48,6 +48,29 @@ function TileMetaData:hasProperty(property)
 	return self.tileProperties[property]
 end
 
+function TileMetaData:getChainsMeta()
+	local chains = {}
+	for i = TileConst.kChain1, TileConst.kChain5_Left do
+		if self.tileProperties[i] then
+			local chain = {}
+			chain.level = math.floor((i - TileConst.kChain1) / 5) + 1
+			chain.direction = (i - TileConst.kChain1) % 5
+			table.insert(chains, chain)
+		end
+	end 
+	return chains
+end
+
+function TileMetaData:hasMagicStoneProperty()
+	for i = TileConst.kMagicStone_Up, TileConst.kMagicStone_Left do
+		if self.tileProperties[i] then
+			local dir = i - TileConst.kMagicStone_Up + 1
+			return true, dir
+		end
+	end
+	return false, nil
+end
+
 function TileMetaData:setTileData(index)
 	self.tileProperties[index] = true
 end

@@ -877,6 +877,57 @@ Guides = table.const
 		},
 		disappear = {}
 	},
+	[151] = {
+		appear = {
+			{type = "scene", scene = "worldMap"},
+			{type = "topLevel", para = 15},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "topPassedLevel", para = 15}
+		},
+		action = {
+			[1] = {type = "showUnlock", opacity = 0xCC, 
+			text = "tutorial.game.text1510",panType = "up", panAlign = "winY", panPosY = 440,
+			panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4, touchDelay = 1.7 , cloudId = 40002
+			},
+		},
+		disappear = {
+		}
+	},
+	[152] = {
+		appear = {
+			{type = "scene", scene = "worldMap"},
+			{type = "topLevel", para = 30},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "topPassedLevel", para = 30}
+		},
+		action = {
+			[1] = {type = "showUnlock", opacity = 0xCC, 
+			text = "tutorial.game.text1520",panType = "up", panAlign = "winY", panPosY = 440,
+			panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4, touchDelay = 1.7 , cloudId = 40003
+			},
+		},
+		disappear = {
+		}
+	},
+	[153] = {
+		appear = {
+			{type = "scene", scene = "worldMap"},
+			{type = "topLevel", para = 45},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "topPassedLevel", para = 45}
+		},
+		action = {
+			[1] = {type = "showUnlock", opacity = 0xCC, 
+			text = "tutorial.game.text1530",panType = "up", panAlign = "winY", panPosY = 440,
+			panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4, touchDelay = 1.7 , cloudId = 40004
+			},
+		},
+		disappear = {
+		}
+	},
 	--解锁16关金银果树提示
 	[160] = {
 		appear = {
@@ -2011,7 +2062,7 @@ Guides = table.const
 			},			
 		},
 		disappear = {}
-	},
+	},	
 --圣诞关卡引导
     [180000] = {
 			appear = {
@@ -2057,26 +2108,28 @@ Guides = table.const
 				{type = "swap", from = ccp(2, 7), to = ccp(2, 8)},
 			},
 		},
-	[190000] = {
+	[210000] = {
 			appear = {
-				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstShowFirework', value = true}
 			},
 			action = {	
-			    [1] = {type = "showCustomizeArea", opacity = 0xCC, 
-					offsetX = -80, offsetY = -65, width = 150, height = 150,
-					text = "tutorial.game.text190001",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
-					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			    [1] = {type = "showProp",
+				opacity = 0xCC, index = 1, 
+				text = "tutorial.game.text190001", 
+				multRadius=1.1 ,
+				panType = "down", panAlign = "winY", panPosY = 600, panFlip = "true", offsetX = -58,
+				maskDelay = 1,maskFade = 0.4 ,panDelay = 1, touchDelay = 1, propId = 9999,
 				}	
 			},
 			disappear = {
 			},
 		},
-	[190001] = {
+	[210001] = {
 			appear = {
-				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstQuestionMark', value = true}
@@ -2092,9 +2145,9 @@ Guides = table.const
 			disappear = {
 			},
 		},
-	[190002] = {
+	[210002] = {
 			appear = {
-				{type = "scene", scene = "game", para = {190001,190002,190003,190004,190005}},
+				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstFullFirework', value = true}
@@ -2109,6 +2162,25 @@ Guides = table.const
 			disappear = {
 			},
 		},
+	[210003] = {
+		appear = {
+			{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
+			{type = "onceLevel"},
+			{type = "noPopup"},
+			{type = 'waitSignal', name = 'showFullFireworkTip', value = true}
+		},
+		action = {	
+			[1] = {type = "showProp",
+				opacity = 0xCC, index = 1, 
+				text = "tutorial.game.text190004", 
+				multRadius=1.1 ,
+				panType = "down", panAlign = "winY", panPosY = 600, panFlip = "true", offsetX = -58,
+				maskDelay = 1,maskFade = 0.4 ,panDelay = 1, touchDelay = 1, propId = 9999,
+			}
+		},
+		disappear = {
+		},
+	},
 --第496关，流沙说明
 	[4960] = {
 			appear = {
@@ -2128,6 +2200,88 @@ Guides = table.const
 			},
 			disappear = {},
 		},
+--第526关，锁链说明
+[5260] = {
+		appear = {
+			{type = "scene", scene = "game", para = 526},
+			{type = "numMoves", para = 0},
+			{type = "topLevel", para = 526},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "onceLevel"}
+		},
+		action = {
+			[1] = {type = "showTile", opacity = 0xCC, 
+				array = {{r = 7, c = 1, countR = 1.5, countC = 2.5}}, 
+				text = "tutorial.game.text52600",panType = "down", panAlign = "matrixD", panPosY = 1.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},			
+		    [2] = {type = "showTile", opacity = 0xCC, 
+				array = {{r = 5.5, c = 4.5, countR = 2, countC = 2}}, 
+				text = "tutorial.game.text52601",panType = "up", panAlign = "matrixD", panPosY = 6.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},		
+		},
+		disappear = {
+		},
+	},
+--第556关，魔法石说明
+    [5560] = {
+		appear = {
+			{type = "scene", scene = "game", para = 556},
+			{type = "numMoves", para = 0},
+			{type = "topLevel", para = 556},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "onceLevel"}
+		},
+		action = {
+			[1] = {type = "showTile", opacity = 0xCC, 
+				array = {{r = 9, c = 5, countR = 1, countC = 1}}, 
+				text = "tutorial.game.text55600",panType = "down", panAlign = "matrixD", panPosY = 4.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},			
+		    [2] = {type = "showTile", opacity = 0xCC, 
+				array = {
+				    [1] = {r = 7, c = 5, countR = 1, countC = 1 },
+				    [2] = {r = 8, c = 4, countR = 1, countC = 3 },
+				    [3] = {r = 9, c = 3, countR = 1, countC = 5 },				    
+				}, 
+				text = "tutorial.game.text55601",panType = "down", panAlign = "matrixD", panPosY = 2.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},
+			[3] = {type = "showObj", opacity = 0xCC, index = 2, 
+				text = "tutorial.game.text55602",panType = "up", panAlign = "matrixD", panPosY = 1 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},		
+		},
+		disappear = {
+		},
+	},
+--第200004-200007关，手机解锁关卡，松鼠和橡果的说明
+	[2000000] = {
+		appear = {
+			{type = "scene", scene = "game", para = {200004,200005,200006,200007}},
+			{type = "numMoves", para = 0},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "onceLevel"}
+		},
+		action = {
+			[1] = {type = "showUFO", opacity = 0xCC, 
+				position = ccp(9, 5), width = 1.65, height = 1.8, oval = true, deltaY = 15,
+				text = "tutorial.game.text2000000",panType = "down", panAlign = "matrixD", panPosY = 3 ,panFlip="true",
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},
+			[2] = {type = "showObj", opacity = 0xCC, index = 1, 
+				text = "tutorial.game.text2000001",panType = "up", panAlign = "matrixD", panPosY = 2 ,panFlip="true",
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},
+		},
+		disappear = {
+		},
+	},
+
 }
 
 GuideSeeds = table.const
@@ -2142,6 +2296,6 @@ GuideSeeds = table.const
 	[12] = 1394099839,
 	[121] = 1394521266,
 	[136] = 1395387867,
-	[436] = 1415094147,
+	[436] = 1425957578,
 	[466] = 1416810132,
 }

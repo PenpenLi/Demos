@@ -30,11 +30,14 @@ InternalError = table.const {
     kTimeoutError = -3,
     kServerError = -4,
     kNoNetwork = -6,
+    kServiceUnavailable = -7,
 }
 
 HttpStatus = table.const {
     HTTP_STATUS_NONE = 0,
     HTTP_OK = 200,
+    HTTP_NULL_PTR = 206,
+    HTTP_SERVICE_UNAVAILABLE = 503,
 }
 
 HEADER_COUNTER_FOR_OUTOFBAND = -999
@@ -85,16 +88,14 @@ function HTTPChannel:send(url, bytes, timeout, retryTimes)
     self.timeout = timeout
     self.retryTimes = retryTimes
     local request = HttpRequest:createPost(url)
-    if isJustBlockRequest then
+    if isJustBlockRequest and not _G.skipHttpSpeedLitmit then
         isJustBlockRequest = false
         request:setLowSpeedLimit(5 * 1000)
-        request:setLowSpeedTimeoutSeconds(5)
-        request:setConnectionTimeoutMs(6 * 1000)
-        request:setTimeoutMs(30 * 1000)
-    else
-        request:setConnectionTimeoutMs(timeout * 1000)
-        request:setTimeoutMs(timeout * 3 * 1000)
+        request:setLowSpeedTimeoutSeconds(15)
     end
+    request:setConnectionTimeoutMs(timeout * 1000)
+    request:setTimeoutMs(timeout * 30 * 1000)
+
     request:addHeader("Content-Type:application/octet-stream")
     request:setPostData(bytes, bytes:len())
     
@@ -351,6 +352,11 @@ startCommunication = function(processor, channel, requests, outOfBand)
     end
 end
 
+local ignoreErrorType = {
+    [203] = true, -- the request before this one failed
+    [206] = true, -- nullptr error,handler by server
+}
+
 onChannelCallback = function(event)
     local channel = event.target
     local processor = event.context
@@ -397,9 +403,11 @@ onChannelCallback = function(event)
         err = InternalError.kTimeoutError
     elseif ChannelEvent.kIOError == event.name then
         local httpStatusCode = event.data
-        he_log_error("http status code == '" .. httpStatusCode .. "'")
+        -- he_log_error("http status code == '" .. httpStatusCode .. "'")
         if httpStatusCode == HttpStatus.HTTP_STATUS_NONE then 
             err = InternalError.kNoNetwork
+        elseif httpStatusCode == HttpStatus.HTTP_SERVICE_UNAVAILABLE then
+            err = InternalError.kServiceUnavailable
         else
             err = InternalError.kNetworkError
         end
@@ -420,7 +428,9 @@ onChannelCallback = function(event)
                 if handler:handleError(endpoints, err, holder.requests) then break end           
             end
         else
-            he_log_error("missing handler for global error '" .. err .. "'")
+            if err > 0 and not ignoreErrorType[err] then
+                he_log_error("missing handler for global error '" .. err .. "'")
+            end
         end
 
         for i, request in ipairs(holder.requests) do
@@ -453,10 +463,13 @@ onChannelCallback = function(event)
             err = response.error and tonumber(response.error)
             local request = holder.requests[requestIndex]
             local stopPropagate = false
-            if err then 
+            if err and not ignoreErrorType[err] then 
                 he_log_error("RPC ERROR " .. response.endpoint .. "-" .. tostring(err))
             end
 
+            if err == HttpStatus.HTTP_NULL_PTR or (err == 203 and response.endpoint ~= "user" and response.endpoint ~= "syncEnd") then
+                err = InternalError.kNoNetwork
+            end
             if request and request.endpoint == response.endpoint then requestIndex = requestIndex + 1 else request = nil end
             
             if request and request.handler then
@@ -488,7 +501,9 @@ onChannelCallback = function(event)
                             handler:handleError({response.endpoint}, err)
                         end
                     else
-                        he_log_error("missing handler for endpoint error '" .. err .. "'")
+                        if err > 0 and not ignoreErrorType[err] then
+                            he_log_error("missing handler for endpoint error '" .. err .. "'")
+                        end
                     end
                 else
                     local responseHandlers = handlerRegistry[response.endpoint]

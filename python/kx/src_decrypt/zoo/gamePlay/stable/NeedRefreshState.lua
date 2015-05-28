@@ -43,7 +43,7 @@ function NeedRefreshState:tryRefresh()
 				self.mainLogic.PlayUIDelegate.effectLayer:addChild(panel)
 				self.mainLogic.PlayUIDelegate.effectLayer:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCCallFunc:create(doRefresh)))
 			else
-				setTimeOut(doRefresh, 1)
+				self.mainLogic.boardView:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCCallFunc:create(doRefresh)))
 			end
 		else 
 			local gameMode = self.mainLogic.gameMode

@@ -37,7 +37,7 @@ function ActivityButton:init()
 
 	self.ui:getChildByName("text3"):setVisible(false)
 	
-	self.ui:setTouchEnabled(true,0,true)
+	self.ui:setTouchEnabled(true,1,true)
 	self.ui:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)
@@ -70,8 +70,8 @@ function ActivityButton:init()
 
 	self.ui:getChildByName("guang"):setAnchorPoint(ccp(0.5,0.5))
 	
-	self.balloon1PosY = self.ui:getChildByName("balloon1"):getPositionY()
-	self.balloon2PosY = self.ui:getChildByName("balloon2"):getPositionY()
+	self.balloon1PosY = self.wrapper:getChildByName("balloon1"):getPositionY()
+	self.balloon2PosY = self.wrapper:getChildByName("balloon2"):getPositionY()
 
 	self:setNewStatus(false)
 	self:hideRewardIcon()
@@ -92,8 +92,8 @@ end
 
 function ActivityButton:setMsgNum( num )
 
-	local msgBg = self.ui:getChildByName("msgBg")
-	local msgNum = self.ui:getChildByName("msgNum")
+	local msgBg = self.wrapper:getChildByName("msgBg")
+	local msgNum = self.wrapper:getChildByName("msgNum")
 
 	self.msgNum = num
 
@@ -108,9 +108,9 @@ end
 
 function ActivityButton:showRewardIcon( ... )
 	
-	local msgBg = self.ui:getChildByName("msgBg")
-	local msgNum = self.ui:getChildByName("msgNum")
-	local rewardIcon = self.ui:getChildByName("rewardIcon")
+	local msgBg = self.wrapper:getChildByName("msgBg")
+	local msgNum = self.wrapper:getChildByName("msgNum")
+	local rewardIcon = self.wrapper:getChildByName("rewardIcon")
 
 	msgBg:setVisible(false)
 	msgNum:setVisible(false)
@@ -120,7 +120,7 @@ end
 
 function ActivityButton:hideRewardIcon( ... )
 
-	local rewardIcon = self.ui:getChildByName("rewardIcon")
+	local rewardIcon = self.wrapper:getChildByName("rewardIcon")
 
 	self:setMsgNum(self.msgNum or 0)
 	rewardIcon:setVisible(false)
@@ -133,8 +133,8 @@ function ActivityButton:setNewStatus(isNew)
 	self.isNew = isNew
 
 	local guang = self.ui:getChildByName("guang")
-	local balloon1 = self.ui:getChildByName("balloon1")
-	local balloon2 = self.ui:getChildByName("balloon2")
+	local balloon1 = self.wrapper:getChildByName("balloon1")
+	local balloon2 = self.wrapper:getChildByName("balloon2")
 
 	guang:stopAllActions()
 	balloon1:stopAllActions()

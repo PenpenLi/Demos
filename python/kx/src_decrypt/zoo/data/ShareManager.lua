@@ -13,6 +13,7 @@ require "zoo.panel.share.SharePassFriendPanel"
 require "zoo.panel.share.SharePyramidPanel"
 require "zoo.panel.share.ShareThousandOnePanel"
 require "zoo.panel.share.ShareTrophyPanel"
+require "zoo.panel.share.ShareChestPanel"
 
 ShareManager = {}
 
@@ -20,6 +21,7 @@ function ShareManager:init( ... )
 	--setmetatable(ShareManager, self)
 	--share type
 	self.PASS_STEP = 1
+	--通过最高关卡并且在前1000名以内
 	self.HIGHEST_LEVEL = 2
 	self.LAST_STEP_PASS = 3
 	self.N_TIME_PASS = 4
@@ -32,6 +34,9 @@ function ShareManager:init( ... )
 	self.UNLOCK_HIDEN_LEVEL = 11
 	self.EIGHTY_PERCENT_PERSON = 12
 	self.FRIST_RANK_FRIEND = 15
+	--通过最高关卡
+	self.HIGHEST_LEVEL_TWO = 16
+	self.MARK_FINAL_CHEST = 18
 
 	--share data
 	self.judgeState = "continuous"
@@ -67,6 +72,7 @@ function ShareManager:init( ... )
 		SHARE_ALL_TIME = 20, --一天的所有炫耀次数
 		OVER_FRIEND_TABLE = 21, --分数超越好友的所有好友
 		LEVEL_OVER_FRIEND_TABLE = 22, --关卡超过好友的所有好友
+		GET_MARK_FINAL_CHEST = 23, --签到领到最后一个宝箱
 	}
 
 
@@ -88,6 +94,8 @@ kShareConfig[tostring(ShareManager.FULL_STARS)] = {id=10, gamecenter="happyeleme
 kShareConfig[tostring(ShareManager.UNLOCK_HIDEN_LEVEL)] = {id=11, gamecenter="happyelements_hidden_checkpoint"}
 --kShareConfig[tostring(ShareManager.EIGHTY_PERCENT_PERSON)] = {id=12, gamecenter="happyelements_rocket"}
 kShareConfig[tostring(ShareManager.FRIST_RANK_FRIEND)] = {id=15, gamecenter="happyelements_no.1_friends"}
+kShareConfig[tostring(ShareManager.HIGHEST_LEVEL_TWO)] = {id=16, gamecenter="happyelements_the_highest_level"}
+kShareConfig[tostring(ShareManager.MARK_FINAL_CHEST)] = {id=18, gamecenter="happyelements_sign_get_treasure"}
 
 local ConditionOP = {
 	EQUAL = 1,							-- ==
@@ -141,6 +149,7 @@ local function judgeCondition( op, condition, min, max )
 	return false
 end
 
+--图片分享的是本地的截图 所以这里暂时没用
 local function getImgUrl(shareId)
 	local timer = os.time()
 	local datetime = tostring(os.date("%y%m%d", timer))
@@ -148,6 +157,8 @@ local function getImgUrl(shareId)
 	local imageURL = nil
 	if shareId == ShareManager.HIGHEST_LEVEL then 
 		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)	
+	elseif shareId == ShareManager.HIGHEST_LEVEL_TWO then 
+		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)
 	elseif shareId == ShareManager.OVER_SELF_RANK then
 		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)	
 	elseif shareId == ShareManager.UNLOCK_HIDEN_LEVEL then
@@ -157,6 +168,8 @@ local function getImgUrl(shareId)
 	elseif shareId == ShareManager.FRIST_RANK_FRIEND then
 		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)	
 	elseif shareId == ShareManager.FULL_STARS then
+		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)	
+	elseif shareId == ShareManager.MARK_FINAL_CHEST then
 		imageURL = string.format("http://static.manimal.happyelements.cn/feed/week_first.jpg?v="..datetime)	
 	end
 	return imageURL
@@ -198,16 +211,34 @@ local ShareConfig = {
 		shareImage = getImgUrl(ShareManager.HIGHEST_LEVEL),
 		shareTitle = "show_off_content_10",
 	},
+	[ShareManager.HIGHEST_LEVEL_TWO] = {
+		op = function ()
+				local version_highest_level =  MetaManager.getInstance():getMaxNormalLevelByLevelArea()
+				return judgeCondition(ConditionOP.EQUAL, ShareManager.data.level, version_highest_level)	
+			end,
+		shareType = ShareType.IMAGE,
+		priority = 15,
+		shareImage = getImgUrl(ShareManager.HIGHEST_LEVEL_TWO),
+		shareTitle = "show_off_content_15",
+	},
 	[ShareManager.OVER_SELF_RANK] = {
 		op = function ()
 				--local condition
-				local rankRequest = ShareManager.preScore and ShareManager.preScore < ShareManager.data.totalScore
+				local rankRequest = false
+
+				if ShareManager.preScore then 
+					if ShareManager.preScore < ShareManager.data.totalScore then
+						rankRequest = true
+					end
+				else
+					ShareManager.preScore = 0
+					rankRequest = true
+				end
 
 				if judgeCondition(ConditionOP.GREATER, ShareManager.data.level, 7) == false or
 					judgeCondition(ConditionOP.EQUAL, rankRequest, true) == false then
 					return false
 				end
-
 				--network condition
 				local over_self_rank = ShareManager:getShareData(ShareManager.ConditionType.OVER_SELF_RANK)
 				local rankPosition = ShareManager:getShareData(ShareManager.ConditionType.ALL_SCORE_RANK)
@@ -216,7 +247,6 @@ local ShareConfig = {
 					local function onCompleteSuccess( evt )
 						local rankPosition = 1
 						local share = false
-
 						if evt.data and evt.data.rankPosition then
 							rankPosition = evt.data.rankPosition
 						end
@@ -540,11 +570,22 @@ local ShareConfig = {
 		priority = 120,
 		shareNotify = "show_off_to_friend_rank",
 		shareTitle = "show_off_content_120",
-	}
+	},
+	[ShareManager.MARK_FINAL_CHEST] = {
+		op = function ()
+				local getFinalChest = ShareManager:getShareData(ShareManager.ConditionType.GET_MARK_FINAL_CHEST)
+				return judgeCondition(ConditionOP.EQUAL, getFinalChest, true)		
+			end,
+		shareType = ShareType.IMAGE,
+		priority = 130,
+		shareImage = getImgUrl(ShareManager.MARK_FINAL_CHEST),
+		shareTitle = "show_off_content_130",
+	},
 }
 
 local PriorityConfig = {
 	ShareManager.HIGHEST_LEVEL, -- 1
+	ShareManager.HIGHEST_LEVEL_TWO,
 	ShareManager.OVER_SELF_RANK,
 	ShareManager.EIGHTY_PERCENT_PERSON,
 	ShareManager.UNLOCK_HIDEN_LEVEL,
@@ -557,6 +598,7 @@ local PriorityConfig = {
 	ShareManager.FRIST_RANK_FRIEND,
 	ShareManager.SCORE_OVER_FRIEND,
 	ShareManager.LEVEL_OVER_FRIEND,
+	ShareManager.MARK_FINAL_CHEST,
 }
 
 function ShareManager:judgeShareCondition( shareID )
@@ -608,6 +650,8 @@ function ShareManager:showShareUI( shareID )
 
 	elseif shareID == ShareManager.HIGHEST_LEVEL then 			--id = 2  priority = 10
 		panel = SharePyramidPanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
+	elseif shareID == ShareManager.HIGHEST_LEVEL_TWO then 			--id = 16  priority = 15
+		panel = SharePyramidPanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
 	elseif shareID == ShareManager.OVER_SELF_RANK then          --id = 5  priority = 20
 		panel = ShareThousandOnePanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
 	elseif shareID == ShareManager.UNLOCK_HIDEN_LEVEL then      --id = 11  priority = 30
@@ -618,6 +662,8 @@ function ShareManager:showShareUI( shareID )
 		panel = ShareTrophyPanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
 	elseif shareID == ShareManager.FRIST_RANK_FRIEND then 		--id = 15  priority = 100
 		panel = ShareFirstInFriendsPanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
+	elseif shareID == ShareManager.MARK_FINAL_CHEST then 		--id = 18  priority = 130
+		panel = ShareChestPanel:create(shareID, config.shareType, config.shareImage, config.shareTitle)
 
 	elseif shareID == ShareManager.SCORE_OVER_FRIEND then       --id = 7  priority = 110
 		panel = SharePassFriendPanel:create(shareID, config.shareType, config.shareNotify, config.shareTitle, PassFriendType.SCORE)
@@ -634,23 +680,21 @@ function ShareManager:showShareUI( shareID )
 end
 
 function ShareManager:changeState( state )
-	local scheduleScriptFuncID
+	if state == "continuous" and self.scheduleScriptFuncID ~= nil then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.scheduleScriptFuncID)
+	    self.scheduleScriptFuncID = nil
+	end
 
 	if state == "holding" and self.judgeState == "continuous" then
 	  	local function onTimeOut()
 	    	self.forceOver = true
 			print("share:forceOver timeout......")
-	    	if scheduleScriptFuncID ~= nil then 
-	    		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(scheduleScriptFuncID)
-	    		scheduleScriptFuncID = nil
+	    	if self.scheduleScriptFuncID ~= nil then 
+	    		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.scheduleScriptFuncID)
+	    		self.scheduleScriptFuncID = nil
 	    	end
 	  	end
-	  	scheduleScriptFuncID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut,self.HOLDING_TIME_OUT,false)
-	end
-
-	if state == "continuous" and scheduleScriptFuncID ~= nil then
-		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(scheduleScriptFuncID)
-	    scheduleScriptFuncID = nil
+	  	self.scheduleScriptFuncID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut,self.HOLDING_TIME_OUT,false)
 	end
 
 	print("share:changeState---------------------------------->"..state)

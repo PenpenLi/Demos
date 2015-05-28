@@ -19,19 +19,21 @@ end
 
 -- return isValid
 function RecallVO:decode(src)
-	self.lastLeaveTime = tonumber(src.lastLeaveTime)
-	self.lastTopLevel = tonumber(src.lastTopLevel)
-	self.stayForLastLevel = tonumber(src.stayForLastLevel)
-	self.threeDayTipFlag = src.threeDayTipFlag
-	self.sevenDayTipFlag = src.sevenDayTipFlag
-	he_log_info("RecallVO.lastLeaveTime===============>"..self.lastLeaveTime)
-	he_log_info("RecallVO.lastTopLevel================>"..self.lastTopLevel)
-	he_log_info("RecallVO.stayForLastLevel============>"..self.stayForLastLevel)
 	if src.lastLeaveTime and type(src.lastLeaveTime) == "number"
 		and src.lastTopLevel and type(src.lastTopLevel) == "number"
 		and src.stayForLastLevel and type(src.stayForLastLevel) == "number"
 		and src.threeDayTipFlag and type(src.threeDayTipFlag) == "boolean"
 		and src.sevenDayTipFlag and type(src.sevenDayTipFlag) == "boolean" then
+
+		self.lastLeaveTime = src.lastLeaveTime
+		self.lastTopLevel = src.lastTopLevel
+		self.stayForLastLevel = src.stayForLastLevel
+		self.threeDayTipFlag = src.threeDayTipFlag
+		self.sevenDayTipFlag = src.sevenDayTipFlag
+		he_log_info("RecallVO.lastLeaveTime===============>"..src.lastLeaveTime)
+		he_log_info("RecallVO.lastTopLevel================>"..src.lastTopLevel)
+		he_log_info("RecallVO.stayForLastLevel============>"..src.stayForLastLevel)
+
 		return true
 	end
 	return false

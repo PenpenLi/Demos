@@ -110,6 +110,8 @@ _G.__GuoQingUpdate = true
 _G.__ThanksgivingUpdate = true
 _G.__ChristmasUpdate = true
 _G.__SpringFes2015Update = true
+_G.__AnniversaryTaskUpdated = true
+_G.__LaborDay2015Update = true
 require 'zoo.common.LeaderBoardSubmitUtil'
 
 
@@ -124,7 +126,8 @@ require "zoo.panel.InnerNotiPanel"
 require "zoo.panel.recall.RecallFriendUnlockPanel"
 require "zoo.panel.recall.RecallLevelUnlockPanel"
 require "zoo.panel.recall.RecallItemPanel"
-
+require "zoo.data.AdVideoManager"
+require "zoo.scenes.component.HomeScene.AdVideoButton"
 ---------------------------------------------------
 -------------- HomeScene
 ---------------------------------------------------
@@ -478,26 +481,6 @@ function HomeScene:onInit(Scene, ...)
 	local repeatForever = CCRepeatForever:create(bubbleNormalAction)
 	pauseBtnBubbleBg:runAction(repeatForever)
 
-	-- cdkey panel's not here anymore.
-	if MaintenanceManager:getInstance():isEnabled("CDKeyCode") then
-		if not CCUserDefault:sharedUserDefault():getBoolForKey("cdkey.panel.change.place") then
-			local user = UserManager:getInstance():getUserRef()
-			if user:getTopLevelId() > 1 then
-				local position = self.pauseBtnRes:getPosition()
-				local size = self.pauseBtnRes:getGroupBounds().size
-				local origin = Director:sharedDirector():getVisibleOrigin()
-				local wPos = self:convertToWorldSpace(ccp(position.x, position.y))
-				wPos = {x = wPos.x - origin.x + size.width / 2, y = wPos.y - origin.y - size.height / 2}
-				local panel = InnerNotiPanel:create({text = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti", {n = '\n'}),
-					btnText = Localization:getInstance():getText("home.scene.cdkey.button.remove.noti.button"),
-					enterPos = wPos, exitPos = wPos})
-				if panel then self:runAction(CCCallFunc:create(function() panel:popout() end)) end
-			end
-			CCUserDefault:sharedUserDefault():setBoolForKey("cdkey.panel.change.place", true)
-			CCUserDefault:sharedUserDefault():flush()
-		end
-	end
-
 	--------------------
 	---- YingyongBar Button
 	----------------------
@@ -559,6 +542,8 @@ function HomeScene:onInit(Scene, ...)
 		local newTotalStarNumber = UserManager.getInstance().user:getStar() + UserManager.getInstance().user:getHideStar()
 		LeaderBoardSubmitUtil.submitTotalStars(newTotalStarNumber)
 	end
+
+	he_log_info("auto_test_tap_login")
 end
 
 function HomeScene:onSyncFinished()
@@ -802,13 +787,11 @@ function HomeScene:onPauseBtnTapped(...)
 
 	
 	-- self:showMV()
-	
 	GamePlayMusicPlayer:playEffect(GameMusicType.kClickBubble)
-	PopoutManager:sharedInstance():add(GameSettingPanel:create(), false, false)
+	PopoutManager:sharedInstance():add(GameSettingPanel:create(), true, false)
 end
 
 local sharedInstance = false
-
 function HomeScene:sharedInstance(...)
 	assert(#{...} == 0)
 
@@ -896,7 +879,6 @@ function HomeScene:createFlyingRewardAnim(rewardIds, rewardAmounts, ...)
 	assert(#{...} == 0)
 
 	local anims = {}
-
 	for k,v in pairs(rewardIds) do
 		if v == ItemType.ENERGY_LIGHTNING then
 			-- Check If Flying Energy 
@@ -1469,6 +1451,11 @@ function HomeScene:startLadyBug(...)
 
 	local placeholderPanel = CocosObject:create()
 	placeholderPanel.popoutShowTransition = function ( ... )
+		if not self.ladybugButton then 
+			PopoutManager.sharedInstance():remove(placeholderPanel)
+			return
+		end
+
 		-- Color Layer TO Block The Input
 		local visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
 		local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
@@ -1568,12 +1555,15 @@ function HomeScene:onEnterHandler(event, ...)
 			end
 		else
 			if not PrepackageUtil:isPreNoNetWork() and not NewVersionUtil:hasSJReward() then
-				self:buildMarkPanel()
+				self:buildMarkPanel() -- markButton may be created
 			end
 			if self.markButton and RequireNetworkAlert:popout(nil, kRequireNetworkAlertAnimation.kNoAnimation) then
 				self.markButton.click()
 			end
 		end
+		
+		--推送召回相关
+		self:pocessRecall()
 
 		if not self.timeLimitButton and (__ANDROID or __WIN32) then
 			self:buildTimeLimitButtonIfNecessary()
@@ -1582,6 +1572,8 @@ function HomeScene:onEnterHandler(event, ...)
 		if (MaintenanceManager:getInstance():isEnabled("Activity") or __WIN32 or __ANDROID) and not _G.disableActivity then 
 			self:buildActivityButton()
 		end
+
+		self:updateAdVideoBtn()
 
 		if GameGuide then
 			GameGuide:sharedInstance():onEnterWorldMap(self)
@@ -1595,9 +1587,10 @@ function HomeScene:onEnterHandler(event, ...)
 			end
 		end
 
+		--兔子周赛免费次数获得tips
+		RabbitWeeklyManager:sharedInstance():showGetFreeTimeTip()
+
 		self:updateFriends()
-		--推送召回相关
-		self:pocessRecall()
 
 		if not bootSourceCheck then
 			-- local sdk = UrlSchemeSDK.new()
@@ -2093,8 +2086,7 @@ end
 function HomeScene:buildUpdateVersionPanel()
 	if NewVersionUtil:hasUpdateReward() then return end ---如果有更新奖励不能弹 更新面板
 	local function popoutUpdateVersionPanel(isAutoPopout)
-		if RequireNetworkAlert:popout() then
-
+		local function checkUpdate()
 			-- 1：大版本更新
 			if NewVersionUtil:hasPackageUpdate() then 
 
@@ -2125,6 +2117,7 @@ function HomeScene:buildUpdateVersionPanel()
 				-- error
 			end
 		end
+		RequireNetworkAlert:callFuncWithLogged(checkUpdate)
 	end
 
 	local function buildUpdateVersionButton()
@@ -2319,10 +2312,13 @@ function HomeScene:onEnterForeGround()
 		end
 	end
 
-	if(not PrepackageUtil:isPreNoNetWork()) and RequireNetworkAlert:popout(nil, kRequireNetworkAlertAnimation.kNoAnimation) then
-		local http = GetRequestNumHttp.new(false)
-		http:ad(Events.kComplete, onGetRequestNumSuccess)
-		http:load()
+	if not PrepackageUtil:isPreNoNetWork() then
+		local function getRequestNum( ... )
+			local http = GetRequestNumHttp.new(false)
+			http:ad(Events.kComplete, onGetRequestNumSuccess)
+			http:load()
+		end
+		RequireNetworkAlert:callFuncWithLogged(getRequestNum, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 	end
 
 	-- 
@@ -2407,21 +2403,23 @@ function HomeScene:onApplicationHandleOpenURL(launchURL)
 				end
 				CommonTip:showTip(Localization:getInstance():getText("url.scheme.add.friend"), "positive")
 			end
-			if RequireNetworkAlert:popout(nil, kRequireNetworkAlertAnimation.kNoAnimation) then
+			local function startInvitedAndRewardLogic()
 				local logic = InvitedAndRewardLogic:create(false)
 				logic:start(res.para.invitecode, res.para.uid, onSuccess)
 			end
+			RequireNetworkAlert:callFuncWithLogged(startInvitedAndRewardLogic, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 		elseif string.lower(res.method) == "wxshare" and res.para and res.para.uid then
 			if MaintenanceManager:getInstance():isEnabled("wxsharetime") then
 				DcUtil:UserTrack({category = "wx_share", sub_category = "push_message_weixin",
 					turn_table = res.para.turntable})
-				if RequireNetworkAlert:popout() then
+				local function createTurnTable()
 					local profile = UserManager:getInstance().profile
 					if profile.uid ~= tonumber(res.para.uid) then
 						if tonumber(res.para.uitype) == 0 then TurnTablePanel:tryCreateTurnTable(res.para.turntable)
 						elseif tonumber(res.para.uitype) == 1 then end
 					end
 				end
+				RequireNetworkAlert:callFuncWithLogged(createTurnTable)
 			end
 		elseif string.lower(res.method) == "activity_wxshare" and res.para then
 			local paraData = {}
@@ -2466,9 +2464,14 @@ function HomeScene:createAndShowFruitTreeButton()
 				GameGuide:sharedInstance():onResult("fruitTreeButton", false)
 			end
 		end
-		if RequireNetworkAlert:popout() then
+
+		local function updateInfo()
 			FruitTreeSceneLogic:sharedInstance():updateInfo(success, fail)
-	    else fail(-2, true) end
+		end
+		local function onLoginFail()
+			fail(-2, true)
+		end
+		RequireNetworkAlert:callFuncWithLogged(updateInfo, onLoginFail)
 	end
 	self.fruitTreeButton = FruitTreeButton:create()
 	self.fruitTreeButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onFruitTreeButtonTapped)
@@ -2616,4 +2619,39 @@ function HomeScene:createRabbitWeeklyButton()
 	end
 
 	RabbitWeeklyManager:sharedInstance():loadData(onLoaded)
+end
+
+function HomeScene:buildAdVideoBtn( ... )
+	local function onAdVideoBtnTapped( ... )
+		DcUtil:clickAdVideoIcon()
+		if AdVideoManager:getInstance():canShowPanel() then
+			local position = self.adVideoBtn:getPosition()
+			local parent = self.adVideoBtn:getParent()
+			local wPos = parent:convertToWorldSpace(ccp(position.x, position.y))
+			AdVideoManager:getInstance():showAdVideoPanel(wPos)
+		else
+			CommonTip:showTip(Localization:getInstance():getText("watch_ad_time"), "negative")
+		end
+		
+	end
+	self.adVideoBtn = AdVideoButton:create()
+	self.rightRegionLayoutBar:addItem(self.adVideoBtn)
+	self.adVideoBtn.wrapper:addEventListener(DisplayEvents.kTouchTap, onAdVideoBtnTapped)
+	self.adVideoBtn:updateState()
+end
+
+function HomeScene:updateAdVideoBtn( ... )
+	-- body
+	if  AdVideoManager:getInstance():canShowBtn() then
+		if not self.adVideoBtn then
+			self:buildAdVideoBtn()
+		else
+			self.adVideoBtn:updateState()
+		end
+	else
+		if self.adVideoBtn then
+			self.rightRegionLayoutBar:removeItem(self.adVideoBtn, true)
+			self.adVideoBtn = nil
+		end
+	end
 end

@@ -1,6 +1,6 @@
 if jit and jit.off then print("jit.off") jit.off() end
 
-if __WP8 then require "bit" end
+if __WP8 or __IOS then require "bit" end
 
 require "zoo.util.PublishActUtil"
 require "hecore.utils"
@@ -11,6 +11,8 @@ require "zoo.util.SignatureUtil"
 require "zoo.util.CommonAlertUtil"
 require "hecore.gsp.GspProxy"
 require "zoo.util.PrepackageUtil"
+require "zoo.util.GameCrashLogDevUtil"
+require "zoo.util.TimerUtil"
 
 ResourceLoader.init()
 
@@ -52,7 +54,6 @@ function he_log_info(str)
         ori_he_log_info(str)
     end
 end
-
 ---------------------------------------------------------------------------------  Resource Initialize
 if __WP8 then
     _G.__use_low_effect = true
@@ -72,8 +73,7 @@ elseif __ANDROID then
     notificationUtil:onLuaStartup()
     print("runGame():notificationUtil:onLuaStartup()")
 
-    _G.signatured = SignatureUtil:verifySignature( packageName )
-    print("signatured:"..tostring(signatured))
+    _G.kDefaultCmPayment = SignatureUtil:getDefaultCmPayment( packageName )
 
     local function checkEmulator()
         local qemuFile = luajava.newInstance("java.io.File", "/system/lib/libc_malloc_debug_qemu.so")
@@ -103,6 +103,7 @@ local function startGameDirectly()
     require "zoo.util.DcUtil"
     require "zoo.util.UdidUtil"
     require "zoo.util.SignatureUtil"
+
     require "hecore.WrapAssert"
     require "zoo.common.LogService"
     require "zoo.config.PlatformConfig"
@@ -126,7 +127,7 @@ local function startGameAfterDynamicUpdate()
         local packageName = tostring(k) or ""
         if beginWithString(packageName, "zoo.") or beginWithString(packageName, "hecore.") then unrequire(packageName) end
     end
-
+    
     startGameDirectly()
 end
 

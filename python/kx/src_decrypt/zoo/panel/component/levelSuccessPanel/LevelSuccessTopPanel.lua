@@ -398,6 +398,8 @@ function LevelSuccessTopPanel:getAllRewardIds( levelId, levelType )
 		allRewardIds[ItemType.XMAS_BELL] = ItemType.XMAS_BELL
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		allRewardIds[ItemType.WEEKLY_RABBIT] = ItemType.WEEKLY_RABBIT
+	elseif self.levelType == GameLevelType.kTaskForUnlockArea then 
+		allRewardIds[ItemType.KEY_GOLD] = ItemType.KEY_GOLD
 	end
 	return allRewardIds
 end
@@ -449,6 +451,8 @@ function LevelSuccessTopPanel:getDefaultRewards( levelReward, smallestLevel )
 		result[ItemType.XMAS_BELL] = getRewardItemNumber(ItemType.XMAS_BELL)
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		result[ItemType.WEEKLY_RABBIT] = getRewardItemNumber(ItemType.WEEKLY_RABBIT)
+	elseif self.levelType == GameLevelType.kTaskForUnlockArea then 
+		result[ItemType.KEY_GOLD] = 1
 	end
 
 	-- Extra Coin
@@ -482,7 +486,7 @@ function LevelSuccessTopPanel:createPanelTitle( levelId, levelType )
 			levelDisplayName = Localization:getInstance():getText('weekly.race.panel.rabbit.begin.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)	
-		elseif levelType == GameLevelType.kTaskForRecall then
+		elseif levelType == GameLevelType.kTaskForRecall or levelType == GameLevelType.kTaskForUnlockArea then
 			levelDisplayName = Localization:getInstance():getText('recall_text_5')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)		
@@ -2012,4 +2016,3 @@ function LevelSuccessTopPanel:createFlowersAnimation(finishCallback)
 	end
 	return CCSpawn:create(targetedActions)
 end
-

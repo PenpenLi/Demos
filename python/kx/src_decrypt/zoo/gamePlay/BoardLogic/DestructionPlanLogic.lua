@@ -83,6 +83,8 @@ function DestructionPlanLogic:runViewAction(boardView, theAction)
 		end
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Move then
 		DestructionPlanLogic:runGameItemActionSnailMove(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
+		DestructionPlanLogic:runGameItemActionMagicStone(boardView, theAction)
 	end
 end
 
@@ -110,6 +112,63 @@ function DestructionPlanLogic:runningGameItemAction(mainLogic, theAction, actid)
 		DestructionPlanLogic:runingGameItemSpecialBombColorColorAction(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Move then
 		DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
+		DestructionPlanLogic:runningGameItemActionMagicStoneActive(mainLogic, theAction, actid)
+	end
+end
+
+function DestructionPlanLogic:runningGameItemActionMagicStoneActive(mainLogic, theAction, actid)
+	local r = theAction.ItemPos1.x
+	local c = theAction.ItemPos1.y
+
+	if theAction.addInfo == "over" then
+		mainLogic.destructionPlanList[actid] = nil
+	else
+		theAction.addInt = theAction.addInt + 1
+		if theAction.addInt == 16 then -- PC是16
+			-- 魔法石所在格子的冰柱处理
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft})
+			if theAction.targetPos then
+				local item = mainLogic.gameItemMap[r][c]
+				for _,v in pairs(theAction.targetPos) do
+					local tr, tc = r + v.x, c + v.y
+					SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, tr, tc, 1, false)  --可以作用银币
+					BombItemLogic:tryCoverByBomb(mainLogic, tr, tc, true, 1)
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, tr, tc, 3) 
+					-- 对消除区域冰柱的影响
+					local breakChainDirs = {}
+					if math.abs(v.x) + math.abs(v.y) == 1 then -- 相邻的3个格子
+						breakChainDirs = {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft}
+					else -- 不相邻的5个格子
+						if v.x < 0 then table.insert(breakChainDirs, ChainDirConfig.kDown) end
+						if v.x > 0 then table.insert(breakChainDirs, ChainDirConfig.kUp) end
+						if v.y < 0 then table.insert(breakChainDirs, ChainDirConfig.kRight) end
+						if v.y > 0 then table.insert(breakChainDirs, ChainDirConfig.kLeft) end
+					end
+					SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, tr, tc, breakChainDirs)
+				end
+			end
+		elseif theAction.addInt > 33 then  -- 16*2+1，确保一个来回不会被触发
+			local item = mainLogic.gameItemMap[r][c]
+			item.magicStoneLocked = false
+
+			theAction.addInfo = "over"
+		end
+	end
+end
+
+function DestructionPlanLogic:runGameItemActionMagicStone(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+
+		theAction.addInt = 1
+		item:playStoneActiveAnim(theAction.magicStoneLevel, theAction.targetPos)
+		if theAction.magicStoneLevel < TileMagicStoneConst.kMaxLevel then
+			theAction.addInfo = "over"
+		end
 	end
 end
 
@@ -299,6 +358,9 @@ function DestructionPlanLogic:runingGameItemSpecialBombWrapWrapAction(mainLogic,
 			mergePos[v.c .. "_" .. v.r] = v
 		end
 
+		local centerR = (r1 + r2) / 2
+		local centerC = (c1 + c2) / 2
+
 		for k,v in pairs(mergePos) do
 			if v.r >= 1 and v.r <= #mainLogic.boardmap
 				and v.c >= 1 and v.c <= #mainLogic.boardmap[v.r] 
@@ -306,6 +368,8 @@ function DestructionPlanLogic:runingGameItemSpecialBombWrapWrapAction(mainLogic,
 				SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, v.r, v.c, scoreScale)
 				BombItemLogic:tryCoverByBomb(mainLogic, v.r, v.c, true, scoreScale)
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, v.r, v.c, 3, scoreScale, actid)
+				local breakDirs = DestructionPlanLogic:calcBreakChainDirsAtPos(v.r, v.c, centerR, centerC, 4.5)
+				SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, v.r, v.c, breakDirs)
 			end
 		end
 		GamePlayMusicPlayer:playEffect(GameMusicType.kSwapWrapWrap);
@@ -327,6 +391,30 @@ function DestructionPlanLogic:getItemPosition(itemPos)
 	local x = (itemPos.y - 0.5 ) * GamePlayConfig_Tile_Width
 	local y = (GamePlayConfig_Max_Item_Y - itemPos.x - 0.5 ) * GamePlayConfig_Tile_Height
 	return ccp(x,y)
+end
+
+-- 针对区域消除，计算区域内格子需要消除的冰柱
+function DestructionPlanLogic:calcBreakChainDirsAtPos(r, c, centerR, centerC, radius)
+	local breakDirs = {}
+	local deltaR = r - centerR
+	local deltaC = c - centerC
+	local calcRadius = math.abs(deltaR) + math.abs(deltaC)
+	if calcRadius < radius then
+		breakDirs = {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kLeft, ChainDirConfig.kRight}
+	elseif calcRadius == radius then
+		if deltaR < 0 then
+			table.insert(breakDirs, ChainDirConfig.kDown)
+		elseif deltaR > 0 then
+			table.insert(breakDirs, ChainDirConfig.kUp)
+		end
+
+		if deltaC < 0  then
+			table.insert(breakDirs, ChainDirConfig.kRight)
+		elseif deltaC > 0 then
+			table.insert(breakDirs, ChainDirConfig.kLeft)
+		end
+	end
+	return breakDirs
 end
 
 ----直线（横线）消除特效的执行中逻辑
@@ -351,6 +439,7 @@ function DestructionPlanLogic:runingGameItemSpecialBombLineAction(mainLogic, the
 		end
 		BombItemLogic:tryCoverByBomb(mainLogic, r1, c1, true, 0, true)----加过分数的---
 		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c1, 1, nil, actid) ----原点---
+		SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c1, {ChainDirConfig.kLeft, ChainDirConfig.kRight})
 	end
 
 	theAction.addInt = theAction.addInt + 1
@@ -381,12 +470,15 @@ function DestructionPlanLogic:runingGameItemSpecialBombLineAction(mainLogic, the
 				local s1 = BombItemLogic:tryCoverByBomb(mainLogic, r1, c2, false, scoreScale)  		----左边
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c2, 1, scoreScale, actid)
 				if s1 == 2 then   ----遇到银币
+					SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c2, {ChainDirConfig.kRight})
 					if theAction.addInfo == "" then
 						theAction.addInfo = "left"			----左部终止
 					elseif theAction.addInfo == "right" then
 						theAction.addInfo = "over"			----全部终止
 						return
 					end
+				else
+					SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c2, {ChainDirConfig.kLeft, ChainDirConfig.kRight})
 				end
 			end
 		end
@@ -399,12 +491,15 @@ function DestructionPlanLogic:runingGameItemSpecialBombLineAction(mainLogic, the
 				local s2 = BombItemLogic:tryCoverByBomb(mainLogic, r1, c3, false, scoreScale) 			----右边
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c3, 1, scoreScale, actid)
 				if s2 == 2 then 
+					SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c3, {ChainDirConfig.kLeft})
 					if theAction.addInfo == "" then
 						theAction.addInfo = "right"
 					elseif theAction.addInfo == "left" then
 						theAction.addInfo = "over"
 						return
 					end
+				else
+					SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c3, {ChainDirConfig.kLeft, ChainDirConfig.kRight})
 				end
 			end
 		end
@@ -435,6 +530,7 @@ function DestructionPlanLogic:runingGameItemSpecialBombColumnAction(mainLogic, t
 	end
 	BombItemLogic:tryCoverByBomb(mainLogic, r1, c1, true, 0, true)----加过分数的---
 	SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c1, 2, nil, actid) ----原点---
+	SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c1, {ChainDirConfig.kUp, ChainDirConfig.kDown})
 
 	for i=r1 + 1, #mainLogic.gameItemMap do
 		if not DestructionPlanLogic:existInSpecialBombLightUpPos(mainLogic, i, c1, theAction.lightUpBombMatchPosList) then
@@ -442,7 +538,12 @@ function DestructionPlanLogic:runingGameItemSpecialBombColumnAction(mainLogic, t
 		end
 		local s1 = BombItemLogic:tryCoverByBomb(mainLogic, i, c1, true, scoreScale, true) 		----空中的也炸掉
 		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, i, c1, 2, scoreScale, actid)
-		if s1 == 2 then break end----遇到银币
+		if s1 == 2 then 
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, i, c1, {ChainDirConfig.kUp})
+			break 
+		else
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, i, c1, {ChainDirConfig.kUp, ChainDirConfig.kDown})
+		end----遇到银币
 	end
 
 	for i=r1 - 1, 0, -1 do
@@ -451,7 +552,12 @@ function DestructionPlanLogic:runingGameItemSpecialBombColumnAction(mainLogic, t
 		end
 		local s1 = BombItemLogic:tryCoverByBomb(mainLogic, i, c1, true, scoreScale, true) 		----空中的也炸掉
 		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, i, c1, 2, scoreScale, actid )
-		if s1 == 2 then break end----遇到银币
+		if s1 == 2 then 
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, i, c1, {ChainDirConfig.kDown})
+			break 
+		else
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, i, c1, {ChainDirConfig.kUp, ChainDirConfig.kDown})
+		end----遇到银币
 	end
 end
 
@@ -489,6 +595,8 @@ function DestructionPlanLogic:runingGameItemSpecialBombWrapAction(mainLogic, the
 
 	local bombPosList = getRectBombPos(5, r1, c1)
 
+	local centerR = r1
+	local centerC = c1
 	for k,v in ipairs(bombPosList) do
 		if mainLogic:isPosValid(v.r, v.c) and mainLogic.gameItemMap[v.r][v.c].dataReach then
 			if not DestructionPlanLogic:existInSpecialBombLightUpPos(mainLogic, v.r, v.c, theAction.lightUpBombMatchPosList) then
@@ -500,6 +608,8 @@ function DestructionPlanLogic:runingGameItemSpecialBombWrapAction(mainLogic, the
 				BombItemLogic:tryCoverByBomb(mainLogic, v.r, v.c, true, scoreScale)
 			end
 			SpecialCoverLogic:SpecialCoverAtPos(mainLogic, v.r, v.c, 3, scoreScale, actid)
+			local breakDirs = DestructionPlanLogic:calcBreakChainDirsAtPos(v.r, v.c, centerR, centerC, 2)
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, v.r, v.c, breakDirs)
 		end
 	end
 end

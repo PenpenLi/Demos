@@ -68,6 +68,8 @@ function UserService:encode()
 	dst.dimeProvince = self.dimeProvince
 	dst.timeProps = encodeListDataRef(self.timeProps)
 
+	dst.userType = self.userType
+
 	return dst
 end
 

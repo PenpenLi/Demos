@@ -160,6 +160,7 @@ function UsePropState:runGamePropsHammerAction(mainLogic, theAction, actid)
 	SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1, true)  --可以作用银币
 	BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
 	SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
+	SpecialCoverLogic:specialCoverChainsAroundPos(mainLogic, r, c)
 	local str = string.format(GameMusicType.kEliminate, 1)
  	GamePlayMusicPlayer:playEffect(str);
 	mainLogic.propActionList[actid] = nil

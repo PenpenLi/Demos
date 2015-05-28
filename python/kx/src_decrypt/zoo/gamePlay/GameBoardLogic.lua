@@ -12,6 +12,7 @@ require "zoo.gamePlay.BoardLogic.ItemHalfStableCheckLogic"
 require "zoo.gamePlay.BoardLogic.DestructionPlanLogic"
 require "zoo.gamePlay.BoardLogic.DestroyItemLogic"
 require "zoo.gamePlay.BoardLogic.RefreshItemLogic"
+require "zoo.gamePlay.BoardLogic.DropBuffLogic"
 require "zoo.gamePlay.mode.GameModeFactory"
 require "zoo.gamePlay.BoardLogic.GameExtandPlayLogic"
 require "zoo.gamePlay.BoardLogic.ProductItemLogic"
@@ -75,6 +76,7 @@ GamePlayType = table.const
 	kWorldCUP = 13,
 	kSeaOrder = 14,
     kHalloween = 15,
+    kUnlockAreaDropDown = 16,       ----解锁关卡任务掉落模式
 }
 
 GamePlayStatus = table.const
@@ -138,7 +140,7 @@ function GameBoardLogic:ctor()
 	self.coinDestroyNum = 0 			----销毁的银币数量
 
 	self.balloonFrom = 0             ---------气球的剩余步数
-	self.addMoveBase = 0                 ---------气球爆炸增加的步数
+	self.addMoveBase = GamePlayConfig_Add_Move_Base                 ---------气球爆炸增加的步数
 
 	self.isWaitingOperation = false		----正在等待用户操作 
 
@@ -174,7 +176,13 @@ function GameBoardLogic:ctor()
 	-- random bonus
 	self.randomAnimalHelpList = {}		----最后随机时屏幕中所有可以被随机到的item
 
-	self.randFactory = HERandomObject:create();
+	self.randFactory = HERandomObject:create(); -- rand(l, h) = [l, h]
+	-- local oldRandFunc = self.randFactory.rand
+	-- self.randFactory.rand = function(this, s, e)
+	-- 	local result = oldRandFunc(this, s, e)
+	-- 	print(result, debug.traceback())
+	-- 	return result
+	-- end
 	self.PlayUIDelegate = nil;
 
 	-- step stable 相关
@@ -197,6 +205,12 @@ function GameBoardLogic:ctor()
 
 	self.honeys = 0        ----------------蜂蜜罐破裂要传染的个数
 	self.questionMarkFirstBomb = true
+	self.isFirstRefreshComplete = true
+
+	self.replay = nil               ------本关卡需要记录的replay
+	self.allReplay = nil            ------所有replay信息
+
+	self.toBeCollected = 0         ----将要被收集的数量
 end
 
 function GameBoardLogic:encryptionFunc( key, value )
@@ -226,6 +240,9 @@ function GameBoardLogic:getEncryptKey(key)
 end
 
 function GameBoardLogic:dispose()
+	
+	self:stopTargetTip()
+
 	if self.theOrderList and #self.theOrderList > 0 then
 		for i,v in ipairs(self.theOrderList) do v:dispose() end
 		self.theOrderList = nil
@@ -266,6 +283,10 @@ function GameBoardLogic:dispose()
 
 	self.fsm:dispose()
 	self.fsm = nil
+
+	self.replay = nil
+	self.allReplay = nil
+	self.toBeCollected = nil
 
 end
 
@@ -453,20 +474,199 @@ function GameBoardLogic:refreshComplete()
 		self.PlayUIDelegate:tryFirstQuestionMark(self)
 	end
 
-	if self.PlayUIDelegate and self.firstFullFirework and self.gameMode:is(MaydayEndlessMode) then
-		self.PlayUIDelegate:tryFirstFullFirework()
+	if self.PlayUIDelegate and self.gameMode:is(MaydayEndlessMode) then
+		if self.isFullFirework then
+			if self.theCurMoves == 1 then
+				self.PlayUIDelegate:onShowFullFireworkTip()
+			else
+				self.PlayUIDelegate:tryFirstFullFirework()
+			end
+		end
+	end
+
+	if self.isFirstRefreshComplete then 
+		self.isFirstRefreshComplete = false
+	elseif self.PlayUIDelegate and self.theGamePlayType == GamePlayType.kUnlockAreaDropDown then 
+		-- debug.debug()
+		self.PlayUIDelegate:playSquirrelMoveAnimation()
 	end
 
 	ScoreCountLogic:endCombo(self)
 	self.isInStep = false
 	if self.theGamePlayStatus == GamePlayStatus.kNormal then
-		if self.gameMode.refreshFailedDirectSuccess == true or self.gameMode:reachEndCondition(self) then
+		if self.gameMode.refreshFailedDirectSuccess == true or self.gameMode:reachEndCondition() then
 			self.fsm:afterRefreshStable(false)
 			self:setGamePlayStatus(GamePlayStatus.kEnd)
 		else
 			self.fsm:afterRefreshStable(true)
 		end
 	end
+end
+
+function GameBoardLogic:getIcePosList()
+	local posList = {}
+	local boardmap = self.boardmap or {}
+    for r = 1, #boardmap do 
+        for c = 1, #boardmap[r] do 
+            local item = boardmap[r][c]
+            if item and item.iceLevel > 0 then
+            	local pos = self:getGameItemPosInView(r,c)
+            	table.insert(posList, pos)
+           	end
+        end
+    end
+
+    return posList
+end
+
+function GameBoardLogic:getSnowPosList()
+	local posList = {}
+	for r = 1, #self.gameItemMap do
+		for c  = 1, #self.gameItemMap[r] do 
+			local item = self.gameItemMap[r][c]
+			if item and item.snowLevel>0 then
+            	local pos = self:getGameItemPosInView(r,c)
+            	table.insert(posList, pos)
+           	end
+        end
+    end
+
+    return posList
+end
+
+function GameBoardLogic:getHoneyPosList()
+	local posList = {}
+	for r = 1, #self.gameItemMap do
+		for c  = 1, #self.gameItemMap[r] do 
+			local item = self.gameItemMap[r][c]
+			if item and (item.honeyLevel>0) then
+            	local pos = self:getGameItemPosInView(r,c)
+            	table.insert(posList, pos)
+           	end
+        end
+    end
+
+    return posList
+end
+
+function GameBoardLogic:clearTargetTip()
+	if self.targetTipIcons then
+		for i,v in ipairs(self.targetTipIcons) do
+			v:removeFromParentAndCleanup(true)
+		end
+	end
+	self.targetTipIcons = {}
+end
+
+function GameBoardLogic:startTargetTip()
+	print("ice count: ", self.kLightUpLeftCount)
+	if self.targetTipScheduleId then
+		return
+	end
+
+	if self.timeOutID then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.timeOutID)
+		self.timeOutID = nil
+	end
+
+	local function playTargetTip(posList)
+		for i,v in ipairs(posList) do
+			
+			local effectSprite = Sprite:createWithSpriteFrameName("targetTips_010.png")
+			local frames = SpriteUtil:buildFrames("targetTips_%03d.png", 0, 20)
+			local animate = SpriteUtil:buildAnimate(frames, 1/40)
+			effectSprite:play(animate, 0.1, 1, nil, true)
+			effectSprite:setPosition(ccp(v.x+2, v.y-2))
+
+			self.PlayUIDelegate.otherElementsLayer:addChild(effectSprite)
+			table.insert(self.targetTipIcons, effectSprite)
+		end
+	end
+
+	local function checkSnowTarget()
+		local snowNumber = 0
+		local honeyNumber = 0
+		local snowTargetExist = false
+		local honeyExist = false
+		if self.theOrderList then
+			for index,orderData in ipairs(self.theOrderList) do
+				if orderData.key1 == GameItemOrderType.kSpecialTarget and orderData.key2 == GameItemOrderType_ST.kSnowFlower then
+					snowNumber = orderData.v1 - orderData.f1
+					print("left snowNumber: ", snowNumber)
+					snowTargetExist = true
+				end
+
+				if orderData.key1 == GameItemOrderType.kOthers and orderData.key2 == GameItemOrderType_Others.kHoney then
+					honeyNumber = orderData.v1 - orderData.f1
+					honeyTargetExist = true
+					print("left honeyNumber: ", honeyNumber)
+				end
+			end
+		end
+
+		local totalTargetNumber = snowNumber+honeyNumber
+		return totalTargetNumber>0 and totalTargetNumber<=3, snowTargetExist, honeyTargetExist
+	end
+
+	function showTargetTip()
+		self:clearTargetTip()
+		--ice level
+		if self.theGamePlayType == GamePlayType.kLightUp then--and self.kLightUpLeftCount<=80 then
+			local icePosList = self:getIcePosList()
+			if #icePosList <= 3 then
+				print("@@@@@@@@start to show ice tip!!!!!")
+				playTargetTip(icePosList)
+			end
+		end
+
+		--check for snow level
+		if self.theGamePlayType == GamePlayType.kOrder then
+			local checkEnable, snowTargetExist, honeyTargetExist = checkSnowTarget()
+			if checkEnable then
+				if snowTargetExist then
+					local snowPosList = self:getSnowPosList()
+					print("@@@@@@@@start to show snow tip!!!!!")
+					playTargetTip(snowPosList)
+				end
+
+				if honeyTargetExist then
+					local snowPosList = self:getHoneyPosList()
+					print("@@@@@@@@start to show honey tip!!!!!")
+					playTargetTip(snowPosList)
+				end
+			end
+		end
+
+	end
+
+	function scheduleTargetTip()
+		local targetTipScheduleId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(showTargetTip, 8.5, false)	
+		self.targetTipScheduleId = targetTipScheduleId
+	end
+
+	self.timeOutID = setTimeOut(function()
+			showTargetTip()
+			scheduleTargetTip()
+		end, 3)
+end
+
+function GameBoardLogic:stopTargetTip()
+	print("----------stop target tip")
+	if self.timeOutID then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.timeOutID)
+		self.timeOutID = nil
+	end
+
+	if self.targetTipScheduleId then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.targetTipScheduleId)
+		self:hideTargetTip()
+		self.targetTipScheduleId = nil
+	end
+end
+
+function GameBoardLogic:hideTargetTip()
+	print("todo: hide target tip!!!!!")
+	self:clearTargetTip()
 end
 
 function GameBoardLogic:startEliminateAdvise()
@@ -489,6 +689,15 @@ function GameBoardLogic:startEliminateAdvise()
 
 	local eliminateAdviseScheduleId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(showEliminateAdvise, 8.5, false)	
 	self.eliminateAdviseScheduleId = eliminateAdviseScheduleId
+
+	local function showSquirrelDoze( ... )
+		-- body
+		if self.PlayUIDelegate then 
+			self.PlayUIDelegate:playSquirrelAnimation()
+		end
+	end
+	local squirrelDozeScheduleId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(showSquirrelDoze, 15, false)
+	self.squirrelDozeScheduleId = squirrelDozeScheduleId
 end
 
 function GameBoardLogic:stopEliminateAdvise()
@@ -498,6 +707,12 @@ function GameBoardLogic:stopEliminateAdvise()
 		self:hideEliminateAdvise()
 		self.eliminateAdviseScheduleId = nil
 	end
+
+	if self.squirrelDozeScheduleId then 
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.squirrelDozeScheduleId)
+		self.squirrelDozeScheduleId = nil
+	end
+
 end
 
 function GameBoardLogic:showEliminateAdvise(dt)
@@ -548,7 +763,11 @@ function GameBoardLogic:setGamePlayStatus(state)
 			end
 			if self.gameMode:reachTarget() then
 				self.leftMoveToWin = self.theCurMoves
-				self:setGamePlayStatus(GamePlayStatus.kBonus)
+				if self.theGamePlayType == GamePlayType.kUnlockAreaDropDown then 
+					self:setGamePlayStatus(GamePlayStatus.kAferBonus)
+				else
+					self:setGamePlayStatus(GamePlayStatus.kBonus)
+				end
 			else
 				self.gameMode:afterFail()
 			end
@@ -574,6 +793,9 @@ function GameBoardLogic:setGamePlayStatus(state)
 				self.PlayUIDelegate:failLevel(self.level, self.totalScore, star, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
 			end
 		elseif state == GamePlayStatus.kBonus then
+			if self.dropBuffLogic then 
+				self.dropBuffLogic:setDropBuffEnable(false)
+			end
 			if BombItemLogic:getNumSpecialBomb(self) > 0 
 				or (self.gameMode:canChangeMoveToStripe() and self.theCurMoves > 0)
 				then
@@ -626,11 +848,20 @@ function GameBoardLogic:setGamePlayStatus(state)
 				ShareManager:shareWithID( ShareManager.PASS_STEP )
 			end
 		elseif state == GamePlayStatus.kAferBonus then
-			if (self.gameMode:getScoreStarLevel() > 0) then
-				self:setGamePlayStatus(GamePlayStatus.kWin)
-			else
-				self:setGamePlayStatus(GamePlayStatus.kFailed)
+			local function gameResultShow( ... )
+				-- body
+				if (self.gameMode:getScoreStarLevel() > 0) then
+					self:setGamePlayStatus(GamePlayStatus.kWin)
+				else
+					self:setGamePlayStatus(GamePlayStatus.kFailed)
+				end
 			end
+			if self.theGamePlayType == GamePlayType.kUnlockAreaDropDown then
+				self.PlayUIDelegate:playSquirrelGiveKeyAnimation(gameResultShow)
+			else
+				gameResultShow()
+			end
+			
 		end
 
 		if state ~= GamePlayStatus.kNormal then
@@ -664,7 +895,7 @@ function GameBoardLogic:initByConfig(level, config)
 		self.balloonFrom = config.balloonFrom
 	end
 
-	if config.addMoveBase then
+	if config.addMoveBase and config.addMoveBase > 0 then
 		self.addMoveBase = tonumber(config.addMoveBase)
 		if self.addMoveBase > 9 then
 			self.addMoveBase = 9
@@ -684,6 +915,10 @@ function GameBoardLogic:initByConfig(level, config)
 	self.honeys = config.honeys
 	self.hasDropDownUFO = config.hasDropDownUFO or self.theGamePlayType == GamePlayType.kRabbitWeekly
 	self.pm25 = config.pm25
+
+	-- 初始化神奇掉落规则
+	self.dropBuffLogic = DropBuffLogic:create(self, config)
+
 	GameMapInitialLogic:init(self, config)
 	FallingItemLogic:preUpdateHelpMap(self)
 
@@ -704,7 +939,6 @@ function GameBoardLogic:initByConfig(level, config)
 	ProductItemLogic:init(self, config)
 
 	self.gamePlayEventTrigger = GamePlayEventTrigger:create()
-
 end
 
 
@@ -778,6 +1012,9 @@ function GameBoardLogic:randomANewItemFallingData(r,c)
 end
 
 function GameBoardLogic:randomColor()
+	if self.dropBuffLogic and self.dropBuffLogic.dropBuffEnable then
+		return self.dropBuffLogic:randomColor()
+	end
 	local x = self.randFactory:rand(1,#self.mapColorList)
 	return self.mapColorList[x]
 end
@@ -812,11 +1049,16 @@ function GameBoardLogic:checkItemBlock(r,c)
 	return self.isBlockChange
 end
 
+function GameBoardLogic:setChainBreaked()
+	self.chainBreaked = true
+end
+
 ----更新Block的状态来影响下落
 function GameBoardLogic:updateFallingAndBlockStatus()
-	if self.isBlockChange then
+	if self.isBlockChange or self.chainBreaked then
 		FallingItemLogic:updateHelpMapByDeleteBlock(self)
 		self.isBlockChange = false
+		self.chainBreaked = false
 	end
 end
 
@@ -898,22 +1140,25 @@ function GameBoardLogic:onWaitingOperationChanged()
 	if self.isWaitingOperation == true then
 		if self.boardView.isPaused == false then
 			self:startEliminateAdvise()
+			self:startTargetTip()
 		else
 			self:stopEliminateAdvise()
+			self:stopTargetTip()
 		end
 
 		if self.PlayUIDelegate then
 			self.PlayUIDelegate:setItemTouchEnabled(true)
 			if self.hasUseRevertThisRound then
-				self.PlayUIDelegate:setRevertPropDisable(2)
+				self.PlayUIDelegate:setPropState(GamePropsType.kBack, 2, false)
 			elseif not self.saveRevertData then
 				-- init disable revert prop, left empty
 			else
-				self.PlayUIDelegate:setRevertPropEnable()
+				self.PlayUIDelegate:setPropState(GamePropsType.kBack, nil, true)
 			end		
 		end
 	elseif self.isWaitingOperation == false then
 		self:stopEliminateAdvise()
+		self:stopTargetTip()
 		if self.PlayUIDelegate then
 			self.PlayUIDelegate:setItemTouchEnabled(false)
 		end
@@ -1095,7 +1340,7 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 	if self.boardView then
 		self.boardView:stopOldSelectEffect()
 	end
-	
+
 	if not propsType then return false end
 	if self:getActionListCount() == 0 then
 		if propsType == GamePropsType.kRefresh 
@@ -1111,6 +1356,10 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 			self.theCurMoves = self.theCurMoves + 5
 			if self.PlayUIDelegate then
 				self.PlayUIDelegate:setMoveOrTimeCountCallback(self.theCurMoves, false)
+			end
+			-- fallingMatchState
+			if self.replaying then    --播放replay的特殊处理
+				self.fsm.waitingState.nextState = self.fsm.waitingState
 			end
 		elseif propsType == GamePropsType.kSwap 
 			or propsType == GamePropsType.kSwap_l 
@@ -1191,7 +1440,7 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 			self.fsm:changeState(self.fsm.usePropState)
 			self.octopusWait = 3
 			if self.PlayUIDelegate then
-				self.PlayUIDelegate:setOctopusForbidEnabled(false, 3)
+				self.PlayUIDelegate:setPropState(GamePropsType.kOctopusForbid,3, false)
 			end
 		elseif propsType == GamePropsType.kRandomBird then
 			local action = GameBoardActionDataSet:createAs(
@@ -1272,6 +1521,17 @@ function GameBoardLogic:UseMoves()
 	----豆荚关变化
 	ProductItemLogic:addStep(self)
 
+	-- 重新计算颜色掉落概率
+	if self.dropBuffLogic then
+		if self.newCompletedAnimalOrders then 
+			-- 完成后只有下一步开始才重新计算概率，使用道具不考虑
+			self.dropBuffLogic:onAnimalOrderCompleted(self.newCompletedAnimalOrders)
+			self.newCompletedAnimalOrders = nil
+		end
+
+		self.dropBuffLogic:onUseMoves(self.realCostMove)
+	end
+
 	self:resetStepRecords()
 end
 
@@ -1289,6 +1549,12 @@ function GameBoardLogic:tryDoOrderList(r,c,key1,key2,v1, rotation)
 	local ts = false
 	for i,v in ipairs(self.theOrderList) do
 		if v.key1 == key1 and v.key2 == key2 then
+			if v.f1 < v.v1 and v.f1 + v1 >= v.v1 and key1 == GameItemOrderType.kAnimal then
+				if self.dropBuffLogic and self.dropBuffLogic.dropBuffEnable then
+					self.newCompletedAnimalOrders = self.newCompletedAnimalOrders or {}
+					table.insert(self.newCompletedAnimalOrders, key2)
+				end
+			end
 			v.f1 = v.f1 + v1;
 			ts = true
 			-- print("@@@@@tryDoOrderList", v.key1,v.key2,v.f1, v.v1)
@@ -1305,10 +1571,10 @@ end
 
 function GameBoardLogic:addReplayStep( item )
 	-- body
-	if item then
+	if item and self.setWriteReplayEnable then
 		table.insert(self.replaySteps, item)
-		if isLocalDevelopMode and self.setWriteReplayEnable then 
-			self:WriteReplayStepByStep("test.rep")
+		if isLocalDevelopMode then 
+			self:WriteReplay("test.rep")
 		end
 	end
 	
@@ -1338,85 +1604,39 @@ function GameBoardLogic:setWriteReplayOff(  )
 	-- body
 	self.setWriteReplayEnable = false
 end
---debug mode 测试环境下一步步存
-function GameBoardLogic:WriteReplayStepByStep(fileName, base)
-	-- body
-	if not base then
-		base = CCFileUtils:sharedFileUtils():fullPathForFilename("resource")
-	end
-	local path = HeResPathUtils:getUserDataPath() .. "/" .. fileName
-	local hFile, err = io.open(path, "r")
-	local text
-	if hFile and not err then
-		text = hFile:read("*a")
-		io.close(hFile)
-	end
-	if text == nil or string.len(text) == 0 then
-		text = '['
-		text = text .. '{"level":' .. self.level .. ',"randomSeed":' .. self.randomSeed ..
-		',"replaySteps":['
-	elseif #self.replaySteps == 1 then
-		text = string.sub(text, 1, -2)..','
-		text = text .. '{"level":' .. self.level .. ',"randomSeed":' .. self.randomSeed ..
-		',"replaySteps":['
-	elseif #self.replaySteps > 1 then
-		text = string.sub(text, 1, -4)..","
-	end
 
-	if #self.replaySteps > 0 then 
-		local step = self.replaySteps[#self.replaySteps] 
-
-		if step.prop then
-			text = text .. '{"prop":' .. step.prop .. ',"x1":' .. step.x1 .. ',"y1":' .. step.y1 ..
-				',"x2":' .. step.x2 .. ',"y2":' .. step.y2 .. '}'
-		else
-			text = text .. '{"x1":' .. step.x1 .. ',"y1":' .. step.y1 ..
-				',"x2":' .. step.x2 .. ',"y2":' .. step.y2 .. '}'
-		end
-	end
-	text = text .. ']}]';
-	Localhost:safeWriteStringToFile(text, path)
-end
-
---release mode 关卡结束后存
 function GameBoardLogic:WriteReplay(fileName, base)
 	if not base then
 		base = CCFileUtils:sharedFileUtils():fullPathForFilename("resource")
 	end
-	-- local path = CCFileUtils:sharedFileUtils():fullPathForFilename("resource") .. "/" .. fileName
+
 	local path = HeResPathUtils:getUserDataPath() .. "/" .. fileName
-	local hFile, err = io.open(path, "r")
 	local text
-	if hFile and not err then
-		text = hFile:read("*a")
-		io.close(hFile)
-	end
-	if text == nil or string.len(text) == 0 then
-		text = '['
-	else
-		text = string.sub(text, 1, -2)..','
-	end
-	text = text .. '{"level":' .. self.level .. ',"randomSeed":' .. self.randomSeed ..
-		',"replaySteps":['
-	if #self.replaySteps > 0 then
-		if self.replaySteps[1].prop then
-			text = text .. '{"prop":' .. self.replaySteps[1].prop .. ',"x1":' .. self.replaySteps[1].x1 .. ',"y1":' .. self.replaySteps[1].y1 ..
-				',"x2":' .. self.replaySteps[1].x2 .. ',"y2":' .. self.replaySteps[1].y2 .. '}'
-		else
-			text = text .. '{"x1":' .. self.replaySteps[1].x1 .. ',"y1":' .. self.replaySteps[1].y1 ..
-				',"x2":' .. self.replaySteps[1].x2 .. ',"y2":' .. self.replaySteps[1].y2 .. '}'
+	if not self.replay then 
+		local hFile, err = io.open(path, "r")
+		if hFile and not err then
+			text = hFile:read("*a")
+			io.close(hFile)
 		end
-		for i = 2, #self.replaySteps do
-			if self.replaySteps[i].prop then
-				text = text .. ',{"prop":' .. self.replaySteps[i].prop .. ',"x1":' .. self.replaySteps[i].x1 .. ',"y1":' .. self.replaySteps[i].y1 ..
-					',"x2":' .. self.replaySteps[i].x2 .. ',"y2":' .. self.replaySteps[i].y2 .. '}'
-			else
-				text = text .. ',{"x1":' .. self.replaySteps[i].x1 .. ',"y1":' .. self.replaySteps[i].y1 ..
-					',"x2":' .. self.replaySteps[i].x2 .. ',"y2":' .. self.replaySteps[i].y2 .. '}'
-			end
+		self.allReplay = table.deserialize(text) or {}
+
+		local replay = {}
+		replay.level = self.level
+		replay.randomSeed = self.randomSeed
+		replay.replaySteps = self.replaySteps
+		replay.selectedItemsData = {}
+
+		for k, v in pairs(self.selectedItemsData) do 
+			local v_r = {}
+			v_r.id = v.id
+			v_r.destXInWorldSpace = v.destXInWorldSpace
+			v_r.destYInWorldSpace = v.destYInWorldSpace
+			table.insert(replay.selectedItemsData, v_r)
 		end
+		table.insert(self.allReplay, replay)
+		self.replay = replay
 	end
-	text = text .. ']}]';
+	text = table.serialize(self.allReplay)
 	Localhost:safeWriteStringToFile(text, path)
 end
 
@@ -1526,7 +1746,7 @@ function GameBoardLogic:preGameProp(propID, animCallback)
 			x2 = pos2.c
 			y2 = pos2.r
 
-			t1 = math.random(2) + AnimalTypeConfig.kLine - 1
+			t1 = self.randFactory:rand(1,2) + AnimalTypeConfig.kLine - 1
 			t2 = AnimalTypeConfig.kWrap
 
 			local function finishColorBrush_b()
@@ -1557,7 +1777,7 @@ function GameBoardLogic:preGameProp(propID, animCallback)
 end
 
 function GameBoardLogic:isPosValid(r, c)
-	return r > 0 and r <= #self.boardmap and c > 0 and c <= #self.boardmap[r] 
+	return r > 0 and r <= #self.gameItemMap and c > 0 and c <= #self.gameItemMap[r] 
 end
 
 function GameBoardLogic:getGameItemAt(r, c)
@@ -1577,7 +1797,7 @@ function GameBoardLogic:getIngredientsOnScreen( ... )
 			end
 		end
 	end
-	return result
+	return result - self.toBeCollected
 end
 
 function GameBoardLogic:getItemAmountByItemType( itemType )
@@ -1593,28 +1813,38 @@ function GameBoardLogic:getItemAmountByItemType( itemType )
 	return result
 end
 
+function GameBoardLogic:getFurballAmout( furballType )
+	-- body
+	local result = 0
+	for r = 1, #self.gameItemMap do 
+		for c = 1, #self.gameItemMap[r] do 
+			if self.gameItemMap[r][c].furballType == furballType then 
+				result = result + 1
+			end
+		end
+	end
+	return result
+end
+
 function GameBoardLogic:testEmpty()
 	local format = "item status map\n"
 	for r=1,#self.gameItemMap do
 		for c=1,#self.gameItemMap[r] do
-			local item = self.gameItemMap[r][c]
-			local flag = 1
-			if item.isUsed and item.isEmpty and item.comePos == nil then
-				flag = 0
-			end
-			format = format .. string.format("%02d", item.ItemStatus) .. " "
+			local itemView = self.boardView.baseMap[r][c]
+			local oldBoard = itemView.oldBoard
+			local iceLevel = oldBoard and oldBoard.iceLevel or 0
+			format = format .. string.format("%02d", iceLevel) .. " "
 		end
 
 		format = format .. " | "
 
-		for c=1,#self.gameItemMap[r] do
-			local item = self.gameItemMap[r][c]
-			local itemView = self.boardView.baseMap[r][c]
-			format = format .. item.ItemColorType .. " "
-		end
+		-- for c=1,#self.gameItemMap[r] do
+		-- 	local item = self.gameItemMap[r][c]
+		-- 	local itemView = self.boardView.baseMap[r][c]
+		-- 	format = format .. item.ItemColorType .. " "
+		-- end
 		format = format .. "\n"
 	end
-	print(format)
 end
 
 function GameBoardLogic:testItem()
@@ -1856,6 +2086,7 @@ end
 
 function GameBoardLogic:useFirecracker()
 	self.fireworkEnergy = 0
+	self.isFullFirework = false
 	self:useProps(GamePropsType.kSpringFirework)
 end
 
@@ -1865,14 +2096,75 @@ function GameBoardLogic:chargeFirework(count, r, c)
 	end
 	self.fireworkEnergy = self.fireworkEnergy + count
 	if self.PlayUIDelegate then
-		self.PlayUIDelegate:setFireworkPercent(self.fireworkEnergy / SpringFireworkTotal)
+		self.PlayUIDelegate:setFireworkEnergy(self.fireworkEnergy)
 		self.PlayUIDelegate:playSpringCollectEffect(self:getGameItemPosInView(r, c))
 	end
 	if self.fireworkEnergy >= SpringFireworkTotal then
-		self.firstFullFirework = true
+		self.isFullFirework = true
 	end
 end
 
 function GameBoardLogic:onProduceQuestionMark(r, c)
     self.firstProduceQuestionMark = true
+end
+
+-- for new dc use
+function GameBoardLogic:getStageIndex()
+	return self.gameMode:getStageIndex()
+end
+
+-- for new dc use
+function GameBoardLogic:getStageMoveLimit()
+	return self.gameMode:getStageMoveLimit()
+end
+
+function GameBoardLogic:hasChainInNeighbors(r1, c1, r2, c2)
+	if not self:isPosValid(r1, c1) or not self:isPosValid(r2, c2) then
+		return false
+	end
+
+	local deltaR = r2 - r1
+	local deltaC = c2 - c1
+	local borad1 = self.boardmap[r1][c1]
+	local borad2 = self.boardmap[r2][c2]
+	if deltaC == 1 then
+		return borad1:hasChainInDirection(ChainDirConfig.kRight) or borad2:hasChainInDirection(ChainDirConfig.kLeft)
+	elseif deltaC == -1 then
+		return borad1:hasChainInDirection(ChainDirConfig.kLeft) or borad2:hasChainInDirection(ChainDirConfig.kRight)
+	elseif deltaR == 1 then
+		return borad1:hasChainInDirection(ChainDirConfig.kDown) or borad2:hasChainInDirection(ChainDirConfig.kUp)
+	elseif deltaR == -1 then
+		return borad1:hasChainInDirection(ChainDirConfig.kUp) or borad2:hasChainInDirection(ChainDirConfig.kDown)
+	end
+	return false
+end
+
+function GameBoardLogic:isTheSameMatchData(r1, c1, r2, c2)
+	if not self.swapHelpMap or not self:isPosValid(r1, c1) or not self:isPosValid(r2, c2) then
+		return false
+	end
+	local matchId1 = math.abs(self.swapHelpMap[r1][c1])
+	local matchId2 = math.abs(self.swapHelpMap[r2][c2])
+	return matchId1 == matchId2
+end
+
+function GameBoardLogic:hasRopeInNeighbors(r1, c1, r2, c2)
+	if not self:isPosValid(r1, c1) or not self:isPosValid(r2, c2) then
+		return false
+	end
+
+	local deltaR = r2 - r1
+	local deltaC = c2 - c1
+	local borad1 = self.boardmap[r1][c1]
+	local borad2 = self.boardmap[r2][c2]
+	if deltaC == 1 then
+		return borad1:hasRightRope() or borad2:hasLeftRope()
+	elseif deltaC == -1 then
+		return borad1:hasLeftRope() or borad2:hasRightRope()
+	elseif deltaR == 1 then
+		return borad1:hasBottomRope() or borad2:hasTopRope()
+	elseif deltaR == -1 then
+		return borad1:hasTopRope() or borad2:hasBottomRope()
+	end
+	return false
 end

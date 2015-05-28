@@ -21,7 +21,7 @@ function PassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount,
 	assert(type(star)		== "number")
 	assert(type(stageTime)		== "number")
 	assert(type(coin)		== "number")
-	assert(type(onSuccessCallback)	== "function")
+	-- assert(type(onSuccessCallback)	== "function")
 	assert(#{...} == 0)
 
 	self.levelId	= levelId
@@ -133,7 +133,7 @@ function PassLevelLogic:create(levelId, score, star, stageTime, coin, targetCoun
 	assert(type(star)	== "number")
 	assert(type(stageTime)	== "number")
 	assert(type(coin)	== "number")
-	assert(type(onSuccessCallback)	== "function")
+	-- assert(type(onSuccessCallback)	== "function")
 	assert(#{...} == 0)
 
 	local newPassLevelLogic = PassLevelLogic.new()

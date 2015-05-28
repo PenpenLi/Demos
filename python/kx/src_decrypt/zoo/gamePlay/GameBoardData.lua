@@ -12,6 +12,13 @@ GameBoardFallType = table.const
 	kCannonAnimal = 39,			----纯动物掉落口
 	kCannonIngredient = 40,		----豆荚掉落口
 	kCannonBlock = 41,			----障碍掉落口
+	kCannonCoin = 124,
+	kCannonCrystallBall = 125,
+	kCannonBalloon = 126,
+	kCannonHoneyBottle = 127,
+	kCannonGreyCuteBall = 128,
+	kCannonBrownCuteBall = 129,
+	kCnanonBlackCuteBall = 130,
 }
 
 TileRoadType = table.const{
@@ -23,9 +30,17 @@ TileRoadType = table.const{
 
 TransmissionType = table.const{
 	kNone = 0,
-	kRoad = 1,
-	kStart = 2,
-	kEnd = 3
+	kRoad = 1,-- 转角分顺、逆时针8个方向
+	kCorner_UR = 2, -- up right
+	kCorner_RD = 3, -- right down
+	kCorner_DL = 4, -- down left
+	kCorner_LU = 5, -- left up
+	kCorner_LD = 6,
+	kCorner_DR = 7,
+	kCorner_RU = 8,
+	kCorner_UL = 9,
+	kStart = 10,
+	kEnd = 11,
 }
 
 TransmissionDirection = table.const{
@@ -91,6 +106,9 @@ function GameBoardData:ctor()
 	self.isMagicTileAnchor = false
 	self.magicTileId = nil
 	self.remainingHit = nil
+	self.chains = {}
+	self.showType = 0
+	self.honeySubSelect = false
 end
 
 function GameBoardData:copy()
@@ -145,6 +163,14 @@ function GameBoardData:copy()
 	v.remainingHit = self.remainingHit
 	v.isHitThisRound = self.isHitThisRound
 
+	v.chains = {}
+	for dir, chain in pairs(self.chains) do
+		v.chains[dir] = {direction = dir, level = chain.level}
+	end
+
+	v.showType = self.showType
+	v.honeySubSelect = self.honeySubSelect
+
 	return v
 end
 
@@ -169,6 +195,13 @@ function GameBoardData:initByConfig(tileDef)
 	if tileDef:hasProperty(TileConst.kCannonAnimal)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonAnimal) end	--是否是生成口	--39
 	if tileDef:hasProperty(TileConst.kCannonIngredient)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonIngredient) end	--是否是生成口	--40
 	if tileDef:hasProperty(TileConst.kCannonBlock)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBlock) end	--是否是生成口	--41
+	if tileDef:hasProperty(TileConst.kCannonCoin) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonCoin) end 
+	if tileDef:hasProperty(TileConst.kCannonCrystallBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonCrystallBall) end 
+	if tileDef:hasProperty(TileConst.kCannonBalloon) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBalloon) end 
+	if tileDef:hasProperty(TileConst.kCannonHoneyBottle) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonHoneyBottle) end 
+	if tileDef:hasProperty(TileConst.kCannonGreyCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonGreyCuteBall) end 
+	if tileDef:hasProperty(TileConst.kCannonBrownCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBrownCuteBall) end 
+	if tileDef:hasProperty(TileConst.kCnanonBlackCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCnanonBlackCuteBall) end 
 	if #self.theGameBoardFallType <= 0 and tileDef:hasProperty(TileConst.kCannon) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonAll) end	--是否是生成口	--5
 	
 	if tileDef:hasProperty(TileConst.kBlocker) then self.isBlock = true end							--是否为阻挡物	--6
@@ -207,6 +240,21 @@ function GameBoardData:initByConfig(tileDef)
   		self.sandLevel = 1 
   	end
 
+  	if tileDef:hasProperty(TileConst.kHoney_Sub_Select) then 
+  		self.honeySubSelect = true
+  	end
+  	-- chains
+  	local chainsMeta = tileDef:getChainsMeta()
+  	self.chains = {}
+  	if chainsMeta then
+  		for _, v in pairs(chainsMeta) do
+	  		self.chains[v.direction] = v
+	  	end
+  	end
+  	-- if table.size(self.chains) > 0 then
+	  	-- print("getChainsMeta:"..table.tostring(self.chains))
+	-- end
+
 	if tileDef:hasProperty(TileConst.kTileBlocker) then 
 		self.tileBlockType = 1 self.reverseCount = 3 
 	elseif tileDef:hasProperty(TileConst.kTileBlocker2) then
@@ -214,9 +262,9 @@ function GameBoardData:initByConfig(tileDef)
 	end  --翻转地格
 end
 
-function GameBoardData:setTransmissionConfig(transType, transDirect, transColor, link)
+function GameBoardData:setTransmissionConfig(transType, transDirection, transColor, link)
 	self.transType = transType
-	self.transDirect = transDirect
+	self.transDirect = transDirection
 	self.transColor = transColor or 0
 	self.transLink = link
 end
@@ -303,6 +351,63 @@ function GameBoardData:isHasPreSnailRoad( ... )
 	end
 end
 
+function GameBoardData:hasSameChains(otherBoard)
+	if not otherBoard then return false end
+	return self:chainsInNumber() == otherBoard:chainsInNumber()
+end
+
+function GameBoardData:chainsInNumber()
+	local ret = 0
+	for _,v in pairs(self.chains) do
+		ret = ret + v.level * (math.pow(10, v.direction - 1))
+	end
+	return ret
+end
+
+function GameBoardData:hasChains()
+	for _,v in pairs(self.chains) do
+		if v.level > 0 then
+			return true
+		end
+	end
+	return false
+end
+
+function GameBoardData:decChainsInDirections(dirs)
+	local breakLevels = {}
+	if dirs then
+		for _, dir in pairs(dirs) do
+			local breakLevel = self:decChainInDirection(dir)
+			breakLevels[dir] = breakLevel
+		end
+	end
+	return breakLevels
+end
+
+function GameBoardData:decChainInDirection(dir)
+	local originLevel = 0
+	local chain = self:getChainInDirection(dir)
+	if chain and chain.level > 0 then
+		originLevel = chain.level 
+		chain.level = chain.level - 1
+	end
+	return originLevel
+end
+
+function GameBoardData:getChainInDirection(dir)
+	return self.chains[dir]
+end
+
+-- dir in ChainDirConfig
+function GameBoardData:hasChainInDirection(dir)
+	local chain = self:getChainInDirection(dir)
+	if chain and chain.level > 0 then
+		return true
+	else
+		return false
+	end
+end
+
 function GameBoardData:initLightUp(tileDef)
 	if tileDef:hasProperty(TileConst.kLight1)then self.iceLevel = 1									--冰层厚度		--3\4\30
 	elseif tileDef:hasProperty(TileConst.kLight2)then self.iceLevel = 2
@@ -324,20 +429,36 @@ function GameBoardData:hasRope()
 	return self.ropetype ~= 0
 end
 
-function GameBoardData:hasLeftRope()
+function GameBoardData:hasLeftRopeProperty()
 	return bit.band(self.ropetype, 0x04) ~= 0
 end
 
-function GameBoardData:hasRightRope()
+function GameBoardData:hasRightRopeProperty()
 	return bit.band(self.ropetype, 0x08) ~= 0
 end
 
-function GameBoardData:hasTopRope()
+function GameBoardData:hasTopRopeProperty()
 	return bit.band(self.ropetype, 0x01) ~= 0
 end
 
-function GameBoardData:hasBottomRope()
+function GameBoardData:hasBottomRopeProperty()
 	return bit.band(self.ropetype, 0x02) ~= 0
+end
+
+function GameBoardData:hasLeftRope()
+	return self:hasLeftRopeProperty() or self:hasChainInDirection(ChainDirConfig.kLeft)
+end
+
+function GameBoardData:hasRightRope()
+	return self:hasRightRopeProperty() or self:hasChainInDirection(ChainDirConfig.kRight)
+end
+
+function GameBoardData:hasTopRope()
+	return self:hasTopRopeProperty() or self:hasChainInDirection(ChainDirConfig.kUp)
+end
+
+function GameBoardData:hasBottomRope()
+	return self:hasBottomRopeProperty() or self:hasChainInDirection(ChainDirConfig.kDown)
 end
 
 function GameBoardData:hasPortal()
@@ -366,4 +487,11 @@ end
 
 function GameBoardData:setGameModeId(gameModeId)
 	self.gameModeId = gameModeId
+end
+
+function GameBoardData:initUnlockAreaDropDownModeInfo( ... )
+	-- body
+	if self.isCollector then 
+		self.showType = IngredientShowType.kAcorn
+	end
 end

@@ -1,6 +1,6 @@
 TileDigJewel = class(Sprite)
 
-
+-- modify GameItemData.digJewelType
 local JewelType = 
 {
 	kJewel = 0,
@@ -8,6 +8,7 @@ local JewelType =
 	kHolycup = 2,
 	kBell = 3,
 	kRedbag = 4,
+	kBlueJewel = 5,
 }
 
 function TileDigJewel:create(level, texture, jewelType)
@@ -71,13 +72,18 @@ end
 function TileDigJewel:createSprite( level )
 	-- body
 	if level < 1 or level > 3 then return end
+	local lightCircleOffsetX, lightCircleOffsetY = 0, 0
+	if self.jewelType == JewelType.kBlueJewel then
+		lightCircleOffsetX = -2
+		lightCircleOffsetY = -8
+	end
 
 	self.bgCloud = Sprite:createWithSpriteFrameName("dig_cloud_b_0000")
 	self:addChild(self.bgCloud)
 	
 	self.light_cirlce = Sprite:createWithSpriteFrameName("dig_light_cirlce")
 	self:addChild(self.light_cirlce)
-	self.light_cirlce:setPosition(ccp(0, GamePlayConfig_Tile_Width/6))
+	self.light_cirlce:setPosition(ccp(0 + lightCircleOffsetX, GamePlayConfig_Tile_Width/6 + lightCircleOffsetY))
 	self.light_cirlce:setVisible(false)
 
 	if _isQixiLevel then 
@@ -100,6 +106,9 @@ function TileDigJewel:createSprite( level )
 		elseif self.jewelType == JewelType.kRedbag then
 			self.jewel = Sprite:createWithSpriteFrameName("dig_redbag_0000")
 			self.jewel:setPosition(ccp(0, 5))   
+		elseif self.jewelType == JewelType.kBlueJewel then
+			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_blue_0000")
+			self.jewel:setPosition(ccp(-2, 4))   
 		end
 	end
 	self:addChild(self.jewel)

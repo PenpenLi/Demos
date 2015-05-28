@@ -193,6 +193,9 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 		elseif gameModeName == "Drop down" then
 			failDesKey	= "level.fail.drop.mode"
 			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
+		elseif gameModeName == "Mobile Drop down" then 
+			failDesKey = "level.fail.drop.key.mode"
+			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
 		elseif gameModeName == "Light up" then
 			failDesKey	= "level.fail.ice.mode"
 			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
@@ -289,7 +292,7 @@ function LevelFailTopPanel:createPanelTitle(levelType, levelId)
 			levelDisplayName = Localization:getInstance():getText('weekly.race.panel.rabbit.begin.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
-		elseif levelType == GameLevelType.kTaskForRecall then
+		elseif levelType == GameLevelType.kTaskForRecall or levelType == GameLevelType.kTaskForUnlockArea then
 			levelDisplayName = Localization:getInstance():getText("recall_text_5")
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
@@ -322,6 +325,12 @@ function LevelFailTopPanel:onReplayBtnTapped(event, ...)
 
 	if self.btnTappedState == self.BTN_TAPPED_STATE_NONE then
 		self.btnTappedState = self.BTN_TAPPED_STATE_REPLAY_BTN_TAPPED
+	else
+		return
+	end
+
+	if not self.hasClickedReplay then
+		self.hasClickedReplay = true
 	else
 		return
 	end

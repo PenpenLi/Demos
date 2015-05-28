@@ -10,6 +10,7 @@ require "zoo.scenes.component.HomeScene.FriendPicStack"
 require "zoo.scenes.component.HomeScene.TreeTopLockedCloud"
 require "zoo.scenes.component.HomeScene.interaction.WorldSceneBranchInteractionController"
 require "zoo.scenes.component.HomeScene.interaction.WorldSceneTrunkInteractionController"
+require "zoo.scenes.component.HomeScene.WorldMapOptimizer"
 require "zoo.scenes.component.HomeSceneFlyToAnimation"
 
 require "zoo.events.GamePlayEvents"
@@ -31,6 +32,7 @@ function WorldScene:init(homeScene, ...)
 	-- Init Base Class
 	-- --------------
 	WorldSceneScroller.init(self)
+	WorldMapOptimizer:getInstance():init(self)
 
 	-- Data
 	self.metaModel = MetaModel:sharedInstance()
@@ -64,22 +66,23 @@ function WorldScene:init(homeScene, ...)
 	self.gradientBackgroundLayer = Layer:create()
 	self.maskedLayer:addParallaxChild(self.gradientBackgroundLayer, 0, self.gradientBackgroundParallaxRatio, ccp(0,0))
 
-	
-	local star1Parallax = 0.007
-	self.star1Parallax = ccp(star1Parallax, star1Parallax)
-	local plistPath = "flash/scenes/homeScene/home_night/home_scene_star.plist"
-	if __use_small_res then  
-		plistPath = table.concat(plistPath:split("."),"@2x.")
-	end
-	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
-	local texture = CCSprite:createWithSpriteFrameName("home_scene_star.png"):getTexture()
-	self.star1Layer = SpriteBatchNode:createWithTexture(texture)
-	self.maskedLayer:addParallaxChild(self.star1Layer, 1, self.star1Parallax, ccp(0,0))
-	if WorldSceneShowManager.getInstance():getShowType() == 2 then 
-		self.star1Layer:setVisible(true)
-	else
-		self.star1Layer:setVisible(false)
-	end
+	-- 主界面星星先关（春节用 已过期）
+	-- local star1Parallax = 0.007
+	-- self.star1Parallax = ccp(star1Parallax, star1Parallax)
+	-- local plistPath = "flash/scenes/homeScene/home_night/home_scene_star.plist"
+	-- if __use_small_res then  
+	-- 	plistPath = table.concat(plistPath:split("."),"@2x.")
+	-- end
+	-- CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
+	-- local texture = CCSprite:createWithSpriteFrameName("home_scene_star.png"):getTexture()
+	-- self.star1Layer = SpriteBatchNode:createWithTexture(texture)
+	-- self.maskedLayer:addParallaxChild(self.star1Layer, 1, self.star1Parallax, ccp(0,0))
+	-- if WorldSceneShowManager.getInstance():getShowType() == 2 then 
+	-- 	self.star1Layer:setVisible(true)
+	-- else
+	-- 	self.star1Layer:setVisible(false)
+	-- end
+
 	------------------------------
 	-- Some Cloud 1 Change Layer
 	-- ---------------------------
@@ -344,7 +347,6 @@ end
 
 function WorldScene:onEnterHandler(event, ...)
 	assert(#{...} == 0)
-
 	print(">>>>> self.levelPassedInfo", table.tostring(self.levelPassedInfo))
 
 	if event == "enter" then
@@ -409,6 +411,7 @@ function WorldScene:onSyncFinished(...)
 		if cloud and tonumber(cloud.minLevel) <= topLevel then
 			v:removeFromParentAndCleanup(true)
 		else
+			v:updateState()
 			table.insert(remain, v)
 		end
 	end
@@ -515,6 +518,7 @@ function WorldScene:onScrolledToOrigin(event, ...)
 	self.currentStayBranchIndex = false
 
 	self:checkInteractionStateChange()
+	GameGuide:sharedInstance():tryStartGuide()
 end
 
 -- check interaction controller state change 
@@ -702,25 +706,30 @@ function WorldScene:buildGradientBackground(...)
 
 end
 
+-- 主界面星星先关（春节用 已过期）
 function WorldScene:buildStarLayer()
 	local star1Layer = self.parallaxLayer:getChildByName("star1")
-	local groupBounds = star1Layer:getGroupBounds().size
-	assert(star1Layer)
-	math.randomseed(os.time())
-	for i=1,80 do
-		local star = star1Layer:getChildByName("star"..i)
-		if star then 		
-			local scale = star:getScaleX()
-			local pos = star:getPosition()
-			local alpha = math.random(5, 10)/10
-			local realStar = Sprite:createWithSpriteFrameName("home_scene_star.png")
-			realStar:setScale(scale)
-			realStar:setPosition(ccp(pos.x,pos.y+groupBounds.height+200))
-			realStar:setAlpha(alpha)
-			self.star1Layer:addChild(realStar)
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then
+		local groupBounds = star1Layer:getGroupBounds().size
+		assert(star1Layer)
+		math.randomseed(os.time())
+		for i=1,80 do
+			local star = star1Layer:getChildByName("star"..i)
+			if star then 		
+				local scale = star:getScaleX()
+				local pos = star:getPosition()
+				local alpha = math.random(5, 10)/10
+				local realStar = Sprite:createWithSpriteFrameName("home_scene_star.png")
+				realStar:setScale(scale)
+				realStar:setPosition(ccp(pos.x,pos.y+groupBounds.height+200))
+				realStar:setAlpha(alpha)
+				self.star1Layer:addChild(realStar)
+			end
 		end
+		star1Layer:removeFromParentAndCleanup(false)
+	else
+		star1Layer:removeFromParentAndCleanup(true)
 	end
-	star1Layer:removeFromParentAndCleanup(false)
 end
 
 function WorldScene:buildcloudLayer1(...)
@@ -838,6 +847,7 @@ function WorldScene:buildFriendPicture(...)
 				local manualAdjustPosY = self.userIconDeltaPosY + 10
 				friendPicStack:setPosition(ccp(nodePos.x-2, nodePos.y + manualAdjustPosY))
 				self.friendPictureLayer:addChild(friendPicStack)
+				WorldMapOptimizer:getInstance():buildCache(friendPicStack , 2)
 				if __WP8 and self.visibleSize and self.visibleOrigin and self.maskedLayer then
 					local childPositionY = self.maskedLayer:getPositionY() + friendPicStack:getPositionY()
 					local canShow = childPositionY > self.visibleOrigin.y and childPositionY < self.visibleOrigin.y + self.visibleSize.height
@@ -982,6 +992,7 @@ function WorldScene:buildNormalNode(levelId)
 	if nodeView then
 		self.treeNodeLayer:addChild(nodeView)
 		nodeView:updateView(false, false)
+		WorldMapOptimizer:getInstance():buildCache(nodeView , 1)
 
 		local context_self_nodeview = self
 		local function onNodeViewTapped_inner(event)
@@ -1107,10 +1118,37 @@ function WorldScene:onLevelPassed(gameResult)
 		elseif gameResult.levelType == GameLevelType.kTaskForRecall then
 			self:recallTaskLevelUnlock()
 			self.homeScene:updateCoin()
+		elseif gameResult.levelType == GameLevelType.kTaskForUnlockArea then 
+			self:unlockAreaByTask(gameResult.levelId)
+			self.homeScene:updateCoin()
 		else -- 其他关卡结束后需要更新银币数量
 			self.homeScene:updateCoin()
 		end
 	end
+end
+
+function WorldScene:unlockAreaByTask( levelId )
+	-- body
+	local areaId = MetaManager:getInstance():getAreaIdByTaskLevelId(levelId)
+	local function onSendUnlockMsgSuccess( ... )
+				-- body
+		local user =  UserService:getInstance().user
+		local minLevelId = user:getTopLevelId() + 1
+		user:setTopLevelId(minLevelId)
+		local lockedClouds = HomeScene:sharedInstance().worldScene.lockedClouds
+		for k, v in pairs(lockedClouds) do 
+			if v.id == areaId then
+				v:unlockCloud()
+			end
+		end
+
+		if NetworkConfig.writeLocalDataStorage then 
+	        Localhost:getInstance():flushCurrentUserData() 
+	    end
+	end
+	local logic = UnlockLevelAreaLogic:create(areaId)
+	logic:setOnSuccessCallback(onSendUnlockMsgSuccess)
+	logic:start(UnlockLevelAreaLogicUnlockType.USE_UNLOCK_AREA_LEVEL, {})
 end
 
 function WorldScene:recallTaskLevelUnlock()
@@ -1396,6 +1434,7 @@ function WorldScene:onNodeViewTapped(event, ...)
 end
 
 function WorldScene:moveTopLevelNodeToCenter( animFinishCallback )
+
 	if not animFinishCallback then animFinishCallback = false end
 	-- body
 	if self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_LEFT or
@@ -1403,6 +1442,58 @@ function WorldScene:moveTopLevelNodeToCenter( animFinishCallback )
 		self:scrollToOrigin()
 	end
 	self:moveNodeToCenter(self.topLevelId, animFinishCallback)
+end
+
+function WorldScene:moveCloudLockToCenter(cloudId, animFinishCallback)
+
+	local actionArray = CCArray:create()
+	local cloud
+	for k,v in pairs(self.lockedClouds) do
+		if v.id == cloudId then
+			cloud = v
+			break
+		end
+	end
+	if not cloud then 
+		if animFinishCallback then animFinishCallback() end
+		return 
+	end
+
+	local targetNodePosInWorld = cloud:getParent():convertToWorldSpace(cloud:getPosition())
+
+	local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
+	local visibleSize = Director:sharedDirector():getVisibleSize()
+
+	
+	local function onMoveToFinishedFunc()
+		-- debug.debug()
+		self:setScrollable(true)
+		if animFinishCallback then animFinishCallback() end
+		WorldMapOptimizer:getInstance():update()
+	end
+
+	print(visibleOrigin.y, visibleSize.height, targetNodePosInWorld.y)
+	local deltaMoveDistance = (visibleOrigin.y + visibleSize.height / 2) - (targetNodePosInWorld.y - visibleOrigin.y) + cloud:getGroupBounds().size.height / 2
+	local function initMoveMaskLayerFunc()
+		self:setScrollable(false)
+	end
+	local initMoveMaskLayerAction = CCCallFunc:create(initMoveMaskLayerFunc)
+	actionArray:addObject(initMoveMaskLayerAction)
+	-- delay for 0.1 sec to avoid parallax node error
+	actionArray:addObject(CCDelayTime:create(0.1))
+	actionArray:addObject(CCMoveBy:create(1.5, ccp(0, deltaMoveDistance)))
+
+
+	---------------
+	-- Move To Finished
+	-- --------------
+
+	local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
+	actionArray:addObject(onMoveToFinishedAction)
+	local seq = CCSequence:create(actionArray)
+	self.maskedLayer:stopAllActions()
+	self.maskedLayer:runAction(seq)
+
 end
 
 function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
@@ -1430,11 +1521,12 @@ function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
 	he_log_warning("need adapt the screen resolution ?? ")
 	local distanceToVisibleTopTriggerTrunkMove = visibleSize.height * 0.3
 	-- local distanceToVisibleTopTrunkMoveTo = visibleSize.height * 0.5
-
+	
 	local function onMoveToFinishedFunc()
 		-- debug.debug()
 		self:setScrollable(true)
 		if animFinishCallback then animFinishCallback() end
+		WorldMapOptimizer:getInstance():update()
 	end
 
 	if targetNodePosInWorld.y > visibleOrigin.y + visibleSize.height - distanceToVisibleTopTriggerTrunkMove or targetNodePosInWorld.y < visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove then
@@ -1466,6 +1558,7 @@ function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
 		---------------
 		-- Move To Finished
 		-- --------------
+
 		local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
 		actionArray:addObject(onMoveToFinishedAction)
 		local seq = CCSequence:create(actionArray)
@@ -1536,6 +1629,7 @@ function WorldScene:moveUserIconToNode(levelId, animFinishCallback, ...)
 		-- -----------
 
 		if not self.isUnlockingHiddenBranch then
+			self.maskedLayer.moving = true
 			local moveBy = CCMoveBy:create(time, ccp(0, deltaMoveDistance))
 			local targetMoveBy = CCTargetedAction:create(self.maskedLayer.refCocosObj, moveBy)
 			actionArray:addObject(targetMoveBy)
@@ -1546,6 +1640,8 @@ function WorldScene:moveUserIconToNode(levelId, animFinishCallback, ...)
 		-- --------------
 		local function onMoveToFinishedFunc()
 			self:setScrollable(true)
+			self.maskedLayer.moving = nil
+			WorldMapOptimizer:getInstance():update()
 		end
 		local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
 		actionArray:addObject(onMoveToFinishedAction)
@@ -1571,6 +1667,7 @@ function WorldScene:moveUserIconToNode(levelId, animFinishCallback, ...)
 			animFinishCallback()
 		end
 		PrepackageUtil:LevelUpShowTipToNetWork()
+		WorldMapOptimizer:getInstance():update()
 	end
 	local animFinishAction = CCCallFunc:create(animFinish)
 	actionArray:addObject(animFinishAction)
@@ -1605,6 +1702,8 @@ function WorldScene:onGetNewStarLevel(event, ...)
 					end
 
 					local function createNewBranch()
+
+						if GameGuide then GameGuide:sharedInstance():forceStopGuide() end
 						local newBranch = HiddenBranch:create(branchId, false, self.hiddenBranchLayer.refCocosObj:getTexture())
 						self.hiddenBranchArray[branchId] = newBranch
 						self.hiddenBranchLayer:addChild(newBranch)
@@ -1682,6 +1781,7 @@ function WorldScene.onHiddenBranchOpenAnimFinished(event, ...)
 	assert(event.data)
 	assert(event.context)
 	assert(#{...} == 0)
+
 
 	local self = event.context
 	local branchId = event.data
@@ -1833,6 +1933,7 @@ function WorldScene:playOnEnterCenterUserPosAnim(...)
 		local function animFinish()
 			self:setScrollable(true)
 			if __WP8 and self.checkFriendVisible then self:checkFriendVisible() end
+			WorldMapOptimizer:getInstance():firstUpdate()
 		end
 		local moveToFinishCallback = CCCallFunc:create(animFinish)
 
@@ -1875,7 +1976,7 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 
 			local errorMessage = "WorldScene:sendFriendHttp Failed !!\n"
 			errorMessage = "errorMessage:" .. err
-			assert(false, errorMessage)
+			-- assert(false, errorMessage)
 		end
 
 		---------------------------
@@ -1895,15 +1996,13 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 	-- -------------------------
 	local function onUserLogin()
 		if not __IOS_FB then -- facebook不走getFriends
-			local http = GetFriendsHttp.new()
-			http:addEventListener(Events.kComplete, onGetFriendsIdEnd)
-			http:addEventListener(Events.kError, onGetFriendsIdEnd)
-			http:load()
+			if (self.lastGetFriendTime or 0) + 30 * 60 * 1000 < Localhost:time() then
+				local http = GetFriendsHttp.new()
+				http:addEventListener(Events.kComplete, onGetFriendsIdEnd)
+				http:addEventListener(Events.kError, onGetFriendsIdEnd)
+				http:load()
+			end
 		end
 	end
-	if RequireNetworkAlert:popout(onUserLogin, kRequireNetworkAlertAnimation.kNoAnimation) then
-		if (self.lastGetFriendTime or 0) + 30 * 60 * 1000 < Localhost:time() then
-			onUserLogin()
-		end
-	end
-end 
+	RequireNetworkAlert:callFuncWithLogged(onUserLogin, nil, kRequireNetworkAlertAnimation.kNoAnimation)
+end

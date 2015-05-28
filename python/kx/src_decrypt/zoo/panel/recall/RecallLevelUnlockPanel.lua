@@ -86,7 +86,7 @@ function RecallLevelUnlockPanel:initBeginPart()
 	local function onBeginButtonTap(event)
 		if RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_SHORT and 
 		   RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_MIDDLE then 
-		   CommonTip:showTip(Localization:getInstance():getText("区域已解锁！"))
+		   CommonTip:showTip(Localization:getInstance():getText("recall_text_6"))
 		   self:onCloseBtnTapped()
 		   return 
 		end
@@ -94,7 +94,7 @@ function RecallLevelUnlockPanel:initBeginPart()
 		GamePlayMusicPlayer:playEffect(GameMusicType.kClickCommonButton)
 	end
 	self.beginTipLabel = self.beginPart:getChildByName("tipLabel")
-	self.beginTipLabel:setString(Localization:getInstance():getText("成功过关即可解锁关卡！"))
+	self.beginTipLabel:setString(Localization:getInstance():getText("recall_text_7"))
 
 	self.beginButtonRes = self.beginPart:getChildByName("beginBtn")
 	self.beginButton = GroupButtonBase:create(self.beginButtonRes)
@@ -123,7 +123,7 @@ end
 function RecallLevelUnlockPanel:initFriendPart()
 	self.friendPart = self.ui:getChildByName("friendPart")
 	self.desLabel1 = self.friendPart:getChildByName("titleText")
-	self.desLabel1:setString(Localization:getInstance():getText("可以请三位好友帮忙"))
+	self.desLabel1:setString(Localization:getInstance():getText("recall_text_8"))
 
 	self.friendItem1 = FriendItem:create(self.friendPart:getChildByName("friendItem1"))
 	self.friendItem2 = FriendItem:create(self.friendPart:getChildByName("friendItem2"))
@@ -132,7 +132,7 @@ function RecallLevelUnlockPanel:initFriendPart()
 
 	self.askFriendBtn	= GroupButtonBase:create(self.friendPart:getChildByName("askFriendBtn"))
 	--local askFriendBtnLabelKey	= "unlock.cloud.panel.button.request.friend"
-	local askFriendBtnLabelValue	= Localization:getInstance():getText("好友帮忙")
+	local askFriendBtnLabelValue	= Localization:getInstance():getText("recall_text_9")
 	self.askFriendBtn:setString(askFriendBtnLabelValue)
 
 	local function onAskFriendBtnTapped()
@@ -141,7 +141,7 @@ function RecallLevelUnlockPanel:initFriendPart()
 		else
 			if RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_SHORT and 
 			   RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_MIDDLE then 
-			   CommonTip:showTip(Localization:getInstance():getText("区域已解锁！"))
+			   CommonTip:showTip(Localization:getInstance():getText("recall_text_6"))
 			   self:onCloseBtnTapped()
 			   return 
 			end
@@ -160,7 +160,7 @@ function RecallLevelUnlockPanel:initStarPart()
 	self.starNumLabel:setString(self.totalStar .. "/" .. self.neededStar)
 
 	self.moreStarBtn = GroupButtonBase:create(self.starPart:getChildByName('button'))
-	self.moreStarBtn:setString(Localization:getInstance():getText('获得星星'))
+	self.moreStarBtn:setString(Localization:getInstance():getText('recall_text_10'))
 	self.moreStarBtn:ad(DisplayEvents.kTouchTap, function () self:onMoreStarBtnTapped() end)
 end
 
@@ -168,9 +168,9 @@ function RecallLevelUnlockPanel:initMoneyPart()
 	self.moneyPart = self.ui:getChildByName("moneyPart")
 	self.moneyPartTitle = self.moneyPart:getChildByName("titleText")
 	if __ANDROID then
-		self.moneyPartTitle:setString(Localization:getInstance():getText("一元解锁"))
+		self.moneyPartTitle:setString(Localization:getInstance():getText("recall_text_11"))
 	else
-		self.moneyPartTitle:setString(Localization:getInstance():getText("风车币解锁"))
+		self.moneyPartTitle:setString(Localization:getInstance():getText("recall_text_12"))
 	end
 
 	self.moneyNumLabel = self.moneyPart:getChildByName("moneyNum")
@@ -183,7 +183,7 @@ function RecallLevelUnlockPanel:initMoneyPart()
 
 	if __ANDROID then -- ANDROID
 		self.useWindmillBtn:setIcon(nil)
-		local text = Localization:getInstance():getText("buy.gold.panel.money.mark") .. tostring(goodsMeta.rmb / 100)
+		local text = string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), goodsMeta.rmb / 100)
 		self.useWindmillBtn:setNumber(text)
 		self.moneyNumLabel:setString(text)
 	else 
@@ -196,7 +196,7 @@ end
 function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 	if RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_SHORT and 
 	   RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_MIDDLE then 
-	   CommonTip:showTip(Localization:getInstance():getText("区域已解锁！"))
+	   CommonTip:showTip(Localization:getInstance():getText("recall_text_6"))
 	   self:onCloseBtnTapped()
 	   return 
 	end
@@ -204,6 +204,7 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 	local function onSendUnlockMsgSuccess()
 
 		-- Remove Self 
+		self.onEnterForeGroundCallback  = nil
 		local function onRemoveSelfFinish()
 			self.cloudCanOpenCallback()
 		end
@@ -213,6 +214,7 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 
 	local function onSendUnlockMsgFailed()
 		--print("use gold unlock cloud failed !")
+		self.onEnterForeGroundCallback  = nil
 		local failTxtKey
 		if __ANDROID then failTxtKey = "unlock.cloud.panel.use.rmb.unlock.failed" -- ANDROID
 		else failTxtKey = "unlock.cloud.panel.use.gold.unlock.failed" end -- IOS and PC
@@ -224,6 +226,7 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 
 	local function onSendUnlockMsgCanceled()
 		-- self.useWindmillBtn.ui:setTouchEnabled(true)
+		self.onEnterForeGroundCallback = nil
 		if not self or self.isDisposed then return end
 		self.useWindmillBtn:setEnabled(true)
 	end
@@ -237,6 +240,7 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 		logic:setOnFailCallback(onSendUnlockMsgFailed)
 		logic:setOnCancelCallback(onSendUnlockMsgCanceled)
 		logic:start(UnlockLevelAreaLogicUnlockType.USE_WINDMILL_COIN, {})
+		self.onEnterForeGroundCallback = onSendUnlockMsgCanceled
 	else -- else, on IOS and PC we use gold!
 		-- Get Current Cash
 		-- Check If Has Enough QCash
@@ -517,5 +521,13 @@ function RecallLevelUnlockPanel:create(lockedCloudId, totalStar, neededStar, clo
 
 	panel:init(lockedCloudId, totalStar, neededStar, cloudCanOpenCallback)
 	return panel
+end
+
+function RecallLevelUnlockPanel:onEnterForeGround()
+	print("lyh RecallLevelUnlockPanel: onEnterForeground() called")
+	if self.isDisposed then return end
+	if self.onEnterForeGroundCallback and type(self.onEnterForeGroundCallback) == "function" then 
+		self.onEnterForeGroundCallback()
+	end
 end
 

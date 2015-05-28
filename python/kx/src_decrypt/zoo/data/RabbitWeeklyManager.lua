@@ -82,6 +82,8 @@ function RabbitWeeklyManager:init()
         self:resetWeeklyData() -- init datas
         self:flushToStorage()
     end
+
+    self.needShowFreeTimeTip = false
 end
 
 function RabbitWeeklyManager:updateDataIfWeekChange()
@@ -130,9 +132,123 @@ function RabbitWeeklyManager:onStartMainLevel()
     if not self.mainLevelItemCompleted 
             and self.mainLevelCount >= self.extraConfig.dailyMainLevelCount then
         self.mainLevelItemCompleted = true
+        self.needShowFreeTimeTip = true
         self.leftPlay = self.leftPlay + self.extraConfig.freePlayByMainLevel
     end
     self:flushToStorage()
+end
+
+--显示通过5次打主线关而获得的周赛次数tip
+function RabbitWeeklyManager:showGetFreeTimeTip()
+    if self:isPlayDay() then 
+        if self.needShowFreeTimeTip then 
+            self.needShowFreeTimeTip = false
+            local rabbitBtn = HomeScene:sharedInstance().rabbitWeeklyButton 
+            if rabbitBtn then 
+                rabbitBtn.id = "rabbit_mainlevel"
+                if not IconButtonManager:getInstance():todayIsShow(rabbitBtn) then
+                    IconButtonManager:getInstance():clearShowTime(rabbitBtn)
+                    rabbitBtn:stopHasNotificationAnim()
+                    rabbitBtn:showTip(Localization:getInstance():getText("weekly.race.panel.rabbit.notice"))
+                end
+            end
+        end
+    end
+end
+
+function RabbitWeeklyManager:showRabbitTimeTutor()
+    local leftPlayTime = nil
+    if self.extraConfig.dailyMainLevelCount and self.mainLevelCount then 
+        leftPlayTime = self.extraConfig.dailyMainLevelCount - self.mainLevelCount
+        if leftPlayTime < 1 then 
+            return
+        end
+    else
+        return
+    end
+
+    local userDefault = CCUserDefault:sharedUserDefault()
+    local curTime = os.time()
+    local lastTutorTime = userDefault:getStringForKey("rabbit.mainlevel.tutor.time")
+    if lastTutorTime then 
+        local oneDaySec = 24 * 3600
+        lastTutorTime = tonumber(lastTutorTime)
+        if type(lastTutorTime) == "number" then 
+            if curTime - lastTutorTime < oneDaySec then 
+                return 
+            end
+        end
+    end
+    userDefault:setStringForKey("rabbit.mainlevel.tutor.time", tostring(curTime))
+    userDefault:flush()
+
+    local scene = HomeScene:sharedInstance()
+    local layer = scene.guideLayer
+    local levelId = UserManager:getInstance().user:getTopLevelId()
+    
+    local topLevelNode = scene.worldScene.levelToNode[levelId]
+    if topLevelNode and leftPlayTime then 
+        local pos = topLevelNode:getPosition()
+        local worldPos = topLevelNode:getParent():convertToWorldSpace(ccp(pos.x, pos.y))
+        local trueMask = GameGuideRunner:createMask(180, 1, ccp(worldPos.x, worldPos.y-70), 1.2, false, false, false, false, true)
+        trueMask.setFadeIn(0.3, 0.3)
+
+        --关卡花代理
+        local touchLayer = LayerColor:create()
+        touchLayer:setColor(ccc3(255,0,0))
+        touchLayer:setOpacity(0)
+        touchLayer:setAnchorPoint(ccp(0.5, 0.5))
+        touchLayer:ignoreAnchorPointForPosition(false)
+        touchLayer:setPosition(ccp(worldPos.x, worldPos.y-70))
+        touchLayer:changeWidthAndHeight(100, 100)
+        touchLayer:setTouchEnabled(true, 0, true)
+
+        local function onTrueMaskTap()
+            --点击关闭引导
+            if layer:contains(trueMask) then 
+                layer:removeChild(trueMask)
+            end
+        end
+
+        local function onTouchLayerTap()
+            --关了自己
+            onTrueMaskTap()
+            --打最高关卡
+            if not PopoutManager:sharedInstance():haveWindowOnScreen()
+                    and not HomeScene:sharedInstance().ladyBugOnScreen then
+                local levelType = LevelType:getLevelTypeByLevelId(levelId)
+                local startGamePanel = StartGamePanel:create(levelId, levelType)
+                startGamePanel:popout(false)
+            end
+        end
+        touchLayer:addEventListener(DisplayEvents.kTouchTap, onTouchLayerTap)
+        trueMask:addChild(touchLayer)
+
+        trueMask:addEventListener(DisplayEvents.kTouchTap, onTrueMaskTap)
+
+        local panel = nil
+        -- if worldPos.x > 360 then 
+        --     panel = GameGuideRunner:createPanelSDR(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
+        -- else
+            panel = GameGuideRunner:createPanelSD(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
+        -- end
+        panel:setScale(0.8)
+        local panelPos = panel:getPosition()
+        panel:setPosition(ccp(panelPos.x + 120, worldPos.y+250))
+        local function addTipPanel()
+            trueMask:addChild(panel)
+        end
+        trueMask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(addTipPanel)))
+
+        local hand = GameGuideRunner:createHandClickAnim(0.5, 0.3)
+        hand:setAnchorPoint(ccp(0, 1))
+        hand:setPosition(ccp(worldPos.x , worldPos.y - 70))
+        trueMask:addChild(hand)
+
+        if layer then
+            layer:addChild(trueMask)
+        end
+    end
 end
 
 function RabbitWeeklyManager:getFreePlayLeft()
@@ -378,6 +494,13 @@ function RabbitWeeklyManager:onPassLevel(rabbitCount, levelId)
 
     levelId = levelId or self.levelId
     DcUtil:levelRabbitNum(levelId, rabbitCount)
+    self:setGetRewardNotification()
+end
+
+function RabbitWeeklyManager:setGetRewardNotification()
+    if self:canReceiveWeeklyReward() then
+        LocalNotificationManager.getInstance():setWeeklyRaceRewardNotification()
+    end
 end
 
 function RabbitWeeklyManager:clearPlayCount()
@@ -557,7 +680,7 @@ function RabbitWeeklyManager:addLeftPlayCount(addCount)
     self:flushToStorage()
 end
 
-function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish )
+function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish, ignoreSecondConfirm)
     if self:getRemainingPayCount() <= 0 then
         CommonTip:showTip(_text("weekly.race.no.more.play.tip"), "negative")
         return
@@ -607,13 +730,17 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish 
     end
     if __ANDROID then -- ANDROID
         local logic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
+        if ignoreSecondConfirm then
+            logic:ignoreSecondConfirm(true)
+        end
         logic:buy(onBuySuccess, onBuyFail, onBuyCancel)
     else -- else, on IOS and PC we use gold!
-        if RequireNetworkAlert:popout() then
-            local logic = BuyLogic:create(RabbitWeeklyManager.playCardGoodsId, 2)
+    	local function onUserHasLogin()
+    		local logic = BuyLogic:create(RabbitWeeklyManager.playCardGoodsId, 2)
             logic:getPrice()
             logic:start(1, onBuySuccess, onBuyFail)
-        end
+    	end
+    	RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
     end
 end
 

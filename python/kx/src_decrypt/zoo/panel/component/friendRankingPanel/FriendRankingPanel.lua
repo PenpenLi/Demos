@@ -429,10 +429,12 @@ function FriendRankingPanel:popout()
 						end
 						CommonTip:showTip(Localization:getInstance():getText("url.scheme.add.friend"), "positive")
 					end
-					if RequireNetworkAlert:popout(nil, kRequireNetworkAlertAnimation.kNoAnimation) then
+
+					local function receiveReward()
 						local logic = InvitedAndRewardLogic:create(false)
 						logic:start(res.para.invitecode, res.para.uid, onSuccess)
 					end
+					RequireNetworkAlert:callFuncWithLogged(receiveReward, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 				end
 			end
 		end

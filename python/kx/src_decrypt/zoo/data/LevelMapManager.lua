@@ -22,6 +22,7 @@ local allGameMode =
 	"WorldCUP",
 	"seaOrder", -- attention: 特殊情况 小写字母
     "halloween",
+    "Mobile Drop down",
 }
 local kGameModeType = {}
 for i,v in ipairs(allGameMode) do kGameModeType[v] = i end
@@ -47,13 +48,7 @@ function LevelMapManager:initialize()
 	local path = "meta/customize.inf"
 	path = CCFileUtils:sharedFileUtils():fullPathForFilename(path)
 	local customize = HeFileUtils:decodeFile(path)
-	local customizeXML = xml.eval(customize)
-	assert(customizeXML, "customize is nil")
-
-	local gameConfigXml = xml.find(customizeXML, "getGameConfigurations")
-	assert(gameConfigXml)
-
-	local gameConfigData  = table.deserialize(gameConfigXml[1])
+	local gameConfigData  = table.deserialize(customize)
 	assert(gameConfigData)
 
 	levelMap = {}
@@ -120,7 +115,27 @@ function LevelMapManager:getMeta( levelId )
 			end
 		end
 	end
+
 	return levelMap[levelId]
+end
+
+function LevelMapManager:getMaxLevelId( ... )
+	-- body
+	local result = 1
+	for k, v in pairs(levelMap) do 
+		if result < k then 
+			result = k
+		end
+	end
+	return result
+end
+
+function LevelMapManager:addDevMeta( v )
+	-- body
+	local data = LevelMapMeta.new()
+	data:fromLua(v)
+	levelMap[data.id] = data
+
 end
 
 function LevelMapManager:getLevelGameMode( levelId )
@@ -160,7 +175,7 @@ end
 --
 LevelGameData = class(DataRef)
 function LevelGameData:ctor()
-	self.addMoveBase = 0
+	self.addMoveBase = GamePlayConfig_Add_Move_Base
 	self.clearTargetLayers = 0
 	self.confidence = 0
 	self.digTileMap = {}
@@ -176,6 +191,7 @@ function LevelGameData:ctor()
 	self.tileMap = {}
 	self.seaAnimalMap = {}
 	self.seaFlagMap = {}
+	self.dropBuff = {}
 end
 
 --

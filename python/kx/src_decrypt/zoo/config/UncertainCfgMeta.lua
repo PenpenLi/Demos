@@ -15,20 +15,26 @@ function UncertainCfgMeta:init( config )
 	-- body
 	self.allItemList = {}
 	self.canfallingItemList = {}
+	self.dropPropList = {}
+	self.dropPropTotalWeight = 0
 	local allItemPer = 0
-	local allCanFallingItemPer = 0
 	for k, v in pairs(config) do 
 		-- print(v.k, v.v) debug.debug()
 		local item = {}
 		local value = v.k:split("_")
 		item.changeType = tonumber(value[1])    --可以变的item的类型
 		item.changeItem = tonumber(value[2])    --可以变得item 在tile中的值
-		item.changePer = tonumber(v.v)            --权重
-		table.insert(self.allItemList, item)
+		item.changePer = tonumber(v.v)          --权重
+		
 		allItemPer = allItemPer + item.changePer
-		if item.changeType ~= UncertainCfgConst.kCannotFalling then
-			allCanFallingItemPer = allCanFallingItemPer + item.changePer
-			table.insert(self.canfallingItemList, item)
+		
+		if item.changeType == UncertainCfgConst.kProps then -- 道具独立记录，因为需要做限制
+			table.insert(self.dropPropList, item)
+		else
+			table.insert(self.allItemList, item)
+			if item.changeType ~= UncertainCfgConst.kCannotFalling then
+				table.insert(self.canfallingItemList, item)
+			end
 		end
 	end
 
@@ -36,7 +42,7 @@ function UncertainCfgMeta:init( config )
 	local str = "allItemPer:"
 	for k = 1, #self.allItemList do 
 		local v = self.allItemList[k]
-		local per = math.ceil(v.changePer/allItemPer * 100)
+		local per = math.ceil(v.changePer* 10000/allItemPer)
 		perlimit = perlimit + per
 		v.limitInAllItem = perlimit
 		str = str.."|"..v.limitInAllItem
@@ -46,11 +52,27 @@ function UncertainCfgMeta:init( config )
 	local str1 = "allCanFallingItemPer:"
 	for k = 1, #self.canfallingItemList do 
 		local v = self.canfallingItemList[k]
-		local per = math.ceil(v.changePer/allCanFallingItemPer * 100)
+		local per = math.ceil(v.changePer* 10000/allItemPer)
 		perlimit = perlimit + per
 		v.limitInCanFallingItem = perlimit
 		str1 = str1.."|"..v.limitInCanFallingItem
 	end
 	print(str1)
-	
+
+	perlimit = 0 
+	local str2 = "dropPropPer:"
+	for k = 1, #self.dropPropList do
+		local v = self.dropPropList[k]
+		local per = math.ceil(v.changePer* 10000/allItemPer)
+
+		self.dropPropTotalWeight = self.dropPropTotalWeight + per
+		perlimit = perlimit + per
+		v.limitInProps = perlimit
+		str2 = str2.."|"..v.limitInProps
+	end
+	print(str2)
+end
+
+function UncertainCfgMeta:hasDropProps()
+	return self.dropPropTotalWeight > 0
 end

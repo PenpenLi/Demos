@@ -442,7 +442,7 @@ function GameGuideRunner:removeStartInfo(layer)
 	return true, true
 end
 
-function GameGuideRunner:runTempProp(caller, action)
+function GameGuideRunner:runTempProp(caller, action, skipClick)
 	action.maskDelay = action.maskDelay or 0
 	action.index = action.index or 1
 	action.maskFade = action.maskFade or 0.3
@@ -453,9 +453,9 @@ function GameGuideRunner:runTempProp(caller, action)
 	local layer = playUI.guideLayer
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
 	local pos = playUI:getPositionByIndex(action.index)
-	local trueMask = GameGuideRunner:createMask(action.opacity, action.touchDelay, ccp(pos.x + action.posAdd.x, pos.y + action.posAdd.y), action.multRadius)
+	local trueMask = GameGuideRunner:createMask(action.opacity, action.touchDelay, ccp(pos.x + action.posAdd.x, pos.y + action.posAdd.y), action.multRadius, nil, nil, nil, nil, skipClick)
 	trueMask.setFadeIn(action.maskDelay, action.maskFade)
-	local panel = GameGuideRunner:createPanelS(nil, action, true)
+	local panel = GameGuideRunner:createPanelS(nil, action, not skipClick)
 	if layer then
 		layer:addChild(trueMask)
 		layer:addChild(panel)
@@ -1300,6 +1300,7 @@ function GameGuideRunner:createMask(opacity, touchDelay, position, radius, squar
 	local function onTouch() GameGuide:sharedInstance():onGuideComplete() end
 	local function beginSetTouch() trueMaskLayer:ad(DisplayEvents.kTouchTap, onTouch) end
 	local arr = CCArray:create()
+	print("skipClick", skipClick)
 	if not skipClick then
 		trueMaskLayer:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(touchDelay), CCCallFunc:create(beginSetTouch)))
 	end
@@ -1397,15 +1398,27 @@ function GameGuideRunner:runShowProp(caller, action)
 	action.opacity = action.opacity or 0xCC
 	action.radius = action.radius or 80
 	action.index = action.index or 1
+
+	local offsetX = action.offsetX or 0
+	local offsetY = action.offsetY or 0
+
 	local playUI = Director:sharedDirector():getRunningScene()
 
 	local itemId = action.propId
 
-	local item = playUI.propList:findItemByItemID(itemId).item
+	local item = nil
+	if itemId == 9999 then
+		item = playUI.propList:findSpringItem()
+	else
+		item = playUI.propList:findItemByItemID(itemId).item
+	end
+
+	if not item then return end
+
 	local itemPos = item:getParent():convertToWorldSpace(item:getPosition())
 
-	local size = playUI.propList:findItemByItemID(itemId).item:getGroupBounds().size
-	local pos = ccp(itemPos.x - 50 + size.width / 2, itemPos.y - 20 + size.height / 2)
+	local size = item:getGroupBounds().size
+	local pos = ccp(itemPos.x - 50 + size.width / 2 + offsetX, itemPos.y - 20 + size.height / 2 + offsetY)
 	local layer = Layer:create()
 	local trueMask = GameGuideRunner:createMask(action.opacity, action.touchDelay, pos, 1.5, false, nil, nil, false)
 	trueMask.setFadeIn(action.maskDelay, action.maskFade)
@@ -1473,4 +1486,100 @@ function GameGuideRunner:removeShowProp(caller)
 		layer:removeFromParentAndCleanup(true)
 	end
 	return true, true
+end
+
+function GameGuideRunner:runShowUnlock(caller, action)
+	print('*************** GameGuideRunner:runShowUnlock')
+	action.maskDelay = action.maskDelay or 0
+	action.maskFade = action.maskFade or 0.3
+	action.maskPos = action.maskPos or ccp(0, 0)
+	action.opacity = action.opacity or 0xCC
+	action.radius = action.radius or 80
+	action.index = action.index or 1
+	local playUI = Director:sharedDirector():getRunningScene()
+	local vo = Director:sharedDirector():getVisibleOrigin()
+	local vs = Director:sharedDirector():getVisibleSize()
+
+	local worldScene = HomeScene:sharedInstance().worldScene
+
+	if worldScene.maskedLayer.moving then return end
+
+	local cloudId = action.cloudId
+
+	local layer = Layer:create()
+	caller.layer = layer
+	if playUI.guideLayer then
+		playUI.guideLayer:addChild(layer)
+		released = false
+	end
+
+	worldScene:setTouchEnabled(false)
+	layer.clicked = false
+	layer.success = false
+
+	local function callback()
+		worldScene:setTouchEnabled(true)
+		if not layer or layer.isDisposed then
+			return
+		end
+
+		local cloud
+		for k, v in pairs(worldScene.lockedClouds) do
+			if v.id == cloudId then
+				cloud = v
+				break
+			end
+		end
+		local cloudPos = cloud:getParent():convertToWorldSpace(cloud:getPosition())
+
+		local lock = cloud.lock
+		local pos
+		if lock and not lock.isDisposed and lock:getParent() then
+			local lockPos = lock:getParent():convertToWorldSpace(lock:getPosition())
+			pos = ccp(lockPos.x, lockPos.y)
+		else
+			pos = ccp(vo.x + vs.width / 2, cloudPos.y - cloud:getGroupBounds().size.height/2)
+		end
+		local trueMask = GameGuideRunner:createMask(action.opacity, action.touchDelay, pos, 2, false, 5, 2, false, true)
+
+		local function onTouchTap(evt)
+			local dx, dy = evt.globalPosition.x, evt.globalPosition.y
+			layer.clicked = true
+			layer.success = true
+			if math.abs(ccpDistance(ccp(dx, dy), pos)) <= 128 then -- 128是遮罩圆形的半径				
+				local event = {name = DisplayEvents.kTouchTap}
+				cloud:dispatchEvent(event)
+			end
+			GameGuide:sharedInstance():onGuideComplete()
+		end
+		trueMask:removeAllEventListeners()
+		trueMask:ad(DisplayEvents.kTouchTap, onTouchTap)
+
+		trueMask.setFadeIn(action.maskDelay, action.maskFade)
+		local panel = GameGuideRunner:createPanelS(nil, action, true)
+		local position = trueMask:getPosition()
+		layer:addChild(trueMask)
+		layer:addChild(panel)
+
+		local hand = GameGuideRunner:createHandClickAnim(0.5, 0.3)
+        hand:setAnchorPoint(ccp(0, 1))
+        hand:setPosition(pos)
+        layer:addChild(hand)
+	end
+
+	worldScene:moveCloudLockToCenter(cloudId, callback)
+
+	
+end
+
+function GameGuideRunner:removeShowUnlock(caller)
+	print('**************** GameGuideRunner:removeShowUnlock')
+	if released then return false, false end
+	released = true
+	local layer = caller.layer
+	if layer and not layer.isDisposed then
+		layer:removeChildren(true)
+		layer:removeFromParentAndCleanup(true)
+	end
+	return layer.clicked, layer.success
 end

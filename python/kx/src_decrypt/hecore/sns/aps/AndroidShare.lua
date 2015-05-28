@@ -1,6 +1,5 @@
 AndroidShare = class()
 
-local apsMgr
 local instance
 function AndroidShare.getInstance()
 	if not instance then
@@ -10,9 +9,12 @@ function AndroidShare.getInstance()
 	return instance
 end
 
+function AndroidShare:getAPSMgr()
+	return luajava.bindClass("com.happyelements.hellolua.aps.APSManager")
+end
+
 function AndroidShare:init()
 	self.supportedShares = {}
-	apsMgr = luajava.bindClass("com.happyelements.hellolua.aps.APSManager")
 end
 
 function AndroidShare:initShareConfig(shareConfig)
@@ -32,7 +34,7 @@ function AndroidShare:registerShare(shareType)
 	if not shareType or type(shareType) ~= "number" then return end
 
 	if shareType ~= PlatformShareEnum.kUnsupport then
-		local success = apsMgr:getInstance():registerShare(shareType)
+		local success = AndroidShare:getAPSMgr():getInstance():registerShare(shareType)
 		self.supportedShares[shareType] = true
 		if not success then
 			he_log_error("registerShare failed.shareType="..tostring(shareType)..",platform="..PlatformConfig.name)
@@ -49,5 +51,5 @@ function AndroidShare:getShareDelegate(shareType)
 	if not shareType or type(shareType) ~= "number" then
 		return nil
 	end
-	return apsMgr:getInstance():getShareDelegate(shareType)
+	return AndroidShare:getAPSMgr():getInstance():getShareDelegate(shareType)
 end

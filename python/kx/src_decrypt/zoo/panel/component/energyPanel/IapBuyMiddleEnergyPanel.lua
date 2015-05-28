@@ -78,7 +78,7 @@ function IapBuyMiddleEnergyPanel:_init(energyPanel, buyCallback, maxTopPosYInWor
 	text:setString(Localization:getInstance():getText("energy.panel.iap.buy.middle.energy"))
 
 	button:setColorMode(kGroupButtonColorMode.blue)
-	button:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..data.price)
+	button:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), data.price))
 	button:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
 
 	local disNum = discount:getChildByName("num")

@@ -152,7 +152,7 @@ function HalloweenBossStateInLoop:getClassName()
 end
 
 function HalloweenBossStateInLoop:getNextState()
-    return self.context.digScrollGroundStateInLoop
+    return self.context.tileBlockerStateInLoop
 end
 
 HalloweenBossStateInBonus = class(HalloweenBossState)

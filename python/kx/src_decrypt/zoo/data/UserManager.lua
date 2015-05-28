@@ -63,6 +63,7 @@ function UserManager:reset()
 	-- 
 	self.updateInfo = {}
 	self.updateReward = {}
+	self.updateRewards = {}
 	self.timeProps = {}
 
 end
@@ -245,6 +246,7 @@ function UserManager:clone(dst)
 	dst.dimePlat = self.dimePlat
 	dst.dimeProvince = self.dimeProvince
 	dst.timeProps = cloneClassTableArray(self.timeProps, TimePropRef)
+	dst.userType = self.userType
 end
 
 
@@ -318,14 +320,7 @@ function UserManager:initFromLua( src )
 	end
 
 	-- 限时道具
-	self.timeProps = {}
-	if src.timeProps then
-		for i,v in ipairs(src.timeProps) do
-			local p = TimePropRef.new()
-			p:fromLua(v)
-			self.timeProps[i] = p
-		end
-	end
+	self:timePropsFromServer(src.timeProps)
 		
 	--用户功能信息,只在访问自己信息的时候返回
 
@@ -462,6 +457,7 @@ function UserManager:initFromLua( src )
 	-- 更新信息
 	self.updateInfo = src.updateInfo
 	self.updateReward = src.updateReward
+	self.updateRewards = src.updateRewards
 	self.sjRewards = src.sjRewards
 
 	self.compens = src.compens
@@ -481,6 +477,8 @@ function UserManager:initFromLua( src )
 	self.rabbitWeekly = src.rabbitWeekly
 	--用户流失类型 RecallRewardType之一
 	self.lostType = src.lostType
+	-- 用户类型,做白名单判断,普通用户=0
+	self.userType = src.userType or 0
 
 	-- android dime middle energy
 	self.dimePlat = src.dimePlat
@@ -724,17 +722,45 @@ function UserManager:addUserPropNumber(itemId, deltaNumber, ...)
 	assert(type(deltaNumber) == "number")
 	assert(#{...} == 0)
 
-	local curNumber = self:getUserPropNumber(itemId)
-	assert(curNumber)
-	local newNumber = curNumber + deltaNumber
-	if newNumber < 0 then newNumber = 0 end
-	self:setUserPropNumber(itemId, newNumber)
+	if ItemType:isTimeProp(itemId) then
+		self:addTimeProp(itemId, deltaNumber)
+	else
+		local curNumber = self:getUserPropNumber(itemId)
+		assert(curNumber)
+		local newNumber = curNumber + deltaNumber
+		if newNumber < 0 then newNumber = 0 end
+		self:setUserPropNumber(itemId, newNumber)
+	end
+end
+
+function UserManager:timePropsFromServer(timeProps)
+	self.timeProps = {}
+
+	if not timeProps then  return end
+
+	for i, v in ipairs(timeProps) do
+		local p = TimePropRef.new()
+		p:fromLua(v)
+		local newProp = true
+		-- 合并同一种且过期时间相同的限时道具数量
+		for _, prop in pairs(self.timeProps) do
+			if prop.itemId == p.itemId and prop.expireTime == p.expireTime then
+				prop.num = prop.num + p.num
+				newProp = false
+			end
+		end
+		if newProp then
+			table.insert(self.timeProps, p)
+		end
+	end
+
+	self:sortTimeProps()
 end
 
 function UserManager:getAndUpdateTimeProps()
 	-- print("getAndUpdateTimeProps:", table.tostring(self.timeProps))
 	local timeProps = {}
-	if self.timeProps and #self.timeProps > 0 then
+	if #self.timeProps > 0 then
 		local curTimeInSec = Localhost:timeInSec()
 		for k,v in pairs(self.timeProps) do
 			-- 转为s计算更准确
@@ -742,38 +768,50 @@ function UserManager:getAndUpdateTimeProps()
 				table.insert(timeProps, v)
 			end
 		end
-		if #timeProps > 0 then
-			table.sort( timeProps, function( a, b )
-				return a.expireTime < b.expireTime
-			end )
-		end
 	end
 	self.timeProps = timeProps
+
+	self:sortTimeProps()
 	return self.timeProps
+end
+
+-- 将限时道具按过期时间从小到大排列,方便显示和扣除
+function UserManager:sortTimeProps()
+	table.sort( self.timeProps, function( a, b )
+		return a.expireTime < b.expireTime
+	end )
 end
 
 function UserManager:getTimePropsByRealItemId(realItemId)
 	local ret = {}
 
-	if self.timeProps then
-		for i,v in ipairs(self.timeProps) do
-			if v.num > 0 and ItemType:getRealIdByTimePropId(v.itemId) == realItemId then
-				local p = TimePropRef.new()
-				p:fromLua(v)
-				table.insert(ret, p)
-			end
+	for i,v in ipairs(self.timeProps) do
+		if v.num > 0 and ItemType:getRealIdByTimePropId(v.itemId) == realItemId then
+			local p = TimePropRef.new()
+			p:fromLua(v)
+			table.insert(ret, p)
 		end
 	end
 	return ret
 end
 
+function UserManager:addTimeProp(itemId, num)
+	local propMeta = MetaManager:getInstance():getPropMeta(itemId)
+	if propMeta and propMeta.expireTime then
+		local p = TimePropRef.new()
+		p.itemId = itemId
+		p.num = num
+		p.expireTime = Localhost:time() + propMeta.expireTime
+		table.insert(self.timeProps, p)
+		self:sortTimeProps()
+	end
+end
+
 function UserManager:getUserTimePropNumber(itemId)
 	local num = 0
-	if self.timeProps then
-		for _,v in pairs(self.timeProps) do
-			if v.itemId == itemId then
-				num = num + v.num
-			end
+	for _,v in pairs(self.timeProps) do
+		if v.itemId == itemId then
+			num = num + v.num
 		end
 	end
 	return num
@@ -966,4 +1004,24 @@ end
 
 function UserManager:getDimeProvinces()
 	return self.dimeProvince
+end
+
+---------------------------
+--判断后端是否在一个平台
+---------------------------
+function UserManager:isSameInviteCodePlatform( code )
+	-- body
+	local function isYYBCode(_code)
+		local codeNum = tonumber(_code)
+		codeNum = math.floor(codeNum/1000000000)
+		-- print(codeNum, type(codeNum)) debug.debug()
+		if 1<= codeNum and codeNum <=3 then 
+			return true
+		end
+		return false
+	end
+
+	return isYYBCode(code) == isYYBCode(self.inviteCode)
+	
+
 end

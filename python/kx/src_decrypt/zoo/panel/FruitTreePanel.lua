@@ -139,6 +139,7 @@ function FruitTreeBottomPanel:refresh()
 	self.extraValue:setString(Localization:getInstance():getText("fruit.tree.panel.bottom.extraValue", {plus = tostring(FruitTreePanelModel:sharedInstance():getPlus())}))
 	local pickCount = FruitTreePanelModel:sharedInstance():getPickCount()
 	local pickedCount = FruitTreePanelModel:sharedInstance():getPicked()
+	if pickCount < pickedCount then pickedCount = pickCount end
 	for i = 1, pickCount - pickedCount do
 		self.picked[i]:getChildByName("picked"):setVisible(true)
 	end
@@ -181,7 +182,7 @@ function FruitTreeRulePanel:_init(bottomY)
 	self.content = self.panel:getChildByName("content")
 	self.hitArea = self.panel:getChildByName("hit_area")
 	self.level0 = self.panel:getChildByName("level0")
-	self.level5 = self.panel:getChildByName("level5")
+	self.level6 = self.panel:getChildByName("level6")
 	self.coin = self.panel:getChildByName("coin")
 	self.energy = self.panel:getChildByName("energy")
 	self.gold = self.panel:getChildByName("gold")
@@ -211,7 +212,7 @@ function FruitTreeRulePanel:_init(bottomY)
 	self.content:setString(Localization:getInstance():getText("fruit.tree.panel.rule.content"))
 	self.descText:setString(Localization:getInstance():getText("fruit.tree.panel.rule.descText"))
 	self.level0:setText(Localization:getInstance():getText("fruit.tree.scene.level", {level = 0}))
-	self.level5:setText(Localization:getInstance():getText("fruit.tree.scene.level", {level = 5}))
+	self.level6:setText(Localization:getInstance():getText("fruit.tree.scene.level", {level = 6}))
 	self.coin:setString(tostring(FruitTreePanelModel:sharedInstance():getFruitCoinRewardString()))
 	self.energy:setString(tostring(FruitTreePanelModel:sharedInstance():getFruitEnergyRewardString()))
 	self.gold:setString(tostring(FruitTreePanelModel:sharedInstance():getFruitGoldRewardString()))
@@ -407,11 +408,13 @@ function FruitTreeUpgradePanel:_init()
 			if self.isDisposed then return end
 			self.button:setEnabled(true)
 		end
-		if RequireNetworkAlert:popout() then
+
+		local function startUpgrade()
 			self.button:setEnabled(false)
 			local logic = FruitTreeUpgradePanelLogic:create(self.invitedFriendCount)
 			logic:upgrade(onSuccess, onFail, onCancel)
 		end
+		RequireNetworkAlert:callFuncWithLogged(startUpgrade)
 	end
 	self.button:addEventListener(DisplayEvents.kTouchTap, onButton)
 
@@ -694,7 +697,7 @@ function FruitTreePanelModel:getIsFinishUpgradeCondition(level)
 	elseif condition.itemId == 3 then
 		local level = 0
 		for k, v in ipairs(UserManager:getInstance():getScoreRef()) do
-			if v.star > 0 and v.levelId < 10000 and level < k then level = k end
+			if v.star > 0 and v.levelId < 10000 and level < v.levelId then level = v.levelId end
 		end
 		return condition.itemId, level >= condition.num, level, condition.num
 	else
@@ -704,19 +707,19 @@ end
 
 function FruitTreePanelModel:getFruitCoinRewardString()
 	for k, v in ipairs(self.fruits) do
-		if v.level == 5 then return v.coin end
+		if v.level == 6 then return v.coin end
 	end
 end
 
 function FruitTreePanelModel:getFruitEnergyRewardString()
 	for k, v in ipairs(self.fruits) do
-		if v.level == 5 then return v.energy end
+		if v.level == 6 then return v.energy end
 	end
 end
 
 function FruitTreePanelModel:getFruitGoldRewardString()
 	for k, v in ipairs(self.fruits) do
-		if v.level == 5 then return v.gold end
+		if v.level == 6 then return v.gold end
 	end
 end
 

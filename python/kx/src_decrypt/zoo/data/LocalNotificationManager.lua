@@ -3,23 +3,35 @@ LocalNotificationType = {
 	kEnergyFull = 1,
 	kWeeklyRaceReward = 2,
 	kMarkFinalReward = 3,
-	kBeyondFriendAtTopLevel = 6,
+	kUnlockAskForHelp = 4,			--后端直接推送
+	kUnlockGetHelp = 5,				--后端直接推送
+	kBeyondFriendAtTopLevel = 6, 	--PushNotify 后端推送
 	kLeaveForThree = 11,
 	kLeaveForFive = 12,
 	kLeaveForSeven = 13,
+	kLadyBugMissionStart = 15,
+	kLadyBugMissionEnd = 16,
+	kSharePassFriendScore = 17,		--PushNotify 后端推送
+	kSharePassFriendLevel = 18,		--PushNotify 后端推送
+	kAskForEnergy = 19,				--后端直接推送
+	kCallBackActivity = 20,			--后端直接推送
+	kAnniversaryCakeFriend = 21,	--活动 后端直接推送
+	kAnniversaryCakeFinish = 22,	--活动 前端本地推送
 }
 
+--由后端发起的推送 不需要在本地加优先级
 LocalNotificationPriority = {
-	[1] = 4,
-	[2] = 5,
-	[3] = 6,
-	[6] = 7,
+	[1] = 100,
+	[2] = 31,
+	[3] = 51,
 	[11] = 3,
 	[12] = 2,
 	[13] = 1,
+	[15] = 41,
+	[16] = 11,
 }
 
-local MAX_NUM_PER_DAY = 3
+local MAX_NUM_PER_DAY = 2
 local function getDayStartTimeByTS(ts)
 	local utc8TimeOffset = 57600 -- (24 - 8) * 3600
 	local oneDaySeconds = 86400 -- 24 * 3600
@@ -97,15 +109,18 @@ function LocalNotificationManager:init()
 			for i, v in ipairs(fields) do
 				local vo = LocalNotificationVO.new()	
 				if vo:decode(v) then 
-					self:_addNotifyVO(vo)
+					self:_addNotifyVO(vo, true)
 				end
 			end
 		end
 	end
 end
 
-function LocalNotificationManager:_addNotifyVO(notifyVO)
-	if notifyVO.timeStamp <= os.time() then return end
+function LocalNotificationManager:_addNotifyVO(notifyVO, notNeedDC)
+	if notifyVO.timeStamp <= os.time() then 
+		return 
+	end
+
 	local day = getDayStartTimeByTS(notifyVO.timeStamp)
 	if not self.mapByDay[day] then
 		self.mapByDay[day] = {}
@@ -113,14 +128,10 @@ function LocalNotificationManager:_addNotifyVO(notifyVO)
 
 	notifyVO.isOpen = true
 	table.insert(self.mapByDay[day], notifyVO)
-	-- if #self.mapByDay[day] <= MAX_NUM_PER_DAY then
-	-- 	notifyVO.isOpen = true
-	-- 	table.insert(self.mapByDay[day], notifyVO)
-	-- end
-	self:reorderNotify(day)
+	self:reorderNotify(day, notifyVO, notNeedDC)
 end
 
-function LocalNotificationManager:reorderNotify(dayKey)
+function LocalNotificationManager:reorderNotify(dayKey, notifyVO, notNeedDC)
 	local function sortFunc(notiVo1, notiVo2)
 		local order1 = LocalNotificationPriority[notiVo1.typeId]
 		local order2 = LocalNotificationPriority[notiVo2.typeId]
@@ -131,15 +142,24 @@ function LocalNotificationManager:reorderNotify(dayKey)
 		end
 	end
 	if #self.mapByDay[dayKey]>MAX_NUM_PER_DAY then 
-		local tempTable = table.clone(self.mapByDay[dayKey])
+		local tempTable = self.mapByDay[dayKey]
 		table.sort(tempTable, sortFunc)
 		self.mapByDay[dayKey] = {}
 		for i,v in ipairs(tempTable) do
-			if i <= MAX_NUM_PER_DAY then 
-				self.mapByDay[dayKey][i] = v
+			if i <= MAX_NUM_PER_DAY then
+				self.mapByDay[dayKey][i] = v 
+				if v == notifyVO then
+					DcUtil:sendLocalNotify(v.typeId, v.timeStamp, 1)
+				end
 			else
-				break
+				if v ~= notifyVO then
+					DcUtil:sendLocalNotify(v.typeId, v.timeStamp, -1)
+				end
 			end
+		end
+	else
+		if not notNeedDC then 
+			DcUtil:sendLocalNotify(notifyVO.typeId, notifyVO.timeStamp, 1)
 		end
 	end
 end
@@ -162,6 +182,7 @@ function LocalNotificationManager:deleteNotify(notifyVO)
 			if vo ~= notifyVO then
 				table.insert(newList, vo)
 			else
+				DcUtil:sendLocalNotify(vo.typeId, vo.timeStamp, -1)
 				self:cancelSingleAndroidNotification(vo)
 			end
 		end
@@ -220,7 +241,8 @@ function LocalNotificationManager:pushSingleNotification(timeOffset, action, bod
 		notificationUtil = luajava.bindClass("com.happyelements.hellolua.share.NotificationUtil")
 	end
 	if __IOS then			
-		WeChatProxy:scheduleLocalNotification_alertBody_alertAction(timeOffset, body, action)
+		local alertId = self:getAndroidAlarmId(typeId, timeStamp)
+		WeChatProxy:scheduleLocalNotification_alertBody_alertAction_alertId(timeOffset, body, action, alertId)
 	end
 	if __ANDROID then
 		-- use alarmId to ensure every piece of alarm will work, otherwise just the last one work
@@ -279,6 +301,7 @@ function LocalNotificationManager:validateNotificationTime()
 			if vo.timeStamp > now then
 				table.insert(newList, vo)
 			else
+				DcUtil:sendLocalNotify(vo.typeId, vo.timeStamp, -1)
 				self:cancelSingleAndroidNotification(vo)
 			end
 		end
@@ -320,35 +343,52 @@ function LocalNotificationManager:setMarkRewardNotification(leftDay)
 	local todayTime = getDayStartTimeByTS(os.time())
 
 	if leftDay >= 1 then
-		local tomorrowTS = todayTime + 24 * 3600 + 12 * 3600
+		local tomorrowTS = todayTime + 24 * 3600 + 12 * 3600 + math.random(30 * 60) - 15 * 60
 		print("setMarkRewardNotification leftDay 1 " .. tomorrowTS)
 		if not self:getNotiByDayAndType(tomorrowTS, LocalNotificationType.kMarkFinalReward) then
 			print("addNotify leftDay 1", tomorrowTS)
-			self:addNotify(LocalNotificationType.kMarkFinalReward, tomorrowTS, Localization:getInstance():getText("push.sign.reward.text"), "action")	
+			self:addNotify(LocalNotificationType.kMarkFinalReward, tomorrowTS, 
+				Localization:getInstance():getText("push.sign.reward.text"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
 		end
 	end
 
 	if leftDay >= 2 then
-		local dayAfterTomorrowTS = todayTime + 48 * 3600 + 12 * 3600
+		local dayAfterTomorrowTS = todayTime + 48 * 3600 + 12 * 3600 + math.random(30 * 60) - 15 * 60
 		print("setMarkRewardNotification leftDay 2 " .. dayAfterTomorrowTS)
 		if not self:getNotiByDayAndType(dayAfterTomorrowTS, LocalNotificationType.kMarkFinalReward) then
 			print("addNotify leftDay 2", dayAfterTomorrowTS)
-			self:addNotify(LocalNotificationType.kMarkFinalReward, dayAfterTomorrowTS, Localization:getInstance():getText("push.sign.reward.text"), "action")	
+			self:addNotify(LocalNotificationType.kMarkFinalReward, dayAfterTomorrowTS, 
+				Localization:getInstance():getText("push.sign.reward.text"), 
+				Localization:getInstance():getText("push.prompt.view.details"))	
 		end
 	end
 end
 
-function LocalNotificationManager:cancelMarkNotificationToday()
-	local now = os.time()
-	local vo = self:getNotiByDayAndType(now, LocalNotificationType.kMarkFinalReward)
-	print(table.tostring(self.mapByDay))
-	print("cancelMarkNotificationToday")	
-	debug.debug()
-	if vo then
-		self:deleteNotify(vo)
-		self:flushToStorage()
-		print(table.tostring(self.mapByDay))
-		debug.debug()
+function LocalNotificationManager:cancelMarkNotificationToday(dayToCancel)
+	local todayTime = os.time()
+	local tomorrowTime = todayTime + 24 * 3600
+	local dayAfterTomorrowTime = tomorrowTime + 24 * 3600
+
+	local cancelVOList = {}
+	local todayVO = self:getNotiByDayAndType(todayTime, LocalNotificationType.kMarkFinalReward)
+	table.insert(cancelVOList, todayVO)
+	if dayToCancel then
+		if dayToCancel[1] then
+			local tomorrowVO = self:getNotiByDayAndType(tomorrowTime, LocalNotificationType.kMarkFinalReward)
+			table.insert(cancelVOList, tomorrowVO)
+		end
+		if dayToCancel[2] then
+			local dayAfterTomorrowVO = self:getNotiByDayAndType(dayAfterTomorrowTime, LocalNotificationType.kMarkFinalReward)
+			table.insert(cancelVOList, dayAfterTomorrowVO)
+		end
+	end
+
+	for i, vo in ipairs(cancelVOList) do
+		if vo then
+			self:deleteNotify(vo)
+			self:flushToStorage()
+		end
 	end
 end
 
@@ -364,11 +404,13 @@ function LocalNotificationManager:setWeeklyRaceRewardNotification()
 	local weekDay = getWeekDay()
 	local startTimeOnToday = getDayStartTimeByTS(now)
 	local startTimeOnThisWeek = startTimeOnToday - (weekDay - 1) * 24 * 3600
-	local targetTime = startTimeOnThisWeek + 7 * 24 * 3600 + 10 * 3600
+	local targetTime = startTimeOnThisWeek + 7 * 24 * 3600 + 10 * 3600 + math.random(30 * 60) - 15 * 60
 	print("setWeeklyRaceRewardNotification " .. targetTime)
 
 	if not self:getNotiByDayAndType(targetTime, LocalNotificationType.kWeeklyRaceReward) then
-		self:addNotify(LocalNotificationType.kWeeklyRaceReward, targetTime, Localization:getInstance():getText("push.weekly.race.reward.text"), "action")
+		self:addNotify(LocalNotificationType.kWeeklyRaceReward, targetTime, 
+			Localization:getInstance():getText("push.weekly.race.reward.text"), 
+			Localization:getInstance():getText("push.prompt.view.details"))
 	end
 end
 
@@ -389,7 +431,7 @@ function LocalNotificationManager:setTestNotification()
 	--self:addNotify(LocalNotificationType.kWeeklyRaceReward, ts2, "testnotification2", "action")
 
 	-- notificationUtil = luajava.bindClass("com.happyelements.hellolua.share.NotificationUtil")
-	-- notificationUtil:addLocalNotification(10,"test","12:1246546456464")
+	-- notificationUtil:addLocalNotification(15,"test","100:1246546456464")
 
 	-- local vo = self:getNotiByDayAndType(ts1, LocalNotificationType.kMarkFinalReward)
 	-- self:deleteNotify(vo)
@@ -411,6 +453,10 @@ function LocalNotificationManager:setPassLevelFlag(levelId, star, score)
 	passLevelCache.levelId = levelId
 	passLevelCache.star = star
 	passLevelCache.score = score
+end
+
+local function now()
+	return os.time() + (__g_utcDiffSeconds or 0)
 end
 
 function LocalNotificationManager:sendBeyondFriendsNotification(levelId, friendRankList)
@@ -454,14 +500,14 @@ function LocalNotificationManager:sendBeyondFriendsNotification(levelId, friendR
 
 		if #result > 0 then
 			local msg = Localization:getInstance():getText("push.surpass.text", {num = levelId})
-			local now = os.time()
-			local dayStartTime = getDayStartTimeByTS(now)
-			local targetTime = nil
-			if now > dayStartTime + 10 * 3600 then
-				targetTime = dayStartTime + 24 * 3600 + 10 * 3600
-			else
-				targetTime = dayStartTime + 10 * 3600
-			end
+			local targetTime = now()
+			-- local now = os.time()
+			-- local dayStartTime = getDayStartTimeByTS(now)
+			-- if now > dayStartTime + 10 * 3600 then
+			-- 	targetTime = dayStartTime + 24 * 3600 + 10 * 3600
+			-- else
+			-- 	targetTime = dayStartTime + 10 * 3600
+			-- end
 			local http = PushNotifyHttp.new()
 			http:load(result, msg, LocalNotificationType.kBeyondFriendAtTopLevel, targetTime * 1000)
 		end
@@ -471,7 +517,7 @@ end
 function LocalNotificationManager:setLeaveNotification(leaveType)
 	if RecallManager.getInstance():getLevelStayState() then 
 		local todayTime = getDayStartTimeByTS(os.time())
-		local timeDelta = 12 * 3600
+		local timeDelta = 12 * 3600 + math.random(30 * 60) - 15 * 60
 		local timeForOneDay = 24 * 3600
 		local timeStamp = nil
 		local textToShow = nil
@@ -528,7 +574,9 @@ function LocalNotificationManager:setLeaveNotification(leaveType)
 		if timeStamp then 
 			if not self:getNotiByDayAndType(timeStamp, leaveType) then
 				he_log_info("LocalNotificationManager*****timeStamp==="..timeStamp.."   leaveType==="..leaveType)
-				self:addNotify(leaveType, timeStamp, Localization:getInstance():getText(textToShow), "action")	
+				self:addNotify(leaveType, timeStamp, 
+					Localization:getInstance():getText(textToShow), 
+					Localization:getInstance():getText("push.prompt.view.details"))	
 			end
 		end
 	end
@@ -566,5 +614,42 @@ function LocalNotificationManager:pocessRecallNotification()
 	else
 		he_log_info("LocalNotificationManager********cancelAllLeaveNotification()")
 		self:cancelAllLeaveNotification()
+	end
+end
+
+function LocalNotificationManager:setLadyBugMissionNotification(startTime, taskNum)
+	if type(startTime) ~= "number" then return end
+	startTime = getDayStartTimeByTS(startTime / 1000)
+	
+	for i = 1, taskNum do
+		local start = startTime + (i - 1) * 86400 + 9 * 3600 + math.random(30 * 60)
+		local finish = startTime + (i - 1) * 86400 + 20 * 3600 + math.random(30 * 60) - 15 * 60
+		if i ~= 1 then
+			if not self:getNotiByDayAndType(start, LocalNotificationType.kLadyBugMissionStart) then
+				self:addNotify(LocalNotificationType.kLadyBugMissionStart, start, 
+					Localization:getInstance():getText("lady.bug.notification.start.body"), 
+					Localization:getInstance():getText("push.prompt.view.details"))
+			end
+		end
+
+		if not self:getNotiByDayAndType(finish, LocalNotificationType.kLadyBugMissionEnd) then
+			self:addNotify(LocalNotificationType.kLadyBugMissionEnd, finish, 
+				Localization:getInstance():getText("lady.bug.notification.finish.body"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
+		end
+	end
+end
+
+function LocalNotificationManager:cancelLadyBugMissionNotificationToday()
+	local now = os.time()
+	local vo = self:getNotiByDayAndType(now, LocalNotificationType.kLadyBugMissionStart)
+	if vo then
+		self:deleteNotify(vo)
+		self:flushToStorage()
+	end
+	vo = self:getNotiByDayAndType(now, LocalNotificationType.kLadyBugMissionEnd)
+	if vo then
+		self:deleteNotify(vo)
+		self:flushToStorage()
 	end
 end

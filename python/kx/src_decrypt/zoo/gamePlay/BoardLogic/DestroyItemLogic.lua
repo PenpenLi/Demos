@@ -116,7 +116,26 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runningGameItemActionIceDec(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_QuestionMark_Protect then
 		DestroyItemLogic:runGameItemQuestionMarkProtect(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
+		DestroyItemLogic:runGameItemMagicStoneActive(mainLogic, theAction, actid, actByView)
 	end
+end
+
+function DestroyItemLogic:runGameItemMagicStoneActive(mainLogic, theAction, actid, actByView)
+	local r,c  = theAction.ItemPos1.x, theAction.ItemPos1.y
+	local stoneActiveAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Magic_Stone_Active,
+			IntCoord:create(r, c),
+			nil,
+			GamePlayConfig_MaxAction_time)
+
+	stoneActiveAction.magicStoneLevel = theAction.magicStoneLevel
+	stoneActiveAction.targetPos = theAction.targetPos
+
+	mainLogic:addDestructionPlanAction(stoneActiveAction)
+
+	mainLogic.destroyActionList[actid] = nil
 end
 
 function DestroyItemLogic:runGameItemQuestionMarkProtect(mainLogic, theAction, actid, actByView)
@@ -188,6 +207,14 @@ function DestroyItemLogic:runningGameItemActionWitchBomb(mainLogic, theAction, a
 				BombItemLogic:tryCoverByBomb(mainLogic, r2, c2, true, 1)
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r2, c2, 3) 
 			end
+			-- 消除冰柱
+			local upRow, downRow = r1, r2
+			if upRow > downRow then upRow, downRow = downRow, upRow end
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r1, c1)
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r2, c2)
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, upRow-1, c1, {ChainDirConfig.kDown})
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, downRow+1, c1, {ChainDirConfig.kUp})
+
 			theAction.col = theAction.col - 1
 			theAction.frameCount = intervalFrames
 		end
@@ -340,7 +367,7 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Sand_Clean then
 		DestroyItemLogic:runGameItemActionSandClean(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then
-		DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)				
+		DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)	
 	end
 end
 
@@ -616,6 +643,7 @@ function DestroyItemLogic:runningGameItem_CollectIngredient(mainLogic, theAction
 			item1:cleanAnimalLikeData()
 			mainLogic:setNeedCheckFalling()
 			mainLogic.destroyActionList[actid] = nil
+			mainLogic.toBeCollected = mainLogic.toBeCollected -1
 		end
 	end
 end
@@ -668,7 +696,7 @@ function DestroyItemLogic:runGameItemActionCollectIngredient(boardView, theActio
 
 	local item1 = boardView.baseMap[r1][c1]
 
-	item1:playCollectIngredientAction(boardView, boardView.IngredientActionPos)
+	item1:playCollectIngredientAction(theAction.itemShowType ,boardView, boardView.IngredientActionPos)
 end
 
 function DestroyItemLogic:runGameItemActionSnowDec(boardView, theAction)

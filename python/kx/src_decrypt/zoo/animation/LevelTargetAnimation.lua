@@ -1,5 +1,10 @@
 require "hecore.display.Director"
 require "zoo.animation.CountDownAnimation"
+require "zoo.panel.component.levelTarget.LevelTargetItem"
+require "zoo.panel.component.levelTarget.TimeTargetItem"
+require "zoo.panel.component.levelTarget.EndlessMayDayTargetItem"
+require "zoo.panel.component.levelTarget.SeaOrderTargetItem"
+require "zoo.panel.component.levelTarget.EndlessTargetItem"
 
 kLevelTargetType = {drop = "drop", dig_move = "dig_move", time = "time", ice = "ice", move = "move",
 					order1 = "order1", order2 = "order2", order3 = "order3", order4 = "order4", order5 = "order5", 
@@ -8,6 +13,7 @@ kLevelTargetType = {drop = "drop", dig_move = "dig_move", time = "time", ice = "
                     dig_move_endless_mayday = "dig_move_endless_mayday",
                     rabbit_weekly = "rabbit_weekly",
                     sea_order = "order6",
+                    acorn = "acorn",
                      }
 -- order1: normal,   order2: single props,     order3: compose props, order4: others{snow, coin}, order5:{balloon, blackCuteBall}
 kLevelTargetTypeTexts = {drop = "level.target.drop.mode", 
@@ -26,46 +32,8 @@ kLevelTargetTypeTexts = {drop = "level.target.drop.mode",
                          dig_move_endless_mayday = "level.target.christmas",
                          rabbit_weekly = "level.target.rabbit.weekly.mode",
                          sea_order = "level.target.sea.order.mode",
+                         acorn = "level.start.drop.key.mode",
                            }
-
-local function shakeObject( sprite, rotation )
-	if sprite.isShaking then return false end
-	sprite.isShaking = true
-
-    sprite:stopAllActions()
-    sprite:setRotation(0)
-
-    local original = sprite.original
-    if not original then
-    	original = sprite:getPosition() 
-    	sprite.original = {x=original.x, y=original.y}
-	end
-    sprite:setPosition(ccp(original.x, original.y))
-
-    local array = CCArray:create()
-    local direction = 1
-    if math.random() > 0.5 then direction = -1 end
-
-    rotation = rotation or 4
-    local startRotation = direction * (math.random() * 0.5 * rotation + rotation)
-    local startTime = 0.35
-
-    local function onShakeFinish()
-    	sprite.isShaking = false
-    end
-
-    array:addObject(CCSpawn:createWithTwoActions(CCRotateTo:create(startTime*0.3, startRotation), CCMoveBy:create(0.05, ccp(0, 6))))
-    array:addObject(CCSpawn:createWithTwoActions(CCRotateTo:create(startTime, -startRotation*2), CCMoveBy:create(0.05, ccp(0, -6))))
-    array:addObject(CCRotateTo:create(startTime, startRotation * 1.5))
-    array:addObject(CCRotateTo:create(startTime, -startRotation))
-    array:addObject(CCRotateTo:create(startTime, startRotation))
-    array:addObject(CCRotateTo:create(startTime, -startRotation*0.5))
-    array:addObject(CCRotateTo:create(startTime, 0))
-    array:addObject(CCCallFunc:create(onShakeFinish))
-
-    sprite:runAction(CCSequence:create(array))
-    return true
-end
 
 LevelTargetAnimation = class()
 
@@ -102,6 +70,7 @@ function LevelTargetAnimation:createIcon( itemType, id, width, height )
             or itemType == kLevelTargetType.dig_move_endless 
             or itemType == kLevelTargetType.dig_move_endless_qixi
             or itemType == kLevelTargetType.rabbit_weekly
+            or itemType == kLevelTargetType.acorn
             then
 			-- do nothing.
 		else
@@ -198,7 +167,8 @@ function LevelTargetAnimation:getTargetTypeByTargets()
                 selectedItem.type == kLevelTargetType.dig_move_endless_qixi or
                 selectedItem.type == kLevelTargetType.dig_move_endless_mayday or
                
-                selectedItem.type == kLevelTargetType.rabbit_weekly
+                selectedItem.type == kLevelTargetType.rabbit_weekly or 
+                selectedItem.type == kLevelTargetType.acorn
                  then
 				return selectedItem.type
 			else
@@ -236,6 +206,8 @@ function LevelTargetAnimation:setTargetNumber( itemType, itemId, itemNum, animat
 	else
 		if itemType == kLevelTargetType.drop then
 			self.c1:setTargetNumber(itemId, itemNum, animate, globalPosition)
+		elseif itemType == kLevelTargetType.acorn then 
+			self.c1:setTargetNumber(itemId, itemNum, animate, globalPosition)
 		elseif itemType == kLevelTargetType.dig_move then
 			self.c1:setTargetNumber(itemId, itemNum, animate, globalPosition)
         elseif itemType == kLevelTargetType.dig_move_endless then
@@ -263,6 +235,8 @@ end
 
 function LevelTargetAnimation:revertTargetNumber( itemType, itemId, itemNum )
 	if itemType == kLevelTargetType.drop then
+		self.c1:revertTargetNumber(itemId, itemNum)
+	elseif itemType == kLevelTargetType.acorn then 
 		self.c1:revertTargetNumber(itemId, itemNum)
 	elseif itemType == kLevelTargetType.dig_move then
 		self.c1:revertTargetNumber(itemId, itemNum)
@@ -317,13 +291,13 @@ function LevelTargetAnimation:buildLevelTargets(x)
 
   	self.levelTarget = levelTarget
   	
-  	for i=1,4 do
-  		self["c"..i] = self:buildTargetItem("c"..i, i)
-  	end
+  	local c1 = self.levelTarget:getChildByName("c1")
+  	local content = c1:getChildByName("content")
+
   	self.time = self:buildTimeTargetItem()
 
-  	self.flyOffsetY = self.c1.iconSize.height + self.c1:getContentSize().height + 7
-  	self.flyOffsetX = self.c1.iconSize.width + self.c1:getContentSize().width/2
+  	self.flyOffsetY = content:getContentSize().height + c1:getContentSize().height + 7
+  	self.flyOffsetX = content:getContentSize().width + c1:getContentSize().width/2
 
   	local leaf1 = levelTarget:getChildByName("leaf1")
   	local leaf1Pos = leaf1:getPosition()
@@ -441,379 +415,16 @@ function LevelTargetAnimation:buildPanelTileItem( targetName, index )
 	return sprite
 end
 
-
 function LevelTargetAnimation:buildTimeTargetItem()
 	local sprite = self.levelTarget:getChildByName("time")
-	local spriteSize = sprite:getGroupBounds().size
-	
-	local label = sprite:getChildByName("label")
-	label.offsetX = label:getPosition().x
-	label:setAlignment(kCCTextAlignmentCenter)
-	label:setAnchorPoint(ccp(0.5, 0.5))
-	label:setString("0")
 
-	local finished = sprite:getChildByName("finished")
-	local finishedPos = finished:getPosition()
-	local finished_icon = finished:getChildByName("icon")
-	local finished_size = finished_icon:getContentSize()
-	local finished_bg = finished:getChildByName("bg")
-    local highlight = sprite:getChildByName('highlight')
-
-	finished:setVisible(false)
-	finished:setPosition(ccp(finishedPos.x + finished_size.width/2, finishedPos.y - finished_size.height/2))
-	finished_icon:setAnchorPoint(ccp(0.5, 0.5))
-	finished_bg:setAnchorPoint(ccp(0.5, 0.5))
-    highlight:setVisible(false)
-
-	local context = self
-	local function onTouchBegin(evt) 
-		shakeObject(sprite)
-		context:playLeafAnimation(true)
-		context:playLeafAnimation(false)
-	end
-
-	sprite:ad(DisplayEvents.kTouchBegin, onTouchBegin)
-	sprite:setTouchEnabled(true)
-
-	sprite.reset = function( self )
-		local finished = self:getChildByName("finished")
-		finished:setVisible(false)
-	end
-	sprite.finish = function ( self )
-		if self.isFinished then return end
-		self.isFinished = true
-
-		local finished = self:getChildByName("finished")
-		finished:setVisible(true)
-
-		finished_icon:stopAllActions()
-		finished_icon:setScale(2.5)
-		finished_icon:setOpacity(0)
-		finished_icon:runAction(CCSpawn:createWithTwoActions(CCFadeIn:create(0.5), CCEaseBounceOut:create(CCScaleTo:create(0.5, 0.8))))
-
-		local function onPlayShake()
-			self:shake()
-		end
-		local array = CCArray:create()
-		array:addObject(CCDelayTime:create(0.25))
-		array:addObject(CCCallFunc:create(onPlayShake))
-		array:addObject(CCSpawn:createWithTwoActions(CCFadeIn:create(0.5), CCScaleTo:create(0.5, 1.2)))
-		array:addObject(CCSpawn:createWithTwoActions(CCFadeOut:create(0.5), CCScaleTo:create(0.5, 2)))
-		finished_bg:stopAllActions()
-		finished_bg:setScale(0.6)
-		finished_bg:setOpacity(0)
-		finished_bg:runAction(CCSequence:create(array))
-	end
-
-	sprite.shake = function( self )
-    	shakeObject(self, 4)
-	end
-	sprite.fadeIn = function( self, delayTime )
-		delayTime = delayTime or 0
-		local position = label:getPosition()
-		local spawn = CCArray:create()
-		spawn:addObject(CCFadeIn:create(0.4))
-		spawn:addObject(CCScaleTo:create(0.4, 0.7))
-		spawn:addObject(CCMoveTo:create(0.4, ccp(position.x, position.y)))
-		local array = CCArray:create()
-		array:addObject(CCDelayTime:create(delayTime))
-		array:addObject(CCSpawn:create(spawn))
-		array:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(0.2, 1.2), CCTintTo:create(0.2, 210, 255, 0)))
-		array:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(0.2, 0.7), CCTintTo:create(0.2, 255, 255, 255)))
-		
-		label:setPosition(ccp(position.x+25, position.y-100))
-		label:setOpacity(0)
-		label:setScale(0.1)
-		label:runAction(CCSequence:create(array))
-	end
-	sprite.setContentIcon = function( self, icon, number )
-		local label = self:getChildByName("label")
-		if number ~= nil and label then
-			label:setString(tostring(number or 0))
-			label:setOpacity(0)
-		end
-		self.maxNumber = number
-	end
-	sprite.setTargetNumber = function( self, itemId, itemNum )
-		self.itemNum = itemNum
-		if itemNum >= self.maxNumber then self:finish() end
-	end
-	sprite.revertTargetNumber = function( self, itemId, itemNum )
-		self.itemNum = itemNum
-		if itemNum < self.maxNumber then 				
-			self:reset()
-			self.isFinished = false 
-		end
-	end
-	return sprite
+	return TargetItemFactory.create(TimeTargetItem, sprite, 0, self)
 end
 
 function LevelTargetAnimation:buildTargetItem( targetName, index )
 	local sprite = self.levelTarget:getChildByName(targetName)
-	local spriteSize = sprite:getGroupBounds().size
-	local content = sprite:getChildByName("content")
-    local zOrder = content:getZOrder()
-	local contentPos = content:getPosition()
-	local contentSize = content:getContentSize()
-	sprite:setContentSize(CCSizeMake(spriteSize.width, spriteSize.height))
-	sprite.iconSize = {x = contentPos.x, y = contentPos.y, width=contentSize.width, height=contentSize.height}
-	content:removeFromParentAndCleanup(true)
-	
-	local label = sprite:getChildByName("label")
-	label.offsetX = label:getPosition().x
-	label:setAlignment(kCCTextAlignmentRight)
-	label:setString("0")
-	label:setOpacity(0)
-	label:setScale(2)
 
-	local finished = sprite:getChildByName("finished")
-	local finishedPos = finished:getPosition()
-	local finished_icon = finished:getChildByName("icon")
-	local finished_size = finished_icon:getContentSize()
-	local finished_bg = finished:getChildByName("bg")
-	finished:setVisible(false)
-	finished:setPosition(ccp(finishedPos.x + finished_size.width/2, finishedPos.y - finished_size.height/2))
-	finished_icon:setAnchorPoint(ccp(0.5, 0.5))
-	finished_bg:setAnchorPoint(ccp(0.5, 0.5))
-
-    local highlight = sprite:getChildByName('highlight')
-    highlight:setVisible(false)
-
-	local context = self
-	sprite.index = index
-	sprite.isFinished = false
-
-	local function onTouchBegin(evt) 
-		shakeObject(sprite)
-		context:playLeafAnimation(true)
-  		context:playLeafAnimation(false)
-  		if not evt.target then return end
-		local target = self.targets[evt.target.index]
-		if target and target.type == "order2" or target.type == "order3" then
-			CommonTip:showTip(Localization:getInstance():getText("game.target.tips."..target.type..'.'..target.id, {num = evt.target.itemNum}), "positive")
-		end
-	end
-
-	sprite:ad(DisplayEvents.kTouchBegin, onTouchBegin)
-	sprite:setTouchEnabled(true)
-
-	sprite.reset = function( self )
-		local finished = self:getChildByName("finished")
-		finished:setVisible(false)
-		local label = self:getChildByName("label")
-		label:setVisible(true)
-	end
-	sprite.finish = function ( self )
-		if self.isFinished then return end
-		self.isFinished = true
-
-		local label = self:getChildByName("label")
-		label:setVisible(false)
-		local finished = self:getChildByName("finished")
-		finished:setVisible(true)
-
-		finished_icon:stopAllActions()
-		finished_icon:setScale(2.5)
-		finished_icon:setOpacity(0)
-		finished_icon:runAction(CCSpawn:createWithTwoActions(CCFadeIn:create(0.5), CCEaseBounceOut:create(CCScaleTo:create(0.5, 0.8))))
-
-		local function onPlayShake()
-			self:shake()
-		end
-		local array = CCArray:create()
-		array:addObject(CCDelayTime:create(0.25))
-		array:addObject(CCCallFunc:create(onPlayShake))
-		array:addObject(CCSpawn:createWithTwoActions(CCFadeIn:create(0.5), CCScaleTo:create(0.5, 1.2)))
-		array:addObject(CCSpawn:createWithTwoActions(CCFadeOut:create(0.5), CCScaleTo:create(0.5, 2)))
-		finished_bg:stopAllActions()
-		finished_bg:setScale(0.6)
-		finished_bg:setOpacity(0)
-		finished_bg:runAction(CCSequence:create(array))
-	end
-	
-	sprite.shake = function( self )
-		if self.isFinished then return end
-    	shakeObject(self)
-    	local icon = self.icon
-    	local index = self.index
-    	local label = self:getChildByName("label")
-    	
-    	if icon then
-    		local sequence = CCArray:create()
-    		sequence:addObject(CCDelayTime:create((index-1) * 0.1))
-    		sequence:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(0.15, 1.6), CCFadeIn:create(0.15)))
-    		sequence:addObject(CCScaleTo:create(0.15, 1))
-    		icon:stopAllActions()
-    		icon:runAction(CCSequence:create(sequence))
-    	end
-    	if label then
-    		label:setOpacity(0)
-			label:setScale(2)
-
-    		local labelSeq = CCArray:create()
-    		labelSeq:addObject(CCDelayTime:create(0.3 + (index-1) * 0.1))
-    		labelSeq:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(0.15, 1), CCFadeIn:create(0.15)))
-    		label:stopAllActions()
-    		label:runAction(CCSequence:create(labelSeq))
-    	end
-	end
-	sprite.setContentIcon = function( self, icon, number )
-		if self.icon then
-			self.icon:removeFromParentAndCleanup(true)
-		end
-		self.icon = icon
-		if self.icon and self.iconSize then
-			local iconContentSize = self.iconSize
-			local iconSize = self.icon:getContentSize()
-			local y = iconContentSize.y - (iconContentSize.height)/2
-			self.icon:setPosition(ccp(0, y - 3))
-			self.icon:setOpacity(0)
-			self:addChildAt(icon, zOrder)
-		end
-		local label = self:getChildByName("label")
-		if number ~= nil and label then
-			label:setString(tostring(number or 0))
-			label:setOpacity(0)
-			label:setScale(2)
-		end
-	end
-	sprite.setTargetNumber = function( self, itemId, itemNum, animate, globalPosition )
-		if self.isFinished then return end
-		if not self.refCocosObj then return end
-		if itemNum ~= nil then
-			self.itemNum = itemNum
-			if itemNum <= 0 then self:finish() end
-
-			if animate and globalPosition and self.icon then
-				local cloned = self.icon:clone(true)
-				local targetPos = self:getParent():convertToNodeSpace(globalPosition)
-				local position = cloned:getPosition()
-				local tx, ty = position.x, position.y
-				local function onIconScaleFinished()
-					cloned:removeFromParentAndCleanup(true)
-				end 
-				local function onIconMoveFinished()			
-					self:getChildByName("label"):setString(tostring(itemNum or 0))
-					context:playLeafAnimation(true)
-  					context:playLeafAnimation(false)
-  					shakeObject(self)
-  					local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
-  					cloned:setOpacity(255)
-  					cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-				end 
-				local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
-				local moveOut = CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150))
-				cloned:setPosition(targetPos)
-				cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
-			else
-				self:getChildByName("label"):setString(tostring(itemNum or 0))
-			end
-		end
-	end
-
-	sprite.revertTargetNumber = function( self, itemId, itemNum )
-		if itemNum ~= nil then
-			self.itemNum = itemNum
-			if itemNum > 0 then 				
-				self:reset()
-				self.isFinished = false 
-			end
-			self:getChildByName("label"):setString(tostring(itemNum or 0))
-		end
-	end
-
-    sprite.highlight = function (self, enable, showRaccoon)
-        print('sprite.highlight')
-        if self.highlighted == nil then
-            self.highlighted = false
-        end
-
-        if self.highlighted == true then
-            if enable == true then 
-                return 
-            else
-                -- disable highlight
-                print('disable')
-                self.highlighted = false
-                local highlight = self:getChildByName('highlight')
-                highlight:stopAllActions()
-                highlight:setVisible(false)
-                
-            end
-        elseif self.highlighted == false then
-            if not enable then 
-                return 
-            else
-                print('enable')
-                self.highlighted = true
-                local highlight = self:getChildByName('highlight')
-                highlight:stopAllActions()
-                highlight:setVisible(true)
-                local array = CCArray:create()
-                array:addObject(CCFadeTo:create(0.5, 125))
-                array:addObject(CCFadeTo:create(0.5, 255))
-                highlight:runAction(CCRepeatForever:create(CCSequence:create(array)))
-                
-                if not showRaccoon then return end
-
-                -- enable highlight
-                local vs = Director:sharedDirector():getVisibleSize()
-                local vo = Director:sharedDirector():getVisibleOrigin()
-                local node = CommonSkeletonAnimation:createTutorialMoveIn()
-                node:setScaleX(-1)
-                local scene = Director:sharedDirector():getRunningScene()
-                if not scene then return end
-                local panelPosition = self:getParent():convertToWorldSpace(self:getPosition())
-                -- local nodePos = ccp(panelPosition.x + 100, panelPosition.y)
-                node:setAnchorPoint(ccp(0, 1))
-                local nodePos = ccp(150, panelPosition.y)
-                node:setPosition(nodePos)
-                scene:addChild(node)
-                node:setAnimationScale(0.3)
-                local builder = InterfaceBuilder:create("flash/scenes/homeScene/homeScene.json")
-                -- local tip = builder:buildGroup('homeScene_infiniteEnergyTip')
-                local tip = GameGuideRunner:createPanelMini('venom.too.little.tips')
-                -- tip:getChildByName('txt'):setString(Localization:getInstance():getText('venom.too.little.tips'))
-                -- tip:getChildByName('bg'):setScaleX(-1)
-                -- tip:getChildByName('bg'):setAnchorPoint(ccp(1, 1))
-                local posTip = ccp(vo.x + vs.width / 2 - tip:getGroupBounds().size.width / 2, nodePos.y - 120)
-                local tipStartPos = ccp(-500, nodePos.y - 120)
-                tip:setPosition(tipStartPos)
-                tip:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCEaseExponentialOut:create(CCMoveTo:create(0.3, posTip))))
-                scene:addChild(tip)
-                local function remove()
-                    if node and node.refCocosObj then node:runAction(
-                            CCSequence:createWithTwoActions(
-                                CCDelayTime:create(0.5),
-                                CCCallFunc:create(
-                                    function () 
-                                        if node and node.refCocosObj then 
-                                            node:removeFromParentAndCleanup(true) 
-                                        end 
-                                    end)
-                            )
-                        )  
-                    end
-                    if tip and tip.refCocosObj then 
-                        tip:runAction(CCSequence:createWithTwoActions(
-                            CCEaseExponentialIn:create(CCMoveTo:create(0.3, tipStartPos)),
-                            CCCallFunc:create(
-                                function () 
-                                    if tip and tip.refCocosObj then 
-                                        tip:removeFromParentAndCleanup(true) 
-                                    end
-                                end))
-                        )  
-                    end
-                end
-                setTimeOut(remove, 5)
-            end
-        end
-
-
-    end
-
-	return sprite
+	return TargetItemFactory.create(LevelTargetItem, sprite, index, self)
 end
 
 function LevelTargetAnimation:setNumberOfTargets( v, animationCallbackFunc, flyFinishedCallback )
@@ -834,15 +445,25 @@ function LevelTargetAnimation:setNumberOfTargets( v, animationCallbackFunc, flyF
     local isEndLessMayDayMode = self:isEndLessMayDayMode()
     local isSeaOrderMode = self:isSeaOrderMode()
 
+    local function createTargets(from, to)
+    	for i=from,to do
+  			self["c"..i] = self:buildTargetItem("c"..i, i)
+  		end
+    end
+
 	if isTimeMode or isMoveMode then 
+		createTargets(1, 4)
 		self:updateTimeTargets()
-    elseif isEndlessMode then 
+    elseif isEndlessMode then
+    	createTargets(2,4) 
     	self:updateEndlessTargets()
-    elseif isEndLessMayDayMode then 
+    elseif isEndLessMayDayMode then
+    	createTargets(2,4)  
     	self:updateEndlessMayDayTargets()
     elseif isSeaOrderMode then 
     	self:updateSeaOrderTargets()
-	else 
+	else
+		createTargets(1,4)
 		self:updateNormalTargets() 
 	end
 
@@ -1000,248 +621,31 @@ function LevelTargetAnimation:flyCollectTarget( iconSrc, iconDst, index)
 end
 
 function LevelTargetAnimation:updateEndlessMayDayTargets()
-	local context = self
-	 self.c1.setTargetNumber = function (self, itemId, itemNum, animate, globalPosition)
-        if not self.refCocosObj then return end
-        if itemNum ~= nil then
-            -- 防止数字回滚
-            -- 前提：反正该模式下，数字是单向增加的
-            if itemNum >= self.itemNum then
-                self.itemNum = itemNum
-            end
+	self.c1 = TargetItemFactory.create(EndlessMayDayTargetItem, self.levelTarget:getChildByName("c1"), 1, self)
 
-            if animate and globalPosition and self.icon then
-                local cloned = self.icon:clone(true)
-                -- local targetPos = self:convertToNodeSpace(globalPosition)
-                local targetPos = self:getParent():convertToNodeSpace(globalPosition)
-                local position = cloned:getPosition()
-                local tx, ty = position.x, position.y
-                local function onIconScaleFinished()
-                    cloned:removeFromParentAndCleanup(true)
-                end 
-                local function onIconMoveFinished()         
-                    self:getChildByName("label"):setString(tostring(self.itemNum or 0))
-                    context:playLeafAnimation(true)
-                    context:playLeafAnimation(false)
-                    shakeObject(self)
-                    local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
-                    cloned:setOpacity(255)
-                    cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-                end 
-                local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
-                local array = CCArray:create()
-
-                if itemId == 1 then
-                	cloned:setScale(0.3)
-                	local scale_action = CCScaleTo:create(0.3, 1.5)
-                	local index_x = math.random()
-                	local index_y = math.random()
-                	local jump_action = CCJumpBy:create(0.5, ccp(index_x * 2 * GamePlayConfig_Tile_Width, -index_y * 2* GamePlayConfig_Tile_Width), (1 + index_y) * GamePlayConfig_Tile_Width, 1)
-                	array:addObject(CCSpawn:createWithTwoActions(scale_action, jump_action))
-                	array:addObject(CCDelayTime:create(index_y))
-                end
-                array:addObject(CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150)))
-                array:addObject(CCCallFunc:create(onIconMoveFinished))
-                cloned:setPosition(targetPos)
-                cloned:runAction(CCSequence:create(array))
-            else
-                self:getChildByName("label"):setString(tostring(itemNum or 0))
-            end
-        end
-    end
     self:updateNormalTargets()
 end
 
 --用这个函数来覆盖原有的setTargetNumber
 function LevelTargetAnimation:updateSeaOrderTargets()
-	local context = self
-    local scene = Director:sharedDirector():getRunningScene()
-    if not scene then return end
-	local function getAnimation(panel, itemId, itemNum, globalPosition, rotation)
 
-		FrameLoader:loadArmature('skeleton/sea_animal_animation')
-
-		local vo = Director:sharedDirector():getVisibleOrigin()
-		local vs = Director:sharedDirector():getVisibleSize()
-		local node = nil
-		local anchorPoint = ccp(0, 0) 
-		local scale = 1
-		local nodeWidth = 0
-		local offsetX = 0
-
-		if itemId == GameItemOrderType_SeaAnimal.kPenguin then
-			node = ArmatureNode:create('penguin')
-			if rotation == 0 then
-				anchorPoint = ccp(0.5, 0.75)
-			elseif rotation == 90 then
-				anchorPoint = ccp(0.5, 0.75)
-			end
-			nodeWidth = 70 * 2
-			offsetX = -100
-			scale = 140 / node:getGroupBounds().size.height
-		elseif itemId == GameItemOrderType_SeaAnimal.kSeaBear then
-			node = ArmatureNode:create('seabear')
-			if rotation == 0 then
-				anchorPoint = ccp(1/6, 5/6)
-			end
-			nodeWidth = 70 * 3
-			offsetX = -80
-			scale = 210 / node:getGroupBounds().size.height
-		elseif itemId == GameItemOrderType_SeaAnimal.kSeal then
-			node = ArmatureNode:create('seadog')
-			if rotation == 0 then
-				anchorPoint = ccp(1/6, 3/4) 
-			elseif rotation == -90 then
-				anchorPoint = ccp(1/6, 1/4)
-			end
-			nodeWidth = 70 * 3
-			offsetX = -200
-			scale = 140 / node:getGroupBounds().size.height
-		else 
-			return 
-		end
-		if rotation ~= 0 then
-			node:setRotation(-rotation)
-		end
-		node:setScale(scale)
-		-- node:setPosition(panel:convertToNodeSpace(globalPosition))
-        node:setPosition(globalPosition)
-		node:playByIndex(0)
-		node:setAnimationScale(0.5)
-		node:setAnchorPoint(anchorPoint)
-		-- panel:addChild(node)
-        scene:addChild(node)
-
-		local scale = 30 / math.max(node:getGroupBounds().size.width, node:getGroupBounds().size.height)
-
-		local function onIconScaleFinished()
-			if node and not node.isDisposed then
-				print('removed')
-				node:removeFromParentAndCleanup(true)
-			end
-		end 
-
-		local function onIconMoveFinished()			
-			panel:getChildByName("label"):setString(tostring(itemNum or 0))
-			context:playLeafAnimation(true)
-			context:playLeafAnimation(false)
-			shakeObject(panel)
-			local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, scale * 2), CCFadeOut:create(0.3))
-			node:setOpacity(255)
-			node:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-		end 
-
-		-- 防止动画飞出屏幕
-		local moveOffsetX = 0
-		local moveOffsetY = 0
-		if globalPosition.x > ( vo.x + vs.width - nodeWidth) then
-			moveOffsetX = offsetX
-		end
-
-
-		local a = CCArray:create()
-		a:addObject(CCDelayTime:create(0.5))
-		-- a:addObject(CCRotateBy:create(0.2, rotation))
-		a:addObject(CCSpawn:createWithTwoActions(CCRotateBy:create(0.2, rotation), CCMoveBy:create(0.2, ccp(moveOffsetX, moveOffsetY))))
-		a:addObject(CCDelayTime:create(1.5))
-		a:addObject(CCCallFunc:create(function () node:setAnchorPointCenterWhileStayOrigianlPosition() end))
-		-- local destPos = panel.icon:getPosition()
-        local destPos = panel.icon:getParent():convertToWorldSpace(panel.icon:getPosition())
-		local b = CCArray:create()
-		b:addObject(CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(destPos.x, destPos.y))))
-		b:addObject(CCFadeTo:create(0.5, 150))
-		b:addObject(CCScaleTo:create(0.5, scale))
-		a:addObject(CCSpawn:create(b))
-		a:addObject(CCCallFunc:create(onIconMoveFinished))
-		node:runAction(CCSequence:create(a))
-	end
-
-
-	local context = self
-	for i=1,4 do
-  		local spritePanel = self["c"..i]
-  		spritePanel.setTargetNumber = function( self, itemId, itemNum, animate, globalPosition, rotation )
-			if self.isFinished then return end
-			if not self.refCocosObj then return end
-			if itemNum ~= nil then
-				self.itemNum = itemNum
-				if itemNum <= 0 then self:finish() end
-
-				if animate and globalPosition and self.icon then
-                    if rotation ~= nil then -- 目标是海洋生物
-    					getAnimation(self, itemId, itemNum, globalPosition, rotation)
-                    else -- 目标不是海洋生物
-                        local cloned = self.icon:clone(true)
-                        local targetPos = self:getParent():convertToNodeSpace(globalPosition)
-                        local position = cloned:getPosition()
-                        local tx, ty = position.x, position.y
-                        local function onIconScaleFinished()
-                            cloned:removeFromParentAndCleanup(true)
-                        end 
-                        local function onIconMoveFinished()         
-                            self:getChildByName("label"):setString(tostring(itemNum or 0))
-                            context:playLeafAnimation(true)
-                            context:playLeafAnimation(false)
-                            shakeObject(self)
-                            local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
-                            cloned:setOpacity(255)
-                            cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-                        end 
-                        local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
-                        local moveOut = CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150))
-                        cloned:setPosition(targetPos)
-                        cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
-                    end
-				else
-					self:getChildByName("label"):setString(tostring(itemNum or 0))
-				end
-			end
-		end
+	for i=1, 4 do
+  		self["c"..i] = TargetItemFactory.create(SeaOrderTargetItem, self.levelTarget:getChildByName("c"..i), i, self)
   	end
+
   	self:updateNormalTargets()
 end
 
 function LevelTargetAnimation:updateEndlessTargets()
     -- override 
-    local context = self
-    self.c1.setTargetNumber = function (self, itemId, itemNum, animate, globalPosition)
-        if not self.refCocosObj then return end
-        if itemNum ~= nil then
-            self.itemNum = itemNum
-
-            if animate and globalPosition and self.icon then
-                local cloned = self.icon:clone(true)
-                local targetPos = self:getParent():convertToNodeSpace(globalPosition)
-                local position = cloned:getPosition()
-                local tx, ty = position.x, position.y
-                local function onIconScaleFinished()
-                    cloned:removeFromParentAndCleanup(true)
-                end 
-                local function onIconMoveFinished()         
-                    self:getChildByName("label"):setString(tostring(itemNum or 0))
-                    context:playLeafAnimation(true)
-                    context:playLeafAnimation(false)
-                    shakeObject(self)
-                    local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
-                    cloned:setOpacity(255)
-                    cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-                end 
-                local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
-                local moveOut = CCSpawn:createWithTwoActions(moveTo, CCSequence:createWithTwoActions(CCFadeIn:create(0.2), CCFadeTo:create(0.3, 150)))
-                cloned:setPosition(targetPos)
-                cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
-            else
-                self:getChildByName("label"):setString(tostring(itemNum or 0))
-            end
-        end
-    end
+    self.c1 =  TargetItemFactory.create(EndlessTargetItem, self.levelTarget:getChildByName("c1"), 1, self)
     self:updateNormalTargets()
 end
 
 function LevelTargetAnimation:updateTimeTargets()
 	for i=1,4 do 
-		self["c"..i]:setVisible(false) 
-		self["tile"..i]:setVisible(false) 
+		 self["c"..i]:setVisible(false)
+		 self["tile"..i]:setVisible(false)
 	end
 	local itemNum = self.targets[1].num
 	self.time:setVisible(true)

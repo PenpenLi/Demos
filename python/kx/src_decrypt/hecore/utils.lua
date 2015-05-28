@@ -47,7 +47,20 @@ function setTimeOut(func, time)
     if scheduleScriptFuncID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(scheduleScriptFuncID) end
   end
   scheduleScriptFuncID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onScheduleScriptFunc,time,false)
+  return scheduleScriptFuncID
 end
+
+function delay(timeBeforeDelay)
+    local function delay(dt)
+        local test = 0
+        for i=1,100000 do
+              for j=1,10000 do
+                  test = test + 1
+              end
+        end
+    end
+    setTimeOut(delay, timeBeforeDelay)
+end 
 
 function table.clone(t, nometa)
   local u = {}
@@ -511,8 +524,8 @@ function compareDate(date1, date2)
       month = date2.month,
   }
 
-    local time1 = os.time(date1Copy)
-    local time2 = os.time(date2Copy)
+    local time1 = os.time(date1Copy) or 0
+    local time2 = os.time(date2Copy) or 0
     if time1 < time2 then
       return -1
     elseif time1 == time2 then

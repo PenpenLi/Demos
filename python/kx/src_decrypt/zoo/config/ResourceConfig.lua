@@ -13,13 +13,8 @@ ResourceConfig = {
 		"flash/mapTiles.plist",
 		"flash/explode.plist",
 		"flash/mapBaseItem.plist",
-		"flash/link_item.plist",		
-		"flash/mapLight.plist",
-		"flash/crystal_anim.plist",
 		"flash/destroy_effect.plist",		
 		"flash/tile_select.plist",
-		"flash/mapSnow.plist",
-		"flash/mapLock.plist",
 
 		"materials/game_bg.plist",
 		"materials/head_images.plist",
@@ -39,10 +34,6 @@ ResourceConfig = {
 		"flash/scenes/flowers/target_icon.plist",
 
 		"flash/gameguide/guidespanImage.plist",
-		"flash/snail_road.plist",
-		"flash/dig_block.plist",
-		"flash/sand_idle_clean.plist",
-		"flash/sand_move.plist",
 	},
 	json={
 		"flash/scenes/homeScene/home.json",		
@@ -133,6 +124,7 @@ ResourceConfigPixelFormat["flash/mapLock.plist"] = kCCTexture2DPixelFormat_RGBA4
 ResourceConfigPixelFormat["flash/gameguide/guidespanImage.plist"] = kCCTexture2DPixelFormat_RGBA8888 
 ResourceConfigPixelFormat["flash/scenes/homeScene/home.plist"] = kCCTexture2DPixelFormat_RGBA4444
 ResourceConfigPixelFormat["flash/sand_move.plist"] = kCCTexture2DPixelFormat_RGBA4444
+ResourceConfigPixelFormat["flash/destroy_effect.plist"] = kCCTexture2DPixelFormat_RGBA4444
 
 ResourceFntPixelFormat = {}
 ResourceFntPixelFormat["fnt/tutorial.fnt"] = kCCTexture2DPixelFormat_RGBA4444
@@ -186,3 +178,5 @@ PanelConfigFiles.panel_mark_energy_notionce = "ui/panel_mark_energy_notionce.jso
 PanelConfigFiles.panel_turntable = "ui/panel_turntable.json"
 PanelConfigFiles.panel_rabbit_weekly_v2 = "ui/panel_rabbit_week_match.json"
 PanelConfigFiles.recall_ui = "ui/RecallUI.json"
+PanelConfigFiles.panel_ad_video = "ui/AdVideoPanel.json"
+PanelConfigFiles.panel_buy_confirm = "ui/panel_buy_confirm.json"

@@ -22,7 +22,7 @@ if __ANDROID then
       	return result
     end
 
-	function SignatureUtil:verifySignature( packageName )
+	function SignatureUtil:getDefaultCmPayment( packageName )
 		local list = {}
 		local function safeGetSignature()
 			local context = MainActivityHolder.ACTIVITY
@@ -45,22 +45,22 @@ if __ANDROID then
 			for j,hash in pairs(validHashList) do
 				if signature == hash then
 					if j == "cmgame" then
-						_G.kDefaultCmPayment = 9
+						return 9
 					elseif j == "he" then
 						local MainActivityHolder = luajava.bindClass("com.happyelements.android.MainActivityHolder")
 						local mmiapUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("mmiap.xml")
-						local sDataUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("assets/libmegbpp_02.02.06_00.so")
+						local sDataUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("assets/libmegbpp_02.02.10_00.so")
 						if not mmiapUrl and not sDataUrl then
-							_G.kDefaultCmPayment = 1
+							return 1
 						end
 					end
-					return true 
+					return nil 
 				end
 			end
 		end
-		return false
+		return nil
 	end
 else
-	function SignatureUtil:verifySignature( packageName )
+	function SignatureUtil:getDefaultCmPayment( packageName )
 	end
 end

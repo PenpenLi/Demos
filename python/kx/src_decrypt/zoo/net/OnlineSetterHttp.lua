@@ -700,6 +700,7 @@ function PickFruitHttp:load(id, mType)
 			end
 			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 			else print("Did not write user data to the device.") end
+
 			context:onLoadingComplete(data)
 		end
 	end

@@ -13,6 +13,7 @@ require "zoo.panel.RequireNetworkAlert"
 require "zoo.panel.recall.RecallFriendUnlockPanel"
 require "zoo.panel.recall.RecallLevelUnlockPanel"
 require "zoo.panel.recall.RecallItemPanel"
+require "zoo.panel.UnlockCloudPanelWithTask"
 
 
 
@@ -96,6 +97,13 @@ function LockedCloud:init(lockedCloudId, animLayer, texture, ...)
 	local curStartNodeId = tonumber(curLevelAreaData.minLevel)
 	assert(curStartNodeId)
 	self.startNodeId = curStartNodeId
+end
+
+function LockedCloud:updateState( ... )
+	-- body
+	if self:ifCanWaitToOpen() then
+		self:changeState(LockedCloudState.WAIT_TO_OPEN, false)
+	end
 end
 
 function LockedCloud:getStartNodeId(...)
@@ -367,6 +375,9 @@ function LockedCloud:onLockedCloudTapped(event, ...)
 					unlockCloudPanel = RecallLevelUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
 				elseif RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_LONG then 
 					unlockCloudPanel = RecallFriendUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
+				elseif MetaManager.getInstance():isTaskCanUnlockLevalArea(self.id) then
+					local taskLevelId = MetaManager.getInstance():getTaskLevelId(self.id)
+					unlockCloudPanel = UnlockCloudPanelWithTask:create(self.id, userTotalStar, neededStar, onSuccessCallback, taskLevelId)
 				else 
 					unlockCloudPanel = UnlockCloudPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
 				end

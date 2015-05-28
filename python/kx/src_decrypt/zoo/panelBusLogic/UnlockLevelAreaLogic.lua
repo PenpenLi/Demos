@@ -23,6 +23,7 @@ UnlockLevelAreaLogicUnlockType = {
 	USE_DOWN_NEW_APK = 5,
 	USE_TASK_LEVEL = 6,
 	USE_ANIMAL_FRIEND = 7,
+	USE_UNLOCK_AREA_LEVEL = 8,
 }
 
 local function checkUnlockType(unlockType)
@@ -33,7 +34,8 @@ local function checkUnlockType(unlockType)
 		unlockType == UnlockLevelAreaLogicUnlockType.USE_FRIEND or 
 		unlockType == UnlockLevelAreaLogicUnlockType.USE_DOWN_NEW_APK or 
 		unlockType == UnlockLevelAreaLogicUnlockType.USE_ANIMAL_FRIEND or 
-		unlockType == UnlockLevelAreaLogicUnlockType.USE_TASK_LEVEL)
+		unlockType == UnlockLevelAreaLogicUnlockType.USE_TASK_LEVEL or 
+		unlockType == UnlockLevelAreaLogicUnlockType.USE_UNLOCK_AREA_LEVEL)
 end
 
 function UnlockLevelAreaLogic:init(lockedCloudId, ...)
@@ -203,6 +205,7 @@ function UnlockLevelAreaLogic:start(unlockType, friendIds, ...)
 		print(itemId, self.itemIdToGoodsIdMap[itemId])
 		if __ANDROID then -- ANDROID
 			local logic = IngamePaymentLogic:create(self.itemIdToGoodsIdMap[itemId])
+			logic:ignoreSecondConfirm(true)
 			logic:buy(onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled)
 		else -- else, on IOS and PC we use gold!
 			local logic = BuyLogic:create(self.itemIdToGoodsIdMap[itemId], moneyType)
@@ -213,10 +216,11 @@ function UnlockLevelAreaLogic:start(unlockType, friendIds, ...)
 	-- Request Friend To Help
 	elseif unlockType == UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP or
 		   unlockType == UnlockLevelAreaLogicUnlockType.USE_FRIEND or
-		   UnlockLevelAreaLogicUnlockType.USE_ANIMAL_FRIEND or
-		   UnlockLevelAreaLogicUnlockType.USE_TASK_LEVEL then
+		   unlockType == UnlockLevelAreaLogicUnlockType.USE_ANIMAL_FRIEND or
+		   unlockType == UnlockLevelAreaLogicUnlockType.USE_TASK_LEVEL then
 		self:sendUnlockLevelAreaMessage(unlockType, friendIds, onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled)
-	elseif unlockType == UnlockLevelAreaLogicUnlockType.USE_DOWN_NEW_APK then
+	elseif unlockType == UnlockLevelAreaLogicUnlockType.USE_DOWN_NEW_APK or 
+		   unlockType == UnlockLevelAreaLogicUnlockType.USE_UNLOCK_AREA_LEVEL then
 		onSendUnlockLevelAreaSuccess()
 	else
 		assert(false)

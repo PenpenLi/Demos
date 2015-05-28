@@ -36,6 +36,10 @@ function StartLevelHttp:load(levelId, itemList, energyBuff, gameLevelType)
 		print(" [ useLocalServer for StartLevelHttp ]", levelId, gameMode, itemList, energyBuff, gameLevelType)
 		local success, err = Localhost.getInstance():startLevel(levelId, gameMode, itemList, energyBuff, gameLevelType)
 		if success then
+			if levelId == UserService.getInstance().user:getTopLevelId() then
+				UserManager:getInstance().userExtend:incrTopLevelFailCount(1)
+				UserService:getInstance().userExtend:incrTopLevelFailCount(1)
+			end
 			UserService.getInstance():cacheHttp(kHttpEndPoints.startLevel, body)
 			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 			else print("Did not write user data to the device.") end
@@ -115,11 +119,16 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 			activityFlag = actFlag
 		}
 		
+		local topLevelId = UserService:getInstance().user:getTopLevelId()
 		local result, success, err = Localhost.getInstance():passLevel(levelId, score, star, stageTime, coin, targetCount, opLog, gameLevelType)
 		if err ~= nil then 
 			context:onLoadingError(err)
 			print("PassLevelHttp fail " .. tostring(err))
 		else 
+			if levelId == topLevelId and star > 0 then
+				UserManager:getInstance().userExtend:resetTopLevelFailCount()
+				UserService:getInstance().userExtend:resetTopLevelFailCount()
+			end
 			UserService.getInstance():cacheHttp(kHttpEndPoints.passLevel, cacheHttp)
 			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 			else print("Did not write user data to the device.") end
@@ -127,7 +136,7 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 			print("pass level success !")
 			print("use local server !!")
 
-			--print(table.tostring(result).."success:"..tostring(success))
+			print(table.tostring(result).."success:"..tostring(success))
 			for k,v in pairs(result) do
 
 				if v.itemId == ItemType.COIN then		-- Coin
@@ -149,8 +158,7 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 					DcUtil:logRewardItem("pass_level", v.itemId, v.num, levelId)
 				end
 			end
-
-
+			
 			context:onLoadingComplete(result) 
 		end
 		return
@@ -166,29 +174,28 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 	    	he_log_info("pass level success")
 
 		
-		print(table.tostring(data.rewardItems))
+			print(table.tostring(data.rewardItems))
 
-		for k,v in pairs(data.rewardItems) do
+			for k,v in pairs(data.rewardItems) do
 
-			if v.itemId == ItemType.COIN then		-- Coin
+				if v.itemId == ItemType.COIN then		-- Coin
 
-				-- Add Coin
-				local curCoin	= UserManager:getInstance().user:getCoin()
-				local newCoin	= curCoin + v.num
-				UserManager:getInstance().user:setCoin(newCoin)
-				DcUtil:logCreateCoin("pass_level", v.num, curCoin, levelId)
+					-- Add Coin
+					local curCoin	= UserManager:getInstance().user:getCoin()
+					local newCoin	= curCoin + v.num
+					UserManager:getInstance().user:setCoin(newCoin)
+					DcUtil:logCreateCoin("pass_level", v.num, curCoin, levelId)
 
-			elseif v.itemId == ItemType.ENERGY_LIGHTNING then
+				elseif v.itemId == ItemType.ENERGY_LIGHTNING then
 
-				-- Add Energy
-				UserEnergyRecoverManager:sharedInstance():addEnergy(v.num)
-			else
-				-- Add Other Item
-				UserManager:getInstance():addUserPropNumber(v.itemId, v.num)
-				DcUtil:logRewardItem("pass_level", v.itemId, v.num, levelId)
+					-- Add Energy
+					UserEnergyRecoverManager:sharedInstance():addEnergy(v.num)
+				else
+					-- Add Other Item
+					UserManager:getInstance():addUserPropNumber(v.itemId, v.num)
+					DcUtil:logRewardItem("pass_level", v.itemId, v.num, levelId)
+				end
 			end
-		end
-		
 	    	context:onLoadingComplete(data.rewardItems)
 	    end
 	end
@@ -299,6 +306,45 @@ function OpenGiftBlockerHttp:load(levelId, itemList)
 	self.transponder:call(kHttpEndPoints.openGiftBlocker, body, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
+GetPropsInGameHttp = class(HttpBase)
+function GetPropsInGameHttp:load(levelId, itemIds, actId)
+	assert(type(levelId) == "number")
+	assert(type(itemIds) == "table", "itemIds not a list")
+
+	actId = actId or 0
+	local context = self
+	local body = {actId=actId, levelId=levelId, itemIds=itemIds}
+
+	if NetworkConfig.useLocalServer then
+		print(" [ useLocalServer for GetPropsInGameHttp ]", actId, levelId, itemIds)
+		if Localhost.getInstance():getPropsInGame(actId, levelId, itemIds) then
+			UserService.getInstance():cacheHttp(kHttpEndPoints.getPropsInGame, body)
+			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
+			else print("Did not write user data to the device.") end
+			-- table.each(itemIds, function (v)
+			-- 	DcUtil:logRewardItem("gift_blocker", v, 1, levelId)
+			-- 	end)
+			context:onLoadingComplete()
+		else
+			print("getPropsInGame failed.")
+			context:onLoadingError()
+		end
+		return
+	end
+
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	he_log_info("GetPropsInGameHttp fail, err: " .. err)
+	    	context:onLoadingError(err)
+	    else
+	    	he_log_info("GetPropsInGameHttp success")
+	    	context:onLoadingComplete()
+	    end
+	end
+	
+	self.transponder:call(kHttpEndPoints.getPropsInGame, body, loadCallback, rpc.SendingPriority.kHigh, false)
+end
 
 --
 -- IngameHttp ---------------------------------------------------------

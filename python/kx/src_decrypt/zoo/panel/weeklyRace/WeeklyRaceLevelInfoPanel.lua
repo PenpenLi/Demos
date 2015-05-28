@@ -192,20 +192,10 @@ end
 
 
 function WeeklyRaceLevelInfoPanel:onReceiveReward1()
-
-    if not RequireNetworkAlert:popout() then
-        -- CommonTip:showTip(_text('weekly.race.tip.no.network'), 'negative')
-        return 
-    end
-
     if not WeeklyRaceManager:sharedInstance():canReceiveReward1() then 
         CommonTip:showTip(_text('weekly.race.tip.no.surpass.friend'), 'negative')
         return 
     end
-
-    if self._isReceivingReward1 == true then return end
-    self._isReceivingReward1 = true
-    self.state2.item1.btn:setEnabled(false)
 
     local function onSuccess(event)
         HomeScene:sharedInstance():checkDataChange()
@@ -252,26 +242,27 @@ function WeeklyRaceLevelInfoPanel:onReceiveReward1()
         self.state2.item1.btn:setEnabled(true)
         self:update()
     end
-    WeeklyRaceManager:sharedInstance():receiveReward1(onSuccess, onFail)
+
+    if self._isReceivingReward1 == true then return end
+    self._isReceivingReward1 = true
+    self.state2.item1.btn:setEnabled(false)
+
+    local function receiveReward()
+    	WeeklyRaceManager:sharedInstance():receiveReward1(onSuccess, onFail)
+    end
+    local function onLoginFail()
+    	self._isReceivingReward1 = false
+    	self.state2.item1.btn:setEnabled(true)
+    end
+    RequireNetworkAlert:callFuncWithLogged(receiveReward, onLoginFail)
 end
 
 
 function WeeklyRaceLevelInfoPanel:onReceiveReward2()
-
-    if not RequireNetworkAlert:popout() then
-        -- CommonTip:showTip(_text('weekly.race.tip.no.network'), 'negative')
-        return 
-    end
-
     if not WeeklyRaceManager:sharedInstance():canReceiveReward2() then 
         CommonTip:showTip(_text('weekly.race.tip.no.gem.reward'), 'negative')
         return 
     end
-
-
-    if self._isReceivingReward2 == true then return end
-    self._isReceivingReward2 = true
-    self.state2.item2.btn:setEnabled(false)
 
     local function onSuccess(event)       
         HomeScene:sharedInstance():checkDataChange()
@@ -317,7 +308,20 @@ function WeeklyRaceLevelInfoPanel:onReceiveReward2()
         self.state2.item2.btn:setEnabled(true)
         self:update()
     end
-    WeeklyRaceManager:sharedInstance():receiveReward2(onSuccess, onFail)
+
+    if self._isReceivingReward2 == true then return end
+    self._isReceivingReward2 = true
+    self.state2.item2.btn:setEnabled(false)
+
+    local function receiveReward()
+    	WeeklyRaceManager:sharedInstance():receiveReward2(onSuccess, onFail)
+    end
+
+    local function onLoginFail()
+    	self._isReceivingReward2 = false
+    	self.state2.item2.btn:setEnabled(true)
+    end
+    RequireNetworkAlert:callFuncWithLogged(receiveReward, onLoginFail)   
 end
 
 

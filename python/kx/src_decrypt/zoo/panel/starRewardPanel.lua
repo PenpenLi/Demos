@@ -310,10 +310,7 @@ function StarRewardPanel:onGetBtnTapped(event, ...)
 
 		self:popoutMoreStarPanel()
 	else
-		if RequireNetworkAlert:popout() then
-			print("RequireNetworkAlert:popout()")
-			self:getReward()
-		end
+		RequireNetworkAlert:callFuncWithLogged(getReward)
 	end
 
 end

@@ -15,7 +15,7 @@ StartLevelLogic = class()
 -- Delegate:onEnergyNotEnough()		精力不足的处理
 -- Delegate:playEnergyAnim(onAnimFinish, selectedItemsData) 播放精力消耗的动画
 -- Delegate:onWillEnterPlayScene()	进入GamePlayScene之前执行的逻辑
--- Delegate:onDidEnterPlayScene()	进入GamePlayScene之后执行的逻辑
+-- Delegate:onDidEnterPlayScene(gamePlayScene)	进入GamePlayScene之后执行的逻辑
 ---------
 -- notConsumeEnergy 是否消耗精力
 -----------------------------------------------
@@ -40,9 +40,23 @@ function StartLevelLogic:pocessRecall()
 			itemData.destXInWorldSpace = winSize.width/2 
 			itemData.destYInWorldSpace = winSize.height/2
 			itemData.isForRecall = true
-			table.insert(self.itemList,itemData)
+
+			if not self:checkRecallItemDuplicate(v) then
+				table.insert(self.itemList,itemData)
+			end
 		end
 	end
+end
+
+function StartLevelLogic:checkRecallItemDuplicate(itemId)
+	if self.itemList then 
+		for i,v in ipairs(self.itemList) do
+			if v.id == itemId then 
+				return true
+			end
+		end
+	end
+	return false
 end
 
 function StartLevelLogic:create(startGameDelegate, levelId, levelType, itemList, notConsumeEnergy, ...)
@@ -217,7 +231,11 @@ function StartLevelLogic:createGamePlayScene(fileList)
 	Director:sharedDirector():pushScene(gamePlayScene)
 
     if self.delegate.onDidEnterPlayScene then 
-    	self.delegate:onDidEnterPlayScene()
+    	self.delegate:onDidEnterPlayScene(gamePlayScene)
+    end
+    --clear share data 
+    if ShareManager then
+    	ShareManager:cleanData()
     end
 end
 

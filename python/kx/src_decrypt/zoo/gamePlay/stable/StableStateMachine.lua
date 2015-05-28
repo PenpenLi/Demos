@@ -32,6 +32,7 @@ require "zoo.gamePlay.stable.CheckNeedLoopState"
 require "zoo.gamePlay.stable.MagicTileResetState"
 require "zoo.gamePlay.stable.SandTransferState"
 require "zoo.gamePlay.stable.MaydayBossCastingState"
+require "zoo.gamePlay.stable.EndCycleStateEnter"
 
 StableStateMachine = class()
 
@@ -102,7 +103,7 @@ function StableStateMachine:initStates()
 	self.furballSplitStateInPropFirst = FurballSplitStateInPropFirst:create(self)
 
 	-- 气球
-	self.balloonCheckState = BalloonCheckState:create(self)
+	self.balloonCheckStateInLoop = BalloonCheckStateInLoop:create(self)
 	-- 传送带
 	self.transmissionState = TransmissionState:create(self)
 	-- 黑色毛球跳动
@@ -122,7 +123,7 @@ function StableStateMachine:initStates()
 	-- 褐色毛球分裂
 	self.furballSplitStateInSwapFirst = FurballSplitStateInSwapFirst:create(self)
 	-- 翻转地块
-	self.tileBlockerState = TileBlockerState:create(self)
+	self.tileBlockerStateInLoop = TileBlockerStateInLoop:create(self)
 	-- UFO作用更新
 	self.ufoUpdateState = UFOUpdateState:create(self)
 	-- 兔子生成逻辑
@@ -133,6 +134,8 @@ function StableStateMachine:initStates()
 	self.mimosaState = MimosaState:create(self)
 	-- PM2.5 在挖地关中产生云块
 	self.updatePM25State = UpdatePM25State:create(self)
+	-- 进入loop循环前的处理，主要对loop中的一些state进行重置数据操作
+	self.endCycleStateEnter = EndCycleStateEnter:create(self)
 end
 
 function StableStateMachine:update(dt)
@@ -195,7 +198,7 @@ function StableStateMachine:onEnter(isFromFallingMatch)
 			self:changeState(self.bonusAutoBombState)
 		else
 			if self.mainLogic.isInStep then
-				self:changeState(self.balloonCheckState)
+				self:changeState(self.transmissionState)
 			else
 				self:changeState(self.furballSplitStateInPropFirst)
 			end

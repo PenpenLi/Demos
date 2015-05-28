@@ -23,6 +23,7 @@ AcType = table.const {
   kViralSend = 87,
   kViralArrival = 88,
   kViralActivate = 89,
+  kFuuu = 100,
 }
 
 local subAcTypes = {AcType.kInstall, AcType.kDnu, AcType.kUp, AcType.kActive, AcType.kReg}
@@ -138,7 +139,6 @@ function DcUtil:newUser()
 		serial_number = serialNumber,
 		android_id  = androidId,
 		google_aid = googleAid,
-		signatured = _G.signatured,
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
 		})
@@ -160,7 +160,6 @@ function DcUtil:dailyUser()
 		serial_number = serialNumber,
 		android_id  = androidId,
 		google_aid = googleAid,
-		signatured = _G.signatured,
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
 	}
@@ -187,6 +186,18 @@ function DcUtil:logInGame()
 		energy = UserManager:getInstance().user:getEnergy(),
 		friend_num = #UserManager:getInstance().friendIds,
 		google_aid = googleAid,
+		item_id_10011 = UserManager:getInstance():getUserPropNumber(10011),
+		item_id_10004 = UserManager:getInstance():getUserPropNumber(10004),
+		item_id_10001 = UserManager:getInstance():getUserPropNumber(10001),
+		item_id_10010 = UserManager:getInstance():getUserPropNumber(10010),
+		item_id_10012 = UserManager:getInstance():getUserPropNumber(10012),
+		item_id_10013 = UserManager:getInstance():getUserPropNumber(10013),
+		item_id_10014 = UserManager:getInstance():getUserPropNumber(10014),
+		item_id_10002 = UserManager:getInstance():getUserPropNumber(10002),
+		item_id_10003 = UserManager:getInstance():getUserPropNumber(10003),
+		item_id_10005 = UserManager:getInstance():getUserPropNumber(10005),
+		tree_level = FruitTreePanelModel:sharedInstance():getTreeLevel(),
+		level = UserManager:getInstance().user:getTopLevelId(),
 		})
 end
 
@@ -432,12 +443,18 @@ function DcUtil:logStageEnd(currentStage, score, star, failReason)
 end
 
 --中途退出关卡
-function DcUtil:logStageQuit(currentStage)
+function DcUtil:logStageQuit(currentStage, isRestart)
 	send(AcType.kUserTrack, {
 		category = 'stage',
 		sub_category = 'stage_quit',
+		restart_level = isRestart,
 		current_stage = currentStage,
 		})
+end
+
+--新增记录用户主动退出
+function DcUtil:newLogUserStageQuit(dcData)
+	send(AcType.kFuuu, dcData)
 end
 
 --微信发送邀请码
@@ -889,4 +906,114 @@ function DcUtil:successEnterWechatBuyGoldItem(index)
 		category = "buy",
 		sub_category = "push_button_success_"..index,
 	})
+end
+
+function DcUtil:clickAlipayBuyGoldItem(index)
+	send(AcType.kUserTrack, {
+		category = "pay",
+		sub_category = "push_button_money_"..tostring(index)
+	})
+end
+
+function DcUtil:successfulBuyCashByAlipay(index)
+	send(AcType.kUserTrack, {
+		category = "pay",
+		sub_category = "push_button_success_"..tostring(index)
+	})
+end
+
+--点击广告icon
+function DcUtil:clickAdVideoIcon()
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'push_ad_icon'
+		})
+end
+
+-- 点击"观看广告"按钮
+function DcUtil:playAdVideoIcon()
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'push_ad_watch'
+		})
+end
+
+-- 点击"领取奖励"按钮
+function DcUtil:getAdVideoReward()
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'push_ad_award'
+		})
+end
+
+function DcUtil:requestAdVideo( videoId )
+	-- body
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'request_ad',
+		video_id = videoId
+		})
+end
+
+function DcUtil:requestSuccessAdVideo( videoId )
+	-- body
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'request_ad_success',
+		video_id = videoId
+		})
+end
+
+function DcUtil:requestFailAdVideo( videoId )
+	-- body
+	send(AcType.kUserTrack,{
+		category = 'activity',
+		sub_category = 'request_ad_fail',
+		video_id = videoId
+		})
+end
+
+--推送召回的87号点在玩家退出时打不上 导致数据不准 所以typeId为11 12 13不打87号点
+function DcUtil:sendLocalNotify(typeId, timeStamp, numOfTimes)
+	if typeId == 11 or typeId == 12 or typeId == 13 then 
+		return
+	end
+	local userId = UserManager:getInstance().user.uid
+	if not userId then
+		userId = "12345" 
+	end
+	local finalId = userId.."-"..timeStamp.."-"..typeId
+	send(AcType.kViralSend, {
+		category = 'noti',
+		sub_category = 'noti_send_local',
+		type = "notification",
+		viral_id = finalId,
+		src = "local",
+		num_of_times = numOfTimes,
+		})
+end
+
+function DcUtil:payStart(payType,tradeId,goodsId,goodsType)
+	send(AcType.kUserTrack,{
+		category = 'pay',
+		sub_category = 'pay_start',
+		pay_type = payType,
+		trade_id = tradeId,
+		goods_id = goodsId,
+		goods_type = goodsType
+	})
+end
+
+function DcUtil:payEnd(payType,tradeId,goodsId,goodsType,result,errorCode)
+	send(AcType.kUserTrack,{
+		category = 'pay',
+		sub_category = 'pay_end',
+		pay_type = payType,
+		trade_id = tradeId,
+		goods_id = goodsId,
+		goods_type = goodsType,
+		result = result,
+		error_code = errorCode
+	})
+
 end

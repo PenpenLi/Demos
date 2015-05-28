@@ -121,7 +121,11 @@ function StartGamePanel:createLevelInfoPanel(levelId, levelType)
 end
 
 function StartGamePanel:isNeedHideRankList( levelId, levelType )
-	return false
+	if levelType == GameLevelType.kTaskForUnlockArea then 
+		return true
+	else
+		return false
+	end
 end
 
 function StartGamePanel:setOnClosePanelCallback(callback, ...)
@@ -156,6 +160,7 @@ function StartGamePanel:popout(animFinishCallback, ...)
 		if self.popoutAnimFinishCallback then
 			self.popoutAnimFinishCallback()
 		end
+		he_log_info("auto_test_tap_level")
 	end
 
 	self.exchangeAnim:popout(onPopoutAnimFinished)
@@ -288,19 +293,32 @@ function StartGamePanel:setReplayCallback(replayStartGameCallback)
 	self.replayStartGameCallback = replayStartGameCallback
 end
 
-local instance = nil
+--override
+function StartGamePanel:reBecomeTopPanel()
+	PanelWithRankList.reBecomeTopPanel(self)
+	print("StartGamePanel:reBecomeTopPanel Called !")
+
+	if self.tipPanelContainer then 
+		self:setRankListPanelTouchDisable()
+	else
+		self:setRankListPanelTouchEnable()
+	end
+end
+
+--local instance = nil
 function StartGamePanel:create(levelId, levelType, ...)
 	assert(type(levelId) == "number")
 	assert(type(levelType) == "number")
 	assert(#{...} == 0)
 
-	if instance and not instance.isDisposed then return instance end
+	--if instance and not instance.isDisposed then return instance end
 
 	local newStartGamePanel = StartGamePanel.new()
 
 	print("StartGamePanel:create", levelId, levelType)
 	newStartGamePanel:init(levelId, levelType)
 
-	instance = newStartGamePanel
-	return instance
+	--instance = newStartGamePanel
+	return newStartGamePanel
 end
+

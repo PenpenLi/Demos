@@ -10,20 +10,29 @@ NotRemindFlag = table.const {
 --@notRemind 写在本地的某个提示不再提示的标识 将字符串作为Key传入 不要轻易改动 来自NotRemindFlag其中之一 自行添加
 function CommonAlertUtil:showPrePkgAlertPanel(onButton1Click,notRemind,message,title,tip,onButton2Click,onTextInput,onCancel)
 	if _G.isPrePackage then 
-		local _onButton1Click = onButton1Click or function() end
-		local _onButton2Click = onButton2Click or function() end
-		local _onCancel = onCancel or function() end
-		local _onTextInput = onTextInput or function() end
+		local MainActivityHolder = luajava.bindClass('com.happyelements.android.MainActivityHolder')
+		local preferences = MainActivityHolder.ACTIVITY:getSharedPreferences("pre_package_info", 0)
+		local isAlwaysAllow = preferences:getBoolean(notRemind, false)
+		if not isAlwaysAllow then
+			local _onButton1Click = onButton1Click or function() end
+			local _onButton2Click = onButton2Click or function() end
+			local _onCancel = onCancel or function() end
+			local _onTextInput = onTextInput or function() end
 
-		local buttonCallfunc = luajava.createProxy("com.happyelements.hellolua.share.IDialogCallback", 
-			{onButton1Click=_onButton1Click,onButton2Click=_onButton2Click,onTextInput=_onTextInput,onCancel=_onCancel})
+			local buttonCallfunc = luajava.createProxy("com.happyelements.hellolua.share.IDialogCallback", 
+				{onButton1Click=_onButton1Click,onButton2Click=_onButton2Click,onTextInput=_onTextInput,onCancel=_onCancel})
 
-		local _message = message or ""
-		local _title = title or "系统提示"
-		local _tip = tip or "不再提示"
-		local _notRemind = notRemind or ""
-		local builder = luajava.bindClass("com.happyelements.hellolua.share.CommonAlertDialog")
-		builder:buildNetStatusDialog(_title, _message, _tip, _notRemind, "确定", "取消", buttonCallfunc)
+			local _message = message or ""
+			local _title = title or "系统提示"
+			local _tip = tip or "不再提示"
+			local _notRemind = notRemind or ""
+			local builder = luajava.bindClass("com.happyelements.hellolua.share.CommonAlertDialog")
+			builder:buildNetStatusDialog(_title, _message, _tip, _notRemind, "确定", "取消", buttonCallfunc)
+		else
+			if onButton1Click then 
+				onButton1Click()
+			end
+		end
 	else
 		if onButton1Click then 
 			onButton1Click()

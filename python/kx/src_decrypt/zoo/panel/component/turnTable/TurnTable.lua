@@ -46,9 +46,12 @@ function TurnTable:onEnterHandler(event)
 end
 
 function TurnTable:setEnabled(enabled)
+	if enabled == self.ui:isTouchEnabled() then return end
 	self.ui:setTouchEnabled(enabled, 0, true)
 	if enabled then
 		self.ui:addEventListener(DisplayEvents.kTouchBegin, function(evt) self:onTouchBegin(evt) end)
+	else
+		self.ui:removeEventListenerByName(DisplayEvents.kTouchBegin)
 	end
 	local scene = Director:sharedDirector():getRunningScene()
 	if not scene then return end
@@ -141,6 +144,7 @@ function TurnTable:stayRotate(sumSpeed)
 end
 
 function TurnTable:notCalcStopping(sumSpeed)
+	self.ui:unscheduleUpdate()
 	self.ui:runAction(CCEaseSineOut:create(CCRotateBy:create(math.abs(sumSpeed) / 5, sumSpeed * 50)))
 end
 

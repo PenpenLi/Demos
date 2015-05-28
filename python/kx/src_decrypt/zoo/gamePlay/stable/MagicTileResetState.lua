@@ -87,7 +87,7 @@ function MagicTileResetState:handleMagicTile()
 end
 
 function MagicTileResetState:handleComplete()
-    self.nextState = self.context.magicLampReinitState
+    self.nextState = self.context.needRefreshState
     if self.hasItemToHandle then
         self.context:onEnter()
     end

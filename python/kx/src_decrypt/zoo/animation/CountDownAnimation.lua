@@ -199,25 +199,12 @@ function CountDownAnimation:createActivityAnimation(scene,onCloseButtonTap)
 	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
 	local origin = Director:sharedDirector():getVisibleOrigin()
 
-	local layer = LayerColor:create()
-	layer:changeWidthAndHeight(winSize.width, winSize.height)
-	layer:setColor(ccc3(0, 0, 0))
-	layer:setPosition(ccp(origin.x, origin.y))
-	layer:setTouchEnabled(true, 0, true)
-	layer:setOpacity(255*0.35)
-	layer.hitTestPoint = function(self, worldPosition, useGroupTest)
-		return true
-	end
-	if scene then 
-		scene:addChild(layer)
-	end
-
 	local loadingAnimation = CountDownAnimation:createLoadingAnimation(
 		Localization:getInstance():getText("activity.center.loading.tip") --"精彩内容加载中，请稍候~"
 	)
 	local size = loadingAnimation:getGroupBounds().size
-	loadingAnimation:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
-	layer:addChild(loadingAnimation)
+	-- loadingAnimation:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
+	-- layer:addChild(loadingAnimation)
 
 	if onCloseButtonTap then
 		local closeButtonSprite = Sprite:createWithSpriteFrameName("commonloadingclose instance 10000")
@@ -232,8 +219,18 @@ function CountDownAnimation:createActivityAnimation(scene,onCloseButtonTap)
 	end
 
 	if not scene then 
-		layer:dispose()
+		loadingAnimation:dispose()
+		-- layer:dispose()
+	else
+		loadingAnimation:setPosition(ccp(visibleSize.width/2,-visibleSize.height/2))
+		PopoutManager:sharedInstance():add(loadingAnimation,true,false)
+
+		local oldRemoveFromParentAndCleanup = loadingAnimation.removeFromParentAndCleanup
+		loadingAnimation.removeFromParentAndCleanup = function(s,cleanup)
+			loadingAnimation.removeFromParentAndCleanup = oldRemoveFromParentAndCleanup
+			PopoutManager:sharedInstance():remove(loadingAnimation,cleanup)
+		end
 	end
 
-	return layer
+	return loadingAnimation
 end

@@ -37,7 +37,6 @@ function MatchCoverLogic:canBeEffectByMatchAt(mainLogic, r, c, sId)
 	if (board.iceLevel > 0) then
 		return true;
 	end
-
 	return false;
 end
 
@@ -186,25 +185,25 @@ function MatchCoverLogic:trySignAtByAround(mainLogic, r, c)
 	local item = nil
 	if r - 1 > 0 then 
 		item = mainLogic.gameItemMap[r - 1][c]
-		if not item:hasLock() then
+		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r-1, c) then
 			addset[math.abs(mainLogic.swapHelpMap[r-1][c]) + 1] = true 
 		end
 	end
 	if r + 1 <= #mainLogic.swapHelpMap then 
 		item = mainLogic.gameItemMap[r + 1][c]
-		if not item:hasLock() then
+		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r+1, c) then
 			addset[math.abs(mainLogic.swapHelpMap[r+1][c]) + 1] = true 
 		end
 	end
 	if c - 1 > 0 then 
 		item = mainLogic.gameItemMap[r][c - 1]
-		if not item:hasLock() then
+		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r, c-1) then
 			addset[math.abs(mainLogic.swapHelpMap[r][c-1]) + 1] = true 
 		end
 	end
 	if c + 1 <= #mainLogic.swapHelpMap[r] then 
 		item = mainLogic.gameItemMap[r][c + 1]
-		if not item:hasLock() then
+		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r, c+1) then
 			addset[math.abs(mainLogic.swapHelpMap[r][c+1]) + 1] = true 
 		end
 	end
@@ -269,6 +268,70 @@ function MatchCoverLogic:doEffectSandAtPos(mainLogic, r, c)
 	end
 	return false
 end
+
+function MatchCoverLogic:doEffectChainsAtPosWithDirs(mainLogic, r, c, breakDirs)
+	if not mainLogic:isPosValid(r, c) or #breakDirs < 1 then return false end
+
+	local board = mainLogic.boardmap[r][c]
+	local breakLevels = board:decChainsInDirections(breakDirs)
+	local notEmpty = false
+	local hasChainBreaked = false
+	for dir, level in pairs(breakLevels) do
+		if level > 0 then 
+			notEmpty = true
+		end
+		if level == 1 then
+			hasChainBreaked = true
+		end
+	end
+	if not notEmpty then return false end
+
+	mainLogic.boardView.baseMap[r][c]:playChainBreakAnim(breakLevels, nil)
+
+	if hasChainBreaked then
+		mainLogic:setChainBreaked()
+		mainLogic.gameMode:afterChainBreaked(r, c)
+	end
+
+	board.isNeedUpdate = true
+	return true
+end
+
+-- 消除被match的格子及其四周响应方向上的冰柱，同一个matchData的不可相互消除
+function MatchCoverLogic:doEffectChainsAtPos(mainLogic, r, c)
+	if not mainLogic:isPosValid(r, c) then return false end
+	local board = mainLogic.boardmap[r][c]
+	local item = mainLogic.gameItemMap[r][c]
+
+	local ret = false
+	local breakDirs = {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kLeft, ChainDirConfig.kRight}
+	if self:doEffectChainsAtPosWithDirs(mainLogic, r, c, breakDirs) then
+		ret = true
+	end
+
+	if r - 1 > 0 and not mainLogic:isTheSameMatchData(r, c, r-1, c) then 
+		if self:doEffectChainsAtPosWithDirs(mainLogic, r-1, c, {ChainDirConfig.kDown}) then
+			ret = true
+		end
+	end
+	if r + 1 <= #mainLogic.swapHelpMap and not mainLogic:isTheSameMatchData(r, c, r+1, c) then 
+		if self:doEffectChainsAtPosWithDirs(mainLogic, r+1, c, {ChainDirConfig.kUp}) then
+			ret = true
+		end
+	end
+	if c - 1 > 0 and not mainLogic:isTheSameMatchData(r, c, r, c-1) then 
+		if self:doEffectChainsAtPosWithDirs(mainLogic, r, c-1, {ChainDirConfig.kRight}) then
+			ret = true
+		end
+	end
+	if c + 1 <= #mainLogic.swapHelpMap[r] and not mainLogic:isTheSameMatchData(r, c, r, c+1) then 
+		if self:doEffectChainsAtPosWithDirs(mainLogic, r, c+1, {ChainDirConfig.kLeft}) then
+			ret = true
+		end
+	end
+	return ret
+end
+
 --------响应match的变化-------
 function MatchCoverLogic:doEffectByMatchHelpMap(mainLogic)
 	----1.检测match对棋盘的变化
@@ -342,6 +405,8 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
 	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
 		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	end
+
+	self:doEffectChainsAtPos(mainLogic, r, c)
 end
 
 
@@ -578,5 +643,26 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, true)
 	elseif  item.honeyBottleLevel > 0 and item.honeyBottleLevel <= 3 then
 		GameExtandPlayLogic:increaseHoneyBottle(mainLogic, r, c, t_count, scoreScale)
+	elseif item.ItemType == GameItemType.kMagicStone and item:canMagicStoneBeActive() then
+		local stoneActiveAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Magic_Stone_Active,
+			IntCoord:create(r, c),
+			nil,
+			1)
+
+		stoneActiveAction.magicStoneLevel = item.magicStoneLevel
+
+		if item.magicStoneLevel < TileMagicStoneConst.kMaxLevel then -- levelUp
+			item.magicStoneLevel = item.magicStoneLevel + 1
+			if item.magicStoneLevel == TileMagicStoneConst.kMaxLevel then -- 收集目标
+				mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kMagicStone, 1)
+			end
+		else
+			item.magicStoneActiveTimes = item.magicStoneActiveTimes + 1
+			item.magicStoneLocked = true
+			stoneActiveAction.targetPos = GameExtandPlayLogic:calcMagicStoneEffectPositions(mainLogic, r, c)
+		end
+		mainLogic:addDestroyAction(stoneActiveAction)
 	end
 end

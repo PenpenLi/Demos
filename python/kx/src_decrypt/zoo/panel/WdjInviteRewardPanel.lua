@@ -134,7 +134,8 @@ function WdjInviteRewardPanel:onSucess()
         local position = self.items[i]:getChildByName("icon"):getPosition()
         position = self.items[i]:convertToWorldSpace(ccp(position.x, position.y))
         sprite:setPosition(ccp(position.x, position.y))
-        home:addChild(sprite)
+
+        --home:addChild(sprite)  --创建的时候已经添加过了
 
         --- decreasing number animation
         local label = self.items[i].label

@@ -39,6 +39,8 @@ function FreeFCashPanel:showWithOwnerCheck(ownerRef)
 end
 
 function FreeFCashPanel:hideWithOwnerCheck(ownerRef)
+    if not shouldShow() then return end
+    
     print('FreeFCashPanel:hideWithOwnerCheck')
     local instance = getPanelInstance()
 

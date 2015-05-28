@@ -98,11 +98,9 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
             elseif k == Payments.WECHAT then 
                 btn:setContent(self.builder:buildGroup("choosePayment/wechat"))
             elseif k == Payments.ALIPAY then 
-                local content = self.builder:buildGroup("choosePayment/alipay")
-                 -- hue, saturation, brightness, contrast
-                content:getChildByName("bg"):adjustColor(159/256,-23/256, 100/256, 0)
-                content:getChildByName("bg"):applyAdjustColorShader()
-                btn:setContent(content)
+                btn:setContent(self.builder:buildGroup("choosePayment/alipay"))
+            elseif k == Payments.DUOKU then 
+                btn:setContent(self.builder:buildGroup("choosePayment/duoku"))
 			else
 				local res = self.builder:buildGroup('OtherPaymentButton')
 				-- if k == Payments.QQ then
@@ -127,11 +125,11 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
     local phSize = placeholder:getGroupBounds().size
 
     self.container = GridLayout:create()
-    self.container:setColumn(2)
+    self.container:setColumn(3)
     self.container:setWidth(phSize.width)
     self.container:setItemSize(CCSizeMake(0, 185))
     self.container:setRowMargin(20)
-    self.container:setPositionXY(phPos.x, phPos.y)
+    self.container:setPositionXY(phPos.x + 10, phPos.y)
     placeholder:getParent():addChild(self.container)
 
 

@@ -11,16 +11,10 @@ function Processor:start(data)
     end
 
     HeGameDefault:setUserId(tostring(userId))
-    DcUtil:dailyUser()
+    -- DcUtil:dailyUser()
 
     local sessionKey = _G.kDeviceID
     local platform = data.p
-
-    --TODO check the process
-    if not data or not userId or userId == 0 then
-        print("error, invalid user data")
-        return self:login_newuser()
-    end
 
     local function onLoginFinish( evt )
         evt.target:removeAllEventListeners()

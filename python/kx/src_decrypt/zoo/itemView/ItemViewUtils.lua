@@ -129,8 +129,13 @@ function ItemViewUtils:buildLocker(cageLevel)
 	local str_temp = string.format("Lock%d.png",cageLevel)
 	return Sprite:createWithSpriteFrameName(str_temp);
 end
-function ItemViewUtils:buildBeanpod()
-	local sprite = Sprite:createWithSpriteFrameName("beanpod.png");
+function ItemViewUtils:buildBeanpod(itemShowType)
+	local sprite
+	if itemShowType and itemShowType == IngredientShowType.kAcorn then 
+		sprite = Sprite:createWithSpriteFrameName("acorn.png")
+	else
+		sprite = Sprite:createWithSpriteFrameName("beanpod.png");
+	end
 	local star1 = Sprite:createWithSpriteFrameName("beanpod_star.png")
 	local star2 = Sprite:createWithSpriteFrameName("beanpod_star.png")
 

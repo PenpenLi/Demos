@@ -113,8 +113,8 @@ function MarkPrisePanel:_init(index)
 
 	if __ANDROID then
 		self.buyBtn:setString(Localization:getInstance():getText("mark.prise.panel.buy.btn"))
-		self.buyBtn:setOriginNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..tostring(originPrice))
-		self.buyBtn:setDiscountNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..tostring(price))
+		self.buyBtn:setOriginNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), originPrice))
+		self.buyBtn:setDiscountNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), price))
 	else
 		self.buyBtn:setString(Localization:getInstance():getText("mark.prise.panel.buy.btn"))
 		self.buyBtn:setNumber(tostring(price))

@@ -96,6 +96,8 @@ function ResourceManager:init(...)
 	-- Add Energy Panel
 	addGlobalDynamicFontMap("Algerian", "fnt/5_more_cd.fnt")
 
+	addGlobalDynamicFontMap("Aparajita", "fnt/discount.fnt")
+
 	-- Used In HomeScene Energy Button
 	filename = "fnt/energy_cd.fnt"
 	if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/energy_cd.fnt" end
@@ -130,6 +132,9 @@ function ResourceManager:init(...)
 	-- White item number font
 	filename = "fnt/event_default_digits.fnt"
 	addGlobalDynamicFontMap("Segoe UI Symbol", filename)
+
+	filename = "fnt/update.fnt"
+	addGlobalDynamicFontMap("Myriad Pro", filename)
 end
 
 function ResourceManager:sharedInstance(...)

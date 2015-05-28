@@ -141,12 +141,14 @@ end
 
 local function onTouchOutSideSoftkeyboard(event)
 	print("onTouchOutSideSoftkeyboard")
-	local pos = event.target:getPositionY()
-	local parent = event.target:getParent()
-	local wPos = parent:convertToWorldSpace(ccp(0, pos))
-	if event.globalPosition.y > wPos.y or event.globalPosition.y < wPos.y - event.target.height then
-		if event.target.config.outsideCallback then
-			event.target.config.outsideCallback(event.target.content, string.len(event.target.content), event.globalPosition)
+	if event.target and not event.target.isDisposed then
+		local pos = event.target:getPositionY()
+		local parent = event.target:getParent()
+		local wPos = parent:convertToWorldSpace(ccp(0, pos))
+		if event.globalPosition.y > wPos.y or event.globalPosition.y < wPos.y - event.target.height then
+			if event.target.config.outsideCallback then
+				event.target.config.outsideCallback(event.target.content, string.len(event.target.content), event.globalPosition)
+			end
 		end
 	end
 end

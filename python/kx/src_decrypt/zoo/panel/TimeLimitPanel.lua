@@ -428,9 +428,9 @@ function TimeLimitPanel:buildBuyButton( ... )
 
 	button:setColorMode(kGroupButtonColorMode.blue)
 	button:setString(Localization:getInstance():getText("timeLimit.panel.buy.text"))
-	button:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark") .. TimeLimitData:getInstance():getOutgameBuyDiscountValue())
+	button:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getOutgameBuyDiscountValue()))
 
-	numberLabel:setText(Localization:getInstance():getText("buy.gold.panel.money.mark") .. TimeLimitData:getInstance():getOutgameBuyActualValue())
+	numberLabel:setText(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getOutgameBuyActualValue()))
 	InterfaceBuilder:centerInterfaceInbox( numberLabel, numberRect )
 
 	return button

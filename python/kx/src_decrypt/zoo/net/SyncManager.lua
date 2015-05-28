@@ -19,12 +19,14 @@ function SyncManager.getInstance()
 end
 
 function SyncManager:sync(onCurrentSyncFinish, onCurrentSyncError, showAnim)
-	if RequireNetworkAlert:popout(onUserLogin, kRequireNetworkAlertAnimation.kSync) then
+	local function onUserLogin()
 		self:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
-	else
+	end
+	local function onUserNotLogin()
 		if onCurrentSyncError then onCurrentSyncError() end
 		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
 	end
+	RequireNetworkAlert:callFuncWithLogged(onUserLogin, onUserNotLogin, kRequireNetworkAlertAnimation.kSync)
 end
 
 local function onCachedHttpDataResponse(endpoint, resp, err)
@@ -66,6 +68,8 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 		UserService:getInstance():setSyncSerial(syncSerial)
 		table.insert(list, v)
 	end
+	if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
+	else print("Did not write user data to the device.") end
 	local ingameList
 	if __WP8 then ingameList = UserService.getInstance():getCachedIngameHttpData() end
 	if list and #list > 0 or ingameList and #ingameList > 0 then
@@ -139,8 +143,6 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 		ConnectionManager:sendRequest( "syncEnd", {}, onSyncCallback )
 		ConnectionManager:flush()
 		ConnectionManager:syncBlock()
-		if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-		else print("Did not write user data to the device.") end
 	else 
 		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished)) 
 		if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
@@ -168,6 +170,8 @@ function SyncManager:flushCachedHttp()
 		UserService:getInstance():setSyncSerial(syncSerial)
 		table.insert(list, v)
 	end
+	if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
+	else print("Did not write user data to the device.") end
 	local ingameList
 	if __WP8 then ingameList = UserService.getInstance():getCachedIngameHttpData() end
 	if list and #list > 0 or ingameList and #ingameList > 0 then
@@ -221,8 +225,6 @@ function SyncManager:flushCachedHttp()
 			end
 			ConnectionManager:sendRequest( element.endpoint, element.body, syncCallback )
 		end
-		if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-		else print("Did not write user data to the device.") end
 	end
 end
 

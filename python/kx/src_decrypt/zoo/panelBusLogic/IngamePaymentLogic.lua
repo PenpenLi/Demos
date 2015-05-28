@@ -8,6 +8,8 @@ IngamePaymentDecisionType = table.const {
 	kPayFailed = 3,
 }
 
+
+
 IngamePaymentLogic = class()
 
 function IngamePaymentLogic:create(goodsId, goodsType)
@@ -43,16 +45,17 @@ end
 function IngamePaymentLogic:buildPaymentCallback(successCallback, failCallback, cancelCallback, showLoadingAnim)
 	local paymentCallback = {}
 	paymentCallback.onSuccess = function(para)
-		print("onPurchaseCallback onSuccess", para)
 		local function onSuccess()
-			print("IngameHttp onSuccess, goodsType="..tostring(self.goodsType))
 			UserManager:getInstance():getUserExtendRef().payUser = true
 			UserService:getInstance():getUserExtendRef().payUser = true
 			UserManager:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
 			UserService:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
 			self:deliverItems()
-			if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-			else print("Did not write user data to the device.") end
+			if NetworkConfig.writeLocalDataStorage then 
+				Localhost:getInstance():flushCurrentUserData()
+			else 
+				print("RRR Did not write user data to the device.") 
+			end
 			SyncManager:getInstance():sync(nil, nil, false)
 			if successCallback then successCallback() end
 			-- Q点不提示
@@ -77,7 +80,6 @@ function IngamePaymentLogic:buildPaymentCallback(successCallback, failCallback, 
 			end
 
 			local function payCheckFailed(errCode,errMsg)
-				print("payCheckFailed===================================", errCode, errMsg)
 				if failCallback then failCallback(errMsg) end
 			end
 			self:checkOnlinePay(para.tradeId, payCheckSuccess, payCheckFailed)
@@ -85,10 +87,11 @@ function IngamePaymentLogic:buildPaymentCallback(successCallback, failCallback, 
 			local http = IngameHttp.new(showLoadingAnim)
 			http:ad(Events.kComplete, onSuccess)
 			http:ad(Events.kError, onFail)
-			print("onPurchaseCallback ingame.", para.orderId, para.channelId)
-			local detail = para.detail
-			if detail and type(detail) == "table" then
-				detail = table.serialize(detail)
+			if para.channelId ~= PlatformNameEnum.kVivo then
+				local detail = para.detail
+					if detail and type(detail) == "table" then
+					detail = table.serialize(detail)
+				end
 			end
 			http:load(self.goodsId, para.orderId, para.channelId, self.goodsType, detail, para.tradeId)
 
@@ -98,11 +101,9 @@ function IngamePaymentLogic:buildPaymentCallback(successCallback, failCallback, 
 		end
 	end
 	paymentCallback.onError = function(errCode, errMsg)
-		print("onError", errCode, errMsg)
 		if failCallback then failCallback(errMsg) end
 	end
 	paymentCallback.onCancel = function(...)
-		print("onCancel")
 		if cancelCallback then cancelCallback(...) end
 	end
 	return paymentCallback
@@ -117,6 +118,7 @@ function IngamePaymentLogic:buy(successCallback, failCallback, cancelCallback, s
 	self.paymentCallback = self:buildPaymentCallback(successCallback, failCallback, cancelCallback, showLoadingAnim)
 
 	local decision, paymentType = self:getPaymentDecision()
+
 	self:handlePaymentDecision(self.goodsMeta, self.amount, self.paymentCallback, decision, paymentType)
 end
 
@@ -126,23 +128,26 @@ end
 --	arg2 : paymentType when arg1 is IngamePaymentDecisionType.kPayWithType
 ------------------------------------------------
 function IngamePaymentLogic:getPaymentDecision()
+
 	if PlatformConfig:getCurrentPayType()==PlatformPayType.kWechat 
 		or PlatformConfig:getCurrentPayType()==PlatformPayType.kAlipay then 
 		return self:getThirdPartPaymentDecision()
 	else
 		local thirdPartPayment = AndroidPayment.getInstance():getThirdPartPayment()
-		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY then 
+		if thirdPartPayment == PlatformPaymentThirdPartyEnum.kWO3PAY then
 			-- 如果是联通三网集成方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
 			local operator = AndroidPayment.getInstance():getOperator()
 			if operator == TelecomOperators.CHINA_MOBILE or 
 			   operator == TelecomOperators.CHINA_UNICOM or
-			   operator == TelecomOperators.CHINA_TELECOM then 
+			   operator == TelecomOperators.CHINA_TELECOM then
 				return self:getThirdPartPaymentDecision()
 			else
 				return IngamePaymentDecisionType.kChoosePayment
 			end
 		elseif thirdPartPayment == PlatformPaymentThirdPartyEnum.kMI then
-			-- 如果是联通三网集成/米币支付方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
+			-- 如果是米币支付方式，直接发起支付，由于把三网集成归类为三方支付，只能可耻地这么做了
+			return self:getThirdPartPaymentDecision()
+		elseif thirdPartPayment == PlatformPaymentThirdPartyEnum.kVIVO then
 			return self:getThirdPartPaymentDecision()
 		else
 			if self:isThirdPartPaymentOnly(self.goodsMeta) then
@@ -151,15 +156,16 @@ function IngamePaymentLogic:getPaymentDecision()
 			else
 				local isSmsPaymentSupported = AndroidPayment.getInstance():isSmsPaymentSupported()
 				if isSmsPaymentSupported then 
-					if PlatformConfig:isBaiduPlatform() then 
-						if AndroidPayment:getOperator() == TelecomOperators.CHINA_MOBILE then
-							return self:getSMSPaymentDecision()
-						else
-							return self:getThirdPartPaymentDecision()
-						end
-					else 
+					-- if PlatformConfig:isBaiduPlatform() then 
+					-- 	-- if AndroidPayment.getInstance():getOperator() == TelecomOperators.CHINA_MOBILE then
+					-- 	-- 	return self:getSMSPaymentDecision()
+					-- 	-- else
+					-- 	-- 	return self:getThirdPartPaymentDecision()
+					-- 	-- end
+					-- 	return self:getThirdPartPaymentDecision()
+					-- else 
 						return self:getSMSPaymentDecision()
-					end
+					-- end
 				else -- 如果不支持任何短贷支付方式
 					return IngamePaymentDecisionType.kChoosePayment
 				end
@@ -314,25 +320,27 @@ end
 
 local paymentProxy
 function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta, amount, callback)
-    print("IngamePaymentLogic:buyWithPaymentType " .. paymentType)
+	print("buyWithPaymentType:" .. paymentType)
 	self.paymentType = paymentType
-	amount = amount or 1
 
+	amount = amount or 1
 	if not paymentProxy then
 		paymentProxy = luajava.bindClass("com.happyelements.hellolua.aps.proxy.APSPaymentProxy"):getInstance()
 	end
 	paymentProxy:setPaymentType(paymentType)
 	local paymentDelegate = paymentProxy:getPaymentDelegate()
 	if not paymentDelegate then
-		callback.onError(0, "PaymentType not registered!")
+		callback.onError(0, "RRR  PaymentType not registered!")
 		return
 	end
+	local tradeId = paymentDelegate:generateOrderId()
+	DcUtil:payStart(paymentType,tradeId,self.goodsId,goodsType)
 
 	local onButton1Click = function()
-		local tradeId = paymentDelegate:generateOrderId()
-		print("buyWithPaymentType,tradeId=", tradeId)
 		local function buySuccess(result)
 			if callback then callback.onSuccess(luaJavaConvert.map2Table(result)) end
+
+			DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,0)
 		end
 		local function buyError(errCode, errMsg)
 			if paymentType == Payments.WDJ and errCode == 1 then
@@ -356,22 +364,26 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 			else
 				if callback then callback.onError(errCode, errMsg) end
 			end
+
+			DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,errCode)
 		end
 		local function buyCancel(isExceedLimit)
 			if callback then callback.onCancel(isExceedLimit) end
+
+			DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,2)
 		end
 		local callbackProxy = luajava.createProxy("com.happyelements.android.InvokeCallback", {
 	        onSuccess = buySuccess,
 	        onError = buyError,
 	        onCancel = buyCancel
 	    })
-		
+
 		if PaymentLimitLogic:isNeedLimit(paymentType) then 
 			local supportedPayments = {}
-			if MaintenanceManager:getInstance():isEnabled("GamePaymentAli") then 
+			if PlatformConfig:isMarketAliPaySupport() then 
 				supportedPayments[Payments.ALIPAY] = true
 			end
-			if MaintenanceManager:getInstance():isEnabled("GamePaymentWechat") then 
+			if PlatformConfig:isMarketWechatPaySupport() then 
 				supportedPayments[Payments.WECHAT] = true
 			end
 			local thirdPartPayment = AndroidPayment.getInstance():getNormalThirdPartPayment()
@@ -410,17 +422,25 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 			local function onFinish(data)
 				if not data then
 					callback.onError(0, "wechat payment network error")
+
+					DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,0)
 				elseif type(data)~="table" then 
 					if data==-6 then					
 						CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
 						callback.onCancel()
 						print("wechat payment network error")
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,2)
 					else
 						callback.onError(1, "wechat payment network error")
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,1)
 					end
 				else
 					if data.errCode then
 						callback.onError(data.errCode, data.errMsg)
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,data.errCode)
 					else				
 						paymentDelegate:WXbuy(tradeId, data.partnerId, data.prepayId,
 											  data.nonceStr, data.timeStamp, data.signStr, 
@@ -433,24 +453,33 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 			local function onFinish(data)
 				if not data then
 					callback.onError(0, "ali payment network error")
+
+					DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,0)
 				elseif type(data)~="table" then 
 					if data==-6 then					
 						CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
 						callback.onCancel()
 						print("ali payment network error")
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,2)
 					else
 						callback.onError(1, "ali payment network error")
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,1)
 					end
 				else
 					if data.errCode then
 						callback.onError(data.errCode, data.errMsg)
+
+						DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,1,data.errCode)
 					else				
 						paymentDelegate:ALIbuy(tradeId, data.signStr, callbackProxy)
 					end 
 				end
 			end
 			self:doAliOrder(tradeId, goodsMeta.id, goodsType, amount, goodsMeta.props, goodsMeta.price, onFinish)
-		else
+		elseif paymentType==Payments.VIVO then
+
 			local params = self:buildPaymentParams(paymentType, goodsType, goodsMeta, amount)
 			if AndroidPayment.getInstance():isNeedPreOrder(paymentType) then
 				local function onFinish() 
@@ -460,6 +489,39 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 			else
 				paymentDelegate:buy(tradeId, params, callbackProxy) 
 			end
+		else
+			local sendPaymentRequest = function()
+				local params = self:buildPaymentParams(paymentType, goodsType, goodsMeta, amount)
+				if AndroidPayment.getInstance():isNeedPreOrder(paymentType) then
+					local function onFinish() 
+						paymentDelegate:buy(tradeId, params, callbackProxy) 
+					end
+					self:doOrder(tradeId, goodsMeta.id, goodsType, amount, onFinish)
+				else
+					paymentDelegate:buy(tradeId, params, callbackProxy) 
+				end
+			end
+
+			local canelPayment = function()
+				callback.onCancel()
+
+				DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,2)
+			end
+
+			-- local operator = AndroidPayment.getInstance():getOperator()
+			-- if operator == TelecomOperators.CHINA_MOBILE then
+			if paymentType == Payments.CHINA_MOBILE  or paymentType == Payments.DUOKU then
+				local isSkipConfirm = MaintenanceManager:getInstance():isEnabled("SecPayPanel")
+				if not isSkipConfirm then
+					local p = require("zoo.panel.BuyPropsConfirmPanel"):create(self.goodsId, goodsType, goodsMeta, sendPaymentRequest, canelPayment, self._ignoreSecondConfirm)
+					p:popout()
+				else
+					sendPaymentRequest()
+				end
+			else
+				sendPaymentRequest()
+			end
+			
 		end
 	end
 
@@ -467,6 +529,8 @@ function IngamePaymentLogic:buyWithPaymentType(paymentType, goodsType, goodsMeta
 		if callback and callback.onCancel then 
 			callback.onCancel() 
 		end
+
+		DcUtil:payEnd(paymentType,tradeId,self.goodsId,goodsType,2)
 	end
 
 	if PrepackageUtil:checkIsSMSPayment(paymentType) then
@@ -676,4 +740,8 @@ function IngamePaymentLogic:itemNotToBeAdded(itemId)
 	print("itemType = ", itemType)
 	if itemType == 1 then return false end
 	return true
+end
+
+function IngamePaymentLogic:ignoreSecondConfirm(value)
+	self._ignoreSecondConfirm = value
 end

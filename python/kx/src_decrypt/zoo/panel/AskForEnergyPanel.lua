@@ -193,14 +193,26 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	local pos = self.sentIcon:getPosition()
 	askItemIcon:setPosition(ccp(pos.x, pos.y))
 	self.ui:addChild(askItemIcon)
-	self.sentIcon:removeFromParentAndCleanup(true)
+	-- self.sentIcon:removeFromParentAndCleanup(true)
+	self.sentIcon:setVisible(false)
 	self.sentIcon = askItemIcon
 	
 	self.btnAdd:setString(Localization:getInstance():getText("message.center.panel.ask.energy.btn"))
 	self.ui:getChildByName("avatar"):removeFromParentAndCleanup(true)
+	-- self.ui:getChildByName("avatar"):setVisible(false)
 	self.selectText:setString(Localization:getInstance():getText("message.center.panel.ask.energy.desc"))
 	self.commentText:setString(Localization:getInstance():getText("message.center.panel.ask.energy.comment"))
 	self.sentText:setString(Localization:getInstance():getText("message.center.panel.ask.energy.count"))
+
+	self.all_select_txt = self.ui:getChildByName('all_select_txt')
+	self.select_mark = self.ui:getChildByName('select_mark')
+	self.select_mark:setVisible(false)
+	self.allSelected = false
+	self.select_all_btn = self.ui:getChildByName('select_all_btn')
+	self.select_all_btn:getChildByName('hit_area'):setVisible(false)
+	self.select_all_btn:setTouchEnabled(true)
+	self.select_all_btn:setVisible(true)
+	self.ui:getChildByName('all_select_txt'):setString(Localization:getInstance():getText('message.center.panel.selectall'))
 
 	local tab = UserManager:getInstance():getWantIds()
 	local count = #tab
@@ -211,7 +223,8 @@ function AskForEnergyPanel:init(onConfirmCallback)
 		local pos = self.otherBtnPos:getPosition()
 		self.btnAdd:setPosition(ccp(pos.x, pos.y))
 	end
-	self.otherBtnPos:removeFromParentAndCleanup(true)
+	-- self.otherBtnPos:removeFromParentAndCleanup(true)
+	self.otherBtnPos:setVisible(false)
 
 	-- 替换标题
 	local charWidth = 65
@@ -226,7 +239,8 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	self.newCaptain:setPosition(ccp(position.x, position.y))
 	self:addChild(self.newCaptain)
 	self.newCaptain:setToParentCenterHorizontal()
-	self.captain:removeFromParentAndCleanup(true)
+	-- self.captain:removeFromParentAndCleanup(true)
+	self.captain:setVisible(false)
 
 	local listBg = self.ui:getChildByName("Layer 2")
 	local listSize = listBg:getContentSize()
@@ -234,6 +248,8 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	local listHeight = listSize.height - 30
 	--setContentOffset
 	local function onTileItemTouch(item)
+		-- 更新全选状态
+		self:onItemSelectChange()
 		if item and item.inviteIconMode then
 			if __IOS_FB then
 				if ReachabilityUtil.getInstance():isNetworkAvailable() then 
@@ -249,11 +265,17 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	end
 	local list = VerticalScrollable:create(630, listHeight, true, false)
 	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, listHeight, list)--Sprite:create("materials/logo.png")
+	self.content = content
+	self.numberOfFriends = numberOfFriends
 	if numberOfFriends > 0 then
 		list:setContent(content)
-		list:setPositionXY(listPos.x, listPos.y - 15)
+		list:setPositionXY(listPos.x + 18, listPos.y - 15)
 		self.ui:addChild(list)
+		self.select_all_btn:ad(DisplayEvents.kTouchTap, function () self:selectAll(content, not self.allSelected) end)
 	else
+		self.select_all_btn:setVisible(false)
+		self.all_select_txt:setVisible(false)
+		self.select_mark:setVisible(false)
 		list:dispose()
 		content:dispose()
 		listBg:removeFromParentAndCleanup(true)
@@ -310,7 +332,41 @@ function AskForEnergyPanel:init(onConfirmCallback)
 		end
 	end
 	self.btnAdd:ad(DisplayEvents.kTouchTap, onBtnAddTapped)
+
+	-- 初始化的全选不打点
+	self:selectAll(content, true, true)
+
 	return true
+end
+
+function AskForEnergyPanel:selectAll(content, enable, ignoreDc)
+	local items = content:getItems()
+	for k, v in ipairs(items) do
+		local item = v:getContent()
+		if item then
+			item:select(enable)
+		end
+	end
+	self.allSelected = enable
+	self.select_mark:setVisible(enable)
+	if not ignoreDc then
+		local dcValue 
+		if enable then dcValue = 2 else dcValue = 1 end
+		DcUtil:UserTrack({category = 'energy', sub_category = 'click_request_select_all', enable = dcValue})
+	end
+end
+
+function AskForEnergyPanel:onItemSelectChange()
+	if self.content and not self.content.isDisposed then
+		local selectedFriendsID = self.content:getSelectedFriendID()
+		if #selectedFriendsID == self.numberOfFriends then
+			self.allSelected = true
+			self.select_mark:setVisible(true)
+		else
+			self.allSelected = false
+			self.select_mark:setVisible(false)
+		end
+	end
 end
 
 function AskForEnergyPanel:onKeyBackClicked()

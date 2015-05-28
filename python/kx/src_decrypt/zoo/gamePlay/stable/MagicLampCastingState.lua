@@ -90,8 +90,12 @@ function MagicLampCastingState:tryHandleCasting()
         local speicalItemPos = {}
         local genCount = 3
         local availablePos = availablePosAllColor[v.ItemColorType]
+        if not availablePos then 
+            availablePos = {}
+        end
         if #availablePos < genCount then
             speicalItemPos = availablePos
+            availablePosAllColor[v.ItemColorType] = {}
         else
             for i = 1, genCount do
                 local idx = self.mainLogic.randFactory:rand(1, #availablePos)
@@ -171,5 +175,5 @@ function MagicLampCastingStateInLoop:getClassName()
 end
 
 function MagicLampCastingStateInLoop:getNextState()
-    return self.context.honeyBottleStateInLoop
+    return self.context.balloonCheckStateInLoop
 end

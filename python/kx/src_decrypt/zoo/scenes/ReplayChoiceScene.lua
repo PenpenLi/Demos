@@ -2,6 +2,7 @@ require "hecore.display.TextField"
 
 require "zoo.scenes.ReplayScene"
 require "zoo.config.LevelConfig"
+require "zoo.scenes.ReplayGameScene"
 
 local isTestMode = true
 
@@ -49,7 +50,8 @@ function ReplayChoiceScene:onInit()
 	local function onTouchGameReplayLabel(evt)
         local target = evt.target
         local levelId = self.replayTable[target:getTag()].level
-        local scene = ReplayScene:create(levelId, self.replayTable[target:getTag()])
+        -- local scene = ReplayScene:create(levelId, self.replayTable[target:getTag()])
+        local scene = ReplayGameScene:create(levelId, self.replayTable[target:getTag()])
 		Director:sharedDirector():pushScene(scene)
 	end
 

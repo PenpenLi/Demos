@@ -3,46 +3,13 @@
 -------------------------------------------------------------------------
 
 require "hecore.display.Director"
-require "zoo.animation.PropListItem"
+require "zoo.props.PropListItem"
 require "zoo.panel.PropInfoPanel"
-require 'zoo.animation.SpringPropListItem'
- 
-local kAddStepItems = {10004}
+require 'zoo.props.SpringPropListItem'
+require "zoo.props.PropListController"
+
 local kCurrentMaxItemInListView = 18
 local kItemGapInListView = 12
-local kMaxItemIdAvailable = 10064
-local kPreUsedPropItems = {10018, 10015, 10019}
-local kTempPropMapping = {}
-kTempPropMapping["10025"] = 10001
-kTempPropMapping["10015"] = 10001
-kTempPropMapping["10016"] = 10002
-kTempPropMapping["10028"] = 10003
-kTempPropMapping["10017"] = 10003
-kTempPropMapping["10027"] = 10005
-kTempPropMapping["10019"] = 10005
-kTempPropMapping["10026"] = 10010
-kTempPropMapping["10024"] = 10010
-kTempPropMapping["10018"] = 10004
-kTempPropMapping["10053"] = 10052
-kTempPropMapping["10057"] = 10056
-
-local function isAddStepItem( item )
-  local itemId = item.itemId
-  for j, k in ipairs(kAddStepItems) do
-    if k == itemId then return true end
-  end
-  return false
-end
-local function isValidItem( item )
-  if item.itemId == 9999 then return true end
-  local itemId = item.itemId
-  if itemId > kMaxItemIdAvailable then return false end
-
-  for i,v in ipairs(kPreUsedPropItems) do
-    if v == itemId then return false end
-  end
-  return true
-end
 
 PropHelpButton = class()
 function PropHelpButton:ctor( sprite, levelId )
@@ -86,23 +53,16 @@ end
 PropListAnimation = class()
 
 local kPropListItemWidth = 130
+local kPropItemDirections = {2, 3, 5}
 
 function PropListAnimation:ctor()
-  local context = self
-  local function onTouchBegin(evt) context:onTouchBegin(evt) end
-  local function onTouchMove(evt) context:onTouchMove(evt) end
-  local function onTouchEnd(evt) context:onTouchEnd(evt) end
-
   local origin = Director:sharedDirector():getVisibleOrigin()
   local visibleSize = CCDirector:sharedDirector():getVisibleSize()
 
 	local layer = Layer:create()
-	layer.name = "level target"
-	layer:setTouchEnabled(true)
+  layer.name = "level target"
+  layer:setTouchEnabled(true)
   layer:setPosition(ccp(origin.x, origin.y))
-  layer:ad(DisplayEvents.kTouchBegin, onTouchBegin)
-  layer:ad(DisplayEvents.kTouchMove, onTouchMove)
-  layer:ad(DisplayEvents.kTouchEnd, onTouchEnd)
 
   local kPropListScaleFactor = 1
   if __frame_ratio and __frame_ratio < 1.6 then  kPropListScaleFactor = 0.9 end
@@ -130,74 +90,23 @@ function PropListAnimation:ctor()
 	self.layer = layer
 
   local content = Layer:create()
-  layer.name = "content"
+  content.name = "content"
   layer:addChild(content)
   self.content = content
-
 
   self.usePropCallback		= false
   self.cancelPropUseCallback	= false
   self.buyPropCallback		= false
   self.isTouchEnabled = true
 
+  self.controller = PropListController:create(self)
 end
 
-function PropListAnimation:create(levelId)
+function PropListAnimation:create(levelId, levelModeType)
 	local ret = PropListAnimation.new()
+    ret:setLevelModeType(levelModeType)
 	ret:buildUI(levelId)
 	return ret
-end
-
-function PropListAnimation:registerUsePropCallback(usePropCallback, ...)
-	assert(type(usePropCallback) == "function")
-	assert(#{...} == 0)
-
-	print("PropListAnimation:registerUsePropCallback Called !")
-	self.usePropCallback = usePropCallback
-end
-
-function PropListAnimation:registerCancelPropUseCallback(callbackFunc, ...)
-	assert(type(callbackFunc) == "function")
-	assert(#{...} == 0)
-
-	self.cancelPropUseCallback = callbackFunc
-end
-
-function PropListAnimation:registerBuyPropCallback(callbackFunc, ...)
-	assert(type(callbackFunc) == "function")
-	assert(#{...} == 0)
-
-	self.buyPropCallback = callbackFunc
-end
-
-function PropListAnimation:callBuyPropCallback(itemId, ...)
-	assert(type(itemId) == "number")
-	assert(#{...} == 0)
-
-	self.buyPropCallback(itemId)
-end
-
-function PropListAnimation:callUsePropCallback(propItemUsed, itemId, usePropType, isRequireConfirm, ...)
-	assert(propItemUsed)
-	assert(type(itemId) == "number")
-	assert(type(usePropType) == "number")
-	assert(type(isRequireConfirm) == "boolean")
-	assert(#{...} == 0)
-
-	self.propItemUsed = propItemUsed
-
-	if self.usePropCallback then
-		return self.usePropCallback(itemId, usePropType, isRequireConfirm)
-	end
-	return true
-end
-
-function PropListAnimation:callCancelPropUseCallback(itemId, ...)
-	assert(#{...} == 0)
-
-	if self.cancelPropUseCallback then
-		self.cancelPropUseCallback(itemId)
-	end
 end
 
 --function PropListAnimation:confirmPropItemUsed(...)
@@ -253,71 +162,90 @@ function PropListAnimation:buildUI(levelId)
     self.layer:addChild(help_button)
     self.helpButton = PropHelpButton.new(help_button, levelId)
   	
+    self:createItems()
+
+    self:getPropPositions()
+end
+
+function PropListAnimation:createItems()
+    local currItems = #PropsModel.instance().propItems
+
+    for i = 1, kCurrentMaxItemInListView do
+
+      if i <= currItems then
+        local propItem = PropsModel:instance().propItems[i]
+        local item  = self:createPropListItem(i, propItem.itemId)
+
+        item:setPropItemData(propItem, self.isUnlimited) --setup the item's data
+      else
+         self:createPropListItem(i, nil)
+      end
+    end
+end
+
+function PropListAnimation:flushTemporaryProps(positionSrc, animationCallback)
+  if PropsModel:instance():temporaryPopsExist() then 
+    local winSize = CCDirector:sharedDirector():getVisibleSize()
+    local fromGlobalPosition = ccp(positionSrc.x - 5, positionSrc.y + 4)--ccp(winSize.width/2, winSize.height/2)
+    -- local maxItemNum = 0
+    -- local item_count = 0
+    for i,v in ipairs(PropsModel:instance().temporaryPops) do 
+      local function onAnimationFinished()
+        self:addTemporaryItem(v.itemId, v.itemNum, fromGlobalPosition, false)
+        -- item_count = item_count + 1
+        -- if item_count >= maxItemNum and animationCallback then
+        --   animationCallback() 
+        -- end
+        --这个回调的屏蔽重复调用工作已经在回调内部做了 这里不要再单独做 直接调即可
+        if animationCallback then
+          animationCallback()
+        end
+      end
+      -- maxItemNum = maxItemNum + 1
+      local icon = PropListAnimation:createIcon( v.itemId )
+      local sprite = PrefixPropAnimation:createPropAnimation(icon, self.layer:convertToNodeSpace(fromGlobalPosition), onAnimationFinished)
+      self.layer:addChild(sprite)
+    end
+    PropsModel:instance():clearTemporaryPops()
+  end
+end
+
+function PropListAnimation:createPropListItem(index, itemId)
     local function onHideCallback(item)
       local maxIndex = self:findMaxSlotIndex()
       local removedIndex = item.index
       if maxIndex < removedIndex and removedIndex > self.propListMaxItemPerPage then
         local position = self.content:getPosition()
         local visibleX = self:getItemOffset(maxIndex)
+
         self.content:runAction(CCEaseSineOut:create(CCMoveTo:create(0.3, ccp(visibleX, position.y))))
       end
     end
-    
-  	for i = 1, kCurrentMaxItemInListView do
-      local item = PropListItem:create(i, propsListView:getChildByName("p"..i), propsListView:getChildByName("i"..i), self)
-      item.onHideCallback = onHideCallback
-  		self["item"..i] = item
-  	end
-    self.item2.direction = -1 
-    self.item3.direction = -1
-    self.item5.direction = -1
-    self:getPropPositions()
-end
 
-function PropListAnimation:flushTemporaryProps(positionSrc)
-  if self.temporaryPops and #self.temporaryPops > 0 then 
-    local winSize = CCDirector:sharedDirector():getVisibleSize()
-    local fromGlobalPosition = ccp(positionSrc.x - 5, positionSrc.y + 4)--ccp(winSize.width/2, winSize.height/2)
-    for i,v in ipairs(self.temporaryPops) do 
-      local function onAnimationFinished()
-        self:addTemporaryItem(v.itemId, v.itemNum, fromGlobalPosition, false)
-      end
-      local icon = PropListAnimation:createIcon( v.itemId )
-      local sprite = PrefixPropAnimation:createPropAnimation(icon, self.layer:convertToNodeSpace(fromGlobalPosition), onAnimationFinished)
-      self.layer:addChild(sprite)
+    local item = nil
+    if itemId == kSpringPropItemID then
+      print("spring: ", index, self["item"..index])
+      item = SpringPropListItem:create(index, self.propsListView:getChildByName("p"..index), self.propsListView:getChildByName("i"..index), self) 
+    else
+      item = PropListItem:create(index, self.propsListView:getChildByName("p"..index), self.propsListView:getChildByName("i"..index), self)
     end
-    self.temporaryPops = nil
-  end
+
+    item.onHideCallback = onHideCallback
+    self["item"..index] = item
+    if table.exist(kPropItemDirections, index) then
+       item.direction = -1
+    end
+
+    return item
 end
 
 function PropListAnimation:show( propItems, delayTime )
-  self.propItems = {}
-  self.addStepItems = {}
-  self.content:setPosition(ccp(0,0))
-  self.temporaryPops = {}
-  self.timeProps = {}
+    self.content:setPosition(ccp(0,0))
+    delayTime = delayTime or 0 --1.35
 
-  delayTime = delayTime or 0 --1.35
-
-  --there is no temporary prop at the beginning of a round
-  if propItems and #propItems > 0 then
-    for i, v in ipairs(propItems) do
-      if v.temporary == 1 then
-        table.insert(self.temporaryPops, v)
-      elseif v.isTimeProp then
-        table.insert(self.timeProps, v)
-      else 
-        if isValidItem(v) then
-          if isAddStepItem(v) then table.insert(self.addStepItems, v)
-          else table.insert(self.propItems, v) end
-        else print("item not supported or already uses as pre-prop, id:"..v.itemId) end
-      end
-    end
-  end
-
-	local winSize = CCDirector:sharedDirector():getWinSize()
-	local propsListView = self.propsListView
-	local background = propsListView:getChildByName("bg")
+    local winSize = CCDirector:sharedDirector():getWinSize()
+    local propsListView = self.propsListView
+    local background = propsListView:getChildByName("bg")
   
   	local backgroundPos = background:getPosition()
   	local bgX, bgY = backgroundPos.x, backgroundPos.y
@@ -329,35 +257,20 @@ function PropListAnimation:show( propItems, delayTime )
       --self:windover()
     end
     background:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions(CCDelayTime:create(10), CCCallFunc:create(onUpdateContent))))
-    local currItems = #self.propItems
 
-  	for i = 1, kCurrentMaxItemInListView do 
+    local currItems = #PropsModel.instance().propItems
+
+  	for i = 1, kCurrentMaxItemInListView do
+      local item = self["item"..i]
+
       if i <= currItems then
-        if self.propItems[i].itemId == 9999 then
-          local item = SpringPropListItem:create(i, propsListView:getChildByName("p"..i), propsListView:getChildByName("i"..i), self, self["item"..i].iconSize)
-          self["item"..i] = item
-          self["item"..i]:show(0, true, false) 
-        else
-          local isInitDisabled = self.propItems[i].itemId == GamePropsType.kBack
-          self["item"..i]:enableUnlimited(self.isUnlimited)
-          self["item"..i].prop = self.propItems[i] --setup the item's data
-          self["item"..i]:setTimeProps(self:getTimePropsByItemId(self.propItems[i].itemId))
-          self["item"..i]:show(0, true, isInitDisabled) 
-        end
-      else self["item"..i]:hide() end
-    end
-end
-
-function PropListAnimation:getTimePropsByItemId(itemId)
-  local ret = {}
-  if self.timeProps and #self.timeProps > 0 then
-    for _,v in pairs(self.timeProps) do
-      if v.realItemId == itemId then
-        table.insert(ret, v)
+        local propItem = PropsModel:instance().propItems[i]
+        local initDisable = propItem.itemId ~= kSpringPropItemID and propItem.itemId == GamePropsType.kBack
+        item:show(0, true, initDisable)
+      else
+        item:hide() 
       end
     end
-  end
-  return ret
 end
 
 function PropListAnimation:windover(direction)
@@ -368,7 +281,7 @@ function PropListAnimation:windover(direction)
     local item = self["item"..i]
     if item and item.visible then       
       local delayTime = pt * 0.3
-      item:windover(delayTime)
+      item.animator:windover(delayTime)
       pt = pt + 1
     end
   end 
@@ -381,6 +294,7 @@ function PropListAnimation:findMaxSlotIndex()
   end
   return 1
 end
+
 function PropListAnimation:findEmptySlot()
   for i = 1, kCurrentMaxItemInListView do
     local item = self["item"..i]
@@ -388,21 +302,10 @@ function PropListAnimation:findEmptySlot()
   end
   return -1
 end
-function PropListAnimation:findItemIndex( item )
-  for i,v in ipairs(self.propItems) do
-    if v == item then return i end
-  end
-  return -1
-end
-function PropListAnimation:removeItemWithAnimation( removedItem )
-  local removedIndex = self:findItemIndex(removedItem.prop)
-  if removedIndex > 0 then table.remove(self.propItems, removedIndex) end
-end
 
 function PropListAnimation:onGameMoveChange(number, animated)
-  if self.levelModeType == "Classic"
-  or self.levelModeType == "RabbitWeekly"
-   then
+
+  if self.levelModeType == "Classic" or self.levelModeType == "RabbitWeekly" then
     --time mode
   else
     if number <= 5 and not animated then 
@@ -414,10 +317,11 @@ function PropListAnimation:onGameMoveChange(number, animated)
 end
 
 function PropListAnimation:showAddStepItem()
-  if not self.addStepItems or #self.addStepItems < 1 or self:findAddMoveItem() then return end
-  self:addItemWithAnimation(self.addStepItems[1], 0.3, true)
+  if not PropsModel:instance():addStepItemExist() or self:findAddMoveItem() then return end
+  self:addItemWithAnimation(PropsModel:instance().addStepItems[1], 0.3, true)
   --self:addItemWithAnimation(table.remove(self.addStepItems), 0.3, true)
 end
+
 function PropListAnimation:hideAddMoveItem()
   local item = self:findAddMoveItem()
   if item and not item.isExplodeing then item:hide() end
@@ -426,9 +330,12 @@ end
 function PropListAnimation:findAddMoveItem()
   for i = 1, kCurrentMaxItemInListView do
     local item = self["item"..i]
-    if item and item.visible and item:isAddMoveProp() then return item end
+    if item and item.visible and item:isAddMoveProp() then 
+      return item 
+    end
   end
-  return item
+
+  return nil
 end
 
 function PropListAnimation:getItemOffset( index )
@@ -442,14 +349,13 @@ end
 
 function PropListAnimation:addItemWithAnimation( item, delayTime, useHint )
   if item then
-    table.insert(self.propItems, item)
+    PropsModel:instance():addItem(item)
     local itemIndex = self:findEmptySlot()
     if itemIndex >= kCurrentMaxItemInListView then return end
-    self["item"..itemIndex]:enableUnlimited(self.isUnlimited)
-    self["item"..itemIndex].prop = item
-    self["item"..itemIndex]:setTimeProps(self:getTimePropsByItemId(item.itemId))
+    --self["item"..itemIndex]:enableUnlimited(self.isUnlimited)
+    self["item"..itemIndex]:setPropItemData(item, self.isUnlimited)
     self["item"..itemIndex]:show(delayTime, true) 
-   if useHint then self["item"..itemIndex]:pushPropAnimation(2) end
+   if useHint then self["item"..itemIndex].animator:pushPropAnimation(2) end
     
     self:updateVisibleMinX()
     self.content:stopAllActions()
@@ -457,6 +363,52 @@ function PropListAnimation:addItemWithAnimation( item, delayTime, useHint )
     return itemIndex
   end
   return -1
+end
+
+-- 出现的位置->飞到屏幕中心->变大+发光->变小->飞到道具栏
+function PropListAnimation:addGetPropAnimation(item, index, fromGlobalPosition, flyFinishedCallback, propID)
+  assert(propID, "propID cannot be nil")
+  if not item or not fromGlobalPosition then return end
+
+  local from = self.layer:convertToNodeSpace(fromGlobalPosition)
+  local to = item:getItemCenterPosition() --itemTo:getPosition()
+  local winSize = CCDirector:sharedDirector():getWinSize()
+
+  local centerPos = ccp(winSize.width / 2, winSize.height / 2)
+
+  local timeScale = 1
+
+  local propIcon = nil
+  if propID then propIcon = PropListAnimation:createIcon( propID ) end
+  if propIcon then
+    local offsetX = 0
+    if index > self.propListMaxItemPerPage then offsetX = self:getItemOffset(index) end 
+
+    self.layer:addChild(propIcon)  
+    propIcon:setPosition(ccp(from.x, from.y))
+    local seq = CCArray:create()
+    seq:addObject(CCMoveTo:create(0.3 * timeScale, centerPos))
+    local function addBgAnimation()
+      local anim = CommonEffect:buildGetPropLightAnim()
+      anim:setPosition(centerPos)
+      self.layer:addChildAt(anim, -1)
+    end
+    seq:addObject(CCCallFunc:create(addBgAnimation))
+    seq:addObject(CCScaleTo:create(0.5, 1.8))
+    seq:addObject(CCDelayTime:create(1.5))
+    seq:addObject(CCScaleTo:create(0.3, 1))
+    
+    local function addFallingtar()
+      local fallingStar = FallingStar:create(centerPos, ccp(to.x + offsetX, to.y+278), nil, flyFinishedCallback)
+      self.layer:addChild(fallingStar)
+    end
+
+    seq:addObject(CCCallFunc:create(addFallingtar))
+    seq:addObject(CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(to.x + offsetX, to.y+278))))
+    local function onAnimationFinished() propIcon:removeFromParentAndCleanup(true) end
+    seq:addObject(CCCallFunc:create(onAnimationFinished))
+    propIcon:runAction(CCSequence:create(seq))
+  end
 end
 
 function PropListAnimation:addFallingtar( item, index, fromGlobalPosition, flyFinishedCallback, propID )
@@ -483,14 +435,17 @@ function PropListAnimation:addFallingtar( item, index, fromGlobalPosition, flyFi
     propIcon:runAction(CCSequence:create(array))
   end
 end
+
 function PropListAnimation:addTemporaryItem( itemId, itemNum, fromGlobalPosition, showIcon )
+  print("added temporary item: ", itemId, itemNum)
+
   itemNum = itemNum or 0
   local itemFound, itemIndex = self:findItemByItemID(itemId)
   local animateFallingIcon = true
   local animatedItemID = nil
   if showIcon ~= nil then animateFallingIcon = showIcon end
   if animateFallingIcon then animatedItemID = itemId end
- 
+
   if itemFound then
     local function onTempFlyFinishedCallback()
       itemFound:increaseItemNumber(itemId, itemNum)
@@ -498,24 +453,26 @@ function PropListAnimation:addTemporaryItem( itemId, itemNum, fromGlobalPosition
     self:addFallingtar(itemFound, itemIndex, fromGlobalPosition, onTempFlyFinishedCallback, animatedItemID)
     return
   else
-    local mappingItemId = kTempPropMapping[tostring(itemId)]
+    local mappingItemId = PropsModel.kTempPropMapping[tostring(itemId)]
     if mappingItemId then itemFound, itemIndex = self:findItemByItemID(mappingItemId) end
     
     if itemFound then
       local function onNormalFlyFinishedCallback()
-        itemFound:increateTemporaryItemNumber(itemId, itemNum)
+        itemFound:increaseTemporaryItemNumber(itemId, itemNum)
       end    
       self:addFallingtar(itemFound, itemIndex, fromGlobalPosition, onNormalFlyFinishedCallback, animatedItemID)
       return
     end
   end
-  local index = self:addItemWithAnimation({itemId=itemId, itemNum=itemNum, temporary=1}, 0)
+
+  local itemData = PropItemData:createWithData({itemId=itemId, itemNum=itemNum, temporary=1})
+  local index = self:addItemWithAnimation(itemData, 0)
   if index < 1 then return end
 
   local onTemporaryItemUsed = function( removedItem )
     local maxIndex = self:findMaxSlotIndex()
     local removedIndex = removedItem.index
-    self:removeItemWithAnimation(removedItem)
+    PropsModel:instance():removeItem(removedItem)
     if maxIndex < removedIndex and removedIndex > self.propListMaxItemPerPage then
       local position = self.content:getPosition()
       local visibleX = self:getItemOffset(maxIndex)
@@ -526,20 +483,35 @@ function PropListAnimation:addTemporaryItem( itemId, itemNum, fromGlobalPosition
   self["item"..index].onTemporaryItemUsed = onTemporaryItemUsed
 end
 
+function PropListAnimation:addTimeProp(propId, itemNum, expireTime, fromGlobalPosition, showIcon)
+  itemNum = itemNum or 0
+  local itemId = ItemType:getRealIdByTimePropId(propId)
+  local itemFound, itemIndex = self:findItemByItemID(itemId)
+  local animateFallingIcon = true
+  local animatedItemID = nil
+  if showIcon ~= nil then animateFallingIcon = showIcon end
+  if animateFallingIcon then animatedItemID = itemId end
+
+  if itemFound then
+    local function onAnimationFinishedCallback()
+      itemFound:increaseTimePropNumber(propId, itemNum, expireTime)
+    end    
+    self:addGetPropAnimation(itemFound, itemIndex, fromGlobalPosition, onAnimationFinishedCallback, animatedItemID)
+  else
+    PropsModel:instance():addTimeProp(propId, itemNum, expireTime)
+    local itemData = PropItemData:create(itemId)
+    local index = self:addItemWithAnimation(itemData, 0)
+    if index < 1 then return end
+    self:addGetPropAnimation(self["item"..index], index, fromGlobalPosition, nil, animatedItemID)
+  end
+end
+
 function PropListAnimation:updateVisibleMinX()
   self.visibleMinX = self:getItemOffset(self:findMaxSlotIndex())
 end
-function PropListAnimation:onTouchBegin( evt )
-  self.isMoved = false
-  self.prev_position = evt.globalPosition
-  self.begin_index = self:findHitItemIndex(evt)
-  self:updateVisibleMinX()
-
-  if self.isTouchEnabled then self.helpButton:onTouchBegin(evt) end
-end
 
 function PropListAnimation:updateContentPosition( evt )
-  if self.propItems and self:findMaxSlotIndex() > self.propListMaxItemPerPage then
+  if PropsModel:instance().propItems and self:findMaxSlotIndex() > self.propListMaxItemPerPage then
     if evt.globalPosition and self.prev_position then
       local dx = evt.globalPosition.x - self.prev_position.x
       local position = self.content:getPosition()
@@ -573,6 +545,17 @@ function PropListAnimation:findItemByItemID( itemId )
   return nil, -1
 end
 
+function PropListAnimation:addFakeAllProp( value )
+  -- body
+  for i = 1, kCurrentMaxItemInListView do
+    local item = self["item"..i]
+    if item and item.visible then 
+      item:setNumber(value)
+    end
+  end
+
+end
+
 function PropListAnimation:useItemWithType(itemId, propType)
   local item = self:findItemByItemID(itemId)
   if item then 
@@ -582,20 +565,17 @@ end
 
 function PropListAnimation:setItemNumber( itemId, itemNum )
   local item = self:findItemByItemID(itemId)
-  if item and item.prop then 
-    item.prop.itemNum = itemNum or 0
-    item:updateItemNumber()
+  if item then
+      item:setNumber(itemNum)
   end
 end
 
 function PropListAnimation:addItemNumber( itemId, itemNum )
   local item = self:findItemByItemID(itemId)
-  if item and item.prop then 
-    item.prop.itemNum = item.prop.itemNum + (itemNum or 0)
-    item:updateItemNumber()
+  if item then 
+    item:addNumber(itemNum)
   end
 end
-
 
 function PropListAnimation:confirm(itemId, usedPositionGlobal)
   if self.focusItem then
@@ -615,73 +595,17 @@ function PropListAnimation:setItemTouchEnabled(enable)
   self.isTouchEnabled = enable
 end
 
-function PropListAnimation:setRevertPropDisable(itemId, reasonType)
+function PropListAnimation:setPropState(itemId, reasonType, enable)
   if itemId ~= nil then 
     local item = self:findItemByItemID(itemId)
-    if item then item:setDisableReason(reasonType) end
-  end
-end
-
-function PropListAnimation:setRevertPropEnable(itemId)
-  if itemId ~= nil then 
-    local item = self:findItemByItemID(itemId)
-    if item then item:setEnable() end
-  end
-end
-
-function PropListAnimation:setOctopusForbidEnable(enable, reason)
-    local item = self:findItemByItemID(GamePropsType.kOctopusForbid)
-    if item then 
+    if item then
       if enable then
-        item:setEnable()
+          item:setEnable()
       else
-        item:setDisableReason(reason)
+          item:setDisableReason(reasonType) 
       end
     end
-end
-
-function PropListAnimation:onTouchMove( evt )
-  if self.focusItem then
-  else   
-    if evt.globalPosition and self.prev_position then
-      local dx = evt.globalPosition.x - self.prev_position.x
-      local dy = evt.globalPosition.y - self.prev_position.y
-      if dx < 0 then self.directionWind = -1 
-      else self.directionWind = 1 end
-      if dx * dx + dy * dy > 64 then self.isMoved = true end
-    end
-    self:updateContentPosition(evt)
-  end  
-end
-function PropListAnimation:onTouchEnd( evt )
-  self.helpButton:onTouchEnd(evt)
-
-  if self.focusItem then
-    self.focusItem:focus(false)
-    self:setItemDark(-1, false)
-    self.focusItem = nil
-  else
-    self:updateContentPosition(evt)
-    if self.isMoved then return self:windover(self.directionWind) end
-
-    if not self.isTouchEnabled then return end
-
-    if self.helpButton:use(evt.globalPosition) then return end
-
-    local hitItemID = self:findHitItemIndex(evt)
-    if hitItemID > 0 and hitItemID == self.begin_index then 
-      local hitItem = self["item"..hitItemID]
-      if hitItem:isItemRequireConfirm() then
-          if hitItem:use() then 
-            self.focusItem = hitItem
-            hitItem:focus(true) 
-            self:setItemDark(hitItemID, true)
-         end
-      else hitItem:use() end
-    end
   end
-
-  self.begin_index = 0
 end
 
 function PropListAnimation:getPropPositions()
@@ -721,13 +645,24 @@ function PropListAnimation:setSpringItemPercent(percent)
   end
 end
 
-function PropListAnimation:registerSpringItemCallback(callback)
-  self.springItemCallback = callback
+function PropListAnimation:findSpringItem()
+  local item = self.propsListView:getChildByName("i"..3)
+  if item and self.item3:is(SpringPropListItem) then
+    return item
+  end
+  return nil
+end
+
+function PropListAnimation:setSpringItemEnergy(energy)
+  local item = self.item3
+  if item and item:is(SpringPropListItem) then
+    item:setEnergy(energy, true)
+  end
 end
 
 function PropListAnimation:getSpringItemGlobalPosition()
-  local item = self.propsListView:getChildByName("i"..3)
-  if item and self.item3:is(SpringPropListItem) then
+  local item = self:findSpringItem()
+  if item then
     local pos = item:getPosition()
     pos = ccp(pos.x - 30, pos.y + 60)
     return item:getParent():convertToWorldSpace(pos)

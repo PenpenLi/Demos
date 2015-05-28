@@ -1,5 +1,6 @@
 require "zoo.model.LuaXml"
 require "hecore.utils"
+require "zoo.util.UpdateCheckUtils"
 
 MaintenanceFeature = class()
 function MaintenanceFeature:ctor()
@@ -46,7 +47,7 @@ function MaintenanceManager:onlineLoad(onFinish)
 	url = url .. params
   	print("MaintenanceManager:", url)
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(30 * 1000)
+    request:setConnectionTimeoutMs(1 * 1000)
     request:setTimeoutMs(30 * 1000)
    
     local function onRegisterFinished( response )
@@ -57,7 +58,7 @@ function MaintenanceManager:onlineLoad(onFinish)
     		local metaXML = xml.eval(message)
     		local confList = xml.find(metaXML, "maintenance")
     		self:fromXML(confList)
-
+    		UpdateCheckUtils:getInstance():run()
     		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMaintenanceChange))
     	end
     	if onFinish then onFinish() end

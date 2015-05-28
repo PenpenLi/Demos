@@ -260,6 +260,7 @@ function UserExtendRef:ctor( )
 	self.scoreGameReward = 0 --评分领奖标识
 	self.tutorialStep = 0 --新手引导步骤
 	self.playStep = 0 --玩法引导步骤
+	self.topLevelFailCount = 0 -- 最高关卡连续失败次数
 end
 
 function UserExtendRef:getFruitTreeLevel()
@@ -397,6 +398,16 @@ function UserExtendRef:setLastPayTime(time)
 	if type(time) == "number" then
 		self.lastPayTime = time
 	end
+end
+
+-- 在开始游戏时就记为失败，成功过关后清除
+function UserExtendRef:incrTopLevelFailCount(count)
+	count = count or 1
+	self.topLevelFailCount = self.topLevelFailCount + count
+end
+
+function UserExtendRef:resetTopLevelFailCount()
+	self.topLevelFailCount = 0
 end
 
 function UserExtendRef:fromLua( src )
@@ -699,6 +710,10 @@ function DailyDataRef:ctor( )
 	self.buyedGoodsInfo = {} --当日已购买商品详情
 	self.diggerCount = 0 --挖宝大赛当天已挖宝次数
 	self.sendIds = {}
+	self.videoAdRewardLeft = 0  ---每日观看广告视频剩余次数
+	self.videoAdReward = {}     --- 观看广告视频奖励
+	self.videoAdCycle = {}      ---不同视频广告的循环规则
+	
 end
 function DailyDataRef:resetAll()
 	self.sendGiftCount = 0
@@ -715,6 +730,9 @@ function DailyDataRef:resetAll()
 	self.buyedGoodsInfo = {}
 	self.diggerCount = 0
 	self.sendIds = {}
+	self.videoAdRewardLeft = 0 
+	self.videoAdReward = {}
+	self.videoAdCycle = {}
 end
 function DailyDataRef:fromLua( src )
 	if not src then

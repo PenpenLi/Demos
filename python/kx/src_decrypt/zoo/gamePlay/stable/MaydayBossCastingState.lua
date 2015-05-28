@@ -32,8 +32,7 @@ function MaydayBossCastingState:onEnter()
 end
 
 function MaydayBossCastingState:handleComplete(hasHandledItem)
-    -- self.nextState = self.context.needRefreshState
-    self.nextState = self.context.checkNeedLoopState
+    self.nextState = self.context.magicLampReinitState
     if hasHandledItem then
         self.context:onEnter()
     end

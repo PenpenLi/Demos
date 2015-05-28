@@ -240,7 +240,7 @@ function AnnouncementPanel.loadAnnouncement( callback )
 	print(url)
 
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(3 * 1000)
+    request:setConnectionTimeoutMs(1 * 1000)
     request:setTimeoutMs(3 * 1000)
 
     if not PrepackageUtil:isPreNoNetWork() then 

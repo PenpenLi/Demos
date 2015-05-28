@@ -594,7 +594,7 @@ function GameSettingPanel:onBtn1Tapped(event, ...)
 end
 
 function GameSettingPanel:onBtn2Tapped(event, ...)
-	PopoutManager:sharedInstance():remove(self, true)
+	--PopoutManager:sharedInstance():remove(self, true)
 --[[
 local size = CCDirector:sharedDirector():getVisibleSize()
 
@@ -621,7 +621,18 @@ function CallbackLink:linkParam(url)
         end,
     }
 
-SnsUtil.sendLinkMessage(PlatformShareEnum.kWechat, "test_link", "link", thumb, "http://www.baidu.com", true, shareCallback)
+--SnsUtil.sendLinkMessage(PlatformShareEnum.kWechat, "test_link", "link", thumb, "http://www.baidu.com", true, shareCallback)
+end
+
+function CallbackLink:backToGame( ... )
+	print("CallbackLink:backToGame....")
+end
+
+function CallbackLink:test_b_c( a,b,c )
+	print(a)
+	print(b)
+	print(c)
+	print("----------------")
 end
 
 c:setCallbackLink(CallbackLink:init())

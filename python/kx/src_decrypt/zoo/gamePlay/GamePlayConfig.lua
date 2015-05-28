@@ -92,6 +92,8 @@ GamePlayConfig_MonsterFrosting_Dec = 16 * GamePlayConfig_Action_FPS / 30
 --蜂蜜消失
 GamePlayConfig_Honey_Disappear = 19 * GamePlayConfig_Action_FPS / 30 
 
+GamePlayConfig_Add_Move_Base = 5
+
 
 -- 雪块
 GamePlayConfig_Score_MatchBy_Snow = 100															-- 消除得分
@@ -107,7 +109,8 @@ GamePlayConfig_DropDown_Ingredient_DroppingCD = 18 * GamePlayConfig_Action_FPS_T
 GamePlayConfig_DropDown_Ingredient_ScaleTime = 10 * GamePlayConfig_Action_FPS_Time_Scale 	-- 豆荚原地缩小时长
 GamePlayConfig_DropDown_Ingredient_CollectTime = 10 * GamePlayConfig_Action_FPS_Time_Scale 	-- 豆荚收集动画时长
 GamePlayConfig_DropDown_Ingredient_CollectScale = 1 										-- 豆荚收集动画终结时豆荚的大小
-GamePlayConfig_DropDown_Ingredient_CollectPos = 1 											-- 豆荚收集动画下降位置（N倍单元格高度）
+GamePlayConfig_DropDown_Ingredient_CollectPos = 1											-- 豆荚收集动画下降位置（N倍单元格高度）
+GamePlayConfig_DropDown_Acorn_CollectPos = 1.2											    -- 橡果收集动画下降位置（N倍单元格高度）
 GamePlayConfig_DropDown_Ingredient_Time2 = 50 * GamePlayConfig_Action_FPS_Time_Scale		-- 豆荚收集--飞行时长
 
 --银币
@@ -251,3 +254,5 @@ end
 GamePlayConfig_SeaAnimal_Penguin_Score = 10000
 GamePlayConfig_SeaAnimal_Seal_Score = 10000
 GamePlayConfig_SeaAnimal_Bear_Score = 10000
+
+GamePlayConfig_Transmission_Time = 24 / 30 --传送带传送一个item的时间

@@ -72,6 +72,8 @@ function LadyBugMissionManager:init(...)
 			self:startOneSecondTimer(oneSecondCallback)
 
 			HomeScene:sharedInstance():startLadyBug()
+
+			self:setupNotification()
 		end
 
 		-- Start The Lady Bug Mission
@@ -513,6 +515,8 @@ function LadyBugMissionManager:onTopLevelChange(...)
 			self:startOneSecondTimer(oneSecondCallback)
 
 			HomeScene:sharedInstance():startLadyBug()
+
+			self:setupNotification()
 		end
 
 		-- Start The Lady Bug Mission
@@ -536,7 +540,7 @@ function LadyBugMissionManager:sendStartLadyBugMissionMsg(successCallback, ...)
 	end
 
 	local function onFailed()
-		assert(false)
+		-- assert(false)
 	end
 
 	local http = StartLadyBugTask.new()
@@ -591,4 +595,40 @@ function LadyBugMissionManager:sharedInstance(...)
 	end
 
 	return sharedInstance
+end
+
+function LadyBugMissionManager:setupNotification()
+	local ladyBugInfos = UserManager:getInstance().ladyBugInfos
+	local startRefTime = ladyBugInfos[1].endTime - 43200000
+	LocalNotificationManager:getInstance():setLadyBugMissionNotification(startRefTime, table.size(ladyBugInfos))
+end
+
+function LadyBugMissionManager:cancelNotificationToday(taskId)
+	local ladyBugInfos = UserManager:getInstance().ladyBugInfos
+	for k, v in pairs(ladyBugInfos) do
+		if v.id == taskId then
+			if 0 == v.endTime % 100000 then
+				LocalNotificationManager:getInstance():cancelLadyBugMissionNotificationToday()
+			end
+			break
+		end
+	end
+end
+
+function LadyBugMissionManager:setMissionRewardCallback(callback)
+	self.missionRewardCallback = callback
+end
+
+function LadyBugMissionManager:activateMissionRewardCallback(taskId)
+	if taskId == 1 then
+		local ladyBugInfos = UserManager:getInstance().ladyBugInfos
+		for k, v in pairs(ladyBugInfos) do
+			if v.id == taskId then
+				if 0 == v.endTime % 100000 then
+					if self.missionRewardCallback then self.missionRewardCallback() end
+					break
+				end
+			end
+		end
+	end
 end

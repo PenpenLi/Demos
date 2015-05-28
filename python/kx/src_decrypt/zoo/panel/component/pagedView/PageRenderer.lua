@@ -267,6 +267,8 @@ function PageRenderer:onItemTap(event)
 				Localization:getInstance():getText("new.version.tip.bag")
 			) --UpdateNewVersionPanel:create()
 			panel:popout()
+		else
+			CommonTip:showTip(Localization:getInstance():getText("new.version.tip.bag.1"))
 		end
 	else 
 		self:showTip(ib, event.context.item)

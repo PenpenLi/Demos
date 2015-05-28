@@ -296,3 +296,19 @@ function RabbitWeeklyMode:getRabbitCount()
     end
     return count
 end
+
+function RabbitWeeklyMode:getStageIndex()
+    return self.stage
+end
+
+function RabbitWeeklyMode:getStageMoveLimit()
+    if self.stage == 0 then
+        return RabbitWeeklyConfig.stageInitEnd
+    elseif self.stage == 1 then
+        return RabbitWeeklyConfig.stageOneEnd - RabbitWeeklyConfig.stageInitEnd
+    elseif self.stage == 2 then
+        return RabbitWeeklyConfig.stageTwoEnd - RabbitWeeklyConfig.stageOneEnd
+    elseif self.stage == 3 then
+        return 0
+    end
+end

@@ -13,8 +13,13 @@ function PopoutManager:sharedInstance()
 end
 
 
-local function getPopoutList( )
-	local scene = Director:sharedDirector():getRunningScene()
+local function getPopoutList( scene )
+	if not scene then
+		scene = Director:sharedDirector():getRunningScene()
+	elseif scene.isDisposed then
+		return nil
+	end
+
 	if not scene then 
 		return nil
 	end
@@ -68,18 +73,24 @@ local function getPopoutQueue()
 	end
 	if not scene.__popoutQueue then
 		scene.__popoutQueue = {}
+		scene:addEventListener(Events.kDispose,function( ... )
+			print("getPopoutQueue scene dispose")
+			while #scene.__popoutQueue > 0 do 
+				scene.__popoutQueue[1].childPanel:dispose()
+				table.remove(scene.__popoutQueue,1)
+			end
+		end)
 	end
-
-	return scene.__popoutQueue
+	return scene.__popoutQueue,scene
 end
 
-local function addContainerToScene( child, dark, enableTouchBehind )
+local function addContainerToScene( child, dark, enableTouchBehind,scene )
 	--test
 	-- enableTouchBehind = true
 
 	print("addContainerToScene ".. tostring(dark))
 
-	local popoutList = getPopoutList()
+	local popoutList = getPopoutList(scene)
 	if not popoutList then 
 		return 
 	end
@@ -128,8 +139,8 @@ local function addContainerToScene( child, dark, enableTouchBehind )
 	return container
 end
 
-function PopoutManager:add(child, dark, enableTouchBehind)
-	addContainerToScene(child, dark, enableTouchBehind)
+function PopoutManager:add(child, dark, enableTouchBehind,scene)
+	addContainerToScene(child, dark, enableTouchBehind,scene)
 end
 function PopoutManager:remove(child, cleanup)
 	if child.isDisposed or not child:getParent() or not child:getParent():getParent() then
@@ -155,10 +166,10 @@ function PopoutManager:remove(child, cleanup)
 	end
 end
 
-function PopoutManager:addWithBgFadeIn(child, dark, enableTouchBehind, fadeInAnimFinishedCallback, duration)
-	local container = addContainerToScene(child, true, enableTouchBehind)
+function PopoutManager:addWithBgFadeIn(child, dark, enableTouchBehind, fadeInAnimFinishedCallback, duration,scene)
+	local container = addContainerToScene(child, true, enableTouchBehind,scene)
 	
-	local popoutList = getPopoutList()
+	local popoutList = getPopoutList(scene)
 	local fadeOutContainer = nil
 	if popoutList then
 		fadeOutContainer = popoutList:getPreviousDarkContainer()
@@ -297,13 +308,13 @@ function PopoutQueue:sharedInstance()
 end
 
 function PopoutQueue:push(child,dark,enableTouchBehind,fadeInAnimFinishedCallback, duration)
-	local popoutQueue = getPopoutQueue()
+	local popoutQueue,scene = getPopoutQueue()
 	if not popoutQueue then 
 		return 
 	end
 
-	if dark == nil then 
-		dark = true 
+	if dark == nil then
+ 		dark = true 
 	end
 	if enableTouchBehind == nil then
 		enableTouchBehind = false
@@ -318,22 +329,25 @@ function PopoutQueue:push(child,dark,enableTouchBehind,fadeInAnimFinishedCallbac
 	})
 
 	if #popoutQueue == 1 then
-		self:add(popoutQueue)
+		self:add(popoutQueue,scene)
 	end
 end
 
-function PopoutQueue:add(popoutQueue)
+function PopoutQueue:add(popoutQueue,scene)
 	local function removeOnceComplete(evt)
 		-- evt.target:removeEventListener(PopoutEvents.kRemoveOnce,removeOnceComplete)
 		-- evt.target:removeEventListener(Events.kDispose,removeOnceComplete)
 
 		table.remove(popoutQueue, 1)
 
-		self:add(popoutQueue)	
+		self:add(popoutQueue,scene)	
 	end
 	
 	print("PopoutQueue:add")
 	if #popoutQueue <= 0 then
+		return
+	end
+	if scene.isDisposed then
 		return
 	end
 
@@ -346,13 +360,13 @@ function PopoutQueue:add(popoutQueue)
 	-- childPanel:addEventListener(Events.kDispose,removeOnceComplete)
 
 	if not childInfo.fadeInAnimFinishedCallback and not childInfo.duration then
-		PopoutManager.sharedInstance():add(childPanel, childInfo.isDark, childInfo.enableTouchBehind)
+		PopoutManager.sharedInstance():add(childPanel, childInfo.isDark, childInfo.enableTouchBehind,scene)
 	else
 		PopoutManager.sharedInstance():addWithBgFadeIn(childPanel, childInfo.isDark, childInfo.enableTouchBehind,function( ... )
 			if type(childInfo.fadeInAnimFinishedCallback) == "function" then
 				childInfo.fadeInAnimFinishedCallback()
 			end
-		end,childInfo.duration)
+		end,childInfo.duration,scene)
 	end
 
 	if type(childPanel.popoutShowTransition) == "function" then

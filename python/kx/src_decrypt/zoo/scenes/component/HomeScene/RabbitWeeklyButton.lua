@@ -34,8 +34,9 @@ function RabbitWeeklyButton:update()
 
     if isPlayDay then
         number = rabbitMgr:getFreePlayLeft()
-        if number > 0 then
-            self.wrapper:getChildByName('num'):setString(tostring(number))
+        local remainNumber = rabbitMgr:getRemainingPlayCount()
+        if remainNumber > 0 then
+            self.wrapper:getChildByName('num'):setString(tostring(remainNumber))
             self.wrapper:getChildByName('num'):setVisible(true)
             self.wrapper:getChildByName('redDot'):setVisible(true)
         else

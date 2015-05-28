@@ -388,6 +388,8 @@ function Localhost:passLevel(levelId, score, flashStar, stageTime, coinAmount, t
 		rewardItems, success, err = UserLocalLogic:updateRabbitWeeklyLevelScore(levelId, score, flashStar, stageTime, coinAmount, targetCount, opLog, gameLevelType, requestTime)
 	elseif gameLevelType == GameLevelType.kTaskForRecall then 
 		rewardItems, success, err = UserLocalLogic:updateRecallTaskLevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
+	elseif gameLevelType == GameLevelType.kTaskForUnlockArea then 
+		rewardItems, success, err = UserLocalLogic:updateTaskForUnlockArealevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
 	else
 		assert(false, 'level type not supported')
 	end
@@ -475,6 +477,20 @@ function Localhost:openGiftBlocker( levelId, itemList )
 	local uid = user.uid
 	StageInfoLocalLogic:openGiftBlocker(uid, levelId, itemList)
 	return true
+end
+
+function Localhost:getPropsInGame(actId, levelId, itemIds)
+	local user = UserService.getInstance().user
+	if StageInfoLocalLogic:getPropsInGame(user.uid, levelId, itemIds) then
+		for _, propId in pairs(itemIds) do
+			UserManager.getInstance():addTimeProp(propId, 1)
+			UserService.getInstance():addTimeProp(propId, 1)
+		end
+		local evtData = {actId=actId, levelId=levelId, itemIds=itemIds}
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new("activity.incDropPropCount", evtData))
+		return true
+	end
+	return false
 end
 
 --

@@ -62,7 +62,7 @@ function IconButtonBase:init(ui, ...)
 	-- ------------------
 	local function onTouch()
 		if self.id and not IconButtonManager:getInstance():todayIsShow(self) then 
-			IconButtonManager:getInstance():writeShowTime(self)
+			IconButtonManager:getInstance():writeShowTimeInQueue(self)
 			IconButtonManager:getInstance().clickReplaceScene = self.clickReplaceScene
 		end
 		self:stopHasNotificationAnim()

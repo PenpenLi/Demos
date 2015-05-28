@@ -232,8 +232,8 @@ function MarketManager:getGoldProductInfo(uicallback)
             -- local list
             self.buyLogic:getProductInfo(onAndroidGetLocalListFinish, getGoldListFail, getGoldListTimeout, getGoldListCanceled)
             -- remote list
-            if MaintenanceManager:getInstance():isEnabled("GamePaymentAli") or
-                MaintenanceManager:getInstance():isEnabled("GamePaymentWechat") then
+            if PlatformConfig:isMarketAliPaySupport() or
+                PlatformConfig:isMarketWechatPaySupport() then
                 local animation, listening = nil, true
                 local function onCloseButtonTap()
                     if animation then
@@ -259,7 +259,7 @@ function MarketManager:getGoldProductInfo(uicallback)
                 local params = string.format("?name=product_android&uid=%s&_v=%s", uid, _G.bundleVersion)
                 url = url .. params
                 local request = HttpRequest:createGet(url)
-                request:setConnectionTimeoutMs(6 * 1000)
+                request:setConnectionTimeoutMs(1 * 1000)
                 request:setTimeoutMs(30 * 1000)
                 HttpClient:getInstance():sendRequest(onCallback, request)
             else
@@ -318,10 +318,10 @@ function MarketManager:onGetAndroidGoldListFinish(localConfig, remoteConfig)
         if v.name == "ingame" or v.name == "wechat" or v.name == "alipay" then
             if v.name == "ingame" then v.enabled = (AndroidPayment.getInstance():getDefaultSmsPayment() or
                 PlatformConfig:isBigPayPlatform() or
-                not MaintenanceManager:getInstance():isEnabled("GamePaymentWechat") and
-                not MaintenanceManager:getInstance():isEnabled("GamePaymentAli")) or not network
-            elseif v.name == "wechat" then v.enabled = MaintenanceManager:getInstance():isEnabled("GamePaymentWechat")
-            elseif v.name == "alipay" then v.enabled = MaintenanceManager:getInstance():isEnabled("GamePaymentAli") end
+                not PlatformConfig:isMarketWechatPaySupport() and
+                not PlatformConfig:isMarketAliPaySupport()) or not network
+            elseif v.name == "wechat" then v.enabled = PlatformConfig:isMarketWechatPaySupport()
+            elseif v.name == "alipay" then v.enabled = PlatformConfig:isMarketAliPaySupport() end
             if v.name == "wechat" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWechat end
             elseif v.name == "alipay" then for i, j in ipairs(v) do j.payType = PlatformPayType.kAlipay end end
             table.sort(v, function(a, b) return tonumber(a.cash) < tonumber(b.cash) end)

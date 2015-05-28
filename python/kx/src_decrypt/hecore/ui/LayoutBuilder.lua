@@ -11,7 +11,6 @@ if kDrawDebugRect then
 end
 
 local configCached = {}
-local simplejson = require("cjson")
 local builderCached = {}
 
 kGroupLayoutType = {kImage = 0, kText = 1, kGroup = 2}
@@ -61,7 +60,14 @@ function LayoutBuilder:createWithContentsOfFile(filePath)
     io.close(file)]]
     
     local t, fsize = lua_read_file(path)
-    config = simplejson.decode(t)
+    config = table.deserialize(t) -- simplejson.decode(t)
+    
+    if not config then -- 解析失败
+		he_log_error("LayoutBuilder fail, createWithContentsOfFile: "..filePath)
+     	assert(false)
+     	return nil
+    end
+
     configCached[filePath] = config
   end
   local fileSeparater = "/"

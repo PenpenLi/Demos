@@ -1,6 +1,8 @@
 require "zoo.gamePlay.BoardAction.GameBoardActionDataSet"
 require "zoo.gamePlay.BoardLogic.MatchItemLogic"
 require "zoo.gamePlay.BoardLogic.SpecialMatchLogic"
+----交换两个Item的逻辑-----
+----mainLogic是GameBoardLogic
 SwapItemLogic = class{}
 --可以被交换，但是不一定有匹配
 function SwapItemLogic:canBeSwaped(mainLogic, r1,c1,r2,c2)
@@ -8,30 +10,50 @@ function SwapItemLogic:canBeSwaped(mainLogic, r1,c1,r2,c2)
 end
 
 function SwapItemLogic:_canBeSwaped(_boardmap, _gameItemMap, r1,c1,r2,c2)
-    if (r1 == r2 and c1 == c2 + 1) or (r1 == r2 and c1 == c2 - 1) or (r1 == r2 + 1 and c1 == c2) or (r1 == r2 - 1 and c1 == c2) then
+	if (r1 == r2 and c1 == c2 + 1)
+		or (r1 == r2 and c1 == c2 - 1)
+		or (r1 == r2 + 1 and c1 == c2)
+		or (r1 == r2 - 1 and c1 == c2)
+		then
+
 		local board1 = _boardmap[r1][c1];
 		local board2 = _boardmap[r2][c2];
 		local item1 = _gameItemMap[r1][c1];
 		local item2 = _gameItemMap[r2][c2];
-		if (board1.isUsed == true and board1.isBlock == false and item1.isBlock == false)
-			and (board2.isUsed == true and board2.isBlock == false and item2.isBlock == false)
-			and (not item1:hasFurball() and not item2:hasFurball())
-			and item1.ItemStatus == GameItemStatusType.kNone 							--稳定状态的东西，才能移动
-			and item2.ItemStatus == GameItemStatusType.kNone
-			and item1.isEmpty == false 													--非空的空格可以交换
-			and item2.isEmpty == false
-			and item1.ItemType ~= GameItemType.kBlackCuteBall
-			and item2.ItemType ~= GameItemType.kBlackCuteBall
-			then
+
+		--相邻两个Item
+		if item1:canBeSwap() and item2:canBeSwap() then
+			------判断绳子
+			if (r1 == r2 and c1 == c2 + 1) then ----左右
+				if board1:hasLeftRope() or board2:hasRightRope() then
+					return 2;
+				end
+			end
+			if (r1 == r2 and c1 == c2 - 1) then ----左右
+				if board1:hasRightRope() or board2:hasLeftRope() then
+					return 2;
+				end
+			end
+			if (r1 == r2 + 1 and c1 == c2) then ----左右
+				if board1:hasTopRope() or board2:hasBottomRope() then
+					return 2;
+				end
+			end
+			if (r1 == r2 - 1 and c1 == c2) then ----左右
+				if board1:hasBottomRope() or board2:hasTopRope() then
+					return 2;
+				end
+			end
+
 			return 1
 		end
 	end
-
 	return 0
 end
 
 --交换两个Item--并且尝试匹配消除
 function SwapItemLogic:SwapedItemAndMatch(mainLogic, r1, c1, r2, c2, doSwap)	--doSwap==true表示确实进行交换，并且引起相应效果，doSwap==false表示仅仅判断是否能够交换
+	--1.特效交换	
 	local st1 = SwapItemLogic:_trySwapedSpecialItem(mainLogic, r1,c1,r2,c2, doSwap)
 	if st1 then--能够进行特效交换
 		local possbileMoves = {{{ r = r1, c = c1 }, { r = r2, c = c2 }, dir = { r = r2 - r1, c = c2 - c1 } }}
@@ -39,13 +61,15 @@ function SwapItemLogic:SwapedItemAndMatch(mainLogic, r1, c1, r2, c2, doSwap)	--d
 	else
 		local st2, possbileMoves = SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		if st2 then---能够进行普通交换
-			if doSwap then ------2.交换后的动作
+			if doSwap then
+				------2.交换后的动作
 				mainLogic.gameMode:afterSwap(r1, c1)
 				mainLogic.gameMode:afterSwap(r2, c2)
 			end
 			return true, possbileMoves
-        end
+		end
 	end
+
 	return false
 end
 
@@ -69,6 +93,8 @@ function SwapItemLogic:_trySwapedSpecialItem(mainLogic, r1,c1,r2,c2, doSwap)--do
 			mainLogic:checkItemBlock(r2, c2)
 			FallingItemLogic:preUpdateHelpMap(mainLogic)
 		end
+		-- item1.isNeedUpdate = true
+		-- item2.isNeedUpdate = true
 	end
 	
 	if sp1 >= AnimalTypeConfig.kLine and sp1<= AnimalTypeConfig.kColor
@@ -124,10 +150,7 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local color1 = data1.ItemColorType
 	local color2 = data2.ItemColorType
 
-	if (color1 == color2) and doSwap then
-        SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
-        return true
-    end --同样的颜色交换，没有意义
+	if (color1 == color2) then return false end --同样的颜色交换，没有意义
 	--1.临时性颜色交换
 	local item1Clone = data1:copy()
 	local item2Clone = data2:copy()
@@ -180,17 +203,12 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		
 		return true, possibleMoves
 	else
-        if doSwap then
-            SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r2, c2, r1, c1)
-            SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r1, c1, r2, c2)
-            return true
-        else
-			data1:getAnimalLikeDataFrom(item1Clone)
-			data2:getAnimalLikeDataFrom(item2Clone)
-			data1.isNeedUpdate = false
-			data2.isNeedUpdate = false
-            return false
-        end
+		--回调颜色
+		data1:getAnimalLikeDataFrom(item1Clone)
+		data2:getAnimalLikeDataFrom(item2Clone)
+		data1.isNeedUpdate = false
+		data2.isNeedUpdate = false
+		return false
 	end
 end
 

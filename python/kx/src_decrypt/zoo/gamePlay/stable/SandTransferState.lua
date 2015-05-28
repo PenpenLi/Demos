@@ -15,7 +15,6 @@ function SandTransferState:create(context)
 end
 
 function SandTransferState:onEnter()
-	print("------------------SandTransferState:onEnter--------------------")
 	BaseStableState.onEnter(self)
 	local context = self
 	local function transferCallback()
@@ -31,7 +30,6 @@ function SandTransferState:onEnter()
 end
 
 function SandTransferState:onExit()
-	print("------------------SandTransferState:onExit--------------------")
 	BaseStableState.onExit(self)
 	self.nextState = nil
 	self.totalSandTransferToHandle = 0

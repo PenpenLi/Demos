@@ -434,6 +434,7 @@ function QuitPanel:onQuitGameBtnTapped(event, ...)
 	if self.onQuitGameBtnTappedCallback then
 		self.onQuitGameBtnTappedCallback()
 	end
+	he_log_info("auto_test_tap_quit_level")
 end
 
 function QuitPanel:onEnterHandler(event, ...)
@@ -524,6 +525,7 @@ function QuitPanel:playShowAnim(animFinishCallback, ...)
 		if animFinishCallback then
 			animFinishCallback()
 		end
+		he_log_info("auto_test_quit_panel_open")
 	end
 	local callbackAction = CCCallFunc:create(finishCallback)
 

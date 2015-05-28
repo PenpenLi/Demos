@@ -12,11 +12,11 @@ function MdoPay:purchaseItem(itemId, itemAmount, itemPrice, realAmount, callback
 	if not kSmsUtil then kSmsUtil = luajava.bindClass("com.happyelements.hellolua.share.SmsUtil") end
 	local item = MetaManager:getGoodPayCodeMeta(itemId)
 	local channelID = ""
-	local androidPlarformName = StartupConfig:getInstance():getPlatformName()
+	local androidPlatformName = StartupConfig:getInstance():getPlatformName()
 
-	if androidPlarformName == "duoku" then channelID = "622009"
-	elseif androidPlarformName == "baiduapp" then channelID = "622001"
-	elseif androidPlarformName == "91" then channelID = "622006" end
+	if androidPlatformName == "duoku" then channelID = "622009"
+	elseif androidPlatformName == "baiduapp" then channelID = "622001"
+	elseif androidPlatformName == "91" then channelID = "622006" end
 
 	local dest = kSmsDest
 	local code = item.MDOPayCode .. channelID

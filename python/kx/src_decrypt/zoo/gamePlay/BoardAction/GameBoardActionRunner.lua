@@ -270,6 +270,7 @@ function GameBoardActionRunner:runningGameItemActionHoneyBottleBroken(mainLogic,
 			theAction.completeCallback()
 		end
 		mainLogic.gameActionList[actid] = nil
+		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 	end
 end
 
@@ -348,11 +349,13 @@ function GameBoardActionRunner:runningGameItemActionTransmission(mainLogic, theA
 		local to_r, to_c = theAction.ItemPos2.x, theAction.ItemPos2.y
 
 		mainLogic.boardmap[to_r][to_c]:changeDataAfterTrans(theAction.boardData)
+		mainLogic.boardmap[to_r][to_c].isNeedUpdate = false
 		local gameItemdata = mainLogic.gameItemMap[to_r][to_c]
 		theAction.itemData.x = gameItemdata.x
 		theAction.itemData.y = gameItemdata.y
 		gameItemdata = nil
 		mainLogic.gameItemMap[to_r][to_c]:getAnimalLikeDataFrom(theAction.itemData)
+		mainLogic.gameItemMap[to_r][to_c].isNeedUpdate = false
 		theAction.boardData = mainLogic.boardmap[to_r][to_c]
 		theAction.addInfo = "reInitView"
 	elseif theAction.addInfo == "over" then
@@ -740,6 +743,8 @@ function GameBoardActionRunner:runningGameItemLogicActionForceMoveItem( mainLogi
 					local item2Clone = data2:copy()
 					data2:getAnimalLikeDataFrom(item1Clone)
 					data1:getAnimalLikeDataFrom(item2Clone)
+					data1.isNeedUpdate = false
+					data2.isNeedUpdate = false
 				end 
 			end
 

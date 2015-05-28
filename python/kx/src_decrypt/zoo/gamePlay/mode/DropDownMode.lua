@@ -99,11 +99,15 @@ function DropDownMode:afterStable(r, c)
   return self:tryCollectIngredient(r, c)
 end
 
+function DropDownMode:afterChainBreaked(r, c)
+  return self:tryCollectIngredient(r, c)
+end
+
 function DropDownMode:tryCollectIngredient(r,c)
   local mainLogic = self.mainLogic
 	local board1 = mainLogic.boardmap[r][c]
   local result = false
-	if board1.isCollector == true then
+	if board1.isCollector == true and not board1:hasChainInDirection(ChainDirConfig.kDown) then
 		local item1 = mainLogic.gameItemMap[r][c]
 		if item1.ItemType == GameItemType.kIngredient then	
       result = true
@@ -128,11 +132,15 @@ function DropDownMode:tryCollectIngredient(r,c)
 				nil,
       GamePlayConfig_DropDown_Ingredient_DroppingCD)
 			CollectAction.addInfo = "Pass"
+      CollectAction.itemShowType = item1.showType
 			mainLogic:addDestroyAction(CollectAction)
+      mainLogic.toBeCollected = mainLogic.toBeCollected + 1
 
-			ProductItemLogic:shoundCome(mainLogic, GameItemType.kIngredient)
-			ProductItemLogic:resetStep(mainLogic, GameItemType.kIngredient)
-			mainLogic.ingredientsCount = mainLogic.ingredientsCount + 1;
+      mainLogic.ingredientsCount = mainLogic.ingredientsCount + 1;
+      if mainLogic:getIngredientsOnScreen() < 1 then 
+  			ProductItemLogic:shoundCome(mainLogic, GameItemType.kIngredient)
+  			ProductItemLogic:resetStep(mainLogic, GameItemType.kIngredient)
+      end
 		end
 	end
   return result

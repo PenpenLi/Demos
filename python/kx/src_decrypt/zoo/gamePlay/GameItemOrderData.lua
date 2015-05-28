@@ -47,6 +47,7 @@ GameItemOrderType_Others = table.const
 	kBlackCuteBall = 2,
 	kHoney = 3,
 	kSand = 4,
+	kMagicStone = 5,
 }
 
 GameItemOrderType_SeaAnimal = table.const

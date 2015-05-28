@@ -1,7 +1,8 @@
 -- 为了测试修改成测试服务器
 -- local dynamicHost = "http://well.happyelements.net/promotion/";
--- local dynamicHost = "http://10.130.137.191/"; -- 柴智的机器
+-- local dynamicHost = "http://10.130.136.95/"; -- 柴智的机器
 local dynamicHost = "http://10.130.137.97/";
+-- local dynamicHost = "http://10.130.136.89/";
 -- local dynamicHost = "http://10.130.148.156:8080/";
 -- local dynamicHost = "http://animalmobile.happyelements.cn/";
 -- local dynamicHost = "http://mobile.app100718846.twsapp.com/";

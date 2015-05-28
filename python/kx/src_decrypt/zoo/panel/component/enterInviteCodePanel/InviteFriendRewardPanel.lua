@@ -601,31 +601,9 @@ end
 
 function InviteFriendRewardPanel:popout(...)
 	assert(#{...} == 0)
+	self:updateEachFriendItem()
 
-	local function onPopouted()
-
-		-- Check If User Is <= 30 Level,
-		local userTopLevel = UserManager.getInstance().user:getTopLevelId()
-
-		-- If >= 31, Pop The InviteFriendRewardPanel
-		if userTopLevel >= 31 then
-			--inviteFriendPanel:popoutWithBgFadeIn()
-		else
-			-- <= 30 , and Never Entered AN Invite Code Then, Pop The EnterInviteCodePanel 
-			local flag = UserManager:getInstance().userExtend.flag or 0
-			if flag % 2 == 0  then
-				-- Not Sended Invite Code Ever
-				if not __IOS_FB and not PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
-					local enterInviteCodePanel	= EnterInviteCodePanel:create()
-					enterInviteCodePanel:popout()
-				end
-			end
-		end
-		self.allowBackKeyTap = true
-	end
-
-	PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
-	self.showHideAnim:playShowAnim(onPopouted)
+	
 end
 
 function InviteFriendRewardPanel:setToScreenCenterVertical(...)
@@ -668,7 +646,7 @@ function InviteFriendRewardPanel:onEnterHandler(event, ...)
 	assert(#{...} == 0)
 
 	if event == "enter" then
-		self:updateEachFriendItem()
+		
 
 	elseif event == "exit" then
 
@@ -681,6 +659,32 @@ function InviteFriendRewardPanel:updateEachFriendItem(...)
 	local function onSendGetInviteFriendMsgSuccess(data)
 
 		print("InviteFriendRewardPanel:updateEachFriendItem Called !")
+
+		local function onPopouted()
+
+			-- Check If User Is <= 30 Level,
+			local userTopLevel = UserManager.getInstance().user:getTopLevelId()
+
+			-- If >= 31, Pop The InviteFriendRewardPanel
+			if userTopLevel >= 31 then
+				--inviteFriendPanel:popoutWithBgFadeIn()
+			else
+				-- <= 30 , and Never Entered AN Invite Code Then, Pop The EnterInviteCodePanel 
+				local flag = UserManager:getInstance().userExtend.flag or 0
+				if flag % 2 == 0  then
+					-- Not Sended Invite Code Ever
+					if not __IOS_FB and not PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
+						local enterInviteCodePanel	= EnterInviteCodePanel:create()
+						enterInviteCodePanel:popout()
+					end
+				end
+			end
+			self.allowBackKeyTap = true
+		end
+
+		PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
+		self.showHideAnim:playShowAnim(onPopouted)
+
 		-- print(table.tostring(data))
 		--debug.debug()
 
@@ -800,10 +804,11 @@ function InviteFriendRewardPanel:sendGetInviteFriendsInfoMsg(onSuccessCallback, 
 		--local errorMessage = "get invite friend info failed !"
 		--errorMessage = "errorMessage:" .. tostring(err)
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..err), "negative")
+		self:dispose()
 		--assert(false, errorMessage)
 	end
 
-	local http = GetInviteFriendsInfo.new()
+	local http = GetInviteFriendsInfo.new(true)
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFailed)
 	http:load()

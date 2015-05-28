@@ -162,7 +162,8 @@ GameModeType = {
 	RABBIT_WEEKLY = 'RabbitWeekly',
 	WORLD_CUP = 'WorldCUP',
 	SEA_ORDER = 'seaOrder',
-    HALLOWEEN = 'halloween'
+    HALLOWEEN = 'halloween',
+    TASK_UNLOCK_DROP_DOWN = 'Mobile Drop down'
 }
 
 local function checkGameModeType(gameModeType, ...)
@@ -181,7 +182,8 @@ local function checkGameModeType(gameModeType, ...)
 		gameModeType == GameModeType.RABBIT_WEEKLY or
 		gameModeType == GameModeType.WORLD_CUP or
 		gameModeType == GameModeType.SEA_ORDER or
-		gameModeType == GameModeType.HALLOWEEN
+		gameModeType == GameModeType.HALLOWEEN or 
+		gameModeType == GameModeType.TASK_UNLOCK_DROP_DOWN
 		)
 end
 
@@ -204,6 +206,7 @@ GameModeTypeId = {
 	WORLD_CUP_ID = 13,
 	SEA_ORDER_ID = 14,
 	HALLOWEEN    = 15,
+	TASK_UNLOCK_DROP_DOWN = 16,
 }
 
 local function getGameModeTypeIdFromModeType(modeType, ...)
@@ -235,6 +238,8 @@ local function getGameModeTypeIdFromModeType(modeType, ...)
 		return GameModeTypeId.SEA_ORDER_ID
 	elseif modeType == GameModeType.HALLOWEEN then
 		return GameModeTypeId.HALLOWEEN
+	elseif modeType == GameModeType.TASK_UNLOCK_DROP_DOWN then 
+		return GameModeTypeId.TASK_UNLOCK_DROP_DOWN
 	else
 		assert(false)
 	end

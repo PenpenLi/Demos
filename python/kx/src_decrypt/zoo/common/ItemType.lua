@@ -56,6 +56,8 @@ ItemType = {
 	-- 15 世界杯足球
 	ADD_TIME			= 16, -- 最终加15秒
 
+	KEY_GOLD            = 17,  ---解锁钥匙，临时展示用
+
 }
 
 -- Pre Game Property Type, 
@@ -71,7 +73,7 @@ ItemNotInBag = {
 	[ItemType.RABBIT_WEEKLY_PLAY_CARD] = true
 }
 
-TimePropMap = table.const {
+TimePropMap = {
 	[ItemType.TIMELIMIT_BACK] = ItemType.INGAME_BACK,
 	[ItemType.TIMELIMIT_REFRESH] = ItemType.INGAME_REFRESH,
 	[ItemType.TIMELIMIT_HAMMER] = ItemType.INGAME_HAMMER,

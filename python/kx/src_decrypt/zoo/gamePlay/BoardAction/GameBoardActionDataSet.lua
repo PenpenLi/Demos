@@ -118,6 +118,7 @@ GameItemActionType = table.const	--Item自动播放动画细节
 	kItem_Sand_Transfer	= 117,			-- 流沙流动
 	kItem_mayday_boss_casting = 118,    -- 活动boss发大招
 	kItem_QuestionMark_Protect = 119,   -- 问号障碍变成其他障碍时保护
+	kItem_Magic_Stone_Active = 120, 	-- 魔法石被激活
 }
 
 GamePropsActionType = table.const 	--游戏道具播放动画细节

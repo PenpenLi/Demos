@@ -9,6 +9,8 @@ function GameMapInitialLogic:init(mainLogic, config)
 
 	self:initColorAndSpecialData(mainLogic, config.animalMap,  config.numberOfColors)	
 	self:initColorType(mainLogic, config.numberOfColors)
+	self:initDropBuff(mainLogic)
+	self:initDigTileMap(mainLogic, config)
 	self:initMagicLamp(mainLogic)  -- 在计算随机颜色前就初始化神灯
 	self:calculateItemColors(mainLogic, config)
 	self:initPortal(mainLogic, config.portals)
@@ -34,7 +36,18 @@ function GameMapInitialLogic:initTileData(mainLogic, config)
 			mainLogic.gameItemMap[r][c]:initBalloonConfig(mainLogic.balloonFrom)
 			mainLogic.gameItemMap[r][c]:initAddMoveConfig(mainLogic.addMoveBase)
 			mainLogic.gameItemMap[r][c]:initAddTimeConfig(mainLogic.addTime)
+
+			if config.gameMode == AnimalGameMode.kTaskForUnlockArea then 
+				mainLogic.gameItemMap[r][c]:initUnlockAreaDropDownModeInfo()
+				mainLogic.boardmap[r][c]:initUnlockAreaDropDownModeInfo()
+			end
 		end
+	end
+end
+
+function GameMapInitialLogic:initDropBuff(mainLogic)
+	if mainLogic.dropBuffLogic and mainLogic.dropBuffLogic.canBeTriggered then
+		mainLogic.dropBuffLogic:onGameInit(mainLogic.realCostMove)
 	end
 end
 
@@ -171,9 +184,7 @@ function GameMapInitialLogic:initColorType(mainLogic, numColorsFromConfig)
 	end
 end
 
---开始随机生成颜色
-function GameMapInitialLogic:calculateItemColors(mainLogic, config)
-	--挖地模式下，需要将屏幕之外的地格也计算在内
+function GameMapInitialLogic:initDigTileMap(mainLogic, config)
 	if mainLogic.theGamePlayType == GamePlayType.kDigMove 
 		or mainLogic.theGamePlayType == GamePlayType.kDigTime 
 		or mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless
@@ -208,7 +219,19 @@ function GameMapInitialLogic:calculateItemColors(mainLogic, config)
 				mainLogic.digBoardMap[r][c] = board
 			end
 		end
+	end
+end
 
+--开始随机生成颜色
+function GameMapInitialLogic:calculateItemColors(mainLogic, config)
+	--挖地模式下，需要将屏幕之外的地格也计算在内
+	if mainLogic.theGamePlayType == GamePlayType.kDigMove 
+		or mainLogic.theGamePlayType == GamePlayType.kDigTime 
+		or mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless
+		or mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
+		or mainLogic.theGamePlayType == GamePlayType.kHalloween
+		then
+		local normalTileRow = 9
 		self:_calculateItemColors(mainLogic, config.animalMap, normalTileRow)
 
 		for r = 1, #mainLogic.gameItemMap do
@@ -351,30 +374,123 @@ function GameMapInitialLogic:getColorForMagicLamp(mainLogic)
 end
 
 function GameMapInitialLogic:initMagicLamp(mainLogic)
-	local lamps = {}
+	local localMagicLampItems = {}
+
+	local function randomizeTable(table)
+		local size = #table
+		local function swapInTable(table, i, j)
+			local t = table[i]
+			table[i] = table[j]
+			table[j] = t
+		end
+		for i = 1, size do
+			swapInTable(table, 1, mainLogic.randFactory:rand(1, size))
+		end
+	end
+
 	for r = 1, #mainLogic.gameItemMap do 
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
 			if item then
 				if item.ItemType == GameItemType.kMagicLamp then
-					table.insert(lamps, item)
+					local possibleColors = GameMapInitialLogic:getPossibleColorsForItem(mainLogic, r, c)
+					randomizeTable(possibleColors)
+					local queueItem = {item = item, possibleColors = possibleColors, currentIndex = 1, r = r, c = c}
+					table.insert(localMagicLampItems, queueItem)
 				end
 			end
 		end
 	end
 
-	-- 只有神灯关卡才初始化神灯
-	-- 因为初始化颜色时会产生随机数
-	if #lamps > 0 then
+	if #localMagicLampItems > #mainLogic.mapColorList * 2 then
+		assert(false, 'magic lamp config error')
+		return
+	end
 
-		initMagicLampColorPool(mainLogic)
-		-- 前提是灯的数量不超过颜色数*2
-		for k, v in pairs(lamps) do
-			v.ItemColorType = GameMapInitialLogic:getColorForMagicLamp(mainLogic)
-			-- v.ItemColorType = AnimalTypeConfig.kPurple
+	if #localMagicLampItems == 0 then
+		return 
+	end
+
+	local function sort(v1, v2)
+		return #v1.possibleColors < #v2.possibleColors
+	end
+
+	-- possibleColor越少，处理优先级越高
+	table.sort(localMagicLampItems, sort)
+
+	local counter = 0
+	local maxTimes = 1
+	for k, v in pairs(localMagicLampItems) do
+		maxTimes = maxTimes * #v.possibleColors
+	end
+
+	local function getNextCombination()
+		
+		counter = counter + 1
+		if counter > maxTimes then
+			return nil
+		end
+
+		local index = 1
+		local combination = {}
+		for k, v in pairs(localMagicLampItems) do
+			table.insert(combination, v.possibleColors[v.currentIndex])
+		end
+		localMagicLampItems[index].currentIndex = localMagicLampItems[index].currentIndex + 1 -- current item++
+		while localMagicLampItems[index].currentIndex > #localMagicLampItems[index].possibleColors do -- indent
+			local next = localMagicLampItems[index + 1]
+			if next then
+				next.currentIndex = next.currentIndex + 1
+				localMagicLampItems[index].currentIndex = 1
+				index = index + 1
+			else
+				localMagicLampItems[index].currentIndex = localMagicLampItems[index].currentIndex - 1 --恢复
+			end
+		end
+		return combination
+	end
+
+	local function isLegal(combination)
+		local colorStats = {}
+		for k, v in pairs(combination) do 
+			if not colorStats[v] then
+				colorStats[v] = 0
+			end
+			colorStats[v] = colorStats[v] + 1
+		end
+		for k, v in pairs(colorStats) do 
+			if v > 2 then 
+				return false
+			end
+		end
+		return true
+	end
+
+	local function hasMatch(combination)
+		local hasMatch = false
+		for i = 1, #combination do
+			localMagicLampItems[i].item.ItemColorType = combination[i]
+		end
+		local hasMatch = false
+		for k, v in pairs(localMagicLampItems) do
+			if mainLogic:checkMatchQuick(v.r, v.c, v.item.ItemColorType) then
+				hasMatch = true
+				break
+			end
+		end
+		return hasMatch
+	end
+
+	local result = getNextCombination()
+	while result do
+		if not isLegal(result) or hasMatch(result) then
+			result = getNextCombination()
+		else
+			break
 		end
 	end
 end
+
 
 ----------------------------------
 --初始化传送带
@@ -382,33 +498,40 @@ end
 function GameMapInitialLogic:initTransmission(mainLogic, config)
 	if not config.trans or #config.trans == 0 then return end 
 	for k, v in pairs(config.trans) do 
-		local transItem = BaseTransmission:create(v)
-		local direction = transItem:getDirection()
-		local length = transItem:getTransLength()
-		local color = transItem:getstartType()
-		local toItem = transItem:getLink()
-		local start = transItem:getStart()
-		local dx, dy = 0, 0
-		if direction == TransmissionDirection.kLeft then
-			dy = -1
-		elseif direction == TransmissionDirection.kRight then 
-			dy = 1
-		elseif direction == TransmissionDirection.kUp then
-			dx = -1
-		else
-			dx = 1
-		end 
-		for k = 1, length do 
-			local type_trans = TransmissionType.kRoad
-			if k == 1 then 
-				type_trans = TransmissionType.kStart
-			elseif k == length then
-				type_trans = TransmissionType.kEnd
-				color = transItem:getEndType()
+
+
+		local transItem = BaseTransmission:create(tostring(v)):getHeadTrans()
+		while (transItem ~= nil) do
+			local start = transItem:getStart()
+			local length = transItem:getTransLength()
+			local direction = transItem:getDirection()
+
+			local dx, dy = 0, 0
+			if direction == TransmissionDirection.kLeft then
+				dy = -1
+			elseif direction == TransmissionDirection.kRight then 
+				dy = 1
+			elseif direction == TransmissionDirection.kUp then
+				dx = -1
+			else
+				dx = 1
+			end 
+
+			for k = 1, length do 
+				local type_trans = transItem:getTransTypeByIndex(k)
+				local link = transItem:getLinkPositionByIndex(k)
+				local color = 0				
+				if not transItem:hasCercle() then
+					if transItem:isHeadTrans() and k == 1 then
+						color = transItem:getStartType()
+					elseif transItem:isEndTrans() and k == length then
+						color = transItem:getHeadTrans():getEndType()
+					end
+				end
+				print('setting:', 'X', start.x + dx * (k-1), 'Y', start.y + dy * (k-1),'TYPE', type_trans, 'DIRECTION', direction, 'COLOR', color, 'LINK', link.x, link.y)
+				mainLogic.boardmap[start.x + dx * (k-1)][start.y + dy * (k-1)]:setTransmissionConfig(type_trans, direction, color, link)
 			end
-			-- print("r = ", start.x + dx * (k-1), "   c = ", start.y + dy * (k-1), type_trans, direction, color, dx, dy)
-			local link = k == length and toItem or IntCoord:create(start.x + dx * k, start.y + dy * k)
-			mainLogic.boardmap[start.x + dx * (k-1)][start.y + dy * (k-1)]:setTransmissionConfig(type_trans, direction, color, link)
+			transItem = transItem:getNextTrans()
 		end
 	end
 end

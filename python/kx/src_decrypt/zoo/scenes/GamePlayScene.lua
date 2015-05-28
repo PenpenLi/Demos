@@ -18,7 +18,7 @@ function GamePlayScene:ctor()
 	self.initScheduler = nil;
 end
 function GamePlayScene:dispose()
-	if (not self.replayMode) and (not isLocalDevelopMode) then
+	if self.playSceneUIType == GamePlaySceneUIType.kNormal and (not isLocalDevelopMode) then
 		self.mygameboardlogic:WriteReplay("test.rep")
 	end
 	if self.mygameboardlogic then self.mygameboardlogic:dispose() end
@@ -35,9 +35,10 @@ function GamePlayScene:dispose()
 	Scene.dispose(self)
 end
 
-function GamePlayScene:create(level)
+function GamePlayScene:create(level, playSceneUIType)
 	local s = GamePlayScene.new()
 	s.gamelevel = level;
+	s.playSceneUIType = playSceneUIType
 	s:initScene()
 	return s
 end
@@ -74,7 +75,7 @@ function GamePlayScene:onInit()
 
 	print("after create button",os.date())
 	local levelconfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.gamelevel);
-	if GameGuide then
+	if GameGuide and self.playSceneUIType and self.playSceneUIType == GamePlaySceneUIType.kNormal then
 		levelconfig.randomSeed = GameGuide:sharedInstance():onGameInit(self.gamelevel)
 	end
 	self.mygameboardlogic = GameBoardLogic:create();
@@ -83,16 +84,17 @@ function GamePlayScene:onInit()
 	local pos, width, height
 	self.mygameboardview, pos, width, height = GameBoardView:createByGameBoardLogic(self.mygameboardlogic)
 	self:addChild(self.mygameboardview)
+	he_log_info("auto_test_enter_play_scene")
 end
 
-function GamePlayScene:setReplay(table)
-	self.replayMode = true
-	local levelconfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.mygameboardlogic.level)
-	self.mygameboardlogic.randomSeed = table.randomSeed
-	self.mygameboardlogic.replaySteps = table.replaySteps
-	self.mygameboardlogic:ReplayStart(levelconfig)
-	self.mygameboardview:reInitByGameBoardLogic(self.mygameboardlogic);
-end
+-- function GamePlayScene:setReplay(table)
+-- 	self.replayMode = true
+-- 	local levelconfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.mygameboardlogic.level)
+-- 	self.mygameboardlogic.randomSeed = table.randomSeed
+-- 	self.mygameboardlogic.replaySteps = table.replaySteps
+-- 	self.mygameboardlogic:ReplayStart(levelconfig)
+-- 	self.mygameboardview:reInitByGameBoardLogic(self.mygameboardlogic);
+-- end
 
 function GamePlayScene:getGameBoardLogic(...)
 	assert(#{...} == 0)

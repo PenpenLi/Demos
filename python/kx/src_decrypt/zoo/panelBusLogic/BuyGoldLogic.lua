@@ -208,6 +208,7 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 		IosPayment:buy(data.productIdentifier, data.iapPrice, data.priceLocale, "", onSuccess, onFail)
 	elseif __ANDROID then -- ANDROID
 		local logic = IngamePaymentLogic:create(index, 2)
+		logic:ignoreSecondConfirm(true)
 		logic:buy(onSuccess, onFail, onCancel)
 	elseif __WP8 then
 		local logic = Wp8Payment:create(index)

@@ -25,6 +25,22 @@ function UpdateButton:init()
     self.up:setAnchorPoint(ccp(0.5,0))
 
     self.up:runAction(self:buildAnimation())
+
+    self.text = self.ui:getChildByName("text")
+    self:setText()
+end
+
+function UpdateButton:setText(status, percentage)
+	if status == "ready" then
+		self.text:setText(Localization:getInstance():getText("new.version.button.ready"))
+	elseif status == "ing" then
+		self.text:setText(Localization:getInstance():getText("new.version.button.processing", {percent = tostring(percentage)}))
+	else
+		self.text:setText(Localization:getInstance():getText("new.version.button.download"))
+	end
+	local tSize = self.text:getContentSize()
+	local wSize = self.wrapper:getGroupBounds().size
+	self.text:setPositionX((wSize.width - tSize.width) / 2)
 end
 
 function UpdateButton:buildAnimation()

@@ -13,6 +13,8 @@ LevelConstans = table.const{
 	MAYDAY_ENDLESS_LEVEL_ID_END = 151000,
 	RECALL_TASK_LEVEL_ID_START = 170000,
 	RECALL_TASK_LEVEL_ID_END = 179999,
+	TASK_FOR_UNLOCK_AREA_START = 200000,
+	TASK_FOR_UNLOCK_AREA_END = 209999,
 }
 
 StageModeConstans = table.const{
@@ -31,6 +33,7 @@ GameLevelType = {
 	kMayDay			= 5,
 	kRabbitWeekly	= 6,
 	kTaskForRecall  = 8,
+	kTaskForUnlockArea = 9,
 }
 
 LevelType = class()
@@ -65,6 +68,15 @@ function LevelType:isRecallTaskLevel( levelId )
 	else return false end
 end
 
+function LevelType:isUnlockAreaTaskLevel( levelId )
+	-- body
+	if levelId > LevelConstans.TASK_FOR_UNLOCK_AREA_START and levelId <= LevelConstans.TASK_FOR_UNLOCK_AREA_END then
+		return true
+	else
+		return false
+	end
+end
+
 function LevelType:getLevelTypeByLevelId( levelId )
 	if LevelType:isMainLevel(levelId) then
 		return GameLevelType.kMainLevel
@@ -78,6 +90,8 @@ function LevelType:getLevelTypeByLevelId( levelId )
 		return GameLevelType.kRabbitWeekly
 	elseif LevelType:isRecallTaskLevel(levelId) then
 		return GameLevelType.kTaskForRecall
+	elseif LevelType:isUnlockAreaTaskLevel(levelId) then
+		return GameLevelType.kTaskForUnlockArea
 	else
 		assert(false, 'unknown level type:levelId='..tostring(levelId))
 	end
@@ -85,7 +99,8 @@ end
 
 function LevelType.isShowRankList( levelType )
 	if _isQixiLevel then return false end
-	if levelType == GameLevelType.kMayDay or levelType == GameLevelType.kTaskForRecall then
+	if levelType == GameLevelType.kMayDay or levelType == GameLevelType.kTaskForRecall
+		or levelType == GameLevelType.kTaskForUnlockArea then
 		return false
 	end
 	return true

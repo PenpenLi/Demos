@@ -11,30 +11,44 @@ end
 
 function BalloonCheckState:onEnter()
 	BaseStableState.onEnter(self)
-	self.nextState = nil
-	local function callback( ... )
-		-- body
-		self:handleBalloonComplete();
+	
+	if self.mainLogic.isInStep and self.excuteNum == 0 then
+		self.nextState = nil
+		self.excuteNum = self.excuteNum + 1
+		local function callback( ... )
+			-- body
+			self:handleBalloonComplete();
+		end
+
+		self.hasItemToHandle = false
+		self.completeBalloon = 0
+		self.totalBalloon = GameExtandPlayLogic:CheckBalloonList(self.mainLogic, callback)
+		if self.totalBalloon == 0 then
+			self:handleBalloonComplete()
+		else
+			self.hasItemToHandle = true
+		end
+	else
+		self.nextState = self:getNextState()
 	end
 
-	self.hasItemToHandle = false
-	self.completeBalloon = 0
-	self.totalBalloon = GameExtandPlayLogic:CheckBalloonList(self.mainLogic, callback)
-	if self.totalBalloon == 0 then
-		self:handleBalloonComplete()
-	else
-		self.hasItemToHandle = true
-	end
+	
+end
+
+function BalloonCheckState:resetExcuteNum( ... )
+	-- body
+	self.excuteNum = 0
 end
 
 function BalloonCheckState:handleBalloonComplete( ... )
 	self.completeBalloon = self.completeBalloon + 1 
 	if self.completeBalloon >= self.totalBalloon then 
 		
-		self.nextState = self.context.transmissionState
+		self.nextState = self:getNextState()
 		
 		if self.hasItemToHandle then
 			self.mainLogic:setNeedCheckFalling()
+			self.context.needLoopCheck = true
 		end
 	end
 end
@@ -53,4 +67,24 @@ end
 
 function BalloonCheckState:getClassName()
 	return "BalloonCheckState"
+end
+
+BalloonCheckStateInLoop = class(BalloonCheckState)
+function BalloonCheckStateInLoop:create( context )
+	-- body
+	local v = BalloonCheckStateInLoop.new()
+	v.context = context
+	v.mainLogic = context.mainLogic
+	v.boardView = v.mainLogic.boardView
+	return v
+end
+
+function BalloonCheckStateInLoop:getClassName( ... )
+	-- body
+	return "BalloonCheckStateInLoop"
+end
+
+function BalloonCheckStateInLoop:getNextState( ... )
+	-- body
+	return self.context.honeyBottleStateInLoop
 end

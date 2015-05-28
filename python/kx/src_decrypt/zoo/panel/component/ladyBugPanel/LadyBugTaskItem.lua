@@ -210,6 +210,8 @@ function LadyBugTaskItem:onItemTapped(...)
 					self:playFlyingRewardAnim()
 
 					self:changeToStateFinishedAndReceivedReward()
+					LadyBugMissionManager:sharedInstance():cancelNotificationToday(self.taskId)
+					LadyBugMissionManager:sharedInstance():activateMissionRewardCallback(self.taskId)
 				end
 
 				local function onFailedCallback(evt)
@@ -231,9 +233,7 @@ function LadyBugTaskItem:onItemTapped(...)
 			end
 		end
 
-		if RequireNetworkAlert:popout() then
-			getReward()
-		end
+		RequireNetworkAlert:callFuncWithLogged(getReward)
 	end
 end
 
@@ -292,9 +292,7 @@ function LadyBugTaskItem:onReOpenBtnTapped(...)
 		end
 	end
 
-	if RequireNetworkAlert:popout() then
-		startBuyOpenLogic()
-	end
+	RequireNetworkAlert:callFuncWithLogged(startBuyOpenLogic)
 end
 
 function LadyBugTaskItem:playFlyingRewardAnim(...)

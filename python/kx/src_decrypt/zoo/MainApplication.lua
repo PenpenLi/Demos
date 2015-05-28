@@ -11,6 +11,7 @@ require "zoo.util.AlertDialogImpl"
 require "zoo.data.RecallManager"
 require "zoo.data.LocalNotificationManager"
 require "zoo.data.WorldSceneShowManager"
+require "zoo.gamePlay.GamePlayMusicPlayer"
 
 kWindowFrameRatio = table.const{
 	iPhone5 = {name="iPhone5", r=1136/640}, --1.775
@@ -64,7 +65,9 @@ local function onApplicationDidEnterBackground()
 		scene:onEnterBackground()
 	end
 
-	GamePlayMusicPlayer:getInstance():enterBackground()
+	if _G.kResourceLoadComplete then
+		GamePlayMusicPlayer:getInstance():enterBackground()
+	end
 
 	pcall(scheduleLocalNotification)
 end
@@ -72,13 +75,23 @@ end
 local function onApplicationWillEnterForeground()
 	print("onApplicationWillEnterForeground")
 	local scene = Director:sharedDirector():getRunningScene()
+
+	if scene then 
+		local popoutPanel = PopoutManager:sharedInstance():getLastPopoutPanel()
+		if popoutPanel and type(popoutPanel.onEnterForeGround) == "function" then
+			popoutPanel:onEnterForeGround()
+		end
+	end
+
 	if scene and scene.onEnterForeGround then
 		print("scene:onEnterForeGround()")
 		scene:onEnterForeGround()
 	end
 
-	GamePlayMusicPlayer:getInstance():enterForeground()
-	
+	if _G.kResourceLoadComplete then
+		GamePlayMusicPlayer:getInstance():enterForeground()
+	end
+
 	if _G.kUserLogin then
 		DcUtil:dailyUser()
 		DcUtil:logInGame()
@@ -138,14 +151,6 @@ local function calculateFrameRatio()
 	print("Frame Ratio: "..tostring(_G.__frame_key).." small res:"..tostring(_G.__use_small_res))
 end
 
-local function isValidPackage()
-	local startGameMode = true
-	if __ANDROID and not _G.signatured then
-		startGameMode = false
-	end
-	return startGameMode
-end
-
 local function popoutInvalidSignatrueAlert()
 	local function onTouchRedirectButton()
 		luajava.bindClass("com.happyelements.android.utils.HttpUtil"):openUri("http://xxl.happyelements.com/")
@@ -158,13 +163,17 @@ end
 local function onAppResume()
 	print("onAppResume")
 	
-	GamePlayMusicPlayer:getInstance():appResume()
+	if _G.kResourceLoadComplete then
+		GamePlayMusicPlayer:getInstance():appResume()
+	end
 end
 
 local function onAppPause()
 	print("onAppPause")
 	
-	GamePlayMusicPlayer:getInstance():appPause()
+	if _G.kResourceLoadComplete then
+		GamePlayMusicPlayer:getInstance():appPause()
+	end
 end
 
 local function registerNotificationHandler()
@@ -194,13 +203,8 @@ local function runGame()
 	if __ANDROID then
 		GspProxy:init()
 	end
-	if isValidPackage() then 
-		local PreloadingScene = require("zoo.loader.PreloadingScene")
-		Director:sharedDirector():replaceScene(PreloadingScene:create()) 
-	else
-		popoutInvalidSignatrueAlert()
-		return
-	end
+	local PreloadingScene = require("zoo.loader.PreloadingScene")
+	Director:sharedDirector():replaceScene(PreloadingScene:create()) 
 	
 	registerNotificationHandler()
 	
@@ -233,4 +237,13 @@ if __WP8 then
   Wp8Utils:TryCreateHomeLink(2)
 end
 
+if __ANDROID then 
+    local function startGcnAlarm()
+        local MainActivity = luajava.bindClass("com.happyelements.hellolua.MainActivity")
+        MainActivity:startGcnAlarm()
+    end
+    if not PrepackageUtil:isPreNoNetWork() then
+        pcall(startGcnAlarm)
+    end
+end
 return true

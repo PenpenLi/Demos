@@ -148,7 +148,7 @@ function EnterInviteCodePanel:createSoftkeyboard(...)
 	{
 		enterCallback = onInputLabelEntered,
 		outsideCallback = onInputLabelOutside,
-		max		= 9,
+		max		= 10,
 	}
 
 	----------------------
@@ -261,11 +261,17 @@ function EnterInviteCodePanel:onReceiveRewardBtnTapped(event, ...)
 		print("entered code: " .. enteredCode)
 		--debug.debug()
 
-		if RequireNetworkAlert:popout() then
+		local function onCompleteFunc()
 			local http = ConfirmInvite.new(true)
 			http:addEventListener(Events.kComplete, onConfirmInviteSuccess)
 			http:addEventListener(Events.kError, onConfirmInviteFailled)
 			http:load(enteredCode)
+		end
+
+		if UserManager:getInstance():isSameInviteCodePlatform(enteredCode) then 
+			RequireNetworkAlert:callFuncWithLogged(onCompleteFunc)
+		else
+			CommonTip:showTip(Localization:getInstance():getText("error.tip.add.friends"), "negative")
 		end
 	end
 end
@@ -328,7 +334,8 @@ function EnterInviteCodePanel:getInviteReward()
 		local position = self.items[i]:getChildByName("icon"):getPosition()
 		position = self.items[i]:convertToWorldSpace(ccp(position.x, position.y))
 		sprite:setPosition(ccp(position.x, position.y))
-		home:addChild(sprite)
+
+		--home:addChild(sprite) --创建的时候已经添加过了
 
 		--- decreasing number animation
 		local label = self.items[i].label

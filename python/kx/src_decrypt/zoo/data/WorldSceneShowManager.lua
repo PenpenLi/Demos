@@ -36,8 +36,10 @@ function WorldSceneShowManager.getInstance()
 	return instance
 end
 
-function WorldSceneShowManager:isInAcitivtyTime( ... )
-	return now() >= os.time(self.startActivityTime) and now() <= os.time(self.endActivityTime)
+--2015.3.6活动关闭 直接return false
+function WorldSceneShowManager:isInAcitivtyTime()
+	-- return now() >= os.time(self.startActivityTime) and now() <= os.time(self.endActivityTime)
+	return false
 end
 
 function WorldSceneShowManager:init()

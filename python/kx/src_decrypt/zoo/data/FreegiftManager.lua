@@ -6,6 +6,7 @@ RequestType = {
 	kSendFreeGift = 2,
     kUnlockLevelArea = 3,
     kAddFriend = 5,
+    kActivity = 6,
 }
 
 local getMessageLimit = {
@@ -15,6 +16,7 @@ local getMessageLimit = {
 	kSendFreeGift = 30,
     kUnlockLevelArea = 20,
     kAddFriend = 30,
+    kActivity = 20,
 }
 
 FreegiftManager = class()
@@ -41,6 +43,7 @@ function FreegiftManager:update(load, callback)
 		if evt.data.requestInfos then
 			self.requestInfos = evt.data.requestInfos
 			UserManager:getInstance().requestNum = #self.requestInfos
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMessageCenterUpdate))
 		end
 		for k, v in ipairs(self.requestInfos) do
 			if (v.type == RequestType.kSendFreeGift or v.type == RequestType.kReceiveFreeGift) and
@@ -94,6 +97,10 @@ function FreegiftManager:update(load, callback)
 			elseif v.type == RequestType.kNeedUpdate and limit.kNeedUpdate > 0 then
 				table.insert(tmpList, v)
 				limit.kNeedUpdate = limit.kNeedUpdate - 1
+				limit.kAll = limit.kAll - 1
+			elseif v.type == RequestType.kActivity and limit.kActivity > 0 then
+				table.insert(tmpList, v)
+				limit.kActivity = limit.kActivity - 1
 				limit.kAll = limit.kAll - 1
 			end
 			if limit.kAll <= 0 then break end

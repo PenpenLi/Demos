@@ -17,7 +17,17 @@ function IosPayment:showPayment(filterSkuIds, getFunc, errorFunc)
 end
 
 function IosPayment:buy(productId, price, currency, extend, completeFunc, errorFunc)
-	local callback = IosPaymentCallback:init_getFunc_completeFunc_errorFunc(nil, completeFunc, errorFunc)
+	DcUtil:payStart(nil,nil,productId,nil)
+	local function complete( ... )
+		completeFunc( ... )
+		DcUtil:payEnd(nil,nil,productId,nil,0)
+	end
+	local function error( ... )
+		errorFunc( ... )
+		DcUtil:payEnd(nil,nil,productId,nil,1)
+	end
+
+	local callback = IosPaymentCallback:init_getFunc_completeFunc_errorFunc(nil, complete, error)
 	return IosPayment:getInstance():buy_price_currency_extend_callback(productId, price, currency, extend, callback)
 end
 

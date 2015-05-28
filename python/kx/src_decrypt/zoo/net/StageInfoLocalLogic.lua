@@ -7,6 +7,7 @@ function AnimalStageInfo:ctor( uid, levelId )
 	self.levelId = levelId
 	self.propIds = {}
 	self.buyMove = 0
+	self.dropProps = {}
 end
 function AnimalStageInfo:isEmpty()
 	if not self.propIds then return true end
@@ -74,4 +75,27 @@ function StageInfoLocalLogic:openGiftBlocker( uid, levelId, propIds )
 	if stageInfo then
 		for i,v in ipairs(propIds) do stageInfo:addProp(v) end
 	end
+end
+
+function StageInfoLocalLogic:getPropsInGame(uid, levelId, itemIds)
+	local stageInfo = StageInfoLocalLogic:getStageInfo( uid )
+	if stageInfo and itemIds then
+		for _, v in pairs(itemIds) do
+			local originNum = stageInfo.dropProps[v] or 0
+			stageInfo.dropProps[v] = originNum + 1
+		end
+		return true
+	end
+	return false
+end
+
+function StageInfoLocalLogic:getTotalDropPropCount(uid)
+	local stageInfo = StageInfoLocalLogic:getStageInfo( uid )
+	local total = 0
+	if stageInfo then
+		for _, v in pairs(stageInfo.dropProps) do
+			total = total + v
+		end
+	end
+	return total
 end

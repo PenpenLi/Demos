@@ -68,7 +68,7 @@ function BuyGoldItem:init(itemData, boughtCallback)
 	btn = GroupButtonBase:create(btn)
 	btn:setColorMode(kGroupButtonColorMode.blue);
 	self.procClick = true
-	btn:setString(currencySymbol..itemData.iapPrice);
+	btn:setString(string.format("%s%0.2f", currencySymbol, itemData.iapPrice))
 	self.btnBuy = btn;
 
 	local function onBuyTapped(evt) 
@@ -111,6 +111,8 @@ function BuyGoldItem:buyGold(context)
 	local function onSuccess()
 		if self.itemData.payType == PlatformPayType.kWechat then
 			DcUtil:successEnterWechatBuyGoldItem(context.index)
+		elseif self.itemData.payType == PlatformPayType.kAlipay then
+			DcUtil:successfulBuyCashByAlipay(context.index)
 		end
 		local scene = HomeScene:sharedInstance()
 		local button
@@ -121,10 +123,15 @@ function BuyGoldItem:buyGold(context)
 	end
 
 	if __IOS then -- IOS
-		if RequireNetworkAlert:popout() then
+		self.btnBuy:setEnabled(false)
+		local function startBuyLogic()
 			if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(false) end
 			self.buyLogic:buy(context.index, context.data, onSuccess, onFail, onCancel)
 		end
+		local function onFailLogin()
+			self.btnBuy:setEnabled(true)
+		end
+		RequireNetworkAlert:callFuncWithLogged(startBuyLogic, onFailLogin)
 	else -- on ANDROID and PC we don't need to check for network
 		PlatformConfig:setCurrentPayType(self.itemData.payType)
 		if self.itemData.payType == PlatformPayType.kWechat then
@@ -135,6 +142,8 @@ function BuyGoldItem:buyGold(context)
 				end
 			end
 			setTimeOut(enableButton, 3)
+		elseif self.itemData.payType == PlatformPayType.kAlipay then
+			DcUtil:clickAlipayBuyGoldItem(context.index)
 		end
 		if not self.btnBuy.isDisposed then self.btnBuy:setEnabled(false) end
 		self.buyLogic:buy(context.index, context.data, onSuccess, onFail, onCancel)
@@ -180,9 +189,7 @@ function FreeGoldItem:init()
 	end
 
 	local function onBuyTapped(evt) 
-		if RequireNetworkAlert:popout() then
-			popoutPanel()
-		end
+		RequireNetworkAlert:callFuncWithLogged(popoutPanel)
 	end
 	btn:addEventListener(DisplayEvents.kTouchTap, onBuyTapped, self);
 end

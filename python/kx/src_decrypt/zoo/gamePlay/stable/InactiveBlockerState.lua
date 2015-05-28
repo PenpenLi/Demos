@@ -75,12 +75,12 @@ function InactiveBlockerState:tryHandleVenom()
 
 	if self.mainLogic.octopusWait and self.mainLogic.octopusWait > 1 then
 		if self.mainLogic.PlayUIDelegate then
-			self.mainLogic.PlayUIDelegate:setOctopusForbidEnabled(false, 3)
+			self.mainLogic.PlayUIDelegate:setPropState(GamePropsType.kOctopusForbid,3, false)
 		end
 		self.mainLogic.octopusWait = self.mainLogic.octopusWait - 1
 	else
 		if self.mainLogic.PlayUIDelegate then
-			self.mainLogic.PlayUIDelegate:setOctopusForbidEnabled(true)
+			self.mainLogic.PlayUIDelegate:setPropState(GamePropsType.kOctopusForbid,nil, true)
 		end
 	end
 

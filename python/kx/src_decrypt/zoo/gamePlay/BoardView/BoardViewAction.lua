@@ -406,7 +406,18 @@ function BoardViewAction:runGameItemViewActionForceMoveItem(boardView, theAction
 				arr:addObject(CCMoveTo:create(0.25, position))
 				arr:addObject(CCCallFunc:create(completeCallback))
 				local move_action = CCSequence:create(arr) 
-				sprite:runAction(move_action)
+				if sprite then 
+					sprite:runAction(move_action)
+				else
+					if boardView.gameBoardLogic then
+						local item = boardView.gameBoardLogic.gameItemMap[r1][c1]
+						 he_log_error("runGameItemViewActionForceMoveItem sprite = nil  item.ItemType = "..item.ItemType
+						 	.." item.ItemColorType = "..item.ItemColorType
+						 	.." item.ItemSpecialType = "..item.ItemSpecialType)
+					end
+
+					completeCallback()
+				end
 			end 
 		end
 	end
@@ -668,9 +679,13 @@ function BoardViewAction:runGameItemActionMagicLampCasting(boardView, theAction)
 			end
 		end
 
-		for k, v in pairs(toItemPos) do
-			local item = boardView.baseMap[v.r][v.c]
-			item:playChangeToLineSpecial(boardView, fromItem, direction, actionCallback)
+		if not toItemPos or #toItemPos == 0 then 
+			setTimeOut(actionCallback, 1.4)
+		else
+			for k, v in pairs(toItemPos) do
+				local item = boardView.baseMap[v.r][v.c]
+				item:playChangeToLineSpecial(boardView, fromItem, direction, actionCallback)
+			end
 		end
 	end	
 end
@@ -830,11 +845,15 @@ function BoardViewAction:runGameitemActionTransmission(boardView, theAction)
 		local item = boardView.baseMap[from_r][from_c]
 		local boardData = theAction.boardData
 		local itemData = theAction.itemData
+
+		theAction.itemShowType = item.itemShowType
+
 		local function callback()
 			theAction.addInfo = "moveOver"
 		end
-
+		theAction.transType = boardData.transType -- 留给下一个阶段用
 		if boardData.transType == TransmissionType.kEnd then
+
 			local function getP(direction)
 				local p = ccp(0, 0)
 				if direction == TransmissionDirection.kRight then
@@ -848,20 +867,32 @@ function BoardViewAction:runGameitemActionTransmission(boardView, theAction)
 				end
 				return p
 			end
-			item:transToOut(itemData, boardData, getP(boardData.transDirect))
+			item:tailTransToOut(itemData, boardData, getP(boardData.transDirect))
 			local startItem = boardView.baseMap[to_r][to_c]
-			startItem:transToIn(itemData, boardData, getP(theAction.toBoardDataDirect), callback)
+			startItem:headTransToIn(itemData, boardData, getP(theAction.toBoardDataDirect), callback)
 		else
+			local isCorner = (boardData.transType ~= TransmissionType.kStart and boardData.transType ~= TransmissionType.kRoad)
 			p = ccp((to_c - from_c) * GamePlayConfig_Tile_Width, -(to_r - from_r) * GamePlayConfig_Tile_Height)
-			item:transToNext(p, callback)
+			item:roadTransToNext(p, isCorner, callback)
 		end
 	elseif theAction.addInfo == "reInitView" then
 		theAction.addInfo = "over"
 		local to_r, to_c = theAction.ItemPos2.x, theAction.ItemPos2.y
+		local from_r, from_c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local itemData = theAction.itemData
 		local boardData = theAction.boardData
-		local item = boardView.baseMap[to_r][to_c]
-		item:reInitByLogic(itemData, boardData)
+		local toItem = boardView.baseMap[to_r][to_c]
+		local fromItem = boardView.baseMap[from_r][from_c]
+
+		toItem.oldData = itemData
+		toItem.itemShowType = theAction.itemShowType
+		toItem.oldBoard = boardData:copy()
+
+		if theAction.transType == TransmissionType.kEnd then
+			toItem:reinitTransHeadByLogic(itemData, boardData)
+		else
+			toItem:reinitTransRoadByLogic(itemData, boardData, fromItem:getTransContainer())
+		end
 	end
 end
 

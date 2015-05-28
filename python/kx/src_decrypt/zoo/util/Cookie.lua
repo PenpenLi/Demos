@@ -43,7 +43,7 @@ function Cookie:init()
 			self.fields = fields
 		end
 	else
-	    he_log_error("persistent file failure " .. kStorageFileName .. ", error: " .. err)
+	    -- he_log_error("persistent file failure " .. kStorageFileName .. ", error: " .. err)
 	end
 end
 

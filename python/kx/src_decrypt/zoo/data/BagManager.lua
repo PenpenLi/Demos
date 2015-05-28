@@ -208,6 +208,24 @@ function BagManager:prepDataForBag(userProps, expireProps)
 	return filtered
 end
 
+function BagManager:isItemExist(itemId, quantity)
+	quantity = quantity or 1
+	local props = UserManager:getInstance().props
+
+	for k, v in pairs(props) do 
+
+		if v.itemId == itemId then
+			if v.num >= quantity then
+				return true, v
+			else
+				return false, nil
+			end
+		end
+	end
+
+	return false, nil
+end
+
 function BagManager:canAddItem(itemId, quantity)
 	local props = UserManager:getInstance().props
 	local found = nil

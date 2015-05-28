@@ -72,14 +72,16 @@ end
 function QQLoginSuccessPanel:popout(...)
 	assert(#{...} == 0)
 
-	PopoutManager:sharedInstance():add(self, true, false)
-
-	local parent = self:getParent()
-	if parent then
-		self:setToScreenCenterHorizontal()
-		self:setToScreenCenterVertical()		
+	self.popoutShowTransition = function( ... )
+		local parent = self:getParent()
+		if parent then
+			self:setToScreenCenterHorizontal()
+			self:setToScreenCenterVertical()		
+		end		
+		self.allowBackKeyTap = true
 	end
-	self.allowBackKeyTap = true
+
+	PopoutQueue:sharedInstance():push(self, true, false)
 end
 
 function QQLoginSuccessPanel:setCloseButtonCallback( func )

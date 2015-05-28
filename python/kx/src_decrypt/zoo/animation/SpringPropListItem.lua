@@ -1,5 +1,6 @@
 require 'zoo.animation.PropListItem'
-require 'zoo.animation.SpringFestivalEffect'
+-- require 'zoo.animation.SpringFestivalEffect'
+require 'zoo.animation.LaborCatEffect'
 
 SpringPropListItem = class(PropListItem)
 
@@ -14,6 +15,7 @@ function SpringPropListItem:ctor()
   self.isExplodeing = false --正在播放使用动画
   self.timePropNum = 0 -- 限时道具数量
   self.timePropList = nil
+  self.energy = 0
 
   self.isOnceUsed =  false
 end
@@ -314,7 +316,7 @@ end
 function SpringPropListItem:use()
 
     local function localCallback()
-        self.propListAnimation.springItemCallback()
+      self.propListAnimation.springItemCallback()
     end
 
     local function playMusic()
@@ -322,15 +324,31 @@ function SpringPropListItem:use()
     end
 
     if self.percent >= 1 then
-        setTimeOut(playMusic, 0.1)
+        -- setTimeOut(playMusic, 0.1)
+
+        DcUtil:UserTrack({ category='activity', sub_category='labourday_click_skill' })
         
-        SpringFestivalEffect:playFireworkAnimation(localCallback)
-        self:setPercent(0, true)
+        LaborCatEffect:playItemUseAnimation(localCallback)
+        -- SpringFestivalEffect:playFireworkAnimation(localCallback)
+        self:setEnergy(0, true)
         self:stopHint()
         self:playGolden(false)
         return true
     end
-    CommonTip:showTip(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13"), "negative")
+
+    local content = ResourceManager:sharedInstance():buildGroup('bagItemTipContent_ingame')
+    local desc = content:getChildByName('desc')
+    local title = content:getChildByName('title')
+
+    title:setString(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.12"))
+    local originSize = desc:getDimensions()
+    desc:setDimensions(CCSizeMake(originSize.width, 0))
+    desc:setString(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13", {n1 = SpringFireworkTotal-self.energy, br = '\n'}))
+
+    local tip = BubbleTip:create(content, kSpringPropItemID, 5)
+    tip:show(self.item:getGroupBounds())
+
+    -- CommonTip:showTip(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13"), "negative")
     return false
 end
 
@@ -491,36 +509,48 @@ end
 
 function SpringPropListItem:buildItemIcon()
 
-    local container = Sprite:createEmpty()
-    local item_gold = Sprite:createWithSpriteFrameName('item_gold')
-    local item_grey = Sprite:createWithSpriteFrameName('item_empty')
-    local item_full = Sprite:createWithSpriteFrameName('item_anim_0000')
-    local rect = {size = {width = 140, height = 140}}
-    local clipping = ClippingNode:create(rect)
-    -- local clipping = Layer:create(rect)
-    -- clipping:setContentSize(CCSizeMake(140, 140))
-
-    container:addChild(item_grey)
-    clipping:addChild(item_full)
-    local layer = Layer:create()
-    layer:setContentSize(CCSizeMake(rect.size.width, rect.size.height))
-    layer:ignoreAnchorPointForPosition(false)
-    layer:setAnchorPoint(ccp(0.5, 0.5))
-    layer:addChild(clipping)
-    container:addChild(layer)
-    container:addChild(item_gold)
-    item_full:setAnchorPoint(ccp(0, 0))
-    self.clipping = clipping
-    self.item_gold = item_gold
-    self.item_full = item_full
-    item_gold:setOpacity(0)
-    container:setScale(1)
-
-    local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('item_anim_%04d', 0, 20), 1/20)
-    item_full:play(anim, 0, 0)
-
-    self:setPercent(0, false)
+    local container = LaborCatEffect:buildItemIcon()
+    self.clipping = container.clipping
+    self.item_gold = container.item_gold
+    self.item_full = container.item_full
+    self:setEnergy(0, false)
     return container
+
+    -- local container = Sprite:createEmpty()
+    -- local item_gold = Sprite:createWithSpriteFrameName('item_gold')
+    -- local item_grey = Sprite:createWithSpriteFrameName('item_empty')
+    -- local item_full = Sprite:createWithSpriteFrameName('item_anim_0000')
+    -- local rect = {size = {width = 140, height = 140}}
+    -- local clipping = ClippingNode:create(rect)
+    -- -- local clipping = Layer:create(rect)
+    -- -- clipping:setContentSize(CCSizeMake(140, 140))
+
+    -- container:addChild(item_grey)
+    -- clipping:addChild(item_full)
+    -- local layer = Layer:create()
+    -- layer:setContentSize(CCSizeMake(rect.size.width, rect.size.height))
+    -- layer:ignoreAnchorPointForPosition(false)
+    -- layer:setAnchorPoint(ccp(0.5, 0.5))
+    -- layer:addChild(clipping)
+    -- container:addChild(layer)
+    -- container:addChild(item_gold)
+    -- item_full:setAnchorPoint(ccp(0, 0))
+    -- self.clipping = clipping
+    -- self.item_gold = item_gold
+    -- self.item_full = item_full
+    -- item_gold:setOpacity(0)
+    -- container:setScale(1)
+
+    -- local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('item_anim_%04d', 0, 20), 1/20)
+    -- item_full:play(anim, 0, 0)
+
+    -- self:setEnergy(0, false)
+    -- return container
+end
+
+function SpringPropListItem:setEnergy(energy, playAnim)
+  self.energy = energy
+  self:setPercent(self.energy / SpringFireworkTotal, playAnim)
 end
 
 function SpringPropListItem:setPercent(percent, playAnim)
@@ -566,10 +596,14 @@ end
 
 function SpringPropListItem:playGolden(enable)
   if enable then
-    local action = CCRepeatForever:create(CCSequence:createWithTwoActions(CCFadeIn:create(0.6), CCFadeOut:create(0.6)))
-    self.item_gold:runAction(action)
+    -- local action = CCRepeatForever:create(CCSequence:createWithTwoActions(CCFadeIn:create(0.6), CCFadeOut:create(0.6)))
+    -- self.item_gold:runAction(action)
+    self.item_gold:setVisible(true)
+    self.item_full:setVisible(false)
   else
-    self.item_gold:stopAllActions()
-    self.item_gold:runAction(CCFadeOut:create(0.3))
+    -- self.item_gold:stopAllActions()
+    -- self.item_gold:runAction(CCFadeOut:create(0.3))
+    self.item_full:setVisible(true)
+    self.item_gold:setVisible(false)
   end
 end

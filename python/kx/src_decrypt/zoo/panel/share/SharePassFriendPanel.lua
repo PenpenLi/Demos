@@ -14,10 +14,10 @@ function SharePassFriendPanel:init()
 	if self.passFriendType == PassFriendType.SCORE then
 		local currentLevel = ShareManager.data.level
 		local userName = UserManager.getInstance().profile.name
-		self.notyMessage = Localization:getInstance():getText(self.shareTitleKey,{friend = userName,num = currentLevel})
+		self.notyMessage = Localization:getInstance():getText(self.shareNotiKey,{friend = userName,num = currentLevel})
 	elseif self.passFriendType == PassFriendType.LEVEL then
 		local userName = UserManager.getInstance().profile.name
-		self.notyMessage = Localization:getInstance():getText(self.shareTitleKey,{friend = userName})
+		self.notyMessage = Localization:getInstance():getText(self.shareNotiKey,{friend = userName})
 	end
 	
 	self:runFlyBirdAction()
@@ -33,13 +33,18 @@ local function getDayStartTimeByTS(ts)
 	return ts - ((ts - utc8TimeOffset) % oneDaySeconds)
 end
 
+local function now()
+	return os.time() + (__g_utcDiffSeconds or 0)
+end
 --override
 function SharePassFriendPanel:onShareBtnTapped()
 	ShareBasePanel.onShareBtnTapped(self,self.shareId)
 	if not __IOS_FB then 
+		local notiTypeId = LocalNotificationType.kSharePassFriendScore 
 		if self.passFriendType == PassFriendType.SCORE then
 			DcUtil:UserTrack({category = "show", sub_category = "push_show_off_button_110"})
 		elseif self.passFriendType == PassFriendType.LEVEL then
+			notiTypeId = LocalNotificationType.kSharePassFriendLevel
 			DcUtil:UserTrack({category = "show", sub_category = "push_show_off_button_120"})
 		end
 		
@@ -76,16 +81,17 @@ function SharePassFriendPanel:onShareBtnTapped()
 				local function onPushFail()
 					self:showFaildTip("show_off_to_friend_fail")
 				end
-		    	local now = os.time()
-				local dayStartTime = getDayStartTimeByTS(now)
-				local targetTime = nil
-				if now > dayStartTime + 10 * 3600 then
-					targetTime = dayStartTime + 24 * 3600 + 10 * 3600
-				else
-					targetTime = dayStartTime + 10 * 3600
-				end
+
+				local targetTime = now()
+				-- local now = os.time()
+				-- local dayStartTime = getDayStartTimeByTS(now)
+				-- if now > dayStartTime + 10 * 3600 then
+				-- 	targetTime = dayStartTime + 24 * 3600 + 10 * 3600
+				-- else
+				-- 	targetTime = dayStartTime + 10 * 3600
+				-- end
 				local http = PushNotifyHttp.new()
-				http:load(friendIds, self.notyMessage, LocalNotificationType.kBeyondFriendAtTopLevel, targetTime * 1000)
+				http:load(friendIds, self.notyMessage, notiTypeId, targetTime * 1000)
 				http:ad(Events.kComplete, onPushSuccess)
 			    http:ad(Events.kError, onPushFail)
 			end

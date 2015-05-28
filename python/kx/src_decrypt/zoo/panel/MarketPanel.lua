@@ -358,20 +358,20 @@ function MarketPanel:buildAndroidGoldPage()
 			local arrd = title:getChildByName("arrd")
 			arrd:setVisible(false)
 			title.arrd = arrd
-			local iconPH = title:getChildByName("icon")
-			iconPH:setVisible(false)
-			local newIcon
-			local iconSrc = self.builder:buildGroup("marketpanel_platformlogos")
-			local newIcon = iconSrc:getChildByName(v.name)
-			if newIcon then
-				local phSize, nSize = iconPH:getGroupBounds().size, newIcon:getGroupBounds().size
-				local deltaSize = {width = (phSize.width - nSize.width) / 2, height = (phSize.height / nSize.height) / 2}
-				newIcon:setPositionXY(iconPH:getPositionX() + deltaSize.width, iconPH:getPositionY() + deltaSize.height)
-				local index = iconPH:getParent():getChildIndex(iconPH)
-				newIcon:removeFromParentAndCleanup(false)
-				iconPH:getParent():addChildAt(newIcon, index)
-			else text:setPositionX(iconPH:getPositionX()) end
-			iconSrc:dispose()
+			-- local iconPH = title:getChildByName("icon")
+			-- iconPH:setVisible(false)
+			-- local newIcon
+			-- local iconSrc = self.builder:buildGroup("marketpanel_platformlogos")
+			-- local newIcon = iconSrc:getChildByName(v.name)
+			-- if newIcon then
+			-- 	local phSize, nSize = iconPH:getGroupBounds().size, newIcon:getGroupBounds().size
+			-- 	local deltaSize = {width = (phSize.width - nSize.width) / 2, height = (phSize.height / nSize.height) / 2}
+			-- 	newIcon:setPositionXY(iconPH:getPositionX() + deltaSize.width, iconPH:getPositionY() + deltaSize.height)
+			-- 	local index = iconPH:getParent():getChildIndex(iconPH)
+			-- 	newIcon:removeFromParentAndCleanup(false)
+			-- 	iconPH:getParent():addChildAt(newIcon, index)
+			-- else text:setPositionX(iconPH:getPositionX()) end
+			-- iconSrc:dispose()
 			title:setPositionX((self.viewRect.size.width - titleSize.width) / 2)
 			title.expandY = (posIndex - 1) * (-titleSize.height)
 			title:setPositionY(title.expandY)

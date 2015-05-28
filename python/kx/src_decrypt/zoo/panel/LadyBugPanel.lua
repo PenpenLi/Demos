@@ -299,6 +299,8 @@ function LadyBugPanel:init(scaleOriginPosInWorldSpace, ...)
 	-- Create Show Hide Anim
 	-- --------------------
 	self.showHideAnim	= IconPanelShowHideAnim:create(self, self.scaleOriginPosInWorldSpace)
+
+	LadyBugMissionManager:sharedInstance():setMissionRewardCallback(function() self:showRemindGuide() end)
 end
 
 
@@ -354,6 +356,7 @@ end
 
 function LadyBugPanel:onEnterHandler(event, ...)
 	assert(#{...} == 0)
+	BasePanel.onEnterHandler(self, event)
 
 	if event == "enter" then
 		--self:playShowAnim(false)
@@ -501,4 +504,43 @@ function LadyBugPanel:hideOneTimeTip()
 		self.oneTimeTip:removeFromParentAndCleanup(true)
 		self.oneTimeTip = nil
 	end
+end
+
+-- 看看一起提交的文件，这是个大坑！
+function LadyBugPanel:showRemindGuide()
+	local showed = CCUserDefault:sharedUserDefault():getBoolForKey("LadybugMissionSecondRemindGuide")
+	if showed then return end
+	local panel = GameGuideRunner:createPanelSUR("")
+	local text = panel.ui:getChildByName("text")
+	local dimension = text:getPreferredSize()
+	local text2 = TextField:create(Localization:getInstance():getText("lady.bug.panel.remind.guide"),
+		nil, 36, CCSizeMake(dimension.width - 20, dimension.height))
+	text2:setColor(ccc3(0, 0, 0))
+	text2:setAnchorPoint(ccp(0, 1))
+	text2:setPositionXY(text:getPositionX() + 20, text:getPositionY())
+	panel.ui:addChild(text2)
+	text:removeFromParentAndCleanup(true)
+	local childList = {}
+	panel:getVisibleChildrenList(childList)
+	for k, v in ipairs(childList) do
+		v:setOpacity(0)
+		local arr = CCArray:create()
+		arr:addObject(CCFadeIn:create(0.2))
+		arr:addObject(CCDelayTime:create(5))
+		arr:addObject(CCFadeOut:create(0.2))
+		v:runAction(CCSequence:create(arr))
+	end
+	local target = panel:getChildByName("animation"):getChildByName("animation")
+	target:setOpacity(0)
+	local arr = CCArray:create()
+	arr:addObject(CCFadeIn:create(0.2))
+	arr:addObject(CCDelayTime:create(5))
+	arr:addObject(CCFadeOut:create(0.2))
+	target:runAction(CCSequence:create(arr))
+	panel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(5.5), CCCallFunc:create(function()
+			panel:removeFromParentAndCleanup()
+		end)))
+	panel:setPositionXY(0, -360)
+	self.ui:addChild(panel)
+	CCUserDefault:sharedUserDefault():setBoolForKey("LadybugMissionSecondRemindGuide", true)
 end

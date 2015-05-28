@@ -33,6 +33,7 @@ function GameGuide:ctor()
 	self.guideInLevel = {}
 	self.skipLevel = false
 	self.curSuccessGuide = {}
+	self.ingameBuyPropsGuide = 0
 end
 
 function GameGuide:init()
@@ -91,6 +92,147 @@ function GameGuide:forceStopGuide()
 	self.forceStop = true
 	self:tryEndCurrentGuide()
 	return self:tryRunNewGuide()
+end
+
+function GameGuide:tryIngameBuyPropsGuide()
+	self.ingameBuyPropsGuide = 0
+	print("check ingame buy props guide", self.ingameBuyPropsGuide)
+	local scene = Director:sharedDirector():getRunningScene()
+	local wSize = Director:sharedDirector():getWinSize()
+	if self.ingameBuyPropsGuide == 0 then
+		print("is android?", __ANDROID)
+		if not __ANDROID then return false end
+		print("toplevel")
+		local u = UserManager:getInstance().user
+		if u.topLevelId < 40 then return false end
+		print("once")
+		local userDefault = CCUserDefault:sharedUserDefault()
+		local key = "mm.buy.props.ingame.abc"
+	    local isGuideComplete = userDefault:getBoolForKey(key)
+	    if isGuideComplete then 
+	    	return false 
+	    else
+	    	userDefault:setBoolForKey(key, true)
+	    	userDefault:flush()
+	    end
+	    print("regtime")
+	    --check reg time
+	    local timestamp = os.time({year=2015, month=4, day=18, hour=0, min=0, sec=0})
+	    if UserManager:getInstance().mark.createTime / 1000 > timestamp then return false end
+	    print("check props")
+	    --check props 
+	    if #PropsModel.instance().propItems > 5 then return false end
+
+	    local plist = {10001, 10010, 10002, 10003, 10005, }--this order shoud not modify
+	    local preList = {}
+	    local bagData = BagManager:getInstance():getUserBagData()
+	    local prePropData = PropsModel.instance().addToBarProps
+
+	    for _, v in ipairs(prePropData) do
+    		local tp = v.temporaryItemList
+    		if tp then
+    			for i, m in ipairs(tp) do
+    				local tpid = m.itemId
+    				print("test1,", tpid)
+    				if m.itemNum > 0 then
+    				
+    					tpid = PropsModel.kTempPropMapping[tostring(tpid)]
+						print("test12,", tpid)
+	    				if tpid then
+	    					preList[tpid] = tpid
+	    				end
+	    			end
+    			end
+    		end
+    	end
+
+	    local function testProps(id)
+	    	if preList[id] then
+				return true
+			end
+
+	    	for _, v in ipairs(bagData) do
+	    		print(v.itemId, id)
+	    		if v.itemId == id then
+	    			print("sdfas:", preList[v.itemId], preList[tostring(v.itemId)])
+	    			if v.num > 0 then
+	    				return true
+	    			end
+	    		end
+	    	end
+
+	    	return false
+	    end
+
+	    local hasItemNum0 = false
+	    local itemIndex = -1
+	    for i, v in ipairs(plist) do
+	    	local exist = false
+	    	if not testProps(v) then
+	    		hasItemNum0 = true
+				itemIndex = i
+	    		break
+	    	end
+	    end
+
+	    if not hasItemNum0 then return false end
+	    print(itemIndex)
+	    --check payment type
+	    print("paymentType")
+	    local propsId = plist[itemIndex]
+	    local logic = IngamePaymentLogic:create(5, 1)
+	    local payType, smsType = logic:getPaymentDecision()
+
+	    if payType ~= IngamePaymentDecisionType.kPayWithType or smsType ~= Payments.CHINA_MOBILE then return false end
+
+	    print("testtype:", payType, "==", smsType)
+
+	    print("show")
+	    self:forceStopGuide()
+	    
+	    local action = {type = "tempProp", opacity = 0xCC, index = itemIndex, 
+			text = "tutorial.game.text2003000", multRadius = 1.3,
+			panType = "down", panAlign = "viewY", panPosY = 450, 
+			maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5 , touchDelay = 1.1}
+
+		GameGuideRunner:runTempProp(self, action, true)
+		local hand = GameGuideRunner:createHandClickAnim()
+		local pos = scene:getPositionByIndex(action.index)
+
+		hand:setAnchorPoint(ccp(0.5, 0.5))
+		hand:setPosition(ccp(pos.x, pos.y))
+		scene.guideLayer:addChild(hand)
+
+		
+		local activeItem = scene.propList:findItemByItemID(propsId)
+		local touchLayer = LayerColor:create()
+		local onTouch2 = function(evt)
+			if activeItem and activeItem:hitTest(evt.globalPosition) then
+				self.ingameBuyPropsGuide = 1
+				scene.guideLayer:removeChildren()
+				touchLayer:removeFromParentAndCleanup(true)
+				scene:buyPropCallback(propsId)
+			end
+		end
+		touchLayer:changeWidthAndHeight(wSize.width, wSize.height)
+		
+		touchLayer:setColor(ccc3(0, 0, 0))
+		touchLayer:setOpacity(0)
+		touchLayer:setPosition(ccp(0, 0))
+		touchLayer:setTouchEnabled(true, 0, true)
+		touchLayer:ad(DisplayEvents.kTouchTap, onTouch2)
+		scene.guideLayer:addChild(touchLayer)
+	end
+	
+	return true
+end
+
+function GameGuide:onTryBuyProps()
+	if self.ingameBuyPropsGuide == 1 then
+		self.ingameBuyPropsGuide = 0
+		return true
+	end
+	return false
 end
 
 -- 尝试开始一个新引导
@@ -187,9 +329,9 @@ function GameGuide:tryFirstQuestionMark(mainLogic)
 		if found == true then break end
 	end
 
-	self.guides[190001].action[1].array[1].r = row
-	self.guides[190001].action[1].array[1].c = col
-	self.guides[190001].action[1].panPosY = row - self.guides[190001].action[1].offsetY
+	self.guides[210001].action[1].array[1].r = row
+	self.guides[210001].action[1].array[1].c = col
+	self.guides[210001].action[1].panPosY = row - self.guides[210001].action[1].offsetY
 	self:tryEndCurrentGuide()
 	local guide = self:tryRunNewGuide()
 	self.firstQuestionMark = false
@@ -198,7 +340,7 @@ end
 
 function GameGuide:onFirstShowFirework(pos)
 	self.firstShowFirework = true
-	self.guides[190000].action[1].position = pos
+	self.guides[210000].action[1].position = pos
 	self:tryEndCurrentGuide()
 	local newGuide = self:tryRunNewGuide()
 	self.firstShowFirework = false
@@ -207,18 +349,34 @@ end
 
 
 function GameGuide:tryFirstFullFirework(pos)
+	if self.guidedIndex[210002] then
+		return false
+	end
 	self.firstFullFirework = true
-	-- self.guides[190002].action[1].position = pos
+	-- self.guides[210002].action[1].position = pos
 	local vs = Director:sharedDirector():getVisibleSize()
 	local vo = Director:sharedDirector():getVisibleOrigin()
-	self.guides[190002].action[1].position = ccp(vo.x+10, vo.y+10)
-	self.guides[190002].action[1].offsetX = 0
-	self.guides[190002].action[1].offsetY = 0
-	self.guides[190002].action[1].width = vs.width - 20
-	self.guides[190002].action[1].height = 165
+	self.guides[210002].action[1].position = ccp(vo.x+10, vo.y+10)
+	self.guides[210002].action[1].offsetX = 0
+	self.guides[210002].action[1].offsetY = 0
+	self.guides[210002].action[1].width = vs.width - 20
+	self.guides[210002].action[1].height = 165
 	self:tryEndCurrentGuide()
 	local newGuide = self:tryRunNewGuide()
 	self.firstFullFirework = false
+	return newGuide
+end
+
+function GameGuide:onShowFullFireworkTip(pos)
+	if not self.guidedIndex[210002] then -- 将首次引导置为不可用
+		self.guidedIndex[210002] = true
+		self:writeGuideIndex()
+	end
+
+	self.showFullFireworkTip = true
+	self:tryEndCurrentGuide()
+	local newGuide = self:tryRunNewGuide()
+	self.showFullFireworkTip = false
 	return newGuide
 end
 
@@ -461,6 +619,15 @@ function GameGuide:getFirstGuide(from, to)
 					if self[v.name] ~= v.value then
 						return false
 					end
+				elseif v.type == 'topPassedLevel' then
+					local levelId = v.para
+					local scores = UserManager:getInstance().scores
+					local topLevelScore = UserManager:getInstance():getUserScore(levelId)
+					local nextLevelScore = UserManager:getInstance():getUserScore(levelId+1)
+					local ok = (topLevelScore ~= nil and topLevelScore.star > 0 and (nextLevelScore == nil or nextLevelScore.star == 0 ))
+					if not (ok)  then
+						return false
+					end
 
 				else assert(false, "Unsupported type by GameGuide!"..tostring(k)..v.type) end
 			end
@@ -523,10 +690,9 @@ function GameGuide:onGuideComplete(skipLevel)
 	if skipLevel then
 		self.currentGuide = nil
 		self.skipLevel = true
-		return
 	end
 	self.guideIndex = self.guideIndex + 1
-	if #self.currentGuide.action < self.guideIndex then
+	if skipLevel or #self.currentGuide.action < self.guideIndex then
 		if rec then
 			if not self.guidedIndex[self.index] then
 				self.guidedIndex[self.index] = true
@@ -608,6 +774,8 @@ function GameGuide:runGuideActions(from, to, index)
 		GameGuideRunner:runRabbitWeeklyButton(self, self.currentGuide.action[self.guideIndex])
 	elseif self.currentGuide.action[self.guideIndex].type == "showCustomizeArea" then
 		GameGuideRunner:runShowCustomizeArea(self, self.currentGuide.action[self.guideIndex])
+	elseif self.currentGuide.action[self.guideIndex].type == "showUnlock" then
+		GameGuideRunner:runShowUnlock(self, self.currentGuide.action[self.guideIndex])
 	end
 end
 
@@ -662,6 +830,8 @@ function GameGuide:cleanupGuideActions(from, to)
 		return GameGuideRunner:removeRabbitWeeklyButton(self.layer)
 	elseif self.currentGuide.action[self.guideIndex].type == "showCustomizeArea" then
 		return GameGuideRunner:removeShowCustomizeArea(self)
+	elseif self.currentGuide.action[self.guideIndex].type == "showUnlock" then
+		return GameGuideRunner:removeShowUnlock(self)
 	end
 end
 

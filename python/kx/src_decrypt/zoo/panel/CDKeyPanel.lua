@@ -90,16 +90,18 @@ function CDKeyPanel:init(cdkeyBtnPosInWorldSpace)
 		end
 		
 		if string.len(enteredCodeStr) > 0 then
-			if not RequireNetworkAlert:popout() then return end
-			local index = string.find(enteredCodeStr, "%W")
-			if index ~= nil then
-				onFail({data = 730743})
-			else
-				local http = GetExchangeCodeRewardHttp.new(true)
-				http:ad(Events.kComplete, onSuccess)
-				http:ad(Events.kError, onFail)
-				http:load(string.upper(enteredCodeStr))
+			local function onUserHasLogin()
+				local index = string.find(enteredCodeStr, "%W")
+				if index ~= nil then
+					onFail({data = 730743})
+				else
+					local http = GetExchangeCodeRewardHttp.new(true)
+					http:ad(Events.kComplete, onSuccess)
+					http:ad(Events.kError, onFail)
+					http:load(string.upper(enteredCodeStr))
+				end
 			end
+			RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
 		end
 	end
 	self.getRewardBtn:addEventListener(DisplayEvents.kTouchTap, onGetRewardBtnTapped)

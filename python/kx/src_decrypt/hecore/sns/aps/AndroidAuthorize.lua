@@ -1,6 +1,5 @@
 AndroidAuthorize = class()
 
-local apsMgr
 local instance
 function AndroidAuthorize.getInstance()
 	if not instance then
@@ -10,9 +9,12 @@ function AndroidAuthorize.getInstance()
 	return instance
 end
 
+function AndroidAuthorize:getAPSMgr()
+	return luajava.bindClass("com.happyelements.hellolua.aps.APSManager")
+end
+
 function AndroidAuthorize:init()
 	self.supportedAuthors = {}
-	apsMgr = luajava.bindClass("com.happyelements.hellolua.aps.APSManager")
 end
 
 function AndroidAuthorize:initAuthorizeConfig(authorConfig)
@@ -33,7 +35,7 @@ function AndroidAuthorize:registerAuthor(authorType)
 
 	if authorType ~= PlatformAuthEnum.kGuest then
 		self.supportedAuthors[authorType] = true
-		local success = apsMgr:getInstance():registerAuthor(authorType)
+		local success = AndroidAuthorize:getAPSMgr():getInstance():registerAuthor(authorType)
 		if not success then
 			he_log_error("registerAuthor failed.authorType="..tostring(authorType)..",platform="..PlatformConfig.name)
 		end
@@ -42,12 +44,12 @@ end
 
 function AndroidAuthorize:getDefaultAuhtorDelegate()
 	if not self.defaultAuthorType then return nil end
-	return apsMgr:getInstance():getAuthorizeDelegate(self.defaultAuthorType)
+	return AndroidAuthorize:getAPSMgr():getInstance():getAuthorizeDelegate(self.defaultAuthorType)
 end
 
 function AndroidAuthorize:getAuhtorDelegate(authorType)
 	if not authorType or type(authorType)~="number" then return nil end
-	return apsMgr:getInstance():getAuthorizeDelegate(authorType)
+	return AndroidAuthorize:getAPSMgr():getInstance():getAuthorizeDelegate(authorType)
 end
 
 local authorCount = nil

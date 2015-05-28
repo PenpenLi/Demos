@@ -24,7 +24,6 @@ require "zoo.panel.PushActivityPanel"
 require "zoo.panel.RemindAskingEnergyPanel"
 require "zoo.panelBusLogic.IapBuyPropLogic"
 require "zoo.panel.component.energyPanel.IapBuyMiddleEnergyPanel"
-require "zoo.panel.component.energyPanel.AndroidDimeBuyMiddleEnergyPanel"
 
 local kPanelShowChance = {
 	kAddMaxEnergy = 0,
@@ -775,9 +774,7 @@ function EnergyPanel:onBuyAndContinueBtnTapped(event, ...)
 		return 
 	end
 	
-	if RequireNetworkAlert:popout() then
-		startBuyLogic()
-	end
+	RequireNetworkAlert:callFuncWithLogged(startBuyLogic)
 end
 
 function EnergyPanel:onContinueBtnTapped(event, ...)
@@ -1431,6 +1428,7 @@ function EnergyPanel:onBuyBtnTapped(...)
 			if self.isDisposed then return end
 			self.buyBtn:setTouchEnabled(true)
 			self.buyBtn:setButtonMode(true)
+			self.onEnterForeGroundCallback = nil
 		end
 
 		local function onBoughtCallback()
@@ -1444,6 +1442,7 @@ function EnergyPanel:onBuyBtnTapped(...)
 			self.buyBtn:setTouchEnabled(false)
 			self.buyBtn:setButtonMode(false)
 			local logic = IngamePaymentLogic:create(18)
+			self.onEnterForeGroundCallback = enableClick  --微信未登录取消时无回调，所以加此逻辑
 			logic:buy(onBoughtCallback, enableClick, enableClick)
 		else -- else, on IOS and PC we use gold!
 			local panel = BuyPropPanel:create(18)
@@ -1483,34 +1482,6 @@ function EnergyPanel:create(continueCallback, ...)
 	local newEnergyPanel = EnergyPanel.new()
 	newEnergyPanel:init(continueCallback)
 	return newEnergyPanel
-end
-
-function EnergyPanel:tryPopoutAndroidDimeBuyMidEnergy()
-	if __ANDROID then
-		if UserManager:getInstance():getUserRef():getEnergy() < 5 and
-			AndroidDimeBuyMiddleEnergyPanel:checkCanPop() then
-			local function boughtCallback()
-				self.item2:updateItemNumber()
-				if self.bottomBubblePanel then
-					self.bottomBubblePanel:remove()
-					self.bottomBubblePanel = nil
-				end
-			end
-			local popoutPos = self.panelExchangeAnim:getPopShowPos()
-			local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
-			local energyPanelBottomPosY = popoutPos.y - selfSize.height
-			local selfParent = self:getParent()
-			local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
-			posInWorldSpace.y = posInWorldSpace.y - 40
-			local panel = AndroidDimeBuyMiddleEnergyPanel:create(self, boughtCallback, posInWorldSpace.y)
-			if panel then
-				self.bottomBubblePanel = panel
-				panel:popout()
-				return true
-			end
-		end
-	end
-	return false
 end
 
 function EnergyPanel:tryPopoutIapBuyMidEnergy()
@@ -1561,15 +1532,21 @@ function EnergyPanel:tryPopPushActivityPanel()
 	return false
 end
 
+function EnergyPanel:onEnterForeGround( ... )
+	-- body
+	if self.isDisposed then return end
+	if self.onEnterForeGroundCallback and type(self.onEnterForeGroundCallback) == "function" then 
+		self.onEnterForeGroundCallback()
+	end
+end
+
 popoutSequence = {
-	EnergyPanel.tryPopoutAndroidDimeBuyMidEnergy,
 	EnergyPanel.tryPopoutIapBuyMidEnergy,
 	EnergyPanel.tryPopPushActivityPanel,
 	EnergyPanel.chekPopoutBottomBubbleWindow,
 }
 
 popoutWithoutBgFadeInSequence = {
-	EnergyPanel.tryPopoutAndroidDimeBuyMidEnergy,
 	EnergyPanel.tryPopoutIapBuyMidEnergy,
 	EnergyPanel.tryPopPushActivityPanel,
 	EnergyPanel.chekPopoutBottomBubbleWindow,

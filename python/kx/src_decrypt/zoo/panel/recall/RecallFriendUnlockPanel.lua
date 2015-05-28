@@ -38,7 +38,7 @@ function RecallFriendUnlockPanel:initPanel()
 	self.askFriendBtn:setString(Localization:getInstance():getText("unlock.cloud.panel.use.friend.unlock", {}))
 	local function onAskFriendBtnTapped()
 		if RecallManager.getInstance():getFinalRewardState() ~= RecallRewardType.AREA_LONG then 
-		   CommonTip:showTip(Localization:getInstance():getText("区域已解锁！"))
+		   CommonTip:showTip(Localization:getInstance():getText("recall_text_6"))
 		   self:onCloseBtnTapped()
 		   return 
 		end
@@ -60,11 +60,11 @@ function RecallFriendUnlockPanel:showAnimation()
 		local function moveOverCallBack()
 			local animalName = ""
 			if i==1 then 
-				animalName = "小青蛙"
+				animalName = "recall_text_13"
 			elseif i==2 then 
-				animalName = "小黄鸡"
+				animalName = "recall_text_14"
 			elseif i==3 then 
-				animalName = "小河马"
+				animalName = "recall_text_15"
 				if not tipPanelHasPop then 
 					tipPanelHasPop = true 
 					self:showTipPanel()

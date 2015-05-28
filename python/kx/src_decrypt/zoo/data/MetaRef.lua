@@ -665,6 +665,7 @@ function LevelAreaMetaRef:ctor()
 	self.maxLevel = 0
 	self.minLevel = 0
 	self.star = 0
+	self.unlockTaskLevelId = nil
 end
 
 --
@@ -1239,3 +1240,5 @@ function RewardsRef:fromLua(src)
 		else self[k] = tonumber(v) end
 	end
 end
+
+LevelStatusRef = class(MetaRef)

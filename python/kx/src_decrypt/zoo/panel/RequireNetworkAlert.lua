@@ -6,79 +6,195 @@ require "zoo.panel.CommonTip"
 -------------------------------------------------------------------------
 kRequireNetworkAlertAnimation = {kDefault=0, kSync=1, kNoAnimation=2}
 
-local function userLoginCheckLogic(scene, onCompleteFunc, animationType)
-	local animation
-	local layer = nil
-	local timeoutID = nil
-	local logic = PostLoginLogic.new()
-	local responsed = false
-
-	local function stopTimeout()
-		if timeoutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(timeoutID) end
-		print("userLoginCheckLogic:: stop timeout check")
+UserLoginChecker = class()
+local checkerInstance = nil
+function UserLoginChecker.getInstance()
+	if not checkerInstance then
+		checkerInstance = UserLoginChecker.new()
+		checkerInstance:init()
 	end
-	local function removePopout()
-		stopTimeout()
-		if animation then animation:removeFromParentAndCleanup(true) end
-		if layer then
-			-- layer:removeFromParentAndCleanup(true)
-			PopoutManager:sharedInstance():remove(layer)
+	return checkerInstance
+end
+
+function UserLoginChecker:init()
+	self.isLogining = false
+	self.successCallbacks = {}
+	self.failCallbacks = {}
+	self.animation = nil
+	self.coverLayer = nil
+	self.timeoutID = nil
+	self.animationType = nil
+end
+
+function UserLoginChecker:onResult(success)
+	self.isLogining = false
+	local callbacks = {}
+	if success then
+		callbacks = self.successCallbacks or {}
+	else
+		callbacks = self.failCallbacks or {}
+	end
+	self.successCallbacks = {}
+	self.failCallbacks = {}
+	print("userLoginCheckLogic onResult:", success, #callbacks)
+	if callbacks and #callbacks > 0 then
+		for _,v in ipairs(callbacks) do
+			if type(v) == "function" then v() end
 		end
 	end
-	local function onCloseButtonTap( evt )
-		if evt then evt.target:rma() end
-		logic:rma()
-		removePopout()
+end
+
+function UserLoginChecker:stopTimeout()
+	print("userLoginCheckLogic:: stop timeout check")
+	if self.timeoutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.timeoutID) end
+end
+
+function UserLoginChecker:onCancel(evt)
+	if evt then evt.target:rma() end
+	if self.logic then self.logic:rma() end
+	self:removePopout()
+	self:onResult(false)
+end
+
+function UserLoginChecker:removePopout()
+	self:stopTimeout()
+	if self.animation then 
+		self.animation:removeFromParentAndCleanup(true) 
+		self.animation = nil
 	end
+	if self.coverLayer then
+		PopoutManager:sharedInstance():remove(self.coverLayer)
+		self.coverLayer = nil
+	end
+end
+
+function UserLoginChecker:replaceAnimation(scene, animationType)
+	if self.animation then 
+		self.animation:removeFromParentAndCleanup(true)
+		self.animation = nil
+	end
+
+	if animationType == kRequireNetworkAlertAnimation.kSync then 
+		self.animationType = animationType
+		self.animation = CountDownAnimation:createSyncAnimation() 
+	end
+	if animationType == kRequireNetworkAlertAnimation.kDefault then
+		if not self.coverLayer then self:addCoverLayer() end
+		if self.coverLayer then 
+			self.coverLayer.onKeyBackClicked = function() self:removePopout() end 
+		end
+		if scene and not scene.isDisposed then
+			self.animationType = animationType
+			self.animation = CountDownAnimation:createNetworkAnimation(scene, function(evt) self:onCancel(evt) end)
+		else
+			self:onCancel()
+		end
+	end
+end
+
+function UserLoginChecker:addCoverLayer()
+	if self.coverLayer then return end
+
+	local wSize = Director:sharedDirector():getWinSize()
+  	local scene = Director:sharedDirector():getRunningScene()
+  	local layer = LayerColor:create()
+  	layer:changeWidthAndHeight(wSize.width, wSize.height)
+  	layer:setTouchEnabled(true, 0, true)
+  	layer:setOpacity(0)
+  	PopoutManager:sharedInstance():add(layer, false, false)
+  	self.coverLayer = layer
+end
+
+function UserLoginChecker:needReplaceAnimation(newType)
+	if self.animationType then
+		if self.animationType == kRequireNetworkAlertAnimation.kNoAnimation then
+			return newType == kRequireNetworkAlertAnimation.kDefault or newType == kRequireNetworkAlertAnimation.kSync
+		end
+		if self.animationType == kRequireNetworkAlertAnimation.kDefault then
+			return newType == kRequireNetworkAlertAnimation.kSync
+		end
+		if self.animationType == kRequireNetworkAlertAnimation.kSync then
+			return false
+		end
+	else
+		if newType and newType ~= kRequireNetworkAlertAnimation.kNoAnimation then
+			return true
+		end
+	end
+	return false
+end
+
+function UserLoginChecker:doLogin(scene, onCompleteFunc, onFailFunc, animationType)
+	animationType = animationType or kRequireNetworkAlertAnimation.kDefault
+	if onCompleteFunc then table.insert(self.successCallbacks, onCompleteFunc) end
+	if onFailFunc then table.insert(self.failCallbacks, onFailFunc) end
+
+	if self.isLogining then
+		if self:needReplaceAnimation(animationType) then
+			self:replaceAnimation(scene, animationType)
+		end
+	 	return 
+	end
+	self.isLogining = true
+
+	local responsed = false
+	local hasException = false
 	
 	local function onRegisterError( evt )
 		responsed = true
 		if evt then evt.target:removeAllEventListeners() end
 		print("post register error")
-		removePopout()
+		self:removePopout()
 
 		if animationType == kRequireNetworkAlertAnimation.kDefault then
-			-- local item = RequireNetworkAlert.new(CCNode:create())
-			-- item:buildUI(Localization:getInstance():getText("dis.connect.warning.tips"))
-			-- if scene and scene.rootLayer then scene:addChild(item) end
-			CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
+			if -7==evt.data then
+				CommonTip:showTip(Localization:getInstance():getText("error.tip.-7"))
+			else
+				CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
+			end
 		end
+		self:onResult(false)
 	end
 	local function onRegisterFinish( evt )
 		responsed = true
 		evt.target:removeAllEventListeners()
-		print("post register finish")
-		removePopout()
-		if onCompleteFunc ~= nil then onCompleteFunc() end
+		self:removePopout()
+		local ret = true
+		if hasException then ret = false end
+		self:onResult(ret)
 	end 
+	-- 同步出现数据异常，
+	local function onLoginException( evt )
+		responsed = true
+		hasException = true
+	end
+
 	local function onTimeout()
-		if not responsed and  animationType == kRequireNetworkAlertAnimation.kDefault then
-			if layer then layer.onKeyBackClicked = function() removePopout() end end
-			if scene and not scene.isDisposed then
-				animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
-			else
-				onCloseButtonTap()
-			end
+		if not responsed and animationType == kRequireNetworkAlertAnimation.kDefault then
+			self:replaceAnimation(scene, kRequireNetworkAlertAnimation.kDefault)
 		end
 		print("timeout @ userLoginCheckLogic")
-		stopTimeout()
+		self:stopTimeout()
 	end
-	if animationType == kRequireNetworkAlertAnimation.kSync then animation = CountDownAnimation:createSyncAnimation() end
+	if animationType == kRequireNetworkAlertAnimation.kSync then 
+		self:replaceAnimation(scene, kRequireNetworkAlertAnimation.kSync)
+	elseif animationType == kRequireNetworkAlertAnimation.kDefault then
+		self:addCoverLayer()
+	end
+	self.timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout,1,false)
+
 	print("--------------begin post user login logic.")
-	if animationType == kRequireNetworkAlertAnimation.kDefault then
-		local wSize = Director:sharedDirector():getWinSize()
-	  	local scene = Director:sharedDirector():getRunningScene()
-	  	layer = LayerColor:create()
-	  	layer:changeWidthAndHeight(wSize.width, wSize.height)
-	  	layer:setTouchEnabled(true, 0, true)
-	  	layer:setOpacity(0)
-	  	PopoutManager:sharedInstance():add(layer, false, false)
-	  	-- scene:addChild(layer)
-	end
-	timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout,1,false)
-	logic:addEventListener(Events.kComplete, onRegisterFinish)
-	logic:addEventListener(Events.kError, onRegisterError)
+	local logic = PostLoginLogic.new()
+	logic:addEventListener(PostLoginLogicEvents.kComplete, onRegisterFinish)
+	logic:addEventListener(PostLoginLogicEvents.kError, onRegisterError)
+	logic:addEventListener(PostLoginLogicEvents.kException, onLoginException)
 	logic:load()
+
+	self.logic = logic
+end
+
+local function userLoginCheckLogic(scene, onCompleteFunc, animationType, onFailFunc)
+	UserLoginChecker.getInstance():doLogin(scene, onCompleteFunc, onFailFunc, animationType)
 	return false
 end
 
@@ -88,37 +204,66 @@ end
 RequireNetworkAlert = class(CocosObject)
 function RequireNetworkAlert:popout(onCompleteFunc, animationType)
 	if animationType == nil then animationType = kRequireNetworkAlertAnimation.kDefault end
+	if not onCompleteFunc then
+		print("[WARNING!!!] Please call RequireNetworkAlert:callFuncWithLogged function instead.")
+	end
 
 	local scene = Director:sharedDirector():getRunningScene()
 	if scene then 
+		if _G.kUserLogin then return true end
+
 		if __IOS then
 			if ReachabilityUtil.getInstance():isNetworkAvailable() then 
 				--network available
-				if _G.kUserLogin then return true
-				else return userLoginCheckLogic(scene, onCompleteFunc, animationType) end
+				return userLoginCheckLogic(scene, onCompleteFunc, animationType)
 			else
-				if _G.kUserLogin then return true
+				local kDebugLoading = NetworkConfig.noNetworkMode
+				if kDebugLoading then return userLoginCheckLogic(scene, onCompleteFunc, animationType)
 				else
-					local kDebugLoading = NetworkConfig.noNetworkMode
-					if kDebugLoading then return userLoginCheckLogic(scene, onCompleteFunc, animationType)
-					else
-						if animationType == kRequireNetworkAlertAnimation.kDefault then
-							--only ios have the network status, display a alert
-							-- local item = RequireNetworkAlert.new(CCNode:create())
-							-- item:buildUI(Localization:getInstance():getText("dis.connect.warning.tips"))
-							-- scene:addChild(item)
-							CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips")) 
-						end
-						return false
+					if animationType == kRequireNetworkAlertAnimation.kDefault then
+						CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips")) 
 					end
+					return false
 				end
 			end
 		else
-			if _G.kUserLogin then return true
-			else return userLoginCheckLogic(scene, onCompleteFunc, animationType) end
+			return userLoginCheckLogic(scene, onCompleteFunc, animationType)
 		end
 	end
 	return false
+end
+
+function RequireNetworkAlert:callFuncWithLogged(onSuccessFunc, onFailFunc, animationType)
+	if animationType == nil then animationType = kRequireNetworkAlertAnimation.kDefault end
+
+	local scene = Director:sharedDirector():getRunningScene()
+	if scene then
+		if _G.kUserLogin then -- already login
+			if onSuccessFunc then onSuccessFunc() end
+		else -- try do login
+			local needDoLogin = false
+			if __IOS then
+				if ReachabilityUtil.getInstance():isNetworkAvailable() or NetworkConfig.noNetworkMode then 
+					--network available
+					needDoLogin = true
+				else
+					if animationType == kRequireNetworkAlertAnimation.kDefault then
+						CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips")) 
+					end
+				end
+			else
+				needDoLogin = true
+			end
+
+			if needDoLogin then
+				userLoginCheckLogic(scene, onSuccessFunc, animationType, onFailFunc)
+			else
+				if onFailFunc then onFailFunc() end
+			end
+		end
+	else
+		if onFailFunc then onFailFunc() end
+	end
 end
 
 function RequireNetworkAlert:buildUI(message)

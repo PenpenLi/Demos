@@ -9,22 +9,72 @@ function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreSc
 	-----成功消除时候会影响周围的东西
 	if SpecialCoverLogic:canEffectAround(mainLogic, r, c) then
 		if covertype == 1 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c, noScore)		--上下
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r - 1, c, noScore)		--上下
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r + 1, c, noScore)
 		elseif covertype == 2 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1, noScore)		--左右
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r , c - 1, noScore)		--左右
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r , c + 1, noScore)
 		elseif covertype == 3 then
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r - 1, c, noScore)		--四方
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r + 1, c, noScore)
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c - 1, noScore)
-			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r , c + 1, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r - 1, c, noScore)		--四方
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r + 1, c, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r , c - 1, noScore)
+			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r , c + 1, noScore)
 		end
 	end
 
 	if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
 		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD, noScore)
 	end
+end
+
+function SpecialCoverLogic:specialCoverChainsAroundPos(mainLogic, r, c, dirs)
+	dirs = dirs or {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft}
+	SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, dirs)
+	for _, v in pairs(dirs) do
+		if v == ChainDirConfig.kUp then
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r-1, c, {ChainDirConfig.kDown})
+		elseif v == ChainDirConfig.kDown then
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r+1, c, {ChainDirConfig.kUp})
+		elseif v == ChainDirConfig.kLeft then
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c-1, {ChainDirConfig.kRight})
+		elseif v == ChainDirConfig.kRight then
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c+1, {ChainDirConfig.kLeft})
+		end
+	end
+end
+
+-- centerR, centerC, radius 区域特效使用
+function SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, breakDirs)
+	if not mainLogic:isPosValid(r, c) then
+		return
+	end
+	breakDirs = breakDirs or {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft}
+
+	local board = mainLogic.boardmap[r][c]
+	-- local item = mainLogic.gameItemMap[r][c]
+	local breakLevels = board:decChainsInDirections(breakDirs)
+	local notEmpty = false
+	local hasChainBreaked = false
+	for dir, level in pairs(breakLevels) do
+		if level > 0 then 
+			notEmpty = true
+		end
+		if level == 1 then
+			hasChainBreaked = true
+		end
+	end
+	if not notEmpty then return end
+
+	board.isNeedUpdate = true
+	-- item.isNeedUpdate = true
+	
+	mainLogic.boardView.baseMap[r][c]:playChainBreakAnim(breakLevels, nil)
+
+	if hasChainBreaked then
+		mainLogic:setChainBreaked()
+		mainLogic.gameMode:afterChainBreaked(r, c)
+	end
+	-- print("breakLevels:", table.tostring(breakLevels))
 end
 
 function SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale, canEffectCoin)
@@ -106,6 +156,7 @@ function SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c)
 		or item.ItemType == GameItemType.kBoss
 		or item.ItemType == GameItemType.kHoneyBottle
 		or item.ItemType == GameItemType.kMagicLamp
+		or item.ItemType == GameItemType.kMagicStone
 		then
 		return true
 	end
@@ -127,20 +178,20 @@ function SpecialCoverLogic:canEffectAround(mainLogic, r, c)
 	return false
 end
 
-function SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, noScore)
-	if not mainLogic:isPosValid(r, c) then return end
+function SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r1, c1, noScore)
+	if not mainLogic:isPosValid(r1, c1) then return end
 
-	if SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c) then
-		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, 1, nil, false, noScore)
+	if SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c, r1, c1) then
+		SpecialCoverLogic:effectBlockerAt(mainLogic, r1, c1, 1, nil, false, noScore)
 	end
 end
 
 ----可以被周围的SpecialCoverAnimal<特效消除小动物>影响到----
-function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c)
-	if not mainLogic:isPosValid(r, c) then return false end
+function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c, r1, c1)
+	if not mainLogic:isPosValid(r1, c1) then return false end
 
-	local item = mainLogic.gameItemMap[r][c]
-	local board = mainLogic.boardmap[r][c]
+	local item = mainLogic.gameItemMap[r1][c1]
+	local board = mainLogic.boardmap[r1][c1]
 
 	if not item:isAvailable() then return false end
 
@@ -150,6 +201,9 @@ function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c
 		or item.ItemType == GameItemType.kDigJewel)
 		or item.honeyLevel > 0 
 		then
+		if mainLogic:hasChainInNeighbors(r, c, r1, c1) then -- 两者之间有冰柱
+			return false
+		end
 		return true
 	end
 	return false
@@ -443,6 +497,27 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
                     )
 		action.count = 1
 	    mainLogic:addDestroyAction(action)
+    elseif item.ItemType == GameItemType.kMagicStone and item:canMagicStoneBeActive() then
+    	local stoneActiveAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Magic_Stone_Active,
+			IntCoord:create(r, c),
+			nil,
+			1)
+
+		stoneActiveAction.magicStoneLevel = item.magicStoneLevel
+
+		if item.magicStoneLevel < TileMagicStoneConst.kMaxLevel then
+			item.magicStoneLevel = item.magicStoneLevel + 1
+			if item.magicStoneLevel == TileMagicStoneConst.kMaxLevel then
+				mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kMagicStone, 1)
+			end
+		else
+			item.magicStoneActiveTimes = item.magicStoneActiveTimes + 1
+			item.magicStoneLocked = true
+			stoneActiveAction.targetPos = GameExtandPlayLogic:calcMagicStoneEffectPositions(mainLogic, r, c)
+		end
+		mainLogic:addDestroyAction(stoneActiveAction)
 	end
 
 	--毛球

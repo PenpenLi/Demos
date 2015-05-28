@@ -10,10 +10,10 @@ function ConsumeHistoryPanel.isShowCustomerPhone( ... )
 	if MaintenanceManager:getInstance():isEnabled("CustomerServicePhone") then
 		return true
 	end
-	local province = Cookie.getInstance():read(CookieKey.kLocationProvince)
-	if table.includes({"河北","山东","辽宁","湖北"},province) then
-		return true
-	end
+	-- local province = Cookie.getInstance():read(CookieKey.kLocationProvince)
+	-- if table.includes({"河北","山东","辽宁","湖北"},province) then
+	-- 	return true
+	-- end
 	return false 
 end
 

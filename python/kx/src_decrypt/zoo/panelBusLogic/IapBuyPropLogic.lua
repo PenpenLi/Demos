@@ -62,6 +62,12 @@ function IapBuyPropLogic:buy(data, successCallback, failCallback)
 			successCallback()
 		end
 
+		local user = UserManager:getInstance():getUserRef()
+		local stageInfo = StageInfoLocalLogic:getStageInfo(user.uid)
+		local levelId = 0
+		if stageInfo then levelId = stageInfo.levelId end
+		DcUtil:logBuyCashItem(data.goodsId, data.price, 1, 0, levelId, data.price)
+
 		GlobalEventDispatcher:getInstance():dispatchEvent(
 			Event.new(kGlobalEvents.kConsumeComplete, {
 				price = data.price,

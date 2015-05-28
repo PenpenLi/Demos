@@ -10,6 +10,7 @@ UnlockCloudRequestItem = class(RequestMessageItemBase)
 FriendRequestItem = class(RequestMessageItemBase)
 EnergyRequestItem = class(RequestMessageItemBase)
 UpdateNewVersionItem = class(RequestMessageItemBase)
+ActivityRequestItem = class(RequestMessageItemBase)
 
 MessageOriginTypeClass = {
     [0] = RequestMessageItemBase,
@@ -17,6 +18,7 @@ MessageOriginTypeClass = {
     [2] = EnergyRequestItem,
     [3] = UnlockCloudRequestItem,
     [5] = FriendRequestItem,
+    [6] = ActivityRequestItem,
 }
 
 function RequestMessageItemBase:loadRequiredResource(panelConfigFile)
@@ -269,8 +271,9 @@ function UnlockCloudRequestItem:setData(requestInfo)
     RequestMessageItemBase.setData(self, requestInfo)
 
     self.requestInfo = requestInfo
+    local level = (requestInfo.itemId - 40001) * 15
 
-    self.msg_text:setString(Localization:getInstance():getText("message.center.text.unlock.area"))
+    self.msg_text:setString(Localization:getInstance():getText("message.center.text.unlock.area", {level = level}))
     self.confirm:setString(Localization:getInstance():getText("message.center.agree.btn.unlock"))
 end
 function FriendRequestItem:setData(requestInfo)
@@ -546,7 +549,12 @@ function UpdateNewVersionItem:setData(requestInfo)
     RequestMessageItemBase.setData(self, requestInfo)
 
     --
-    self.msg_text:setString(Localization:getInstance():getText('message.center.message.need.update'))
+    if NewVersionUtil:hasPackageUpdate() then
+        self.msg_text:setString(Localization:getInstance():getText('message.center.message.need.update'))
+    else
+        self.msg_text:setString(Localization:getInstance():getText('new.version.tip.message.1'))
+    end
+
     self.msg_text:setFontSize(26)
     self.msg_text:setPositionY(self.msg_text:getPositionY())
     self.cancel:setVisible(false)
@@ -570,6 +578,7 @@ RequestMessageZeroFriend = class(RequestMessageZeroItem)
 RequestMessageZeroEnergy = class(RequestMessageZeroItem)
 RequestMessageZeroUnlock = class(RequestMessageZeroItem)
 RequestMessageZeroUpdate = class(RequestMessageZeroItem)
+RequestMessageZeroActivity = class(RequestMessageZeroItem)
 
 function RequestMessageZeroItem:create(width, height)
     local ret = RequestMessageZeroItem.new()
@@ -580,7 +589,7 @@ end
 
 function RequestMessageZeroItem:init(width, height)
     local builder = InterfaceBuilder:create(PanelConfigFiles.request_message_panel)
-    local text = TextField:create("", nil, 36, CCSizeMake(600,0))
+    local text = TextField:create("", nil, 36, CCSizeMake(600,400))
     text:setColor(ccc3(144, 89, 2))
     text:setAnchorPoint(ccp(0, 1))
     self.text = text
@@ -795,6 +804,9 @@ function RequestMessagePanel:init()
     if newestCfg and newestCfg.dailyMaxReceiveGiftCount then
         kDailyMaxReceiveGiftCount = newestCfg.dailyMaxReceiveGiftCount
     end
+
+    self.hasRunGuide = CCUserDefault:sharedUserDefault():getBoolForKey('panel.request.message.hasRunGuide')
+
 end
 
 local function createRequestItemContent(requestInfoList, minWidth, minHeight, requestType)
@@ -891,7 +903,8 @@ local tabTable = {
     {tabId = 0, pageIndex = 1, key = Localization:getInstance():getText("request.message.panel.tab.friend"), msgType = {RequestType.kAddFriend}},
     {tabId = 1, pageIndex = 2, key = Localization:getInstance():getText("request.message.panel.tab.receive"), msgType = {RequestType.kSendFreeGift, RequestType.kReceiveFreeGift}},
     {tabId = 2, pageIndex = 3, key = Localization:getInstance():getText("request.message.panel.tab.unlock"), msgType = {RequestType.kUnlockLevelArea}},
-    {tabId = 3, pageIndex = 4, key = Localization:getInstance():getText("request.message.panel.tab.version"), msgType = {RequestType.kNeedUpdate}},
+    {tabId = 3, pageIndex = 4, key = Localization:getInstance():getText("request.message.panel.tab.activity"), msgType = {RequestType.kActivity}},
+    {tabId = 4, pageIndex = 5, key = Localization:getInstance():getText("request.message.panel.tab.version"), msgType = {RequestType.kNeedUpdate}},
 }
 
 local pageTable = {
@@ -904,8 +917,11 @@ local pageTable = {
     {msgType = {RequestType.kUnlockLevelArea}, tabId = 2, pageIndex = 3,
         acceptAll = function() return true end, rejectAll = function() return true end,
         class = function() return UnlockCloudRequestItem end, zero = function() return RequestMessageZeroUnlock end},
-    {msgType = {RequestType.kNeedUpdate}, tabId = 3, pageIndex = 4,
-        acceptAll = function() return true end, rejectAll = function() return true end,
+    {msgType = {RequestType.kActivity}, tabId = 3, pageIndex = 4,
+        acceptAll = function() return false end, rejectAll = function() return true end,
+        class = function() return ActivityRequestItem end, zero = function() return RequestMessageZeroActivity end},
+    {msgType = {RequestType.kNeedUpdate}, tabId = 4, pageIndex = 5,
+        acceptAll = function() return NewVersionUtil:hasPackageUpdate() end, rejectAll = function() return true end,
         class = function() return UpdateNewVersionItem end, zero = function() return RequestMessageZeroUpdate end},
 }
 
@@ -950,8 +966,19 @@ function RequestMessagePanel:buildUI()
     local listHeight = winSize.height - bottomHeight - topHeight
     local iptTable = {}
     for k, v in pairs(tabTable) do iptTable[k] = v end
-    if FreegiftManager:sharedInstance():getMessageNumByType(tabTable[4].msgType) <= 0 then
-        table.remove(iptTable, 4)
+
+    local updateVersionTab = nil
+    local updateVersionTabIndex = 0
+    for k, v in pairs(tabTable) do
+        if v.msgType[1] == RequestType.kNeedUpdate then
+            updateVersionTab = v
+            updateVersionTabIndex = k
+            break
+        end
+    end
+
+    if FreegiftManager:sharedInstance():getMessageNumByType(updateVersionTab.msgType) <= 0 then
+        table.remove(iptTable, updateVersionTabIndex)
     end
     for k, v in ipairs(iptTable) do
         v.number = FreegiftManager:sharedInstance():getMessageNumByType(v.msgType)
@@ -974,7 +1001,7 @@ function RequestMessagePanel:buildUI()
 
     self:createPages(winSize.width - 36, listHeight - 70)
     self:switchToFirstNonZeroPage()
-    self:switchPageFinish(listHeight - 70)
+    -- self:switchPageFinish(listHeight - 70)
 
     local function onCloseTapped()
         Director:sharedDirector():popScene()
@@ -1018,9 +1045,21 @@ function RequestMessagePanel:createPages(width, height)
     self.layers = {}
     local iptTable = {}
     for k, v in pairs(pageTable) do iptTable[k] = v end
-    if FreegiftManager:sharedInstance():getMessageNumByType(pageTable[4].msgType) <= 0 then
-        table.remove(iptTable, 4)
+
+    local updateVersionTab = nil
+    local updateVersionTabIndex = 0
+    for k, v in pairs(iptTable) do
+        if v.msgType[1] == RequestType.kNeedUpdate then
+            updateVersionTab = v
+            updateVersionTabIndex = k
+            break
+        end
     end
+
+    if FreegiftManager:sharedInstance():getMessageNumByType(updateVersionTab.msgType) <= 0 then
+        table.remove(iptTable, updateVersionTabIndex)
+    end
+
     for k, v in ipairs(iptTable) do
         local layer = Layer:create()
         local zero = v.zero():create(width, height)
@@ -1107,7 +1146,45 @@ end
 
 function RequestMessagePanel:switchPageFinish(height)
     local index = self.pagedView:getPageIndex()
+    if index == 3 and not self.hasRunGuide and UserManager:getInstance().user:getTopLevelId() <= 60 then -- 解锁
+        local items = self.layers[3]:getChildByName('list'):getContent():getItems()
+        if #items > 0 then
+            self:tryRunGuide()
+
+        end
+    end
     self:setButtonsVisibleEnable(index)
+end
+
+function RequestMessagePanel:tryRunGuide()
+    if self.hasRunGuide then return end
+    local visibleSize   = CCDirector:sharedDirector():getVisibleSize()
+    local visibleOrigin = CCDirector:sharedDirector():getVisibleOrigin()
+    local panelY =  visibleOrigin.y + visibleSize.height / 2
+
+    local panel = GameGuideRunner:createPanelSU('tutorial.panel.request.message.text001', true, nil)
+    panel:setPositionY(panelY)
+    local pos = ccp(0, 0)
+    local trueMask = GameGuideRunner:createMask(204, 1, pos, 0, false, nil, nil, false)
+    trueMask:removeEventListenerByName(DisplayEvents.kTouchTap)
+    trueMask:ad(DisplayEvents.kTouchTap, function () self:tryRemoveGuide() end)
+    trueMask:setFadeIn(0.5, 0.3)
+    local layer = Layer:create()
+    layer:addChild(trueMask)
+    layer:addChild(panel)
+    self.guideLayer = layer
+    local scene = Director:sharedDirector():getRunningScene()
+    if scene then
+        scene:addChild(layer)
+    end
+end
+
+function RequestMessagePanel:tryRemoveGuide()
+    if self.guideLayer and not self.guideLayer.isDisposed then
+        self.guideLayer:removeFromParentAndCleanup(true)
+        CCUserDefault:sharedUserDefault():setBoolForKey('panel.request.message.hasRunGuide', true)
+        self.hasRunGuide = true
+    end
 end
 
 function RequestMessagePanel:setButtonsVisibleEnable(index)
@@ -1198,6 +1275,7 @@ function RequestMessagePanel:cancelAll()
             end
         end
     end
+    self:setButtonsVisibleEnable(index)
     ConnectionManager:flush()
 end
 
@@ -1458,7 +1536,7 @@ function RequestMessagePanelTab:init(config)
     -------------------------------------------
     -- center tabs positions
     --
-    local length = ui:getGroupBounds().size.width
+    local length = 710 -- ui:getGroupBounds().size.width
     for k, v in pairs(self.tabs) do
         v:setPositionX(length * k / (count + 1))
     end
@@ -1559,4 +1637,172 @@ function RequestMessagePanelTab:_getTabLooseFocusAnim(tab)
     array:addObject(move)
     local spawn = CCEaseSineOut:create(CCSpawn:create(array))
     return spawn
+end
+
+function ActivityRequestItem:init()
+    RequestMessageItemBase.init(self)
+    self.iconBuilder = InterfaceBuilder:create(PanelConfigFiles.properties)
+end
+
+function ActivityRequestItem:setData(requestInfo)
+    RequestMessageItemBase.setData(self, requestInfo)
+
+    self.requestInfo = requestInfo
+    local message = requestInfo.message or ""
+    self.msg_text:setString(message)
+    self.confirm:setString(Localization:getInstance():getText('message.center.help.btn'))
+    
+end
+
+local function addReward(reward)
+    for k, v in pairs(reward) do 
+        if v.itemId == ItemType.COIN then
+            UserManager:getInstance().user:setCoin(UserManager:getInstance().user:getCoin() + v.num)
+            UserService:getInstance().user:setCoin(UserService:getInstance().user:getCoin() + v.num)
+            if HomeScene:sharedInstance().coinButton then
+                HomeScene:sharedInstance():checkDataChange()
+                HomeScene:sharedInstance().coinButton:updateView()
+            end
+        elseif v.itemId == ItemType.GOLD then
+            UserManager:getInstance().user:setCash(UserManager:getInstance().user:getCash() + v.num)
+            UserService:getInstance().user:setCash(UserService:getInstance().user:getCash() + v.num)
+            if HomeScene:sharedInstance().goldButton then
+                HomeScene:sharedInstance():checkDataChange()
+                HomeScene:sharedInstance().goldButton:updateView()
+            end
+        else
+            UserManager:getInstance():addUserPropNumber(v.itemId, v.num)
+            UserService:getInstance():addUserPropNumber(v.itemId, v.num)
+        end
+    end
+end
+
+function ActivityRequestItem:onSendAcceptSuccess(event, isBatch)
+    if self.isDisposed then return end
+    self._isInRequest = false
+    self._hasCompleted = true
+    self:showSyncAnimation(false)
+    self:showButtons(false)
+
+    if self.selected and not self.selected.isDisposed then self.selected:setVisible(true) end -- show selected
+    GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMessageCenterUpdate))
+    self:onRequestCompleted(isBatch)
+
+    print(table.tostring(event.data))
+    local itemsData = event.data.rewards
+    local isError = false
+    if itemsData == nil then
+        itemsData = {}
+        isError = true
+    end
+
+    addReward(itemsData)
+
+    local message = event.data.message or ""
+    local message2 = event.data.rewardlimitDesc or ""
+    self:showRewardPanel(itemsData, message, message2, isError)
+end
+
+function ActivityRequestItem:showRewardPanel(itemsData, message, message2, isError)
+    local scene = Director:sharedDirector():getRunningScene()
+    if not scene then return end
+
+    local function getItem(itemId, num)
+        if ItemType:isTimeProp(itemId) then itemId = ItemType:getRealIdByTimePropId(itemId) end
+        local item = self.builder:buildGroup('message_item')
+        local icon = self.iconBuilder:buildGroup('Prop_'..itemId)
+        item.iconPh = item:getChildByName('icon')
+        item.text = item:getChildByName('text')
+        item.iconPh:setVisible(false)
+        item.iconPh:getParent():addChild(icon)
+        icon:setScale(item.iconPh:getGroupBounds().size.width / icon:getGroupBounds().size.width)
+        if itemId == ItemType.COIN then
+            icon:setScale(icon:getScale() * 1.2)
+        end
+        icon:setPositionX(item.iconPh:getPositionX())
+        icon:setPositionY(item.iconPh:getPositionY())
+        item.text:setText('x'..tostring(num))
+        return item
+    end
+
+    local items = {}
+
+    for k, v in pairs(itemsData) do
+        local item = getItem(v.itemId, v.num)
+        table.insert(items, item)
+    end
+
+    local panel = self.builder:buildGroup('message_activity')
+    panel:ignoreAnchorPointForPosition(false)
+    panel:setAnchorPoint(ccp(0.5, 0.5))
+    local explain = panel:getChildByName('explain')
+    explain:setString(message2)
+
+    local text = nil 
+    if not isError then
+        text = panel:getChildByName('text')
+        panel:getChildByName('animError'):setVisible(false)
+    else
+        text = panel:getChildByName('errorText')
+        panel:getChildByName('anim'):setVisible(false)
+    end
+    text:setString(message)
+
+
+    local ph = panel:getChildByName('items')
+    ph:setVisible(false)
+    local width = ph:getGroupBounds().size.width
+    local totalWidth = 0
+    for k, v in pairs(items) do
+        totalWidth = totalWidth + v:getGroupBounds().size.width
+    end
+    local offset = ph:getPositionX() + (width - totalWidth) / 2
+    local Y = ph:getPositionY()
+    for k, v in pairs(items) do
+        v:setPositionY(Y)
+        v:setPositionX(offset)
+        offset = offset + v:getGroupBounds().size.width
+        ph:getParent():addChild(v)
+    end
+
+
+    local function onTimeout()
+        if not self.schedule or panel.isDisposed then return end
+        Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedule)
+        self.schedule = nil
+        local function remove()
+            if not panel or panel.isDisposed then return end
+            panel:removeFromParentAndCleanup(true)
+        end
+        panel:runAction(CCSequence:createWithTwoActions(CCEaseBackIn:create(CCScaleTo:create(0.2, 0)), CCCallFunc:create(remove)))
+        
+    end
+    local function onScaled()
+        self.schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout, 2, false)
+    end
+    panel:setScale(0)
+    panel:runAction(CCSequence:createWithTwoActions(CCEaseBackOut:create(CCScaleTo:create(0.2, 1)), CCCallFunc:create(onScaled)))
+    local scene = Director:sharedDirector():getRunningScene()
+    local wSize = Director:sharedDirector():getWinSize()
+    local vSize = Director:sharedDirector():getVisibleSize()
+    local vOrigin = Director:sharedDirector():getVisibleOrigin()
+    panel:setPosition(ccp(vOrigin.x + vSize.width / 2, vSize.height / 2 + vOrigin.y))
+    scene:addChild(panel)
+
+end
+
+function RequestMessageZeroActivity:create(width, height)
+    local ret = RequestMessageZeroActivity.new()
+    ret:initLayer()
+    ret:init(width, height)
+    return ret
+end
+
+
+function RequestMessageZeroActivity:init(width, height)
+    RequestMessageZeroItem.init(self, height)
+    self.text:setString(Localization:getInstance():getText("request.message.panel.zero.activity.text"))
+    local size = self.text:getContentSize()
+    self:setPositionX((width - size.width) / 2)
+    self:setPositionY(-40)
 end

@@ -14,30 +14,42 @@ end
 
 function TileBlockerState:onEnter()
 	BaseStableState.onEnter(self)
-	self.nextState = nil
-	local function callback( ... )
-		-- body
-		self:handleComplete();
-	end
+	if self.mainLogic.isInStep and self.excuteNum == 0 then
+		self.nextState = nil
+		self.excuteNum = self.excuteNum + 1
+		local function callback( ... )
+			-- body
+			self:handleComplete();
+		end
 
-	self.hasItemToHandle = false
-	self.complete = 0
-	self.total = GameExtandPlayLogic:CheckTileBlockerList(self.mainLogic, callback)
-	if self.total == 0 then
-		self:handleComplete()
-	else
-		self.hasItemToHandle = true
+		self.hasItemToHandle = false
+		self.complete = 0
+		self.total = GameExtandPlayLogic:CheckTileBlockerList(self.mainLogic, callback)
+		if self.total == 0 then
+			self:handleComplete()
+		else
+			self.hasItemToHandle = true
+		end
+	else --略过
+		self.nextState = self:getNextState()
 	end
 end
+
+function TileBlockerState:resetExcuteNum( ... )
+	-- body
+	self.excuteNum = 0
+end
+
 
 function TileBlockerState:handleComplete( ... )
 	-- body
 	self.complete = self.complete + 1 
 	if self.complete >= self.total then 
-		self.nextState = self.context.productRabbitState
+		self.nextState = self:getNextState()
 		if self.hasItemToHandle then
 			self.mainLogic:setNeedCheckFalling();
 		end
+		self.context.needLoopCheck = true
 	end
 end
 
@@ -55,4 +67,24 @@ end
 
 function TileBlockerState:getClassName()
 	return "TileBlockerState"
+end
+
+TileBlockerStateInLoop = class(TileBlockerState)
+function TileBlockerStateInLoop:create( context )
+	-- body
+	local  v = TileBlockerStateInLoop.new()
+	v.context = context
+	v.mainLogic = context.mainLogic
+	v.boardView = v.mainLogic.boardView
+	return v
+end
+
+function TileBlockerStateInLoop:getClassName( ... )
+	-- body
+	return "TileBlockerStateInLoop"
+end
+
+function TileBlockerStateInLoop:getNextState( ... )
+	-- body
+	return self.context.digScrollGroundStateInLoop
 end

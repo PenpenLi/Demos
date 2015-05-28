@@ -148,8 +148,17 @@ function UnlockCloudPanel:init(lockedCloudId, totalStar, neededStar, cloudCanOpe
 	local goodsMeta = MetaManager.getInstance():getGoodMetaByItemID(self.lockedCloudId)
 	if __ANDROID then -- ANDROID
 		self.useWindmillBtn:setIcon(nil)
-		local text = Localization:getInstance():getText("buy.gold.panel.money.mark") .. tostring(goodsMeta.rmb / 100)
+		local text = string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), goodsMeta.rmb / 100)
 		self.useWindmillBtn:setNumber(text)
+
+		local numberLabel = self.useWindmillBtn.numberLabel
+		if numberLabel then
+			numberLabel:setPositionX(numberLabel:getPositionX() - 10)
+		end
+
+
+
+
 	else -- else, on IOS and PC we use gold!
 		self.useWindmillBtn:setIconByFrameName('ui_images/ui_image_coin_icon_small0000')
 		self.useWindmillBtn:setNumber(goodsMeta.qCash)
@@ -227,6 +236,7 @@ function UnlockCloudPanel:onUseWindmillBtnTapped(...)
 	local function onSendUnlockMsgSuccess()
 
 		-- Remove Self 
+		self.onEnterForeGroundCallback  = nil
 		local function onRemoveSelfFinish()
 			self.cloudCanOpenCallback()
 		end
@@ -236,6 +246,7 @@ function UnlockCloudPanel:onUseWindmillBtnTapped(...)
 
 	local function onSendUnlockMsgFailed()
 		--print("use gold unlock cloud failed !")
+		self.onEnterForeGroundCallback  = nil
 		local failTxtKey
 		if __ANDROID then failTxtKey = "unlock.cloud.panel.use.rmb.unlock.failed" -- ANDROID
 		else failTxtKey = "unlock.cloud.panel.use.gold.unlock.failed" end -- IOS and PC
@@ -247,6 +258,8 @@ function UnlockCloudPanel:onUseWindmillBtnTapped(...)
 
 	local function onSendUnlockMsgCanceled()
 		-- self.useWindmillBtn.ui:setTouchEnabled(true)
+		
+		self.onEnterForeGroundCallback  = nil
 		if not self or self.isDisposed then return end
 		self.useWindmillBtn:setEnabled(true)
 	end
@@ -260,6 +273,7 @@ function UnlockCloudPanel:onUseWindmillBtnTapped(...)
 		logic:setOnFailCallback(onSendUnlockMsgFailed)
 		logic:setOnCancelCallback(onSendUnlockMsgCanceled)
 		logic:start(UnlockLevelAreaLogicUnlockType.USE_WINDMILL_COIN, {})
+		self.onEnterForeGroundCallback = onSendUnlockMsgCanceled
 	else -- else, on IOS and PC we use gold!
 		-- Get Current Cash
 		-- Check If Has Enough QCash
@@ -333,6 +347,7 @@ function UnlockCloudPanel:onAskFriendBtnTapped(...)
 		return
 	end
 
+	self:tryRemoveGuide()
 	if #self.curAreaFriendIds >= 3 then
 
 		if self.btnTappedState == self.BTN_TAPPED_STATE_NONE then
@@ -478,6 +493,7 @@ function UnlockCloudPanel:popout(animFinishCallback, ...)
 	PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
 	self:setToScreenCenterVertical()
 	self:setToScreenCenterHorizontal()
+	self:tryShowGuide()
 end
 
 function UnlockCloudPanel:setToScreenCenterHorizontal(...)
@@ -504,6 +520,7 @@ function UnlockCloudPanel:remove(animFinishCallback, ...)
 
 	if not self.isDisposed then 
 		PopoutManager:sharedInstance():removeWithBgFadeOut(self, animFinishCallback, true)
+		self:tryRemoveGuide()
 	end
 end
 
@@ -526,4 +543,62 @@ function UnlockCloudPanel:onMoreStarBtnTapped()
 	PopoutManager:sharedInstance():remove(self, true)
 	local panel = MoreStarPanel:create()
 	panel:popout()
+end
+
+function UnlockCloudPanel:tryShowGuide()
+	local hasFirstPopout = CCUserDefault:sharedUserDefault():getBoolForKey('panel.unlockCloud.hasRunGuide')
+	if hasFirstPopout then
+		return
+	end
+
+	local armature = CommonSkeletonAnimation:createTutorialMoveIn2()
+	local animation = armature:getAnimation()
+
+	local function onAnimationEvent( eventType )
+		if armature:hn(eventType) then armature:dp(Event.new(eventType, nil, ret)) end
+	end 
+	if animation then animation:registerScriptHandler(onAnimationEvent) end
+
+	local function animationCallback()
+		if self.isDisposed then return end
+		self:tryRemoveGuide()
+	end
+	armature:removeAllEventListeners()
+	armature:addEventListener(kAnimationEvents.kComplete, animationCallback)
+
+	local askFriend = (FriendManager.getInstance():getFriendCount() >= 3)
+
+	local starBtnWorldPos = self.moreStarBtn:getParent():convertToWorldSpace(self.moreStarBtn:getPosition())
+	local friendBtnWorldPos = self.askFriendBtn:getParent():convertToWorldSpace(self.askFriendBtn:getPosition())
+
+	local scene = Director:sharedDirector():getRunningScene()
+	if not scene then return end
+
+	scene:addChild(armature)
+	self.armature = armature
+	if askFriend then
+		local pos = ccp(friendBtnWorldPos.x + 140, friendBtnWorldPos.y + 110)
+		armature:setPosition(pos)
+	else
+		local pos = ccp(starBtnWorldPos.x + 140, starBtnWorldPos.y + 110)
+		armature:setPosition(pos)
+	end
+
+
+	CCUserDefault:sharedUserDefault():setBoolForKey('panel.unlockCloud.hasRunGuide', true)
+
+end
+
+function UnlockCloudPanel:tryRemoveGuide()
+	if self.armature and not self.armature.isDisposed then
+		self.armature:removeFromParentAndCleanup(true)
+		self.armature = nil
+	end
+end
+
+function UnlockCloudPanel:onEnterForeGround()
+	if self.isDisposed then return end
+	if self.onEnterForeGroundCallback and type(self.onEnterForeGroundCallback) == "function" then 
+		self.onEnterForeGroundCallback()
+	end
 end

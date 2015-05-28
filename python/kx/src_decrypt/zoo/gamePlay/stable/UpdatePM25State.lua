@@ -34,7 +34,7 @@ function UpdatePM25State:handleComplete( ... )
 	-- body
 	self.complete = self.complete + 1 
 	if self.complete >= self.total then 
-		self.nextState = self.context.roostReplaceStateInLoop
+		self.nextState = self.context.endCycleStateEnter
 		if self.hasItemToHandle then
 			self.mainLogic:setNeedCheckFalling();
 		end

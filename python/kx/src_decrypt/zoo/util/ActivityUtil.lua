@@ -293,13 +293,16 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 
 	  	print("ActivityUtil:", url)
 		local request = HttpRequest:createGet(url)
-	    request:setConnectionTimeoutMs(30 * 1000)
+	    request:setConnectionTimeoutMs(1 * 1000)
 	    request:setTimeoutMs(30 * 1000)
 
 
 	    if not PrepackageUtil:isPreNoNetWork() then 
 	    	if _lastRequestTime + 30 * 60 * 1000 < Localhost:time() then 
-	    		HttpClient:getInstance():sendRequest(onCallback, request)
+	    		-- HttpClient:getInstance():sendRequest(onCallback, request)
+	    		if ResManager:getInstance().requestActivityConfig then 
+	    			ResManager:getInstance():requestActivityConfig(onCallback, request)
+	    		end
 	    	else
 	    		onSuccess(_activitys)	    		
 	    	end
@@ -309,11 +312,50 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 	end
 end
 
+local function isInWhiteList( activityConfig )
+
+	local actInfo = table.find(UserManager:getInstance().actInfos or {},function(v)
+		return v.actId == activityConfig.actId
+	end)
+
+	-- 联网活动在线
+	if actInfo then
+		return actInfo.see
+	end
+
+	-- 没actInfo以本地为准,前提isSupport return true
+	local whiteList = activityConfig.whiteList
+	if not whiteList then
+		return true
+	end
+
+	if whiteList == "" then
+		return true
+	end
+
+	return table.includes(whiteList:split(","),tostring(UserManager:getInstance().uid))
+end
+
+
 local function filter( activitys )
+
 	local ret = {}
 	for k,v in pairs(activitys) do
 		local config = require("activity/" .. v.source)
-		if config.isSupport and config.isSupport() then
+			
+		local result = false
+		if config.isSupport and pcall(function( ... ) result = config.isSupport() end) then
+			-- 白名单判断
+			if result then 
+				if type(config.isInWhiteList) == "function" then
+					result = config.isInWhiteList(v)
+				else
+					result = isInWhiteList(v)
+				end
+			end
+		end
+
+		if result then
 			ret[#ret + 1] = v
 		end
 	end
@@ -446,6 +488,8 @@ function ActivityUtil:reloadActivitys(callback)
 				end
 			end
 		end
+
+		CCFileUtils:sharedFileUtils():purgeCachedEntries()
 
 		_activitys = activitys
 		callback(filter(_activitys))

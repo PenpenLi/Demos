@@ -30,9 +30,10 @@ local UseButton = class(GroupButtonBase)
 function UseButton:create(groupNode, propId)
 	local button = UseButton.new(groupNode)
 	button:buildUI()
-	-- setButtonIcon(button, propId)
 	button.redCircle = groupNode:getChildByName("redCircle")
 	button.numberLabel = groupNode:getChildByName("numberLabel")
+	button.numberLabel:setPositionY(button.numberLabel:getPositionY() + 10)
+	button.numberLabel:setPositionX(button.numberLabel:getPositionX() - 1)
 	button.fontSize = button.numberLabel:getFontSize()
 	button.labelPos = button.numberLabel:getPositionY()
 	return button
@@ -58,7 +59,6 @@ local BuyButton = class(ButtonIconNumberBase)
 function BuyButton:create(groupNode, propId)
 	local button = BuyButton.new(groupNode)
 	button:buildUI()
-	-- setButtonIcon(button, propId)
 	button.discount = groupNode:getChildByName("discount")
 	button.dcNumber = button.discount:getChildByName("num")
 	button.dcText = button.discount:getChildByName("text")
@@ -70,12 +70,20 @@ function BuyButton:setDiscount(number, text)
 		self.dcNumber:setVisible(false)
 		self.dcText:setVisible(false)
 		self.discount:setVisible(false)
+		self.dcNumber:setText(number)
 	else
 		self.dcNumber:setVisible(true)
 		self.dcText:setVisible(true)
 		self.discount:setVisible(true)
-		self.dcNumber:setString(number)
-		self.dcText:setString(text)
+		self.dcNumber:setText(number)
+		self.dcText:setText(text)
+		self.dcNumber:setScale(0.75)
+		self.dcText:setScale(0.35)
+
+		if math.ceil(number) == math.floor(number) then --是整数
+			self.dcNumber:setPositionX(self.dcNumber:getPositionX() + 8)		
+		end
+
 		local scaleBase = self.discount:getScale()
 		local actArray = CCArray:create()
 		actArray:addObject(CCDelayTime:create(5))
@@ -134,27 +142,22 @@ function EndGamePropShowPanel:create(levelId, levelType, propId)
 end
 
 function EndGamePropShowPanel:initForAddStep(levelId, propId)
-	if __ANDROID then
-		local shouldShowOneFenAddStep = false
-		local defaultSmsPayType = AndroidPayment.getInstance():getDefaultSmsPayment()
-		local hasAlreadyUsedOneFen = UserManager:getInstance().userExtend:isFlagBitSet(5)
-
-		-- check 3 conditions
-		if 	defaultSmsPayType == Payments.CHINA_MOBILE -- cmcc payment only
-		and not hasAlreadyUsedOneFen then	-- first time..
-			shouldShowOneFenAddStep = true
+	local timeProps = UserManager:getInstance():getTimePropsByRealItemId(propId)
+	local timePropNum = 0
+	if timeProps and #timeProps > 0 then
+		for _,v in pairs(timeProps) do
+			timePropNum = timePropNum + v.num
 		end
+	end
 
-		if shouldShowOneFenAddStep then
-			return self:initForOneFenAddStep(levelId, propId)
-		end
+	if timePropNum > 0 then
+		return self:init(levelId, propId)
 	end
 
 	if __ANDROID then
 		local shouldShowTimeLimitAddStep = false
 		local prop = UserManager:getInstance():getUserProp(propId)
 		if prop == nil or prop.num <= 0 then 
-
 			shouldShowTimeLimitAddStep = TimeLimitData:getInstance():hasIngameBuyItem()			
 			if shouldShowTimeLimitAddStep then 
 				local leftTime = TimeLimitData:getInstance():getLeftTime()
@@ -185,50 +188,13 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 	return self:init(levelId, propId)
 end
 
-function EndGamePropShowPanel:initForOneFenAddStep(levelId, propId)
-	print('EndGamePropShowPanel:initForOneFenAddStep')
-	self:init(levelId, propId)
-
-
-	if not self.buyButton or self.buyButton.groupNode.isDisposed then return end
-	self.isOneFenAddStep = true -- set a flag
-	local shiningLocator = self.buyButton.groupNode:getChildByName('shiningLocator')
-	if not shiningLocator then return end
-
-	self.buyButton.groupNode:getChildByName('shiningLocator'):setVisible(true)
-
-	if self.buyButton.icon then
-		self.buyButton.icon:setVisible(false)
-	end
-	self.buyButton:setNumber(Localization:getInstance():getText("add.step.panel.button.1fen"))
-	self.buyButton:setDiscount(0.1, Localization:getInstance():getText("buy.gold.panel.discount"))
-	self.buyButton.label:setPositionX(self.buyButton.label:getPositionX() - 8)
-	self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 25)
-	shiningLocator:setScale(1)
-	local pos = shiningLocator:getPosition()
-	local zorder = shiningLocator:getZOrder()
-	local shiningEffect = self:buildInterfaceGroup("add_step_shining_effect")
-	shiningEffect:setAnchorPoint(ccp(0.5, 0.5))
-	shiningLocator:addChild(shiningEffect)
-	local rotateAction = CCRepeatForever:create(CCRotateBy:create(4, 360))
-	shiningEffect:runAction(rotateAction)
-
-	local dimensions = self.msgLabel:getDimensions()
-	self.msgLabel:setDimensions(CCSizeMake(dimensions.width, 0))
-	self.msgLabel:setString(Localization:getInstance():getText("add.step.panel.msg.1fen.continue", {n='\n'}))
-	self.msgLabel:setFontSize(30)
-	self.msgLabel:setPositionY(self.msgLabel:getPositionY() + 15)
-	local size = self.msgLabel:getContentSize()
-	local phSize = self.msgLabelPh:getGroupBounds().size
-	self.msgLabel:setPositionY(self.msgLabelPh:getPositionY() - (phSize.height - size.height) / 2)
-
-end
-
 function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
 	self:init(levelId, propId)
 
 	self.buyButton2:setNumber(self.buyButton:getNumber())
 	self.buyButton2:setString(self.buyButton:getString())
+	local number, txt = self.buyButton:getDiscount()
+	self.buyButton2:setDiscount(tonumber(number), txt)
 	local icon = self.buyButton:getIcon()
 	icon:removeFromParentAndCleanup(false)
 	self.buyButton.icon = nil
@@ -248,19 +214,18 @@ function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
 	local data = IapBuyPropLogic:addStep()
 	local meta = MetaManager:getInstance():getGoodMeta(data.goodsId)
 
-	self.buyButton:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..tostring(data.price))
+	self.buyButton:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), data.price))
 	self.buyButton:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
 	self.buyButton:setDiscount(math.ceil(meta.discountRmb / meta.rmb * 10), Localization:getInstance():getText("buy.gold.panel.discount"))
 	self.buyButton:setVisible(true)
+	self.buyButton:setPositionY(self.buyButton:getPositionY() - 70)
 
 	-- ////////////////
 	local groupNode = self.buyButton.groupNode
 	local number = groupNode:getChildByName("number")
 	local label = groupNode:getChildByName("label")
-	local lSize = label:getContentSize()
-	local sizeX = label:getPositionX() + lSize.width - number:getPositionX()
-	number:setPositionX(-sizeX / 2)
-	label:setPositionX(sizeX / 2 - lSize.width)
+	number:setPositionX(number:getPositionX() - 50)
+	label:setPositionX(label:getPositionX() - 20)
 	-- ////////////////
 
 	local function useAddStepSuccess()
@@ -308,17 +273,13 @@ function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
 	self.buyButton:removeAllEventListeners()
 	self.buyButton:addEventListener(DisplayEvents.kTouchTap, onButton)
 
-	local aSize = self.cryingAnimation:getGroupBounds().size
-	local pSize = self.animPh:getGroupBounds().size
-	self.cryingAnimation:setPositionXY(self.animPh:getPositionX() + pSize.width / 2,
-		self.animPh:getPositionY() - pSize.height / 2)
-	self.cryingAnimation:setScale(pSize.height / aSize.height)
+
 end
 
 function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
 	self:init(levelId, propId)
 
-	-- local payGiftInfo = UserManager:getInstance().payGiftInfo
+	local payGiftInfo = UserManager:getInstance().payGiftInfo
 	self.isTimeLimitAddStep = true
 	self.timeLimitGoodsId = TimeLimitData:getInstance():getIngameGoodsId()
 
@@ -330,7 +291,7 @@ function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
 	local timeLimitBounds = self.timeLimitPanel:getGroupBounds()
 
 	self.timeLimitPanel:setPositionX(bounds:getMidX() - timeLimitBounds.size.width/2 + 40)
-	self.timeLimitPanel:setPositionY(bounds:getMinY() + 10)
+	self.timeLimitPanel:setPositionY(bounds:getMinY() + 170)
 
 	self.ui:addChild(self.timeLimitPanel)
 
@@ -380,11 +341,12 @@ function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
 
 	-- 原有的UI
 	local blackBg = self.ui:getChildByName("blackBg")
-	local scaleheight = blackBg:boundingBox().size.height + timeLimitBounds.size.height + 30
+	local extraHeight = timeLimitBounds.size.height - 60
+	local scaleheight = blackBg:boundingBox().size.height + extraHeight
 	blackBg:setScaleY(scaleheight / blackBg:getContentSize().height )
 
-	-- self.originalScaleY = blackBg:getScaleY()
-	-- blackBg:setScaleY((bounds.size.height + timeLimitBounds.size.height) / blackBg:getContentSize().height)
+	self.countdownLabel:setPositionY(self.countdownLabel:getPositionY() - extraHeight)
+	self.bgBottom:setPositionY(self.bgBottom:getPositionY() - extraHeight)
 
 	local originalPriceRect = {
 		x=self.buyButton.numberRect.x,y=self.buyButton.numberRect.y,
@@ -400,7 +362,7 @@ function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
 	originalPriceRect.height = scaleHeight
 
 	local originalPriceLabel = BitmapText:create(
-		Localization:getInstance():getText("buy.gold.panel.money.mark")..TimeLimitData:getInstance():getIngameBuyActualValue(),
+		string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getIngameBuyActualValue()),
 		"fnt/green_button.fnt"
 	)
 	originalPriceLabel:setAnchorPoint(ccp(0,1))
@@ -418,13 +380,25 @@ function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
  	self.buyButton.groupNode:addChild(line)
 
 	self.buyButton:setNumber(
-		Localization:getInstance():getText("buy.gold.panel.money.mark")..TimeLimitData:getInstance():getIngameBuyDiscountValue()
+		string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getIngameBuyDiscountValue())
 	)
 
-	self.buyButton:setDiscount(
-		math.ceil(TimeLimitData:getInstance():getIngameBuyDicount() * 100) / 10, 
-		Localization:getInstance():getText("buy.gold.panel.discount")
+	self.android_price:setString(
+		string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getIngameBuyDiscountValue())
 	)
+
+	-- self.buyButton:setDiscount(
+	-- 	math.ceil(TimeLimitData:getInstance():getIngameBuyDicount() * 100) / 10, 
+	-- 	Localization:getInstance():getText("buy.gold.panel.discount")
+	-- )
+	self.android_discount:setVisible(true)
+	self.android_discountTxt:setString(math.ceil(TimeLimitData:getInstance():getIngameBuyDicount() * 100) / 10)
+
+
+	self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 20)
+	originalPriceLabel:setPositionX(originalPriceLabel:getPositionX() - 40)
+	line:setPositionX(line:getPositionX() - 40)
+	self.buyButton.label:setPositionX(233)
 
 	return true
 end
@@ -440,29 +414,41 @@ function EndGamePropShowPanel:init(levelId, propId)
 	self.ui = self:buildInterfaceGroup("newAddStepPanel")
 	BasePanel.init(self, self.ui)
 
+	self.android_price = self.ui:getChildByName('android_price')
+	self.android_discount = self.ui:getChildByName('android_discount')
+
+
 	-- get & create controls
-	self.closeBtnRes = self.ui:getChildByName("closeBtn")
+	self.closeBtn = self.ui:getChildByName("closeBtn")
 	self.msgLabel = self.ui:getChildByName("msgLabel")
 	self.msgLabelPh = self.ui:getChildByName("msgLabelph")
-	self.countdownLabelPh = self.ui:getChildByName("countdownLabel")
+	self.countdownLabel = self.ui:getChildByName("countdownLabel")
+	self.countdownLabel:setScale(1.3)
+	self.countdownLabel:setPositionY(self.countdownLabel:getPositionY() + 15)
+	self.countdownLabelPos = self.ui:getChildByName('labelPh'):getPosition()
+	self.ui:getChildByName('labelPh'):setVisible(false)
 	local useBtnRes = self.ui:getChildByName("useBtn")
 	local buyBtnRes = self.ui:getChildByName("buyBtn")
 	local buyBtnRes2 = self.ui:getChildByName("buyBtn2")
-	self.closeBtn	= BubbleCloseBtn:create(self.closeBtnRes)
 	self.buyButton = BuyButton:create(buyBtnRes, self.propId)
-	self.buyButton.groupNode:getChildByName('shiningLocator'):setVisible(false)
 	self.useButton = UseButton:create(useBtnRes, self.propId)
-	self.buyButton2 = ButtonIconNumberBase:create(buyBtnRes2)
-	self.animPh = self.ui:getChildByName("animPh")
-	local cryingAnimation
-	if self.levelType == GameLevelType.kDigWeekly
-	then
-		cryingAnimation = WeeklyRaceAddEnergyAnimation:create()
+	self.buyButton2 = BuyButton:create(buyBtnRes2)
+	self.bgBottom = self.ui:getChildByName('bgBottom')
+
+
+
+	-- 
+	if __ANDROID then
+		self.android_discountTxt = self.android_discount:getChildByName('txt')
+		-- fix rotated text mis-positioning
+		self.android_discountTxt:setPosition(ccp(self.android_discountTxt:getPositionX()-2, self.android_discountTxt:getPositionY()+ 0))
+		self.buyButton.discount:setVisible(false)
+		self.buyButton:setColorMode(kGroupButtonColorMode.blue)
 	else
-		cryingAnimation = AddEnergyAnimation:create()
+		self.android_price:setVisible(false)
+		self.android_discount:setVisible(false)
 	end
-	self.ui:addChild(cryingAnimation)
-	self.cryingAnimation = cryingAnimation
+
 
 	-- set control state
 	self.msgLabelPh:setVisible(false)
@@ -472,6 +458,9 @@ function EndGamePropShowPanel:init(levelId, propId)
 	local iSize = icon:getGroupBounds().size
 	local sSize = sprite:getGroupBounds().size
 	sprite:setScale(iSize.height / sSize.height)
+	if self.propId == PropList.kRivive.itemid then
+		sprite:setScale(sprite:getScale()*0.9)
+	end
 	sprite:setPositionXY(icon:getPositionX(), icon:getPositionY())
 	self.ui:addChild(sprite)
 	icon:removeFromParentAndCleanup(true)
@@ -489,7 +478,8 @@ function EndGamePropShowPanel:init(levelId, propId)
 	if propNum > 0 then -- use
 		self.useButton:setNumber(propNum)
 		self.useButton:setString(Localization:getInstance():getText("add.step.panel.use.btn.txt"))
-		self.buyButton:removeFromParentAndCleanup(true)
+		self.buyButton:setVisible(false)
+		self.android_discount:setVisible(false)
 	else -- buy
 		local goods = MetaManager:getInstance():getGoodMeta(getDiscountId(self.propId))
 		local normGood, discountGood
@@ -503,20 +493,34 @@ function EndGamePropShowPanel:init(levelId, propId)
 		if buyed >= goods.limit then
 
 			self.buyButton:setDiscount(10)
-			if __ANDROID then self.buyButton:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..normGood)
-			else self.buyButton:setNumber(normGood) end
+			if __ANDROID then 
+				self.buyButton.discount:setVisible(false)
+				self.android_discount:setVisible(false)
+				-- self.buyButton:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), normGood))
+				self.buyButton:setNumber('')
+				self.android_price:setString(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), normGood))
+			else 
+				self.buyButton:setNumber(normGood) 
+			end
 			self.discount = false
 		else
 			self.buyButton:setDiscount(math.ceil(discountGood / normGood * 100) / 10, Localization:getInstance():getText("buy.gold.panel.discount"))
-			if __ANDROID then self.buyButton:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..discountGood)
-			else self.buyButton:setNumber(discountGood) end
+			if __ANDROID then 
+				self.buyButton.discount:setVisible(false)
+				self.android_discountTxt:setString(math.ceil(discountGood / normGood * 100) / 10)
+				-- self.buyButton:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), discountGood))
+				self.buyButton:setNumber()
+				self.android_price:setString(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), discountGood))
+			else 
+				self.buyButton:setNumber(discountGood) 
+			end
 			self.discount = true
 		end
-		self.buyButton:setString(Localization:getInstance():getText("add.step.panel.use.btn.txt"))
+		self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 20)
+		self.buyButton:setString(Localization:getInstance():getText("add.step.panel.buy.btn.txt"))
 		self.useButton:removeFromParentAndCleanup(true)
 	end
 	self.buyButton2:setVisible(false)
-	self.animPh:setVisible(false)
 
 	-- 周赛用新的文案
 	local dimensions = self.msgLabel:getDimensions()
@@ -526,34 +530,18 @@ function EndGamePropShowPanel:init(levelId, propId)
 		if _isQixiLevel then
 			self.msgLabel:setString(Localization:getInstance():getText('activity.qixi.fail.add.five'))
 		end
-		cryingAnimation:setPosition(ccp(108, -826))
 	elseif self.levelType == GameLevelType.kMayDay then
 		self.msgLabel:setString(Localization:getInstance():getText('activity.christmas.fail.add.five'))
-		cryingAnimation:setPosition(ccp(108, -856))
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		self.msgLabel:setString(Localization:getInstance():getText('add.step.panel.msg.txt.10040.rabbit'))
-		cryingAnimation:setPosition(ccp(108, -826))
 	else
 		self.msgLabel:setString(Localization:getInstance():getText("add.step.panel.msg.txt."..self.propId))
-		cryingAnimation:setPosition(ccp(108, -856))
 	end
 	local size = self.msgLabel:getContentSize()
 	local phSize = self.msgLabelPh:getGroupBounds().size
 	self.msgLabel:setPositionY(self.msgLabelPh:getPositionY() - (phSize.height - size.height) / 2)
 
-	-- countdown animation
-	local charWidth = 153
-	local charHeight = 153
-	local charInterval = 80
-	local fntFile = "fnt/steps_cd.fnt"
-	self.countdownLabel	= LabelBMMonospaceFont:create(charWidth, charHeight, charInterval, fntFile)
-	self.ui:addChild(self.countdownLabel)
-	self.countdownLabel:setAnchorPoint(ccp(0,1))
-	self.countdownLabelPhSize = self.countdownLabelPh:getGroupBounds().size
-	self.countdownLabelPhPos = self.countdownLabelPh:getPosition()
-	local countdownLabelPhPos = self.countdownLabelPhPos
 	self:setCountdownSceond(10)
-
 	-- set position
 	local vSize = Director:sharedDirector():getVisibleSize()
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
@@ -579,7 +567,16 @@ function EndGamePropShowPanel:init(levelId, propId)
 	local function onCloseTapped(evt)
 		self:onCloseBtnTapped()
 	end
-	self.closeBtn.ui:ad(DisplayEvents.kTouchTap, onCloseTapped)
+	self.closeBtn:addEventListener(DisplayEvents.kTouchTap, onCloseTapped)
+	self.closeBtn:setTouchEnabled(true)
+
+	-- 安卓平台不设置风车币icon,所有文字向左移动
+	if __ANDROID then
+		-- self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 45)
+		-- self.buyButton.numberLabel:setPositionY(self.buyButton.numberLabel:getPositionY() - 1)
+		-- self.buyButton.label:setPositionX(self.buyButton.label:getPositionX() - 25)
+		self.buyButton.label:setPositionX(133)
+	end
 
 	return true
 end
@@ -664,13 +661,13 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 		else resumeTimer() end
 	end
 	local function onBuySuccess()
+		self.onEnterForeGroundCallback = nil
+		self:stopAllActions()
 		local button = HomeScene:sharedInstance().goldButton
 		if button then button:updateView() end
 		useAddStepSuccess()
-		if self.isOneFenAddStep == true then  -- set 1 fen as 'used'
-			UserManager:getInstance().userExtend:setFlagBit(5, true)
-			UserService:getInstance().userExtend:setFlagBit(5, true)
-		elseif self.isTimeLimitAddStep then
+
+		if self.isTimeLimitAddStep then
 
 			local scene = Director.sharedDirector():getRunningScene()
 			if scene and scene.propList then
@@ -681,11 +678,12 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 
 			TimeLimitData:getInstance():setBought()
 			DcUtil:UserTrack({ category = 'activity', sub_category = 'buy_failure_panel'})
-
 		end
 		if successCallback then successCallback() end
 	end
 	local function onBuyFail(evt)
+		self.onEnterForeGroundCallback = nil
+		self:stopAllActions()
 		if evt.data == 730330 then -- not enough gold
 			local text = {
 				tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
@@ -703,6 +701,8 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 		end
 	end
 	local function onCancel(isExceedLimit)
+		self.onEnterForeGroundCallback = nil
+		self:stopAllActions()
 		if isExceedLimit or PrepackageUtil:isPreNoNetWork() then
 			resumeTimer()
 		else
@@ -713,9 +713,7 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 	self:stopCountdown()
 	local goodsId
 
-	if self.isOneFenAddStep then 
-		goodsId = getOneFenGoodsId(self.propId)
-	elseif self.isTimeLimitAddStep then
+	if self.isTimeLimitAddStep then
 		goodsId = self.timeLimitGoodsId
 	elseif self.discount then 
 		goodsId = getDiscountId(self.propId)
@@ -726,13 +724,19 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback)
 	if __ANDROID then -- ANDROID
 		local logic = IngamePaymentLogic:create(goodsId)
 		logic:buy(onBuySuccess, onBuyFail, onCancel)
+		self.buyLogic = logic
+		self.onEnterForeGroundCallback = onCancel
 	else -- else, on IOS and PC we use gold!
-		if RequireNetworkAlert:popout() then
+		local function onUserHasLogin()
 			local logic = BuyLogic:create(goodsId, 2)
 			logic:getPrice()
 			logic:setCancelCallback(onCancel)
 			logic:start(1, onBuySuccess, onBuyFail)
-		else resumeTimer() end
+		end
+		local function onUserNotLogin()
+			resumeTimer()
+		end
+		RequireNetworkAlert:callFuncWithLogged(onUserHasLogin, onUserNotLogin)
 	end
 end
 
@@ -770,7 +774,9 @@ function EndGamePropShowPanel:startCountdown(callback, ...)
 	assert(#{...} == 0)
 
 	local function callbackFunc()
-		self.second = self.second - 1
+		if self.second and type(self.second) == "number" then
+			self.second = self.second - 1
+		end
 		callback(self.second)
 	end
 	callback(self.second)
@@ -789,7 +795,7 @@ function EndGamePropShowPanel:setCountdownSceond(second, ...)
 	assert(#{...} == 0)
 
 	self.secondToCountdown = second
-	self.countdownLabel:setString(tostring(second))
+	self.countdownLabel:setText(tostring(second))
 	self:positionCountdownLabel()
 end
 
@@ -797,11 +803,8 @@ function EndGamePropShowPanel:positionCountdownLabel(...)
 	assert(#{...} == 0)
 
 	local countdownLabelSize = self.countdownLabel:getContentSize()
-	local deltaWidth 	= self.countdownLabelPhSize.width - countdownLabelSize.width
-	local deltaHeight	= self.countdownLabelPhSize.height - countdownLabelSize.height
-	local newPosX	= self.countdownLabelPhPos.x + deltaWidth/2
-	local newPosY	= self.countdownLabelPhPos.y - deltaHeight/2
-	self.countdownLabel:setPosition(ccp(newPosX, newPosY))
+	local posX = self.countdownLabelPos.x - countdownLabelSize.width*self.countdownLabel:getScale()/2
+	self.countdownLabel:setPositionX(posX)
 end
 
 function EndGamePropShowPanel:popout(...)
@@ -864,5 +867,24 @@ function EndGamePropShowPanel:addPropUseAnimation( pos, onAnimFinishedCallback )
 		local scene = Director:sharedDirector():getRunningScene()
 		local animation = PrefixPropAnimation:createAddTimeAnimation(icon, 0, onAnimFinishedCallback, nil, ccp(pos.x, pos.y + 90))
 		scene:addChild(animation)
+	end
+end
+
+function EndGamePropShowPanel:onEnterForeGround( ... )
+	-- body
+	if self.isDisposed then return end
+	if self.buyLogic and self.buyLogic.paymentType and self.buyLogic.paymentType == Payments.WECHAT then
+		self.buyLogic = nil
+		if self.onEnterForeGroundCallback then 
+			local function localCallback( ... )
+			-- body
+				if not self.isDisposed and self.onEnterForeGroundCallback then 
+					self.onEnterForeGroundCallback()
+				end
+			end
+			self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(3), CCCallFunc:create(localCallback)))
+		end
+	else
+		self.onEnterForeGroundCallback = nil
 	end
 end

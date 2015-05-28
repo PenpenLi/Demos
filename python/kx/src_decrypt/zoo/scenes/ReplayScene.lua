@@ -49,6 +49,13 @@ end
 
 function ReplayScene:loadExtraResource( ... )
 	-- body
+	local levelMeta = LevelMapManager.getInstance():getMeta(self.gamelevel)
+	if not levelMeta then 
+		local testConfStr = DevTestLevelMapManager.getInstance():getConfig("test1.json")
+		local testConf = table.deserialize(testConfStr)
+		testConf.totalLevel = self.gamelevel
+		LevelMapManager:getInstance():addDevMeta(testConf)
+	end
 	local levelConfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.gamelevel)
 	local fileList = levelConfig:getDependingSpecialAssetsList()
 	local loader = FrameLoader.new()

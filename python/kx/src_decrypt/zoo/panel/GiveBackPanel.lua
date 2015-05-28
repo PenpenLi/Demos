@@ -203,6 +203,8 @@ function GiveBackPanel:_onEnterHandler(evt)
 end
 
 function GiveBackPanel:_getReward(index)
+	self.button:setEnabled(false)
+
 	local function onSuccess()
 		GiveBackPanelModel:resetCompen(index)
 		self:_rewardAnim()
@@ -212,10 +214,14 @@ function GiveBackPanel:_getReward(index)
 		self.button:setEnabled(true)
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err)))
 	end
-	if RequireNetworkAlert:popout() then
-		self.button:setEnabled(false)
+
+	local function getReward()
 		GiveBackPanelModel:getReward(index, onSuccess, onFail)
 	end
+	local function onLoginFail()
+		self.button:setEnabled(true)
+	end
+	RequireNetworkAlert:callFuncWithLogged(getReward, onLoginFail)
 end
 
 function GiveBackPanel:_rewardAnim()

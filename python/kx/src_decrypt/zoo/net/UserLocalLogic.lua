@@ -519,6 +519,9 @@ function UserLocalLogic:updateRecallTaskLevelScore(levelId, score, flashStar, us
 		if star > 0 then
 			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
 		end
+
+		DcUtil:logFirstLevelGame(levelId, 18, star > 0, useItem, stageTime, 0)
+		DcUtil:logBeforeFirstWin(levelId, 18, star > 0, useItem, stageTime, 0)
 	else
 		--repeat level
 		oriStar = animalScore.star
@@ -526,6 +529,50 @@ function UserLocalLogic:updateRecallTaskLevelScore(levelId, score, flashStar, us
 		if star > 0 then
 			table.addAll(result, UserLocalLogic:getLevelDefaultStarRewards(star > oriStar and oriStar or star, rewardConfig))
 			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
+		end
+
+		if oriStar == 0 then
+			DcUtil:logBeforeFirstWin(levelId, 18, star > 0, useItem, stageTime, 0)
+		end
+	end
+	return result, true
+end
+
+function UserLocalLogic:updateTaskForUnlockArealevelScore( levelId, score, flashStar, useItem, stageTime, coinAmount, targetCount, opLog, activityFlag, requestTime )
+	-- body
+	local user = UserService.getInstance().user
+	local uid = user.uid
+	local result = {}
+
+	--LevelMapMeta LevelRewardMeta
+	local levelStarMeta, rewardConfig, err = UserLocalLogic:checkPassLevelConfig(levelId)
+	if err ~= nil then return nil, false, err end
+
+	local star = flashStar
+	if star ~= 0 then star = levelStarMeta:getStar(score) end
+
+	local oriStar = 0
+	-- 不记录分数
+	local animalScore = UserService.getInstance():getUserScore(levelId)
+	if animalScore == nil then
+		UserLocalLogic:insertNewLevel(uid, levelId, star, score)
+		if star > 0 then
+			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
+		end
+
+		DcUtil:logFirstLevelGame(levelId, 18, star > 0, useItem, stageTime, 0)
+		DcUtil:logBeforeFirstWin(levelId, 18, star > 0, useItem, stageTime, 0)
+	else
+		--repeat level
+		oriStar = animalScore.star
+		UserLocalLogic:updateRepeatLevel(score, star, animalScore, uid)
+		if star > 0 then
+			table.addAll(result, UserLocalLogic:getLevelDefaultStarRewards(star > oriStar and oriStar or star, rewardConfig))
+			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
+		end
+
+		if oriStar == 0 then
+			DcUtil:logBeforeFirstWin(levelId, 18, star > 0, useItem, stageTime, 0)
 		end
 	end
 	return result, true

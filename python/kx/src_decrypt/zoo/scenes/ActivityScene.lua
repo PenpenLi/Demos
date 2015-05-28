@@ -87,6 +87,7 @@ end
 function ActivityData:start(hasLoadAnimation)
 
 	local scene = nil
+
 	if not hasLoadAnimation then 
 		local curScene = Director:sharedDirector():getRunningScene()
 		if curScene and not curScene:is(ActivityScene) then
@@ -99,6 +100,7 @@ function ActivityData:start(hasLoadAnimation)
 	local function onSuccess()
 		local function popout()
 			require("activity/" .. config.startLua)()
+			
 			-- 有曝光
 			if config.click and config.actId then 
 				local http = ClickActivityHttp.new()
@@ -123,7 +125,6 @@ function ActivityData:start(hasLoadAnimation)
 			CommonTip:showTip(Localization:getInstance():getText('activity.scene.error1'),'negative')
 			--"您的网络出现问题，请检查后重新进入"
 		end
-
 	end
 	local function onProcess( ... )
 		-- body
@@ -132,7 +133,7 @@ function ActivityData:start(hasLoadAnimation)
 	if ActivityUtil:isSrcLoaded(config.src,self.version) and ActivityUtil:isResourceLoaded(config.resource,self.version) then 
 		onSuccess()
 	else
-		if hasLoadAnimation then 
+		if hasLoadAnimation then
 			ActivityUtil:loadRes(self.source,self.version,onSuccess,onError)
 		else
 			ActivityUtil:loadRes(self.source,self.version,onSuccess,onError,onProcess)			
@@ -201,15 +202,15 @@ function ActivityScene:onInit(Scene, ...)
 	
 	self.builder = InterfaceBuilder:createWithContentsOfFile("ui/activity_panel.json")
 	
-	self.inAcitivtyTime = WorldSceneShowManager:getInstance():isInAcitivtyTime() 
-	if self.inAcitivtyTime then
-		local plistPath = "ui/activitySpringFestival_panel.plist"
-		if __use_small_res then  
-			plistPath = table.concat(plistPath:split("."),"@2x.")
-		end
-		CCSpriteFrameCache:sharedSpriteFrameCache():removeSpriteFramesFromFile(plistPath)
-		CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
-	end
+	-- self.inAcitivtyTime = WorldSceneShowManager:getInstance():isInAcitivtyTime() 
+	-- if self.inAcitivtyTime then
+	-- 	local plistPath = "ui/activitySpringFestival_panel.plist"
+	-- 	if __use_small_res then  
+	-- 		plistPath = table.concat(plistPath:split("."),"@2x.")
+	-- 	end
+	-- 	CCSpriteFrameCache:sharedSpriteFrameCache():removeSpriteFramesFromFile(plistPath)
+	-- 	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
+	-- end
 
 	-- local panelUI = self.builder:buildGroup("activity_panel")
 	-- panelUI:setPositionXY(visibleOrigin.x,visibleOrigin.y + visibleSize.height)
@@ -569,28 +570,28 @@ function ActivityScene:buildItem( idx )
 		item:addChildAt(more,1)
 	end
 
-	if self.inAcitivtyTime then 
-		-- 25,25
-		for i,v in ipairs({
-			ccp(25,-25),
-			ccp(bgBoundingBox.size.width-25,-25),
-			ccp(bgBoundingBox.size.width-25,-(bgBoundingBox.size.height - 25)),
-			ccp(25,-(bgBoundingBox.size.height - 25))
-		}) do
-			local frame = CCSprite:createWithSpriteFrameName("imgs/activity_item_frame0000")
-			frame:setPosition(ccp(46,0))
-			frame:setAnchorPoint(ccp(1,0))
+	-- if self.inAcitivtyTime then 
+	-- 	-- 25,25
+	-- 	for i,v in ipairs({
+	-- 		ccp(25,-25),
+	-- 		ccp(bgBoundingBox.size.width-25,-25),
+	-- 		ccp(bgBoundingBox.size.width-25,-(bgBoundingBox.size.height - 25)),
+	-- 		ccp(25,-(bgBoundingBox.size.height - 25))
+	-- 	}) do
+	-- 		local frame = CCSprite:createWithSpriteFrameName("imgs/activity_item_frame0000")
+	-- 		frame:setPosition(ccp(46,0))
+	-- 		frame:setAnchorPoint(ccp(1,0))
 
-			local container = CocosObject:create()
-			container:setContentSize(CCSizeMake(46,46))
-			container:addChild(CocosObject.new(frame))
+	-- 		local container = CocosObject:create()
+	-- 		container:setContentSize(CCSizeMake(46,46))
+	-- 		container:addChild(CocosObject.new(frame))
 
-			container:setAnchorPoint(ccp(0.5,0.5))
-			container:setPosition(v)
-			container:setRotation((i-1)*90) 
-			item:addChild(container)
-		end
-	end
+	-- 		container:setAnchorPoint(ccp(0.5,0.5))
+	-- 		container:setPosition(v)
+	-- 		container:setRotation((i-1)*90) 
+	-- 		item:addChild(container)
+	-- 	end
+	-- end
 	return item
 end
 

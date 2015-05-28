@@ -276,7 +276,7 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 			end
 		end
 
-		if item.ItemType == GameItemType.kCoin then
+		if item.ItemType == GameItemType.kCoin and item.ItemStatus ~= GameItemStatusType.kDestroy then
 			return 2
 		else
 			SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
@@ -734,6 +734,7 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 			else
 				SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale)
 			end
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kLeft, ChainDirConfig.kRight})
 		end
 	end
 end

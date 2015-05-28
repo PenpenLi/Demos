@@ -177,6 +177,10 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 			levelDisplayName = Localization:getInstance():getText('weekly.race.panel.start.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
+		elseif self.levelType == GameLevelType.kTaskForUnlockArea then 
+			levelDisplayName = Localization:getInstance():getText("recall_text_5")
+			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
+			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		else
 			levelDisplayName = LevelMapManager.getInstance():getLevelDisplayName(self.levelId)
 			panelTitle = PanelTitleLabel:create(levelDisplayName)
@@ -346,6 +350,8 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 		else stringKey = "level.start.objective.mode" end
 	elseif self.levelModeTypeId == GameModeTypeId.DIG_MOVE_ENDLESS_ID then
 		stringKey	= "level.start.dig.endless.mode"
+	elseif self.levelModeTypeId == GameModeTypeId.TASK_UNLOCK_DROP_DOWN then 
+		stringKey = "unlock.cloud.panel.play.desc"
 	else 
 		print("levelModeTypeId: " .. self.levelModeTypeId)
 		assert(false)
@@ -867,6 +873,7 @@ function LevelInfoPanel:startGame(...)
 		self:setSelectedItemAnimDestPos(selectedItemsData)
 	end
 
+	self.selectedItemsData = selectedItemsData
 	self.startFromEnergyPanel = false
 
 	-- -------------------------------------
@@ -893,11 +900,9 @@ function LevelInfoPanel:onStartLevelLogicFailed(err)
 end
 
 function LevelInfoPanel:startGameForEnergyPanel( ... )
-	local selectedItemsData = self:getSelectedItemsData()
-
 	self.startFromEnergyPanel = true
 
-	local startLevelLogic = StartLevelLogic:create(self, self.levelId, self.levelType, selectedItemsData, false)
+	local startLevelLogic = StartLevelLogic:create(self, self.levelId, self.levelType, self.selectedItemsData, false)
 	startLevelLogic:start(true)
 end
 
@@ -975,7 +980,7 @@ function LevelInfoPanel:getSelectedItemsData(...)
 			--itemData.xInWorldSpace	= 0
 			--itemData.yInWorldSpace	= 0
 			itemData.node		= curItem
-			itemData.itemRes	= curItem:getItemRes()
+			-- itemData.itemRes	= curItem:getItemRes()
 			table.insert(result, itemData)
 		end
 	end

@@ -27,6 +27,21 @@ local needCopyLayers = {
 	ItemSpriteType.kDigBlocker,
 }
 
+local DefaultVisibleLayers = {
+	ItemSpriteType.kBackground,
+	ItemSpriteType.kItemBack,
+	ItemSpriteType.kItem,
+	ItemSpriteType.kItemShow,
+	ItemSpriteType.kItemDestroy,
+	ItemSpriteType.kClipping,
+	ItemSpriteType.kEnterClipping,
+	ItemSpriteType.kRope,
+	ItemSpriteType.kLock,
+	ItemSpriteType.kNormalEffect,
+	ItemSpriteType.kSpecial,
+}
+
+
 function GameBoardView:ctor()
 	self.baseMap = nil;			--地格--落稳的东西
 	self.ItemFalling = nil;		--下落中的东西
@@ -71,8 +86,8 @@ function GameBoardView:dispose()
 	self.baseMap = nil
 
 	if self.showPanel then
-		for i=1,#self.showPanel do
-			if self.showPanel[i] ~= nil and self.showPanel[i]:getParent() then 
+		for i, _ in pairs(self.showPanel) do
+			if self.showPanel[i] and self.showPanel[i]:getParent() then 
 				self.showPanel[i]:removeFromParentAndCleanup(true);
 			end
 		end
@@ -99,7 +114,7 @@ end
 
 function GameBoardView:createByGameBoardLogic(gameBoardLogic)
 	local isHalloween = gameBoardLogic.gameMode:is(HalloweenMode)
-	local theview = GameBoardView:create(isHalloween);
+	local theview = GameBoardView:create(isHalloween)
 	theview.gameBoardLogic = gameBoardLogic;			--记录逻辑来源
 	gameBoardLogic.boardView = theview
 
@@ -181,7 +196,7 @@ function GameBoardView:cleanAllItemSprite()
 	for r=1,#self.baseMap do
 		for c=1,#self.baseMap[r] do
 			for i=ItemSpriteType.kBackground, ItemSpriteType.kLast do
-				local sprite1 =self.baseMap[r][c].itemSprite[i]
+				local sprite1 = self.baseMap[r][c].itemSprite[i]
 				if sprite1 then 
 					if sprite1:getParent() then
 						sprite1:removeFromParentAndCleanup(true);
@@ -199,24 +214,14 @@ end
 function GameBoardView:TouchAt(x,y)	----返回点击的Item的xy
 	----------面板偏移量
 	if self.baseLocation == nil then --初始化一些东西
-		--local pointadd = self.showPanel[ItemSpriteType.kBackground]:getPosition();
-		--print("GameBoardView:TouchAt(x,y) pointadd x, y", pointadd.x, pointadd.y);
-		--self.baseLocation = self.baseMap[1][1]:getBasePosition(1,1)
-		--print("baseLocation x, y", self.baseLocation.x, self.baseLocation.y);
-
-		--self.PosStart = ccpAdd(pointadd, self.baseLocation)
 		self.PosStart = ccp(0,0);
-		--if self.PosStart then print("PosStart", self.PosStart.x, self.PosStart.y) end;
 		local selfpos_x = self:getPositionX();
 		local selfpos_y = self:getPositionY();
-		--print("selfposition x, y", selfpos_x, selfpos_y);
 		self.PosStart.x = self.PosStart.x + self:getPositionX()
 		self.PosStart.y = self.PosStart.y + self:getPositionY()
 
 		self.ItemW = GamePlayConfig_Tile_Width
 		self.ItemH = GamePlayConfig_Tile_Height
-		--print("self.PosStart", self.PosStart, self.ItemW, self.ItemH)
-		--if self.PosStart then print("PosStart", self.PosStart.x, self.PosStart.y) end;
 	end
 	if self.PosStart then 			----修正偏移量
 		x = x - self.PosStart.x;
@@ -225,14 +230,10 @@ function GameBoardView:TouchAt(x,y)	----返回点击的Item的xy
 
 	local temp_x = math.ceil(x / self.ItemW / GamePlayConfig_Tile_ScaleX)
 	local temp_y = math.ceil(GamePlayConfig_Max_Item_Y -1 - y / self.ItemH / GamePlayConfig_Tile_ScaleY)
-	--print("TouchAt",x, y, temp_x, temp_y);
 
-	--print("#self.baseMap[1] #self.baseMap", #self.baseMap[1], #self.baseMap)
 	if temp_x >= 1 and temp_x <= #self.baseMap[1] 
 		and temp_y >= 1 and temp_y <= #self.baseMap
 		then
-		--print("temp_x", temp_x, temp_y)
-		--return ccp(temp_x, temp_y)
 		return ccp(temp_y, temp_x)
 	end
 	return ccp(temp_y, temp_x)
@@ -271,57 +272,14 @@ function GameBoardView:trySwapItem(x1,y1,x2,y2)
 	end
 end
 
-
 -- isHalloween 为了兼容magic tile障碍加入一个clippingNode
 function GameBoardView:initView(container, context, isHalloween)
 	local showPanel = {}
 
-	for i = ItemSpriteType.kBackground, ItemSpriteType.kLast do
-		if (showPanel[i] == nil) then
-			if i == ItemSpriteType.kBackground		--BatchNode
-				then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapTiles.png"), 200));--100表示预计有100个物体
-			elseif i == ItemSpriteType.kLock
-				or i == ItemSpriteType.kItem
-				then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapBaseItem.png"), 200));--100表示预计有100个物体
-			elseif i == ItemSpriteType.kLight then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapLight.png"), 200));
-			elseif i == ItemSpriteType.kPass then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/link_item.png"), 200));
-			elseif i == ItemSpriteType.kLockShow then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapLock.png"), 100));
-			elseif i == ItemSpriteType.kSnowShow then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapSnow.png"), 100));
-			elseif i == ItemSpriteType.kItemDestroy then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/destroy_effect.png"), 200));
-			elseif i == ItemSpriteType.kSnailRoad then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/snail_road.png"), 100));
-			elseif i == ItemSpriteType.kDigBlocker then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
-			elseif isHalloween and (i == ItemSpriteType.kTileBlocker or i == ItemSpriteType.kRope) then
-				showPanel[i] = SimpleClippingNode:create()
-				showPanel[i]:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * 8))
-			elseif i == ItemSpriteType.kSand then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_idle_clean.png"), 100));
-			elseif i == ItemSpriteType.kSandMove then
-				showPanel[i] = CocosObject:create()
-				showPanel[i]:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_move.png"), 100));
-			else
-				showPanel[i] = CocosObject:create()
-			end
-
-			container:addChild(showPanel[i], i)
+	for _, i in ipairs(DefaultVisibleLayers) do
+		if not showPanel[i] then
+			showPanel[i] = self:buildSingleLayerByType(i)
+			container:addChild(showPanel[i])
 		end
 	end
 
@@ -343,6 +301,80 @@ function GameBoardView:initView(container, context, isHalloween)
 	end
 end
 
+function GameBoardView:buildSingleLayerByType(layerType)
+	local result 
+	if layerType == ItemSpriteType.kBackground then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapTiles.png"), 200));--100表示预计有100个物体
+	elseif layerType == ItemSpriteType.kLock or layerType == ItemSpriteType.kItem then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapBaseItem.png"), 200));--100表示预计有100个物体
+	elseif layerType == ItemSpriteType.kLight then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapLight.png"), 200));
+	elseif layerType == ItemSpriteType.kPass then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/link_item.png"), 200));
+	elseif layerType == ItemSpriteType.kLockShow then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapLock.png"), 100));
+	elseif layerType == ItemSpriteType.kSnowShow then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapSnow.png"), 100));
+	elseif layerType == ItemSpriteType.kItemDestroy then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/destroy_effect.png"), 200));
+	elseif layerType == ItemSpriteType.kSnailRoad then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/snail_road.png"), 100));
+	elseif layerType == ItemSpriteType.kDigBlocker then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
+	elseif layerType == ItemSpriteType.kDigBlockerBomb then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
+	elseif isHalloween and (layerType == ItemSpriteType.kTileBlocker or layerType == ItemSpriteType.kRope) then
+		result = SimpleClippingNode:create()
+		result:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * 8))
+	elseif layerType == ItemSpriteType.kSand then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_idle_clean.png"), 100));
+	elseif layerType == ItemSpriteType.kSandMove then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_move.png"), 100));
+	elseif layerType == ItemSpriteType.kChain then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/ice_chain.png"), 100));
+	elseif layerType == ItemSpriteType.kMagicStoneFire then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/magic_stone.png"), 100));
+	else
+		result = CocosObject:create()
+	end
+	return result
+end
+
+function GameBoardView:insertNewLayer(container, showPanel, layerType)
+	local existLayerIndexList = {}
+	local childIdx = 0
+
+	for idx, _ in pairs(showPanel) do
+		table.insert(existLayerIndexList, idx)
+	end
+
+	table.sort(existLayerIndexList)
+
+	for _, idx in ipairs(existLayerIndexList) do
+		if layerType < idx then
+			break
+		end
+		childIdx = childIdx + 1
+	end
+
+	showPanel[layerType] = self:buildSingleLayerByType(layerType)
+	container:addChildAt(showPanel[layerType], childIdx)
+end
+
 function GameBoardView:RegisterAll()
 	print("GameBoardView:RegisterAll()")
 	------注册点击函数----
@@ -359,7 +391,6 @@ function GameBoardView:RegisterAll()
 
 	if self.isTouchReigister == false then
 		self.isTouchReigister = true
-		--self:setTouchEnabled(true)
 		self.refCocosObj:setTouchEnabled(true) 
 		self:registerScriptTouchHandler(onTouch)
 	end
@@ -410,7 +441,6 @@ function GameBoardView:unRegisterAll()
 	end
 end
 
-local ProFi = require "zoo.util.ProFi"
 ----游戏逻辑更新循环
 function GameBoardView:updateGame(dt)
 	if self.isPaused == false then 
@@ -429,12 +459,20 @@ function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 		end
 	end
 
+	local function getContainer(layerType)
+		if not self.showPanel[layerType] then
+			self:insertNewLayer(self, self.showPanel, layerType)
+		end
+		return self.showPanel[layerType]
+	end
+
 	--创建地图显示用格子
 	for i=1, #boardmap do
 		if self.baseMap[i] == nil then self.baseMap[i] = {} end		--地图显示
 		
 		for j=1,#boardmap[i] do
 			self.baseMap[i][j] = ItemView:create();
+			self.baseMap[i][j].getContainer = getContainer
 			self.baseMap[i][j]:initByBoardData(boardmap[i][j])
 			self.baseMap[i][j]:initPosBoardDataPos(boardmap[i][j])
 		end
@@ -442,14 +480,20 @@ function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 end
 
 function GameBoardView:initBaseMapByItemData(ItemMap)--初始化基本地图
+	-- local function getItemContainer(layerType)
+	-- 	if not self.showPanel[layerType] then
+	-- 		self:insertNewLayer(self, self.showPanel, layerType)
+	-- 	end
+	-- 	return self.showPanel[layerType]
+	-- end
+
 	for i=1, #ItemMap do
 		if self.baseMap[i] == nil then self.baseMap[i] = {} end		--地图显示
 		for j=1,#ItemMap[i] do
 			if self.baseMap[i][j] == nil then self.baseMap[i][j] = ItemView:create() end
-			self.baseMap[i][j].itemPanel = self.showPanel;
+			-- self.baseMap[i][j].getContainer = getItemContainer
 			self.baseMap[i][j]:initByItemData(ItemMap[i][j])
 			self.baseMap[i][j]:initPosBoardDataPos(ItemMap[i][j], true)
-			
 		end
 	end
 end
@@ -503,6 +547,9 @@ function GameBoardView:updateBaseMapViewItem(r,c)
 		if itemSprite then
 			if itemSprite:getParent() == nil then
 				if (itemSprite.refCocosObj ~= nil) then
+					if not self.showPanel[k] then 
+						self:insertNewLayer(self, self.showPanel, k)
+					end
 					self.showPanel[k]:addChild(itemSprite)
 				else
 					print("itemSprite.refCocosObj == nil  r, c, k", r, c, k)
@@ -522,6 +569,9 @@ function GameBoardView:initBaseMapView()
 					if itemSprite then
 						if not itemSprite:getParent() then
 							if (itemSprite.refCocosObj ~= nil) then
+								if not self.showPanel[k] then 
+									self:insertNewLayer(self, self.showPanel, k)
+								end
 								self.showPanel[k]:addChild(itemSprite)
 							else
 								print("itemSprite.refCocosObj == nil  r, c, k", r, c, k)
@@ -556,12 +606,31 @@ function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode
 		startRowIndex = 2
 		rowCount = 8
 	end
+
+	local clippingnode = SimpleClippingNode:create()
+	clippingnode:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * rowCount))
+	self:addChild(clippingnode)
+
+	local digViewContainer = CocosObject:create()
+	clippingnode:addChild(digViewContainer)
+	
+	self.digClippingNode = clippingnode
+	self.digViewContainer = digViewContainer
+	self.digContext = {}
+
+	local function getItemContainer(layerType)
+		if not self.digContext.showPanel[layerType] then
+			self:insertNewLayer(self.digViewContainer, self.digContext.showPanel, layerType)
+		end
+		return self.showPanel[layerType]
+	end
+
 	local function initItemViewByData()
 		for i = startRowIndex, #gameItemMap do
 			if self.digBaseMap[i] == nil then self.digBaseMap[i] = {} end
 			for j = 1, #gameItemMap[i] do
 				if self.digBaseMap[i][j] == nil then self.digBaseMap[i][j] = ItemView:create() end
-				self.digBaseMap[i][j].itemPanel = self.digContext.showPanel
+				self.digBaseMap[i][j].getContainer = getItemContainer
 				self.digBaseMap[i][j]:initByBoardData(boardMap[i][j])
 				self.digBaseMap[i][j]:initByItemData(gameItemMap[i][j])
 				self.digBaseMap[i][j]:initPosBoardDataPos(gameItemMap[i][j], true)
@@ -578,6 +647,9 @@ function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode
 						if itemSprite then
 							if not itemSprite:getParent() then
 								if (itemSprite.refCocosObj ~= nil) then
+									if not self.digContext.showPanel[layerIdx] then
+										self:insertNewLayer(self.digViewContainer, self.digContext.showPanel, layerIdx)
+									end
 									self.digContext.showPanel[layerIdx]:addChild(itemSprite)
 								else
 									self.baseMap[i][j].itemSprite[layerIdx] = nil
@@ -589,17 +661,6 @@ function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode
 			end
 		end
 	end
-
-	local clippingnode = SimpleClippingNode:create()
-	clippingnode:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * rowCount))
-	self:addChild(clippingnode)
-
-	local digViewContainer = CocosObject:create()
-	clippingnode:addChild(digViewContainer)
-
-	self.digClippingNode = clippingnode
-	self.digViewContainer = digViewContainer
-	self.digContext = {}
 
 	self:initView(digViewContainer, self.digContext)
 	self.digBaseMap = {}
@@ -642,7 +703,6 @@ end
 
 function GameBoardView:startScrollInitDigView(completeCallback)
 	local actionList = CCArray:create()
-	-- actionList:addObject(CCDelayTime:create(2))
 	actionList:addObject(CCMoveTo:create(self.digViewContainer.numExtraRow * 0.3, ccp(0, 0)))
 	actionList:addObject(CCCallFunc:create(completeCallback))
 	local sequenceAction = CCSequence:create(actionList)
@@ -652,14 +712,18 @@ end
 function GameBoardView:hideItemViewLayer()
 	for i, layerIndex in ipairs(needCopyLayers) do
 		local layerContainer = self.showPanel[layerIndex]
-		layerContainer:setVisible(false)
+		if layerContainer then
+			layerContainer:setVisible(false)
+		end
 	end
 end
 
 function GameBoardView:showItemViewLayer()
 	for i, layerIndex in ipairs(needCopyLayers) do
 		local layerContainer = self.showPanel[layerIndex]
-		layerContainer:setVisible(true)
+		if layerContainer then
+			layerContainer:setVisible(true)
+		end
 	end
 end
 
@@ -763,7 +827,9 @@ function GameBoardView:paintBorder(boardMap)
 					self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_edge_long.png", finX, self.baseMap[i][j].pos_y -
 						sideV / 2,widthScale, 1, 180))
 					if boardMap[i][j].isCollector then -- 豆荚收集口标志
-						local sprite = Sprite:createWithSpriteFrameName("map_tile_ingr_collect.png")
+						-- local sprite = Sprite:createWithSpriteFrameName("map_tile_ingr_collect.png")
+						local str = boardMap[i][j].showType == IngredientShowType.kAcorn and  "map_tile_acorn_collect.png" or "map_tile_ingr_collect.png"
+						local sprite = Sprite:createWithSpriteFrameName(str)
 						sprite:setAnchorPoint(ccp(0.5, 0))
 						sprite:setPosition(ccp(self.baseMap[i][j].pos_x, self.baseMap[i][j].pos_y - sideV + GamePlayConfig_Tile_Ingr_CollectorY))
 						self.showPanel[ItemSpriteType.kBackground]:addChild(sprite)
@@ -875,7 +941,6 @@ function GameBoardView:viberate()
 end
 
 function GameBoardView:viberateUpdate()
-	-- debug.debug()		-- 很多报错会在这里才报出，因此暂时保留一个
 	if self.viberateDelay == 0 and self.viberateCounter == -1 then return end
 
 	if self.viberateDelay == 0 then

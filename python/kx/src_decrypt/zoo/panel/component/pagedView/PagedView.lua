@@ -527,9 +527,19 @@ function PagedView:__moveTo( X_Position, duration, callback )
 	local dX = self.xOffset - X_Position
 	local moveAction = CCMoveBy:create(duration, ccp(dX, 0))
 	-- local moveAction = CCMoveTo:create(duration, ccp(-X_Position, 0))
+	local _cb = function() 
+		for i = 1, self.numOfPages do
+			self.pageRenderers[i]:setVisible(i == self.pageIndex)
+		end
+		callback()
+	end
+
+	for i = 1, self.numOfPages do
+		self.pageRenderers[i]:setVisible(true)
+	end
 
 	if callback then
-		local cb = CCCallFunc:create(callback)
+		local cb = CCCallFunc:create(_cb)
 		local easeAction = CCEaseSineOut:create(moveAction)
 		self.pageLayer:runAction(CCSequence:createWithTwoActions(easeAction, cb))
 	else 

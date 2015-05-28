@@ -132,7 +132,6 @@ end
 
 
 function IconButtonManager:playHasNotificationAnim( ... )
-
 	for _,v in pairs(self.playTipIcons) do
 		IconButtonBase.stopHasNotificationAnim(v)
 	end
@@ -149,7 +148,6 @@ function IconButtonManager:playHasNotificationAnim( ... )
 			end
 		end
 	end
-
 end
 
 function IconButtonManager:addPlayTipIcon( icon )
@@ -184,4 +182,11 @@ function IconButtonManager:removePlayTipIcon( icon )
 
 	print("removePlayTipIcon " .. icon.id)
 	-- print(debug.traceback())
+end
+
+function IconButtonManager:writeShowTimeInQueue( icon )
+	if not table.exist(self.playTipIcons, icon) then
+		return
+	end
+	self:writeShowTime(icon)
 end

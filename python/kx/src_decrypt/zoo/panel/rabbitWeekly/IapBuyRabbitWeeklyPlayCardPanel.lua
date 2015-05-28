@@ -78,7 +78,7 @@ function IapBuyRabbitWeeklyPlayCardPanel:_init(targetPanel, buyCallback, maxTopP
 
 	text:setString(Localization:getInstance():getText("weekly.race.alert.rabbit.buy.iap"))
 
-	button:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..data.price)
+	button:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), data.price))
 	button:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
 
 	local disNum = discount:getChildByName("num")

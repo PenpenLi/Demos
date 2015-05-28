@@ -65,6 +65,7 @@ kHttpEndPoints = table.const {
   GetIAPExchangeCode = "getIapCode",
   canSendLinkShowOff = "canSendLinkShowOff",
   getShareRankWithPosition = "getShareRankWithPosition",
+  getPropsInGame = "getPropsInGame",
 
 --online mode, user data/prop/scores will sync from local to server
 	mark = "mark", --will change props.
@@ -188,7 +189,7 @@ function ConnectionManager:initialize(uid, sessionKey)
       language = "zh_TW"
   end
 
-	local config = {url = NetworkConfig.rpcURL,queueSize = 10,flushInterval = 10,timeout = 6,defaultPriority = rpc.SendingPriority.kNormal}
+	local config = {url = NetworkConfig.rpcURL,queueSize = 10,flushInterval = 10,timeout = 1,defaultPriority = rpc.SendingPriority.kNormal}
   local sessionKeySource = function(callback) callback(UserManager.getInstance().sessionKey, os.time() + 3600)  end
   local function platformFinder() return pf end -- older value "hex"
 	local transponder = rpc.RpcTransponder.new(config, sessionKeySource)
@@ -452,11 +453,11 @@ end
 function HttpBase:onLoadingError(err)
 	self:dispatchEvent(Event.new(Events.kError, err, self))
 
-  if err ~= nil and table.exist({-2,-6,101},err) then 
-      if not PrepackageUtil:isPreNoNetWork() and kUserLogin then 
-        checkNetwork()
-      end   
-  end
+  -- if err ~= nil and table.exist({-2,-6,101},err) then 
+  --     if not PrepackageUtil:isPreNoNetWork() and kUserLogin then 
+  --       checkNetwork()
+  --     end   
+  -- end
 end
 function HttpBase:setCancelCallback(callback)
   self.cancelCallback = callback
@@ -505,8 +506,8 @@ function RegisterHTTP:load()
 	url = url .. params
   print("RegisterHTTP:", info.sk)
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(5 * 1000)
-    request:setTimeoutMs(10 * 1000)
+    request:setConnectionTimeoutMs(1 * 1000)
+    request:setTimeoutMs(5 * 1000)
    
     local function onRegisterFinished( response )
     	if response.httpCode ~= 200 then self:dispatchEvent(Event.new(Events.kError, err, self))

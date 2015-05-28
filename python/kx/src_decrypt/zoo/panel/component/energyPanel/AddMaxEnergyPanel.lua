@@ -73,7 +73,7 @@ function AddMaxEnergyPanel:init(energyPanel, maxTopPosYInWorldSpace, flyEnergyTa
 	local goodsMeta = MetaManager.getInstance():getGoodMetaByItemID(100)
 	if __ANDROID then -- ANDROID
 		self.buyBtn:setIcon(nil)
-		self.buyBtn:setNumber(Localization:getInstance():getText("buy.gold.panel.money.mark")..tostring(goodsMeta.rmb / 100))
+		self.buyBtn:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), goodsMeta.rmb / 100))
 	else -- else, on IOS and PC we use gold!
 		self.buyBtn:setIconByFrameName("ui_images/ui_image_coin_icon_small0000", true)
 		self.buyBtn:setNumber(goodsMeta.qCash)
@@ -97,9 +97,11 @@ function AddMaxEnergyPanel:onBuyBtnTapped(...)
 		self:startBuyAndUseAddMaxEnergyLogic()
 	end
 
-	if RequireNetworkAlert:popout() then
+	local function startBuyAndUseAddMaxEnergyLogic()
 		self:startBuyAndUseAddMaxEnergyLogic()
 	end
+
+	RequireNetworkAlert:callFuncWithLogged(startBuyAndUseAddMaxEnergyLogic)
 end
 
 function AddMaxEnergyPanel:startBuyAndUseAddMaxEnergyLogic(...)

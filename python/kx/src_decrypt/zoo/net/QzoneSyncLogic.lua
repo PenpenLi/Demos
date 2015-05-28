@@ -357,6 +357,13 @@ function QzoneSyncLogic:refreshUserData( onFinish )
 	elseif __WP8 then
 		userbody.deviceOS = "wp"
 	end
+
+	--IOS后端推送所需 在AppController.mm里获取然后写入
+	userbody.deviceToken = ""
+	if __IOS then
+		userbody.deviceToken = CCUserDefault:sharedUserDefault():getStringForKey("animal_ios_deviceToken") or ""
+	end
+
 	--推送召回 前端向后端发送流失状态
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
 

@@ -55,6 +55,18 @@ function SaveRevertData:create(mainLogic)
 		table.insert( ret.blockProductRules, tmpRule )
 	end
 
+	ret.cachePool = {}
+	if mainLogic.cachePool then 
+		for k, v in pairs(mainLogic.cachePool) do
+			ret.cachePool[k] = {}
+			for _k, _v in pairs(v) do 
+				local itemData = _v:copy()
+				table.insert(ret.cachePool[k], itemData)
+			end
+		end
+
+	end
+
 	ret.tileBlockCount = mainLogic.tileBlockCount
 	ret.pm25count = mainLogic.pm25count
 	ret.snailCount = mainLogic.snailCount

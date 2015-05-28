@@ -332,6 +332,152 @@ function CommonEffect:buildExplodeEffect()
 	return node
 end
 
+function CommonEffect:buildGetPropLightAnim( ... )
+	local fps = 30
+	FrameLoader:loadImageWithPlist("flash/get_prop_bganim.plist")
+	local anim = Layer:create()
+	anim.blackLayer = LayerColor:create()
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	local blackBgScale = 1
+
+	local blackWidth = winSize.width*blackBgScale
+	local blackHeight = winSize.height*blackBgScale
+	anim.blackLayer:changeWidthAndHeight(blackWidth, blackHeight)
+	anim.blackLayer:setPosition(ccp(-blackWidth/2,-blackHeight/2))
+	anim.blackLayer:setOpacity(150)
+	anim:addChild(anim.blackLayer)
+
+	anim.lightBg1 = Sprite:createWithSpriteFrameName("circleLight.png")
+	anim.lightBg1:setAnchorPoint(ccp(0.5, 0.5))
+	anim.lightBg1:setScale(0.6)
+	anim:addChild(anim.lightBg1)
+
+	anim.lightBg1:runAction(CCSpawn:createWithTwoActions(CCScaleTo:create(7 / fps, 1.08), CCFadeTo:create(7 / fps, 0.6 * 255)))
+	anim.lightBg1:runAction((CCRepeatForever:create(CCRotateBy:create(0.1, 9))))
+
+	local function createLight()
+		local container = Sprite:createEmpty()
+		container:setAnchorPoint(ccp(0.5, 0.5))
+
+		local opacity = 0.78 * 255
+		local sprite = Sprite:createWithSpriteFrameName("circleLight2.png")
+		sprite:setAnchorPoint(ccp(0.5, 0.5))
+		sprite:setScale(0.88)
+		sprite:setOpacity(0.92 * opacity)
+		container:addChild(sprite)
+		
+		local seq = CCArray:create()
+		seq:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(17 / fps, 1.14), CCFadeTo:create(17 / fps, opacity)))
+		seq:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(19 / fps, 0.88), CCFadeTo:create(19 / fps, 0.92 * opacity)))
+		sprite:runAction(CCRepeatForever:create(CCSequence:create(seq)))
+		return container
+	end
+
+	local function createStarAnim()
+		local container = Sprite:createEmpty()
+		container:setAnchorPoint(ccp(0.5, 0.5))
+
+		local starLight = Sprite:createWithSpriteFrameName("star_light.png")
+		local star = Sprite:createWithSpriteFrameName("star.png")
+
+		container:addChild(starLight)
+		container:addChild(star)
+
+		local lightAnim = CCSpawn:createWithTwoActions(CCScaleTo:create(10 / fps, 1), CCFadeTo:create(10 / fps, 0.1 * 255))
+		local function resetLight() 
+			starLight:setScale(0.5)
+			starLight:setOpacity(255)
+		end
+		resetLight()
+		local lightSeq = CCSequence:createWithTwoActions(lightAnim, CCCallFunc:create(resetLight))
+		starLight:runAction(CCRepeatForever:create(lightSeq))
+		local function resetStar()
+			star:setOpacity(255)
+			star:setScale(0.94)
+		end
+		resetStar()
+		local spawnArr = CCArray:create()
+		spawnArr:addObject(CCRotateBy:create(10 / fps, 90))
+		spawnArr:addObject(CCFadeTo:create(10 / fps, 0.1 * 255))
+		spawnArr:addObject(CCScaleTo:create(10 / fps, 1.22))
+		local starAnim = CCSpawn:create(spawnArr)
+		local starSeq = CCSequence:createWithTwoActions(starAnim, CCCallFunc:create(resetStar))
+		star:runAction(CCRepeatForever:create(starSeq))
+
+		return container
+	end
+
+	anim.lightBg3 = createLight()
+	anim.lightBg3:setScale(0.85)
+	anim:addChild(anim.lightBg3)
+	anim.lightBg3:runAction(CCScaleTo:create(7 / fps, 1.4))
+
+	anim.lightBg2 = createLight()
+	anim.lightBg2:setScale(1.05)
+	anim:addChild(anim.lightBg2)
+	local ops = {{x=-1, y=1}, {x=1, y=1},{x=1, y=-1},{x=-1, y=-1}}
+	for i = 1, 14 do
+		local star = createStarAnim()
+		local op = ops[i%4 + 1]
+		local posX = (40 - math.random(30)) * op.x
+		local posY = (40 - math.random(30)) * op.y
+
+		local pos = ccp(posX, posY)
+		star:setPosition(pos)
+		-- star:setRotation(math.random(90))
+		star:setScale(0.4 + math.random(5) / 10)
+
+		local deltaX, deltaY = 0, 0
+		local deltaDistance = (100 + math.random(50))
+		if pos.x == 0 or pos.y == 0 then 
+			if pos.x == 0 and pos.y ~= 0 then 
+				deltaY = deltaDistance
+			elseif pos.y == 0 and pos.x ~= 0 then 
+				deltaX = deltaDistance 
+			else
+				deltaX = math.random(deltaDistance)
+				deltaY = math.sqrt(deltaDistance * deltaDistance - deltaX * deltaX)
+			end
+			if math.random(10) > 5 then deltaX = 0-deltaX end
+			if math.random(10) > 5 then deltaY = 0-deltaY end
+		else
+			local a = math.sqrt(pos.x * pos.x + pos.y * pos.y)
+			deltaX = deltaDistance * pos.x / a
+			deltaY = deltaDistance * pos.y / a
+		end
+
+		local function onAnimFinished()
+			star:removeFromParentAndCleanup(true)
+		end
+		local seq = CCArray:create()
+		seq:addObject(CCMoveBy:create(6 / fps, ccp(deltaX * 3 / 7, deltaY * 3 / 7)))
+		seq:addObject(CCMoveBy:create(9 / fps, ccp(deltaX * 4 / 7, deltaY * 4 / 7)))
+		seq:addObject(CCCallFunc:create(onAnimFinished))
+		star:runAction(CCSequence:create(seq))
+		anim:addChild(star)
+	end
+
+	local sequenceArr3 = CCArray:create()
+	sequenceArr3:addObject(CCDelayTime:create(2))
+	sequenceArr3:addObject(CCFadeTo:create(0.3, 0))
+	local function onAnimationFinished()
+		anim:removeFromParentAndCleanup(true)
+	end
+	sequenceArr3:addObject(CCCallFunc:create(onAnimationFinished))
+	anim.blackLayer:setTouchEnabled(true, 0, true)
+	anim.blackLayer:stopAllActions()             
+	anim.blackLayer:runAction(CCSequence:create(sequenceArr3))
+
+	local label = TextField:create(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.14"), nil, 30)
+	label:setAnchorPoint(ccp(0.5, 0.5))
+	label:setPosition(ccp(0, -150))
+	anim:addChild(label)
+
+	anim:setScale(1.23)
+	
+	return anim
+end
+
 --
 -- FallingStar ---------------------------------------------------------
 --

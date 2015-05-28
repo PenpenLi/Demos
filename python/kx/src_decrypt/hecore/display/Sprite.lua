@@ -51,6 +51,7 @@ function Sprite:setFlipX(bool, ...)
 	assert(#{...} == 0)
 	self.refCocosObj:setFlipX(bool)
 end
+function Sprite:setFlipY(bFlipY) self.refCocosObj:setFlipY(bFlipY) end
 
 function Sprite:isOpacityModifyRGB() return self.refCocosObj:isOpacityModifyRGB() end
 function Sprite:setOpacityModifyRGB(v) self.refCocosObj:setOpacityModifyRGB(v) end
@@ -336,10 +337,15 @@ function SpriteUtil:removeLoadedPlist( plistFilename )
 end
 
 function SpriteUtil:getRealResourceName( fileName )
-  local result = scaledResource[fileName]
-  -- print("getRealResourceName", fileName, result)
-  if result ~= nil then return result
-  else return fileName end
+  if __use_small_res then  
+    local wordGroup = string.split(fileName, ".")
+    local prefix = wordGroup[1]
+    local suffix = wordGroup[2]
+    local realResourcePath = prefix .. "@2x." .. suffix
+    return realResourcePath
+  else
+    return fileName
+  end
 end
 
 function SpriteUtil:cacheTexture(textureFileName)

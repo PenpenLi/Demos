@@ -12,6 +12,7 @@ require "zoo.gamePlay.mode.MaydayEndlessMode"
 require "zoo.gamePlay.mode.RabbitWeeklyMode"
 require "zoo.gamePlay.mode.SeaOrderMode"
 require "zoo.gamePlay.mode.HalloweenMode"
+require "zoo.gamePlay.mode.UnlockAreaDropDownMode"
 
 GameModeFactory = class()
 
@@ -42,6 +43,8 @@ function GameModeFactory:create(mainLogic)
         return SeaOrderMode.new(mainLogic)
     elseif gameMode == GamePlayType.kHalloween then
         return HalloweenMode.new(mainLogic)
+    elseif gameMode == GamePlayType.kUnlockAreaDropDown then
+        return UnlockAreaDropDownMode.new(mainLogic)
     else
         return GameMode.new(mainLogic)
     end

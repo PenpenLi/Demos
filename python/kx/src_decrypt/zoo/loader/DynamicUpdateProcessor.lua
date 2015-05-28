@@ -64,13 +64,18 @@ function Processor:checkDynamicLoadRes()
                 end
                 local config = parseDynamicUserData(userdata)
                 local force = false
-                if config and config["force"] == "1" then force = true end
+                local review = false
+                if config then 
+                    force = config["force"] == "1"
+                    review = config["review"] == "1"
+                end
                 print("require silent dynamic loading"..table.tostring(config))
                 print("needsize of dynamic update" .. tostring(needsize))
-
                 local canUpdate = false
                 if needsize > 0 then
-                    if needsize < kMaxDynamicResource then
+                    if review then
+                        canUpdate = true
+                    elseif needsize < kMaxDynamicResource then
                         canUpdate = true
                     elseif needsize < kSkipDynamicResource then
                         if force then canUpdate = true end
@@ -132,12 +137,26 @@ function Processor:addForCuccwo(parent)
     end
 end
 
+local function getSysMemInfo()
+    local msg = ""
+    if __ANDROID then
+        msg = luajava.bindClass("com.happyelements.hellolua.MainActivity"):getMemoryInfo()
+    elseif __IOS then 
+
+    end
+    return msg
+end
+
 function Processor:buildStartupUI()
     print("buildStartupUI")
     local scene = CCScene:create()
     local winSize = CCDirector:sharedDirector():getVisibleSize()
     local origin = CCDirector:sharedDirector():getVisibleOrigin()
     local logoPng = addSpriteFramesWithFile( "materials/logo.plist", "materials/logo.png" )
+    local logoTexture = CCTextureCache:sharedTextureCache():textureForKey("materials/logo.png")
+    if not logoTexture then
+        he_log_error(getSysMemInfo() .. " cache logo not found...")
+    end
     local logo = CCSprite:createWithSpriteFrameName("logo.png")
     self:addForCuccwo(logo)
     local logoSize = logo:getContentSize()

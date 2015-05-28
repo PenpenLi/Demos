@@ -129,11 +129,6 @@ function RabbitDailyRewardBox:updateBoxState(state)
 end
 
 function RabbitDailyRewardBox:onReceiveBtnTapped()
-	if not RequireNetworkAlert:popout() then
-        -- CommonTip:showTip(_text('weekly.race.tip.no.network'), 'negative')
-        return 
-    end
-
 	local function successCallback(data)
 		self:updateBoxState(RabbitDailyRewardBoxState.OPENED)
 		local rewardIds = {}
@@ -157,7 +152,11 @@ function RabbitDailyRewardBox:onReceiveBtnTapped()
 	local function failCallback()
 		-- CommonTip:showTip("failed")
 	end
-	_mgr():receiveDailyRewardBox(self.levelId, self.index, successCallback, failCallback)
+
+	local function receiveReward()
+		_mgr():receiveDailyRewardBox(self.levelId, self.index, successCallback, failCallback)
+	end
+	RequireNetworkAlert:callFuncWithLogged(receiveReward)
 end
 
 -----------------------------------------------------
@@ -315,8 +314,7 @@ function RabbitWeeklyLevelInfoPanel:init(parentPanel, levelId, ...)
 	local rmbBuyBtnRes = ui:getChildByName("rmbBuyBtn")
 	self.rmbBuyBtn = GroupButtonBase:create(rmbBuyBtnRes)
 	self.rmbBuyBtn:setVisible(false)
-	self.rmbBuyBtn:setString(Localization:getInstance():getText("buy.gold.panel.money.mark")..
-		tostring(data.price)..Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
+	self.rmbBuyBtn:setString(string.format("%s%0.2f%s", Localization:getInstance():getText("buy.gold.panel.money.mark"), data.price, Localization:getInstance():getText("buy.prop.panel.btn.buy.txt")))
 	local discount = rmbBuyBtnRes:getChildByName("discount")
 	local disNum = discount:getChildByName("num")
 	local disText = discount:getChildByName("text")
@@ -362,7 +360,14 @@ function RabbitWeeklyLevelInfoPanel:onRuleTapped()
     local panel = RabbitRulePanel:create()
     panel:setStrings(stringConfig)
     panel:setTitle(title)
-    panel:popout(function () self.parentPanel:setRankListPanelTouchEnable() end)
+    local function rulePanelCloseCallback()
+    	if self.parentPanel.tipPanelContainer then
+    		self.parentPanel:setRankListPanelTouchDisable()
+    	else
+    		self.parentPanel:setRankListPanelTouchEnable()
+    	end
+    end
+    panel:popout(rulePanelCloseCallback)
     DcUtil:clickRabbitInfo()
 end
 
@@ -421,21 +426,61 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
 	end
 
     local leftFreePlay = _mgr():getFreePlayLeft()
+    
 	if leftFreePlay > 0 then
+		local realLeftPlayTime = _mgr():getRemainingPlayCount()
 		self.startBtn:setString(_text("weekly.race.panel.start.btn"))
-	    self.startBtn.redDot:setVisible(true)
-		self.startBtn.num:setVisible(true)
-	    self.startBtn.num:setString(tostring(leftFreePlay))
+		if realLeftPlayTime > 0 then 
+		    self.startBtn.redDot:setVisible(true)
+			self.startBtn.num:setVisible(true)
+		    self.startBtn.num:setString(tostring(realLeftPlayTime))
+		else
+			self.startBtn:setEnabled(false)
+			self.closeBtn.ui:setTouchEnabled(false)
+
+			self.startBtn.redDot:setVisible(false)
+			self.startBtn.num:setVisible(false)
+			-- self.startBtn:setColorMode(kGroupButtonColorMode.blue)
+			self.startBtn:setString(_text("weekly.race.panel.rabbit.button5"))
+			local function afterPopout()
+				local function onBuyPlayCardSuccess()
+	        		DcUtil:logWeeklyRaceActivity("buy_rabbit_times", {level_id = self.levelId})
+	    			self:startGame()
+	    		end
+
+    			self.startBtn:setEnabled(true)
+				self.closeBtn.ui:setTouchEnabled(true)
+    			RabbitWeeklyGetFreePlayPanel.create(self.parentPanel, self.levelId, onBuyPlayCardSuccess):popout()	
+			end
+			self.afterPopout = afterPopout
+		end
 	    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onStartBtnTapped() end)
 	elseif _mgr():getRemainingPayCount() > 0 then
 		local userExtend = UserManager:getInstance().userExtend
 		if __ANDROID then
 			local mark = _text("buy.gold.panel.money.mark")
 			local text = _text("weekly.race.panel.rabbit.button2")
-			local label = mark..tostring(self.price).." "..text
-    		self.startBtn:setColorMode(kGroupButtonColorMode.blue)
+            local label = string.format("%s%0.2f %s", mark, self.price, text)
+            self.startBtn:setColorMode(kGroupButtonColorMode.blue)
+
+            local tmpLogic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
+            local decision, paymentType = tmpLogic:getPaymentDecision()
+            -- local operator = AndroidPayment.getInstance():getOperator()
+
+            local needSecondConfirm = false
+            if decision == IngamePaymentDecisionType.kPayWithType and 
+                -- operator == TelecomOperators.CHINA_MOBILE then
+                (paymentType == Payments.CHINA_MOBILE  or paymentType == Payments.DUOKU) then
+                needSecondConfirm = true
+            end
+
+            if needSecondConfirm then
+                label = Localization:getInstance():getText('energy.panel.continue.button.label')
+                self.startBtn:setColorMode(kGroupButtonColorMode.green)
+            end
+           
 			self.startBtn:setString(label)
-		    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped() end)
+		    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped(needSecondConfirm) end)
 		elseif false and __IOS and _mgr():getMaxBuyCount() == _mgr():getRemainingPayCount() then
 			-- 计费点藏得太深无法让苹果提审看到为了通过提审所以屏蔽掉
 			self.startBtn:setVisible(false)
@@ -525,6 +570,8 @@ function RabbitWeeklyLevelInfoPanel:onCloseBtnTapped()
 	if self.tappedState ~= self.TAPPED_STATE_NONE then return end
 
     self.tappedState = self.TAPPED_STATE_CLOSE_BTN_TAPPED
+    --移除可能弹出的免费次数获得面板
+    self:removeTipPanel()
 
     local function onRemoveAnimFinished()
         -- Check If Pop The Current Scene
@@ -537,13 +584,16 @@ function RabbitWeeklyLevelInfoPanel:onCloseBtnTapped()
     end
 end
 
+function RabbitWeeklyLevelInfoPanel:removeTipPanel()
+	local tipPanelContainer = self.parentPanel.tipPanelContainer
+	if tipPanelContainer and not tipPanelContainer.isDisposed then 
+    	tipPanelContainer:removeFromParentAndCleanup(true)
+    	self.parentPanel.tipPanelContainer = nil
+    end
+end
+
 -- 领取奖励按钮
 function RabbitWeeklyLevelInfoPanel:onReceiveBtnTapped()
-	if not RequireNetworkAlert:popout() then
-        -- CommonTip:showTip(_text('weekly.race.tip.no.network'), 'negative')
-        return 
-    end
-
     if _mgr():isPlayDay() then
 		CommonTip:showTip(_text("error.tip.730772"), "negative")
 		self:updatePanel()
@@ -564,7 +614,11 @@ function RabbitWeeklyLevelInfoPanel:onReceiveBtnTapped()
 	local function failCallback()
 		self:updatePanel()
 	end
-	_mgr():receiveWeeklyReward(self.levelId, successCallback, failCallback)
+
+	local function receiveReward()
+		_mgr():receiveWeeklyReward(self.levelId, successCallback, failCallback)
+	end
+	RequireNetworkAlert:callFuncWithLogged(receiveReward)
 end
 
 -- Iap付费开始
@@ -608,11 +662,13 @@ function RabbitWeeklyLevelInfoPanel:onRmbForPlayBtnTapped()
 end
 
 -- 付费开始
-function RabbitWeeklyLevelInfoPanel:onPayForPlayBtnTapped( ... )
+function RabbitWeeklyLevelInfoPanel:onPayForPlayBtnTapped(needSecondConfirm)
 	-- if self.tappedState ~= self.TAPPED_STATE_NONE then
 	-- 	return
 	-- end
 	-- self.tappedState = self.TAPPED_STATE_BUY_BTN_TAPPED
+
+    if not needSecondConfirm then needSecondConfirm = false end
 
 	if not _mgr():isPlayDay() then
 		CommonTip:showTip(_text("error.tip.730773"), "negative")
@@ -640,7 +696,7 @@ function RabbitWeeklyLevelInfoPanel:onPayForPlayBtnTapped( ... )
 		local function onFinish()
 			if self then self:updatePanel() end
 		end
-		_mgr():buyPlayCard( onSuccess, onFail, onCancel, onFinish )
+		_mgr():buyPlayCard( onSuccess, onFail, onCancel, onFinish, not needSecondConfirm)
 	end
 
 	local function onCancel()
@@ -659,7 +715,11 @@ function RabbitWeeklyLevelInfoPanel:popoutTimeWarningPanel(onConfirmCallback, on
 
 	self.parentPanel:setRankListPanelTouchDisable()
 	local function onPopoutPanelClosed()
-		self.parentPanel:setRankListPanelTouchEnable()
+		if self.parentPanel.tipPanelContainer then
+    		self.parentPanel:setRankListPanelTouchDisable()
+    	else
+    		self.parentPanel:setRankListPanelTouchEnable()
+    	end
 	end
 	panel:popout(onPopoutPanelClosed)
 end
@@ -685,6 +745,7 @@ function RabbitWeeklyLevelInfoPanel:onStartBtnTapped()
 	        	DcUtil:logWeeklyRaceActivity("buy_rabbit_times", {level_id = self.levelId})
 	    		self:startGame()
 	    	end
+	    	self.parentPanel:moveRankListPanel(-1000)
 	    	RabbitWeeklyGetFreePlayPanel.create(self.parentPanel, self.levelId, onBuyPlayCardSuccess):popout()
 	    end
 	end

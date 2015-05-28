@@ -12,7 +12,15 @@ end
 function WaitingState:onEnter()
 	print(">>>>>>>>>>>>>>>>>waiting state enter")
 	self.nextState = nil
-	self.mainLogic:startWaitingOperation()
+
+	if self.mainLogic.gameMode:reachEndCondition() then
+		self.mainLogic:setGamePlayStatus(GamePlayStatus.kEnd)
+	else
+		self.mainLogic:startWaitingOperation()
+	end
+	
+	GameExtandPlayLogic:resetMagicStone(self.mainLogic)
+
 	if self.mainLogic.replaying then
 		self.mainLogic:Replay()
 	end

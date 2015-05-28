@@ -314,9 +314,7 @@ function BuyGoldPanel:buildFreeGoldItem(func)
 	btn:setString(Localization:getInstance():getText("buy.gold.panel.btn.free.text"))
 	
 	local function onGetTapped(evt)
-		if RequireNetworkAlert:popout() then
-			func()
-		end
+		RequireNetworkAlert:callFuncWithLogged(func)
 	end
 	btn:addEventListener(DisplayEvents.kTouchTap, onGetTapped)
 
@@ -346,10 +344,14 @@ function BuyGoldPanel:buyGold(item)
 	end
 
 	if __IOS then -- IOS
-		if RequireNetworkAlert:popout() then
-			self:disableClick()
+		self:disableClick()
+		local function startBuyLogic()
 			self.buyLogic:buy(item.index, item.data, onSuccess, onFail, onCancel)
 		end
+		local function onLoginFail()
+			self:enableClick()
+		end
+		RequireNetworkAlert:callFuncWithLogged(startBuyLogic, onLoginFail)
 	else -- on ANDROID and PC we don't need to check for network
 		self:disableClick()
 		self.buyLogic:buy(item.index, item.data, onSuccess, onFail, onCancel)

@@ -1,86 +1,265 @@
-DevTestGamePlayScene = class(GamePlayScene)
+DevTestGamePlayScene = class(GamePlaySceneUI)
 
-function DevTestGamePlayScene:ctor()
-	
+function DevTestGamePlayScene:create(levelId, levelType, selectedItemsData)
+	local scene = DevTestGamePlayScene.new()
+	scene:init(levelId, levelType, selectedItemsData)
+	return scene
 end
 
-function DevTestGamePlayScene:dispose()
-	if self.mygameboardlogic then self.mygameboardlogic:dispose() end
-	self.mygameboardlogic = nil;
-	self.mygameboardview = nil;
-	self.initScheduler = nil;
-	Scene.dispose(self)
-end
-
-function DevTestGamePlayScene:loadExtraResource( ... )
+function DevTestGamePlayScene:init( levelId, levelType, selectedItemsData )
 	-- body
-	local fileList = self.mapConf:getDependingSpecialAssetsList()
-	local loader = FrameLoader.new()
-	local function callback_afterResourceLoader()
-		loader:removeAllEventListeners()
-		self:initScene();
+	GamePlaySceneUI.init(self, levelId, levelType, selectedItemsData, GamePlaySceneUIType.kDev)
+	self:addTmpPropNum()
+end
+
+function DevTestGamePlayScene:addTmpPropNum( ... )
+	-- body
+	self.propList:addFakeAllProp(999)
+end
+
+function DevTestGamePlayScene:usePropCallback(propId, usePropType, isRequireConfirm, ...)
+	self.usePropType = usePropType
+
+	local realItemId = propId
+	if self.usePropType == UsePropsType.EXPIRE then  realItemId = ItemType:getRealIdByTimePropId(propId) end
+	
+	if not isRequireConfirm then -- use directly
+		local function sendUseMsgSuccessCallback()
+			self.propList:confirm(propId)
+			self.gameBoardView:useProp(realItemId, isRequireConfirm)
+			self.useItem = true
+		end
+		sendUseMsgSuccessCallback()
+		return true
+	else -- can be canceled, must kill the process before use
+		
+		if self:checkPropEnough(usePropType, propId) then
+			self.needConfirmPropId = propId
+			-- self.needConfirmPropIsTempProperty = true
+			self.gameBoardView:useProp(realItemId, isRequireConfirm)
+			return true
+		else
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(730311)))
+			return false
+		end
 	end
-	for i,v in ipairs(fileList) do loader:add(v, kFrameLoaderType.plist) end
-	loader:addEventListener(Events.kComplete, callback_afterResourceLoader)
-	loader:load()
 end
 
-function DevTestGamePlayScene:create(conf)
-	local s = DevTestGamePlayScene.new()
-	s.mapConf = conf;
-	s:loadExtraResource();
-	return s
+function DevTestGamePlayScene:confirmPropUsed(pos, ...)
+
+	-- Previous Must Recorded The Used Prop
+	assert(self.needConfirmPropId)
+
+	-- Send Server User This Prop Message
+	local function onUsePropSuccess()
+		self.propList:confirm(self.needConfirmPropId, pos)
+		self.needConfirmPropId 			= false
+		-- self.needConfirmPropIsTempProperty 	= false
+		self.useItem = true
+	end
+	onUsePropSuccess()
 end
 
-function DevTestGamePlayScene:onInit()
-	local winSize = CCDirector:sharedDirector():getWinSize()
+function DevTestGamePlayScene:checkPropEnough(usePropType, propId)
+	-- 临时道具
+	if usePropType == UsePropsType.TEMP then
+		return true
+	end
+	-- 限时道具
+	if usePropType == UsePropsType.EXPIRE then
+		local uNum = UserManager:getInstance():getUserTimePropNumber(propId)
+		local sNum = UserService:getInstance():getUserTimePropNumber(propId)
+		if uNum > 0 and sNum > 0 then
+			return true
+		end
+		return false
+	end
+	-- 普通道具
+	if usePropType == UsePropsType.NORMAL then 
+		return true
+	end
 
-	local context = self
-	local function onTouchBackLabel(evt)
+	return false
+end
+
+function DevTestGamePlayScene:passLevel(levelId, score, star, stageTime, coin, targetCount, opLog, bossCount, ...)
+	-- ----------------------------------
+	-- Ensure Only Call This Func Once
+	-- ----------------------------------
+	assert(not self.levelFinished, "only call this function one time !")
+	if not self.levelFinished then
+		self.levelFinished = true
+	end
+
+	local levelType = self.levelType
+	------------------------
+	--- Success Callback
+	------------------------
+	local function onSendPassLevelMessageSuccessCallback(levelId, score, rewardItems, ...)
+		assert(type(levelId)	== "number")
+		assert(type(score)	== "number")
+		assert(rewardItems)
+		assert(#{...} == 0)
+
+		-- insert digged gems as the first reward
+		if levelType == GameLevelType.kDigWeekly then
+			local tmp = {}
+			table.insert(tmp, {itemId = ItemType.GEM, num = targetCount})
+			table.insert(tmp, rewardItems[1])
+			table.insert(tmp, rewardItems[2])
+			rewardItems = tmp
+		elseif levelType == GameLevelType.kMayDay then
+			local tmp = {}
+			-- table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
+			table.insert(tmp, {itemId = ItemType.XMAS_BELL, num = targetCount})
+			table.insert(tmp, rewardItems[1])
+			rewardItems = tmp
+		elseif levelType == GameLevelType.kRabbitWeekly then
+			local tmp = {}
+			table.insert(tmp, {itemId = ItemType.WEEKLY_RABBIT, num = targetCount})
+			table.insert(tmp, rewardItems[1])
+			table.insert(tmp, rewardItems[2])
+			rewardItems = tmp
+		elseif levelType == GameLevelType.kTaskForRecall then
+			rewardItems = {}
+		end
+
+		-----------------------------
+		-- Popout Game Success Panel
+		-- --------------------------
+		local levelSuccessPanel = LevelSuccessPanel:create(levelId, levelType, score, rewardItems, coin)
+
+		-- Set The Star Pop Position And Star Size
+		local bigStarSize	= self.scoreProgressBar:getBigStarSize()
+		local bigStarPosTable	= self.scoreProgressBar:getBigStarPosInWorldSpace()
+
+		for index = 1,#bigStarPosTable do
+			local posX = bigStarPosTable[index].x
+			local posY = bigStarPosTable[index].y
+			levelSuccessPanel:setStarInitialPosInWorldSpace(index, ccp(bigStarPosTable[index].x, bigStarPosTable[index].y))
+		end
+
+		for index = 1,#bigStarPosTable do
+			levelSuccessPanel:setStarInitialSize(index, bigStarSize.width, bigStarSize.height)
+		end
+
+		-- Set The Hide Star Callback
+		local function hideScoreProgressBarStarCallback(starIndex, ...)
+			assert(type(starIndex) == "number")
+			assert(#{...} == 0)
+
+			self.scoreProgressBar:setBigStarVisible(starIndex, false)
+		end
+		levelSuccessPanel:registerHideScoreProgressBarStarCallback(hideScoreProgressBarStarCallback)
+		-- levelSuccessPanel:setTestGamePlayScene()
+		levelSuccessPanel:popout()
+	end
+
+
+	local function clone( t )
+		-- body
+		local u = {}
+		for i, v in pairs(t) do 
+			if type(v) == "table" then 
+				u[i] = clone(v)
+			else
+				u[i] = v
+			end
+		end
+		return u
+	end
+
+	local levelReward_1 = MetaManager.getInstance():getLevelRewardByLevelId(1)
+	local levelReward = clone(levelReward_1)
+	levelReward.levelId  = levelId
+	table.insert(MetaManager.getInstance().level_reward, levelReward)
+	onSendPassLevelMessageSuccessCallback(levelId, score, {})
+end
+
+function DevTestGamePlayScene:failLevel(levelId, score, star, stageTime, coin, targetCount, opLog, isTargetReached, failReason, ...)
+	local levelType = self.levelType
+	-- ----------------------------------
+	-- Ensure Only Call This Func Once
+	-- ----------------------------------
+	assert(not self.levelFinished, "only call this function one time !")
+	if not self.levelFinished then
+		self.levelFinished = true
+	end
+	local levelFailPanel = LevelFailPanel:create(levelId, levelType, score, star, isTargetReached, failReason)
+	levelFailPanel:popout(false)
+end
+
+function DevTestGamePlayScene:onPauseBtnTapped(...)
+
+
+	assert(#{...} == 0)
+	
+	self:pause()
+	local function onQuitCallback()
+		if __use_low_effect then 
+			FrameLoader:unloadImageWithPlists(self.fileList, true)
+		end
 		Director:sharedDirector():popScene()
 	end
-	local function onGameReplay(evt)
-		self.mygameboardlogic:ReplayStart(self.mapConf)
-		self.mygameboardview:reInitByGameBoardLogic(self.mygameboardlogic);
+
+	local function onClosePanelBtnTappedCallback()
+		self.quitDcData = nil
+		self:continue()
+		if self.quitDcData then self.quitDcData = nil end
+	end
+
+	local function onReplayCallback()
+		onQuitCallback()
+		Director:sharedDirector():pushScene(GameChoiceScene:create())
+	end
+	local mode = QuitPanelMode.QUIT_LEVEL
+	if self.levelType == GameLevelType.kMayDay then
+		mode = QuitPanelMode.NO_REPLAY
+	end
+	local quitPanel = QuitPanel:create(mode)
+	quitPanel:setOnReplayBtnTappedCallback(onReplayCallback)
+	quitPanel:setOnQuitGameBtnTappedCallback(onQuitCallback)
+	quitPanel:setOnClosePanelBtnTapped(onClosePanelBtnTappedCallback)
+
+	-- -- 请不要随意在代码里面加上测试代码然后提交，如果一定需要提交测试代码，请加上__TEST的判断，然后这个变量可以在launcher的时候设置
+	if true then
+		--si xing guan ka ce shi
+		quitPanel:setOnPassLevelTappedCallback(function()
+			local tab = {20, 25, 45, 108, 112, 118, 119, 144, 227}
+			local levelConfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.levelId)
+			local starLevel = 3
+			local targetCount = 300
+			for k, v in ipairs(tab) do if self.levelId == v then starLevel = 4 break end end
+			self:passLevel(self.levelId, levelConfig.scoreTargets[starLevel] + 10, starLevel, 100, 0, targetCount, nil, 5)
+		end)
+		quitPanel:setAddScoreTappedCallback(function()
+			self.scoreProgressBar:addScore(50000, ccp(0, 0))
+		end)
 	end
 	
-	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
-	local game_bg = Sprite:createWithSpriteFrameName("game_bg.png")
-	game_bg:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
-	game_bg:setScale(1/0.7)
-	self:addChild(game_bg)
+	PopoutManager:sharedInstance():add(quitPanel, false, false)
+end
 
-	local function buildLabelButton( label, x, y, func )
-		local width = 250
-		local height = 80
-		local labelLayer = LayerColor:create()
-		labelLayer:changeWidthAndHeight(width, height)
-		labelLayer:setColor(ccc3(255, 0, 0))
-		labelLayer:setPosition(ccp(x - width / 2, y - height / 2))
-		labelLayer:setTouchEnabled(true, p, true)
-		labelLayer:addEventListener(DisplayEvents.kTouchTap, func)
-		self:addChild(labelLayer)
+-- This Function Is Called By Game Board Locig
+function DevTestGamePlayScene:addStep(levelId, score, star, isTargetReached, isAddStepCallback, ...)
+	isAddStepCallback(false)
+end
 
-		local textLabel = TextField:create(label, nil, 32)
-		textLabel:setPosition(ccp(width/2, height/2))
-		textLabel:setAnchorPoint(ccp(0,0))
-		labelLayer:addChild(textLabel)
+-------------------------
+--显示加时间面板
+-------------------------
+function DevTestGamePlayScene:showAddTimePanel(levelId, score, star, isTargetReached, addTimeCallback, ...)
+	addTimeCallback(false)
+end
 
-		return labelLayer
-	end 
-	self.backButton = buildLabelButton("Back Home", 0, winSize.height-100, onTouchBackLabel)
-	self.replayButton = buildLabelButton("Replay", 0, winSize.height - 200, onGameReplay)
+-------------------------
+--显示加兔兔导弹面板
+-------------------------
+function DevTestGamePlayScene:showAddRabbitMissilePanel( levelId, score, star, isTargetReached, isAddPropCallback )
+	-- body
+	isAddPropCallback(false)
+end
 
-	-- self.backButton:setVisible(false)
-	-- self.replayButton:setVisible(false)
-	print("after create button",os.date())
-	self.mygameboardlogic = GameBoardLogic:create();
-	self.mygameboardlogic:initByConfig(self.gamelevel, self.mapConf);
-	--获取处理完之后的map，进行view的初始化
-	self.mygameboardview = GameBoardView:createByGameBoardLogic(self.mygameboardlogic);
-	self:addChild(self.mygameboardview)
-	self.mygameboardview:setScaleX(GamePlayConfig_Tile_ScaleX)
-	self.mygameboardview:setScaleY(GamePlayConfig_Tile_ScaleY)	
-
-	self.mygameboardlogic:onGameInit()
+function DevTestGamePlayScene:addTemporaryItem(itemId, itemNum, fromGlobalPosition, ...)
+	self.propList:addTemporaryItem(itemId, itemNum, fromGlobalPosition)
 end

@@ -44,21 +44,22 @@ function NewVersionUtil:gotoMarket()
 		end
 
 		if __IOS then
-			
-			local deviceType = MetaInfo:getInstance():getMachineType() or ""
-		    local systemVersion = AppController:getSystemVersion() or 7
-			local nsURL = nil
-		    if string.find(deviceType, "iPad") and (systemVersion >= 6 and systemVersion < 7) then
-				nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=791532221")
-		    else
-				nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/app/id791532221")
-		    end
-			UIApplication:sharedApplication():openURL(nsURL)
-
+			self:gotoAppleStore()
 		end
 
 	end
+end
 
+function NewVersionUtil:gotoAppleStore()
+	local deviceType = MetaInfo:getInstance():getMachineType() or ""
+    local systemVersion = AppController:getSystemVersion() or 7
+	local nsURL = nil
+    if string.find(deviceType, "iPad") and (systemVersion >= 6 and systemVersion < 7) then
+		nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=791532221")
+    else
+		nsURL = NSURL:URLWithString("itms-apps://itunes.apple.com/app/id791532221")
+    end
+	UIApplication:sharedApplication():openURL(nsURL)
 end
 
 
@@ -111,10 +112,14 @@ function NewVersionUtil:hasUpdateReward()
 		return false
 	end
 
-	local result = false
-	local reward = UserManager.getInstance().updateReward
-	if reward and reward.num and reward.itemId then
-		result = true
+	local result = true
+	local rewards = UserManager.getInstance().updateRewards or {}
+	if #rewards <= 0 then result = false end
+	for k, reward in ipairs(rewards) do
+		if not reward or not reward.num or not reward.itemId then
+			result = false
+			break
+		end
 	end
 
 	if NewVersionUtil:hasSJReward() then

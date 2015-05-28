@@ -374,7 +374,7 @@ function RespRequest:load(id, action)
 			he_log_info("RespRequest success !")
 			UserManager.getInstance():removeRequestInfo(id)
 			UserManager.getInstance().requestNum = UserManager.getInstance().requestNum - 1
-			context:onLoadingComplete()
+			context:onLoadingComplete(data)
 		end
 	end
 	self.transponder:call(kHttpEndPoints.respRequest, {id=id, action=action}, loadCallback, rpc.SendingPriority.kHigh, false)
@@ -1165,6 +1165,8 @@ OpNotifyType = {
 	kNewYearAsk = 2,
 	kXuanYao = 3,
 	kSpringVideo = 4,--新春点击视频统计
+	kVideoAdPlay = 6, --观看视频广告
+	kAnniversaryShare = 7 --周年纪念分享得100银币 活动里用 
 }
 OpNotifyHttp = class(HttpBase)
 function OpNotifyHttp:load(opType, param)

@@ -254,9 +254,11 @@ function BuyPropPanel:onBtnBuyTapped()
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
 		end
 	end
-	if RequireNetworkAlert:popout() then
+
+	local function onUserHasLogin()
 		self.buyLogic:start(self.targetNumber, onSuccess, onFail)
 	end
+	RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
 end
 
 function BuyPropPanel:goldNotEnough()

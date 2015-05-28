@@ -1,14 +1,25 @@
 PostLoginLogic = class(EventDispatcher)
+
+PostLoginLogicEvents = table.const {
+	kComplete  	= "PostLoginLogic.complete",
+	kError		= "PostLoginLogic.error",
+	kException	= "PostLoginLogic.exception",
+}
+
 function PostLoginLogic:ctor()
 	self.syncTimes = 0
 end
-function PostLoginLogic:onError()
+function PostLoginLogic:onError(err)
 	_G.kUserLogin = false
-	self:dispatchEvent(Event.new(Events.kError, nil, self))
+	self:dispatchEvent(Event.new(PostLoginLogicEvents.kError, err, self))
 end
 function PostLoginLogic:onFinish()
-	self:dispatchEvent(Event.new(Events.kComplete, nil, self))
+	_G.kUserLogin = true
+	self:dispatchEvent(Event.new(PostLoginLogicEvents.kComplete, nil, self))
 	GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kUserLogin))
+end
+function PostLoginLogic:onException()
+	self:dispatchEvent(Event.new(PostLoginLogicEvents.kException, nil, self))
 end
 function PostLoginLogic:stopTimeout()
 	if self.timeoutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.timeoutID) end
@@ -20,7 +31,7 @@ function PostLoginLogic:load(timeout)
 	local function onTimeout()
 		self.isNotTimeout = false
 		self:stopTimeout()
-		self:onError()
+		self:onError(-2)
 		-- print("timeout @ PostLoginLogic")
 	end
 	self.isNotTimeout = true
@@ -39,7 +50,7 @@ function PostLoginLogic:registerAndLogin()
 	local function onRegisterError( evt )
 		if evt then evt.target:removeAllEventListeners() end
 		print("register error")
-		if self.isNotTimeout then self:onError() end
+		if self.isNotTimeout then self:onError(evt.data) end
 	end
 	local function onRegisterFinish( evt )
 		evt.target:removeAllEventListeners()
@@ -48,7 +59,7 @@ function PostLoginLogic:registerAndLogin()
 			local sessionKey = kDeviceID
 			local platform = kDefaultSocialPlatform
 			self:login(userId, sessionKey, platform)
-		else self:onError() end
+		else self:onError(-2) end
 	end 
 	--begin with register
 	local register = RegisterHTTP.new()
@@ -78,7 +89,7 @@ function PostLoginLogic:login( userId, sessionKey, platform )
 	local function onLoginError( evt )
 		evt.target:removeAllEventListeners()
 		_G.kUserLogin = false
-		if self.isNotTimeout then self:onError() end
+		if self.isNotTimeout then self:onError(evt.data) end
 	end
 	local function onLoginFinish( evt )
 		evt.target:removeAllEventListeners()
@@ -111,7 +122,7 @@ function PostLoginLogic:sync()
 				local errorCode = tonumber(err) or -1
 				local function onUseLocalFunc()
 					print("player choose local data (wrong data)")
-					self:onError()
+					self:onError(err)
 				end
 				local function onUseServerFunc()
 					print("player clear local data and retry")
@@ -121,8 +132,10 @@ function PostLoginLogic:sync()
 					self:sync()
 				end
 				
-				if errorCode > 10 then ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
-				else self:onError() end
+				if errorCode > 10 then 
+					self:onException()
+					ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
+				else self:onError(err) end
 			else
 				print("override local data with server data")
 				UserManager.getInstance():initFromLua(resp) --init data
@@ -142,6 +155,7 @@ function PostLoginLogic:sync()
 		end
 	end
 
+	_G.skipHttpSpeedLitmit = true
 	ConnectionManager:block()
 	for i,element in ipairs(list) do ConnectionManager:sendRequest( element.endpoint, element.body, onCachedHttpDataResponse ) end
 	local userbody = {
@@ -162,11 +176,19 @@ function PostLoginLogic:sync()
 	elseif __WP8 then
 		userbody.deviceOS = "wp"
 	end
+
+	--IOS后端推送所需 在AppController.mm里获取然后写入
+	userbody.deviceToken = ""
+	if __IOS then
+		userbody.deviceToken = CCUserDefault:sharedUserDefault():getStringForKey("animal_ios_deviceToken") or ""
+	end
+
 	--推送召回 前端向后端发送流失状态
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
 
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()
+	_G.skipHttpSpeedLitmit = nil
 	--as user data meight changed, flush cached data
 	if cachedLocalUserData then Localhost:flushSelectedUserData( cachedLocalUserData ) end
 end

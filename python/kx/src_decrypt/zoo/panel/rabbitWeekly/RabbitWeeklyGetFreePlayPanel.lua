@@ -110,17 +110,17 @@ function RabbitWeeklyGetFreePlayPanel:init(coveredPanel, levelId, onBuyPlayCardS
 
     self.ui:getChildByName("title"):setString(_text("weekly.race.alert.rabbit.times"))
 
-    local panelSize = self.ui:getGroupBounds().size
-    local bgLayer = LayerColor:create()
-    bgLayer:setColor(ccc3(0,0,0))
-    bgLayer:setOpacity(255 * 0.7)
-    bgLayer:setAnchorPoint(ccp(0, 1))
-    bgLayer:ignoreAnchorPointForPosition(false)
-    bgLayer:setPosition(ccp(0, 0))
-    bgLayer:changeWidthAndHeight(panelSize.width, panelSize.height)
-    self.ui:addChildAt(bgLayer, 1)
+    -- local panelSize = self.ui:getGroupBounds().size
+    -- local bgLayer = LayerColor:create()
+    -- bgLayer:setColor(ccc3(0,0,0))
+    -- bgLayer:setOpacity(255 * 0.7)
+    -- bgLayer:setAnchorPoint(ccp(0, 1))
+    -- bgLayer:ignoreAnchorPointForPosition(false)
+    -- bgLayer:setPosition(ccp(0, 0))
+    -- bgLayer:changeWidthAndHeight(panelSize.width, panelSize.height)
+    -- self.ui:addChildAt(bgLayer, 1)
 
-    self.ui:getChildByName("bg"):removeFromParentAndCleanup(true)
+    -- self.ui:getChildByName("bg"):removeFromParentAndCleanup(true)
 
     local mgr = RabbitWeeklyManager:sharedInstance()
     local cfg = mgr.extraConfig
@@ -160,38 +160,19 @@ function RabbitWeeklyGetFreePlayPanel:init(coveredPanel, levelId, onBuyPlayCardS
     end
     self.mainLevelItem.helpBtn:ad(DisplayEvents.kTouchTap, onMainLevelHelpBtnTapped)
 
+    local function showRabbitTutor()
+        RabbitWeeklyManager:sharedInstance():showRabbitTimeTutor()
+    end
+
     local function onMainLevelItemBtnTapped(event)
         PopoutManager:sharedInstance():removeAll()
-        HomeScene:sharedInstance().worldScene:moveTopLevelNodeToCenter()
+        self:onCloseBtnTapped()
+        HomeScene:sharedInstance().worldScene:moveTopLevelNodeToCenter(showRabbitTutor)
         DcUtil:logWeeklyRaceActivity("click_rabbit_times_panel_start", {level_id = self.levelId})
     end
     self.mainLevelItem.btn:ad(DisplayEvents.kTouchTap, onMainLevelItemBtnTapped)
 
-    local goods = MetaManager:getInstance():getGoodMeta(RabbitWeeklyManager.playCardGoodsId)
-    local userExtend = UserManager:getInstance().userExtend
-    if __ANDROID then
-        self.buyItem = RabbitWeeklyGetFreePlayItem:create(self.ui:getChildByName("itemBuy"), false)
-        local price = goods.rmb / 100
-        local mark = _text("buy.gold.panel.money.mark")
-        local text = _text("weekly.race.panel.rabbit.button2")
-        local label = mark..tostring(price).." "..text
-        self.buyItem.btn:setString(label)
-    else
-        self.buyItem = RabbitWeeklyGetFreePlayItem:create(self.ui:getChildByName("itemBuy"), true)
-        local price = goods.qCash
-        self.buyItem.btn:setIconByFrameName('ui_images/ui_image_coin_icon_small0000')
-        self.buyItem.btn:setNumber(price)
-        self.buyItem.btn:setString(_text("weekly.race.panel.rabbit.button2"))
-    end
-    self.buyItem.btn:setColorMode(kGroupButtonColorMode.blue)
-    self.buyItem.title:setString(_text("weekly.race.alert.rabbit.buy.times"))
-    self.buyItem.desc:setString(_text("weekly.race.alert.rabbit.add.times", {num = 1}))
-    self.buyItem.label:setString(_text("weekly.race.alert.rabbit.buy.times.maximum"))
-    
-    local function onBuyItemBtnTapped(event)
-        self:onBuyItemBtnTapped()
-    end
-    self.buyItem.btn:ad(DisplayEvents.kTouchTap, onBuyItemBtnTapped)
+    self:initBuyItems()
 
     self.closeBtn = self.ui:getChildByName("closeBtn")
     local function onCloseButtonTapped(event)
@@ -202,6 +183,37 @@ function RabbitWeeklyGetFreePlayPanel:init(coveredPanel, levelId, onBuyPlayCardS
     self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseButtonTapped)
 
     self:updatePanel()
+end
+
+function RabbitWeeklyGetFreePlayPanel:initBuyItems()
+    local goods = MetaManager:getInstance():getGoodMeta(RabbitWeeklyManager.playCardGoodsId)
+    local userExtend = UserManager:getInstance().userExtend
+    for i=1,2 do
+        local buyItemRes = self.ui:getChildByName("itemBuy"..i)
+        if __ANDROID then
+            self["buyItem"..i] = RabbitWeeklyGetFreePlayItem:create(buyItemRes, false)
+            local price = goods.rmb / 100
+            local mark = _text("buy.gold.panel.money.mark")
+            local text = _text("weekly.race.panel.rabbit.button2")
+            local label = string.format("%s%0.2f", mark, price)
+            self["buyItem"..i].btn:setString(label)
+        else
+            self["buyItem"..i] = RabbitWeeklyGetFreePlayItem:create(buyItemRes, true)
+            local price = goods.qCash
+            self["buyItem"..i].btn:setIconByFrameName('ui_images/ui_image_coin_icon_small0000')
+            self["buyItem"..i].btn:setNumber(price)
+            self["buyItem"..i].btn:setString(_text("weekly.race.panel.rabbit.button2"))
+        end
+        self["buyItem"..i].btn:setColorMode(kGroupButtonColorMode.blue)
+        self["buyItem"..i].title:setString(_text("weekly.race.alert.rabbit.buy.times"))
+        self["buyItem"..i].desc:setString(_text("weekly.race.alert.rabbit.add.times", {num = 1}))
+        self["buyItem"..i].label:setString(_text("weekly.race.alert.rabbit.buy.times.maximum"))
+        
+        local function onBuyItemBtnTapped(event)
+            self:onBuyItemBtnTapped()
+        end
+        self["buyItem"..i].btn:ad(DisplayEvents.kTouchTap, onBuyItemBtnTapped)
+    end
 end
 
 function RabbitWeeklyGetFreePlayPanel:onBuyItemBtnTapped()
@@ -229,7 +241,7 @@ function RabbitWeeklyGetFreePlayPanel:onBuyItemBtnTapped()
     local function onFinish()
         self:updatePanel()
     end
-    RabbitWeeklyManager:sharedInstance():buyPlayCard( onSuccess, onFail, onCancel, onFinish )
+    RabbitWeeklyManager:sharedInstance():buyPlayCard( onSuccess, onFail, onCancel, onFinish, true)
 end
 
 -- function RabbitWeeklyGetFreePlayPanel:onTouched()
@@ -253,9 +265,12 @@ function RabbitWeeklyGetFreePlayPanel:onShareBtnTapped()
             SnsUtil.showShareSuccessTip(shareType)
 
             RabbitWeeklyManager:sharedInstance():onShareSuccess()
-            self:updatePanel()
-
+            if self.coveredPanel and self.coveredPanel.levelInfoPanel then 
+                self.coveredPanel.levelInfoPanel:updatePanel()
+            end
             DcUtil:logWeeklyRaceActivity("share_rabbit_times_panel_feed", {level_id = self.levelId})
+            -- self:updatePanel()
+            self:onCloseBtnTapped()
         end
 
         local function onFail(event)
@@ -295,17 +310,17 @@ function RabbitWeeklyGetFreePlayPanel:updatePanel()
 
     if mgr.mainLevelItemCompleted then -- completed
         self.mainLevelItem:setVisible(false)
-        self.buyItem:setVisible(true)
+        self.buyItem1:setVisible(true)
         if mgr:getRemainingPayCount() > 0 then
             local desc = _text("weekly.race.alert.rabbit.add.times", {num = 1})
-            self.buyItem:update(false, nil, desc)
+            self.buyItem1:update(false, nil, desc)
         else
             local maxCount = mgr:getMaxBuyCount()
             local desc = _text("weekly.race.alert.rabbit.add.times", {num = maxCount})
-            self.buyItem:update(true, nil, desc)
+            self.buyItem1:update(true, nil, desc)
         end
     else
-        self.buyItem:setVisible(false)
+        self.buyItem1:setVisible(false)
         self.mainLevelItem:setVisible(true)
         self.mainLevelItem:update(false, string.format("%d/%d", mainLevelComplete, dailyMainLevelCount))
     end
@@ -316,8 +331,19 @@ function RabbitWeeklyGetFreePlayPanel:updatePanel()
         shareCmplete = dailyShare
     end
     if mgr.shareItemCompleted then -- completed
-        self.shareItem:update(true)
+        --self.shareItem:update(true)
+        self.shareItem:setVisible(false)
+        self.buyItem2:setVisible(true)
+        if mgr:getRemainingPayCount() > 0 then
+            local desc = _text("weekly.race.alert.rabbit.add.times", {num = 1})
+            self.buyItem2:update(false, nil, desc)
+        else
+            local maxCount = mgr:getMaxBuyCount()
+            local desc = _text("weekly.race.alert.rabbit.add.times", {num = maxCount})
+            self.buyItem2:update(true, nil, desc)
+        end
     else
+        self.buyItem2:setVisible(false)
         self.shareItem:update(false)
     end
 end
@@ -329,29 +355,61 @@ function RabbitWeeklyGetFreePlayPanel.create( parentPanel, levelId, onBuyPlayCar
 end
 
 function RabbitWeeklyGetFreePlayPanel:popout()
-	PopoutManager:sharedInstance():add(self, false, false)
-	self:setToScreenCenter()
-    if RabbitWeeklyManager:sharedInstance().mainLevelItemCompleted then
-        -- 计费点藏得太深无法让苹果提审看到为了通过提审所以屏蔽掉
-        -- self:popoutIapBuyPlayCardPanel()
+	-- PopoutManager:sharedInstance():add(self, false, false)
+    if self.coveredPanel then 
+        local bgLayer = LayerColor:create()
+        local panelSize = self.ui:getGroupBounds().size
+        local visibleSize = CCDirector:sharedDirector():getVisibleSize()
+        local scale = self.coveredPanel:getScale()
+        bgLayer:setColor(ccc3(0,0,0))
+        bgLayer:setOpacity(0)
+        bgLayer:setAnchorPoint(ccp(0, 1))
+        bgLayer:ignoreAnchorPointForPosition(false)
+        bgLayer:setPosition(ccp(0, 0))
+        bgLayer:changeWidthAndHeight(panelSize.width, panelSize.height)
+        bgLayer:setTouchEnabled(true, 0 ,true)
+
+        local container = Layer:create()
+        local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
+        local panelPos = self.coveredPanel:convertToNodeSpace(ccp(visibleOrigin.x, visibleOrigin.y + panelSize.height))
+        container:setPosition(ccp(panelPos.x, panelPos.y))
+        container:setContentSize(CCSizeMake(panelSize.width,panelSize.height))
+
+        container:addChild(bgLayer)
+        container:addChild(self)
+        self.coveredPanel.tipPanelContainer = container
+        container:setScale(1/scale)
+        self.coveredPanel:addChild(container)
+        
+    	-- self:setToScreenCenter()
+        if RabbitWeeklyManager:sharedInstance().mainLevelItemCompleted then
+            -- 计费点藏得太深无法让苹果提审看到为了通过提审所以屏蔽掉
+            -- self:popoutIapBuyPlayCardPanel()
+        end
+        self.allowBackKeyTap = true
+    	if self.coveredPanel and self.coveredPanel.setRankListPanelTouchDisable then
+    		self.coveredPanel:setRankListPanelTouchDisable()
+    	end
     end
-    self.allowBackKeyTap = true
-	if self.coveredPanel and self.coveredPanel.setRankListPanelTouchDisable then
-		self.coveredPanel:setRankListPanelTouchDisable()
-	end
 end
 
 function RabbitWeeklyGetFreePlayPanel:onCloseBtnTapped( ... )
 	-- print("RabbitWeeklyGetFreePlayPanel:onCloseBtnTapped")
-	PopoutManager:sharedInstance():remove(self)
-    if self.bottomPanel then
-        self.bottomPanel:remove()
-        self.bottomPanel = nil
+	-- PopoutManager:sharedInstance():remove(self)
+    if self.coveredPanel and not self.coveredPanel.isDisposed then
+        if self.coveredPanel:contains(self.coveredPanel.tipPanelContainer) then 
+            self.coveredPanel:removeChild(self.coveredPanel.tipPanelContainer)
+            self.coveredPanel.tipPanelContainer = nil
+        end
+        if self.bottomPanel then
+            self.bottomPanel:remove()
+            self.bottomPanel = nil
+        end
+        self.allowBackKeyTap = false
+    	if self.coveredPanel and self.coveredPanel.setRankListPanelTouchEnable then
+    		self.coveredPanel:setRankListPanelTouchEnable()
+    	end
     end
-    self.allowBackKeyTap = false
-	if self.coveredPanel and self.coveredPanel.setRankListPanelTouchEnable then
-		self.coveredPanel:setRankListPanelTouchEnable()
-	end
 end
 
 function RabbitWeeklyGetFreePlayPanel:dispose( ... )
