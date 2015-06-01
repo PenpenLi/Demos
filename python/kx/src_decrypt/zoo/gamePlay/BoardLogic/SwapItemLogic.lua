@@ -142,10 +142,10 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local color2 = data2.ItemColorType
 
 	if (color1 == color2) then
-        if doSwap then
-            SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
-            return true
-        end --lxb ^_^
+        --if doSwap then
+            --SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
+            --return true
+        --end --lxb ^_^
         return false
     end --同样的颜色交换，没有意义
 	--1.临时性颜色交换
@@ -198,9 +198,9 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	else
 		-- lxb ^_^
         if doSwap then
-            if r1 == r2 then SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2) end
-            if c1 == c2 then SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r1, c1, r2, c2) end
-            return true
+            --if r1 == r2 then SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2) end
+            --if c1 == c2 then SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r1, c1, r2, c2) end
+            --return true
         else
 			data1:getAnimalLikeDataFrom(item1Clone)
 			data2:getAnimalLikeDataFrom(item2Clone)
