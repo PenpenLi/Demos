@@ -29,4 +29,5 @@ cocos/Billiard++/proj.ios_mac/Billiard++.xcodeproj/project.xcworkspace/xcuserdat
 python/kx/src_encrypt/*
 
 erlang/*.beam
+erlang/pe/*.beam
 
