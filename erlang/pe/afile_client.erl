@@ -1,4 +1,4 @@
--module(file_client).
+-module(afile_client).
 -export([ls/0, get/1, put/2]).
 
 ls() ->
