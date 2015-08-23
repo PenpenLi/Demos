@@ -32,4 +32,5 @@ erlang/*.beam
 erlang/pe/*.beam
 cb_tutorial/deps
 cb_tutorial/log
+cb_tutorial/*.dump
 
