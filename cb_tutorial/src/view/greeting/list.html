@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>{% block title %}Greetings!{% endblock %}</title>
+</head>
+<body>
+{% block body %}
+    <ul>
+    {% if list %}
+        {% for greeting in list %}
+            <li>{{ greeting.greeting_text }}
+        {% endfor %}
+    {% else %}
+        <li>No greetings!
+    {% endif %}
+    </ul>
+    <form method="post" action="{% url action="delete" %}">
+        Delete:
+        <select name="greeting_id">
+            {% for greeting in list %}
+                <option value="{{ greeting.id }}"> {{ greeting.greeting_text }}
+            {% endfor %}
+        </select>
+        <input type="submit">
+    </form>
+    <p><a href="{% url action="create" %}">New greeting ...</a></p>
+{% endblock %}
+</body>
+</html>

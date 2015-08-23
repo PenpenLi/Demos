@@ -1,0 +1,179 @@
+2015-08-14 23:41:00.415 [error] <0.271.0> GET /greeting/hello [cb_tutorial] 404 64ms
+2015-08-14 23:43:07.980 [error] <0.272.0> GET /greeting/hello [cb_tutorial] 404 43ms
+2015-08-14 23:43:10.481 [error] <0.274.0> GET /greeting/hello [cb_tutorial] 404 24ms
+2015-08-14 23:43:12.815 [error] <0.278.0> GET /greeting/hello [cb_tutorial] 404 23ms
+2015-08-14 23:43:14.916 [error] <0.282.0> GET /greeting/hello [cb_tutorial] 404 25ms
+2015-08-14 23:45:58.449 [error] <0.289.0> GET /greeting/hello [cb_tutorial] 404 32ms
+2015-08-14 23:49:15.018 [error] <0.275.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[{greeting,"Hello World!"},[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,27}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-14 23:55:33.291 [error] <0.272.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:badarg Stacktrace: [{erlang,list_to_binary,[[27979,35797]],[]},{boss_json,json_data1,3,[{file,"src/boss/boss_json.erl"},{line,35}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]}]
+2015-08-14 23:55:46.671 [error] <0.275.0> GET /greeting/hello_template [cb_tutorial] 404 18ms
+2015-08-14 23:57:34.064 [error] <0.272.0> GET /greeting/hello_template [cb_tutorial] 404 32ms
+2015-08-14 23:57:43.659 [error] <0.275.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[{greeting,"Hello World!",test,[27979,35797]}],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:54:16.739 [error] <0.287.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[{hello,"Hello World!",xx,"Test"}],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:24.715 [error] <0.295.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:26.576 [error] <0.298.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:27.124 [error] <0.300.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:27.428 [error] <0.302.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:28.543 [error] <0.304.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:55:28.750 [error] <0.306.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[{hello,"Hello World!"},{xx,"Test"}]],[],[]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 21:56:16.806 [error] <0.311.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:function_clause Stacktrace: [{boss_json,json_data1,[[[]],
+                      [],
+                      [{num,1},{"xx",<<"Test">>},{hello,<<"Hello World!">>}]],[{file,"src/boss/boss_json.erl"},{line,31}]},{boss_json,encode,2,[{file,"src/boss/boss_json.erl"},{line,16}]},{boss_web_controller_render,process_action_result,4,[{file,"src/boss/boss_web_controller_render.erl"},{line,178}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 22:45:00.752 [error] <0.313.0>@boss_load:compile_and_accumulate_errors:258 Compile Error, "src/controller/cb_tutorial_greeting_controller.erl" -> [{"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl",[{15,erl_parse,["syntax error before: ",["Greetings"]]}]}]
+2015-08-19 22:57:44.428 [error] <0.320.0>@boss_load:compile_and_accumulate_errors:261 Compile Error, "src/controller/cb_tutorial_greeting_controller.erl" -> [{"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl",[{20,erl_lint,{redefine_function,{create,3}}}]}]
+2015-08-19 23:01:01.448 [error] <0.346.0>@boss_web_controller:call_controller_action:319 Error in controller error:badarg Stacktrace: [{io,format,[<0.147.0>,"greeting saved: ~p~n",{greeting,"greeting-3","lxb"}],[]},{cb_tutorial_greeting_controller,create,3,[{file,"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl"},{line,24}]},{boss_web_controller,call_controller_action,3,[{file,"src/boss/boss_web_controller.erl"},{line,316}]},{boss_web_controller,apply_action,4,[{file,"src/boss/boss_web_controller.erl"},{line,308}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,287}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]}]
+2015-08-19 23:01:01.449 [error] <0.346.0> Error in controller, see console.log for details
+
+2015-08-19 23:01:01.455 [error] <0.346.0> POST /greeting/create [cb_tutorial] 500 16ms
+2015-08-19 23:22:29.272 [error] <0.311.0> POST /greeting/goodbye [cb_tutorial] 404 5ms
+2015-08-19 23:24:31.564 [error] <0.104.0> gen_server <0.104.0> terminated with reason: no function clause matching boss_db_controller:infer_type_from_id(undefined) line 425
+2015-08-19 23:24:31.565 [error] <0.104.0> CRASH REPORT Process <0.104.0> with 0 neighbours exited with reason: no function clause matching boss_db_controller:infer_type_from_id(undefined) line 425 in gen_server:terminate/7 line 804
+2015-08-19 23:24:31.566 [error] <0.99.0> Supervisor {<0.99.0>,poolboy_sup} had child boss_db_controller started with {boss_db_controller,start_link,undefined} at <0.104.0> exit with reason no function clause matching boss_db_controller:infer_type_from_id(undefined) line 425 in context child_terminated
+2015-08-19 23:24:31.586 [error] <0.330.0>@boss_web_controller:call_controller_action:319 Error in controller exit:{{function_clause,
+          [{boss_db_controller,infer_type_from_id,
+               [undefined],
+               [{file,"src/boss_db_controller.erl"},{line,425}]},
+           {boss_db_controller,db_for_key,2,
+               [{file,"src/boss_db_controller.erl"},{line,412}]},
+           {boss_db_controller,handle_call,3,
+               [{file,"src/boss_db_controller.erl"},{line,157}]},
+           {gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,607}]},
+           {gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,639}]},
+           {proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,237}]}]},
+      {gen_server,call,[<0.104.0>,{delete,undefined},30000]}} Stacktrace: [{gen_server,call,3,[{file,"gen_server.erl"},{line,190}]},{boss_pool,call,3,[{file,"src/boss_pool.erl"},{line,12}]},{boss_db,delete,2,[{file,"src/boss_db.erl"},{line,299}]},{cb_tutorial_greeting_controller,goodbye,3,[{file,"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl"},{line,28}]},{boss_web_controller,call_controller_action,3,[{file,"src/boss/boss_web_controller.erl"},{line,316}]},{boss_web_controller,apply_action,4,[{file,"src/boss/boss_web_controller.erl"},{line,308}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,287}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]}]
+2015-08-19 23:24:31.587 [error] <0.330.0> Error in controller, see console.log for details
+
+2015-08-19 23:24:31.597 [error] <0.330.0> POST /greeting/goodbye [cb_tutorial] 500 44ms
+2015-08-19 23:25:47.146 [error] <0.334.0>@boss_web_controller:call_controller_action:319 Error in controller error:function_clause Stacktrace: [{cb_tutorial_greeting_controller,goodbye,['GET',[],
+                                         {cb_tutorial_greeting_controller,
+                                          {simple_bridge_request_wrapper,
+                                           mochiweb_request_bridge,
+                                           {mochicow_request,#Port<0.38925>,
+                                            'GET',"/greeting/goodbye",
+                                            'HTTP/1.1',
+                                            {6,
+                                             {"host",
+                                              {"host","localhost:8001"},
+                                              {"accept",
+                                               {"accept",
+                                                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+                                               nil,
+                                               {"accept-language",
+                                                {"accept-language","zh-cn"},
+                                                {"accept-encoding",
+                                                 {"accept-encoding",
+                                                  "gzip, deflate"},
+                                                 nil,nil},
+                                                {"connection",
+                                                 {"connection","keep-alive"},
+                                                 nil,nil}}},
+                                              {"user-agent",
+                                               {"user-agent",
+                                                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9"},
+                                               nil,nil}}},
+                                            <<>>},
+                                           false,[],[],none}}],[{file,"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl"},{line,27}]},{boss_web_controller,call_controller_action,3,[{file,"src/boss/boss_web_controller.erl"},{line,316}]},{boss_web_controller,apply_action,4,[{file,"src/boss/boss_web_controller.erl"},{line,308}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,287}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 23:25:47.149 [error] <0.334.0> Error in controller, see console.log for details
+
+2015-08-19 23:25:47.149 [error] <0.334.0> GET /greeting/goodbye [cb_tutorial] 500 9ms
+2015-08-19 23:25:52.859 [error] <0.337.0>@boss_web_controller:call_controller_action:319 Error in controller error:function_clause Stacktrace: [{cb_tutorial_greeting_controller,goodbye,['GET',[],
+                                         {cb_tutorial_greeting_controller,
+                                          {simple_bridge_request_wrapper,
+                                           mochiweb_request_bridge,
+                                           {mochicow_request,#Port<0.38928>,
+                                            'GET',"/greeting/goodbye",
+                                            'HTTP/1.1',
+                                            {6,
+                                             {"host",
+                                              {"host","localhost:8001"},
+                                              {"accept",
+                                               {"accept",
+                                                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+                                               nil,
+                                               {"accept-language",
+                                                {"accept-language","zh-cn"},
+                                                {"accept-encoding",
+                                                 {"accept-encoding",
+                                                  "gzip, deflate"},
+                                                 nil,nil},
+                                                {"connection",
+                                                 {"connection","keep-alive"},
+                                                 nil,nil}}},
+                                              {"user-agent",
+                                               {"user-agent",
+                                                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9"},
+                                               nil,nil}}},
+                                            <<>>},
+                                           false,[],[],none}}],[{file,"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl"},{line,27}]},{boss_web_controller,call_controller_action,3,[{file,"src/boss/boss_web_controller.erl"},{line,316}]},{boss_web_controller,apply_action,4,[{file,"src/boss/boss_web_controller.erl"},{line,308}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,287}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 23:25:52.860 [error] <0.337.0> Error in controller, see console.log for details
+
+2015-08-19 23:25:52.861 [error] <0.337.0> GET /greeting/goodbye [cb_tutorial] 500 5ms
+2015-08-19 23:25:53.142 [error] <0.340.0> GET /greeting/goodby [cb_tutorial] 404 8ms
+2015-08-19 23:25:56.783 [error] <0.339.0>@boss_web_controller:call_controller_action:319 Error in controller error:function_clause Stacktrace: [{cb_tutorial_greeting_controller,goodbye,['GET',[],
+                                         {cb_tutorial_greeting_controller,
+                                          {simple_bridge_request_wrapper,
+                                           mochiweb_request_bridge,
+                                           {mochicow_request,#Port<0.38930>,
+                                            'GET',"/greeting/goodbye",
+                                            'HTTP/1.1',
+                                            {6,
+                                             {"host",
+                                              {"host","localhost:8001"},
+                                              {"accept",
+                                               {"accept",
+                                                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+                                               nil,
+                                               {"accept-language",
+                                                {"accept-language","zh-cn"},
+                                                {"accept-encoding",
+                                                 {"accept-encoding",
+                                                  "gzip, deflate"},
+                                                 nil,nil},
+                                                {"connection",
+                                                 {"connection","keep-alive"},
+                                                 nil,nil}}},
+                                              {"user-agent",
+                                               {"user-agent",
+                                                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9"},
+                                               nil,nil}}},
+                                            <<>>},
+                                           false,[],[],none}}],[{file,"/Users/xiaobin/Documents/code/work/cb_tutorial/src/controller/cb_tutorial_greeting_controller.erl"},{line,27}]},{boss_web_controller,call_controller_action,3,[{file,"src/boss/boss_web_controller.erl"},{line,316}]},{boss_web_controller,apply_action,4,[{file,"src/boss/boss_web_controller.erl"},{line,308}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,287}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]}]
+2015-08-19 23:25:56.784 [error] <0.339.0> Error in controller, see console.log for details
+
+2015-08-19 23:25:56.784 [error] <0.339.0> GET /greeting/goodbye [cb_tutorial] 500 7ms
+2015-08-19 23:26:51.885 [error] <0.347.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{17,10},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:27:28.854 [error] <0.349.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,14},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:27:29.992 [error] <0.351.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,14},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:27:30.248 [error] <0.353.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,14},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:27:46.997 [error] <0.355.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,14},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:28:44.443 [error] <0.357.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,17},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:28:45.572 [error] <0.359.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,17},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:28:50.433 [error] <0.361.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,17},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]
+2015-08-19 23:29:54.109 [error] <0.363.0>@boss_web_controller_handle_request:handle_request:30 Unhandled Error: error:{case_clause,{ok,[{"src/view/greeting/list.html",
+                         [{{16,26},
+                           erlydtl_parser,
+                           ["syntax error before: ","'('"]}]}]}} Stacktrace: [{boss_web_controller_render,render_view,5,[{file,"src/boss/boss_web_controller_render.erl"},{line,217}]},{boss_web_controller,execute_action_inner,9,[{file,"src/boss/boss_web_controller.erl"},{line,290}]},{boss_web_controller_handle_request,process_dynamic_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,250}]},{boss_web_controller_handle_request,process_request,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,236}]},{timer,tc,3,[{file,"timer.erl"},{line,194}]},{boss_web_controller_handle_request,build_dynamic_response,5,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,129}]},{boss_web_controller_handle_request,handle_request,4,[{file,"src/boss/boss_web_controller_handle_request.erl"},{line,26}]},{mochicow_upgrade,upgrade,4,[{file,"src/mochicow_upgrade.erl"},{line,72}]}]

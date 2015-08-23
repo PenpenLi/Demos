@@ -1,0 +1,5 @@
+2015-08-23 21:16:33.330 [notice] <0.771.0>@boss_web_controller_handle_request:handle_request:23 ApplicationForPath cb_tutorial
+2015-08-23 21:16:33.331 [info] <0.262.0> Loading routes from "/Users/xiaobin/Documents/code/work/cb_tutorial/priv/cb_tutorial.routes" ....
+2015-08-23 21:16:33.331 [info] <0.771.0> Route: "/"Url
+[]
+2015-08-23 21:16:33.332 [warning] <0.771.0> GET / [cb_tutorial] 404 1ms
