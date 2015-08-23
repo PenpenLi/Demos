@@ -30,4 +30,6 @@ python/kx/src_encrypt/*
 
 erlang/*.beam
 erlang/pe/*.beam
+cb_tutorial/deps
+cb_tutorial/log
 
