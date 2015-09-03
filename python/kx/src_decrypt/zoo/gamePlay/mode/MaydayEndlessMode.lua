@@ -424,6 +424,10 @@ function MaydayEndlessMode:generateGroundRow(rowCount)
 end
 
 function MaydayEndlessMode:shouldAddMove()
+    if self.mainLogic.levelType == GameLevelType.kSummerWeekly then
+        return false
+    end
+
     if self.rowCountSinceLastAddMove >= generate_add_move_interval then
         self.rowCountSinceLastAddMove = self.rowCountSinceLastAddMove - generate_add_move_interval
         return true

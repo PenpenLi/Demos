@@ -1,3 +1,5 @@
+require "zoo.util.FUUUManager"
+
 MoveMode = class(GameMode)
 
 function MoveMode:update(dt)
@@ -11,6 +13,7 @@ function MoveMode:reachEndCondition()
 end
 
 function MoveMode:afterFail()
+  --FUUUManager:update(self)
   if self.mainLogic.theCurMoves > 0 and self.mainLogic.isUFOWin then
     GameExtandPlayLogic:showUFOReveivePanel(self, false)
   else

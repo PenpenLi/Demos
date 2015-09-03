@@ -55,6 +55,7 @@ GameMusicType = table.const
 	kCoinTick = "music/sound.coin.tick.mp3",
 	kFirework = "music/sound.fireworks.mp3",
 	kBlessing = "music/sound.blessing.mp3",
+	kElephantBoss = "music/sound.elephant.boss.effect.mp3",
 }
 
 local instance = nil

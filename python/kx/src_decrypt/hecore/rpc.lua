@@ -94,7 +94,7 @@ function HTTPChannel:send(url, bytes, timeout, retryTimes)
         request:setLowSpeedTimeoutSeconds(15)
     end
     request:setConnectionTimeoutMs(timeout * 1000)
-    request:setTimeoutMs(timeout * 30 * 1000)
+    request:setTimeoutMs(30 * 1000)
 
     request:addHeader("Content-Type:application/octet-stream")
     request:setPostData(bytes, bytes:len())

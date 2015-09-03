@@ -97,15 +97,26 @@ function FrameLoader:unloadImageWithPlists( plists, force )
 	end
 end
 
-function FrameLoader:loadArmature( resourceSrc )
+--------------------------------------------------------------------
+-- @resourceSrc		directory path of skeleton animation
+-- @skeletonName	define in skeleton.xml, such as <dragonBones name="skeletonName" frameRate="24" version="2.3">
+-- @textureName		define in texture.xml such as <TextureAtlas name="textureName" imagePath="texture.png">
+--------------------------------------------------------------------
+function FrameLoader:loadArmature( resourceSrc, skeletonName, textureName )
 	if ResourceArmaturePixelFormat[resourceSrc] ~= nil then
 	    CCTexture2D:setDefaultAlphaPixelFormat(ResourceArmaturePixelFormat[resourceSrc])
 	end
 
+	local groups = resourceSrc:split("/")
+	if groups[1] == "skeleton" then
+		skeletonName = skeletonName or groups[2]
+		textureName = textureName or groups[2]
+	end
+
 	if __use_small_res then
-		ArmatureFactory:add(resourceSrc.."@2x/texture.png", resourceSrc.."@2x/texture.xml", resourceSrc.."@2x/skeleton.xml")
+		ArmatureFactory:add(resourceSrc.."@2x", skeletonName, textureName)
 	else
-		ArmatureFactory:add(resourceSrc.."/texture.png", resourceSrc.."/texture.xml", resourceSrc.."/skeleton.xml")
+		ArmatureFactory:add(resourceSrc, skeletonName, textureName)
 	end
 
 	CCTexture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)

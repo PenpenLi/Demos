@@ -54,6 +54,9 @@ function Processor:start(statusLabel, statusLabelShadow, progressBar)
             if ad and scene then scene:addChild(ad) end
         end
         MaintenanceManager.getInstance():initialize(onRequestFinish)
+        
+    elseif not PlatformConfig:hasAuthConfig(PlatformAuthEnum.kPhone) then
+        MaintenanceManager.getInstance():initialize() --取手机登录配置
     end
 end
 

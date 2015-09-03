@@ -27,6 +27,9 @@ require "zoo.panel.PrePropRemindPanel"
 require 'zoo.config.RabbitWeeklyConfig'
 require "zoo.model.PropsModel"
 require "zoo.animation.TileSquirrel"
+require "zoo.util.FUUUManager"
+require "zoo.payment.PaymentNetworkCheck"
+require "zoo.panel.summerWeekly.SummerWeeklyRaceResultPanel"
 
 assert(not GamePlaySceneUI)
 assert(Scene)
@@ -137,7 +140,7 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, gamePlaySce
 	-- ------------------------
 	-- Create Game Play Scene
 	-- ------------------------
-	local gamePlayScene	= GamePlayScene:create(self.levelId, self.gamePlaySceneUiType)
+	local gamePlayScene	= GamePlayScene:create(self.levelId, self.gamePlaySceneUiType, self.levelType)
 	self.gamePlayScene	= gamePlayScene
 	self:addChild(gamePlayScene)
 
@@ -194,6 +197,13 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, gamePlaySce
 		local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 		levelNumberLabel = PanelTitleLabel:createWithString(levelDisplayName, len)
 		levelNumberLabel:setScale(0.7)
+	elseif self.levelType == GameLevelType.kSummerWeekly then
+		local day = tonumber(os.date('%w', Localhost:time() / 1000))
+		if day == 0 then day = 7 end
+		levelDisplayName = Localization:getInstance():getText('weekly.race.play.scene.name', {num = day})
+		local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
+		levelNumberLabel = PanelTitleLabel:createWithString(levelDisplayName, len)
+		levelNumberLabel:setScale(0.7)
 	elseif self.levelType == GameLevelType.kMayDay then
 		levelDisplayName = Localization:getInstance():getText('activity.christmas.start.panel.title')
 		local len = math.ceil(string.len(levelDisplayName) / 3)
@@ -219,6 +229,10 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, gamePlaySce
 	levelNumberLabel:ignoreAnchorPointForPosition(false)
 	levelNumberLabel:setAnchorPoint(ccp(0,1))
 
+	local bossLayer = CocosObject:create()
+	self.bossLayer = bossLayer
+	self:addChild(bossLayer)
+
 	local effectLayer = CocosObject:create()
 	self.effectLayer = effectLayer
 	self:addChild(effectLayer)
@@ -239,7 +253,7 @@ function GamePlaySceneUI:init(levelId, levelType, selectedItemsData, gamePlaySce
 	-- Prop List
 	-- -----------
 
-	self.propList = PropListAnimation:create(self.levelId, self.levelModeType)
+	self.propList = PropListAnimation:create(self.levelId, self.levelModeType, self.levelType)
 	-- self.propList:setLevelModeType(self.levelModeType)
 	self.propList:show(PropsModel.instance().addToBarProps)
 	self:addChild(self.propList.layer)
@@ -509,20 +523,23 @@ function GamePlaySceneUI:convertToLevelTargetAnimationOrderType(key1, ...)
 	return targetType
 end
 
-function GamePlaySceneUI:setTargetNumber(key1, key2, number, worldPos, rotation, ...)
+function GamePlaySceneUI:setTargetNumber(key1, key2, number, worldPos, rotation, animate, ...)
 	assert(type(key1) == "number")
 	assert(type(key2) == "number")
 	assert(type(number)	== "number")
 	assert(type(worldPos)	== "userdata")
-	assert(#{...} == 0)
+	-- assert(#{...} == 0)
 
 	local targetType = false
 	local id = 1
+	if animate ~= false then
+		animate = true
+	end
 
 	if self.targetType == "order" then
 		targetType = self:convertToLevelTargetAnimationOrderType(key1)
 		id = key2
-	elseif self.targetType == kLevelTargetType.dig_move_endless_mayday then
+	elseif self.targetType == kLevelTargetType.dig_move_endless_mayday or self.targetType == kLevelTargetType.summer_weekly then
 		targetType = self.targetType
 		id = key2
 	else
@@ -530,9 +547,9 @@ function GamePlaySceneUI:setTargetNumber(key1, key2, number, worldPos, rotation,
 	end
 
 	if targetType == 'order6' then -- 海洋模式必须传入转动的角度
-		self.levelTargetPanel:setTargetNumber(targetType, id, number, true, worldPos, rotation)
+		self.levelTargetPanel:setTargetNumber(targetType, id, number, animate, worldPos, rotation)
 	else
-		self.levelTargetPanel:setTargetNumber(targetType, id, number, true, worldPos)
+		self.levelTargetPanel:setTargetNumber(targetType, id, number, animate, worldPos)
 	end
 end
 
@@ -548,7 +565,7 @@ function GamePlaySceneUI:revertTargetNumber(key1, key2, number,...)
 	if self.targetType == "order" then
 		targetType = self:convertToLevelTargetAnimationOrderType(key1)
 		id = key2
-	elseif self.targetType == kLevelTargetType.dig_move_endless_mayday then
+	elseif self.targetType == kLevelTargetType.dig_move_endless_mayday or self.targetType == kLevelTargetType.summer_weekly then
 		targetType = self.targetType
 		id = key2
 	else
@@ -571,6 +588,7 @@ end
 
 function GamePlaySceneUI:onKeyBackClicked(...)
 	assert(#{...} == 0)
+	if __ANDROID and PaymentNetworkCheck.getInstance():getIsChecking() then return end
 	if self.mask or (self.guideLayer and self.guideLayer:getChildrenList() and #self.guideLayer:getChildrenList() > 0) or not self.pauseBtn:isTouchEnabled() then return end
 	self:onPauseBtnTapped()
 end
@@ -641,7 +659,7 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 		end
 
 		-- 退出游戏也要发送pass level
-		if self.levelType == GameLevelType.kRabbitWeekly then
+		if self.levelType == GameLevelType.kRabbitWeekly or self.levelType == GameLevelType.kSummerWeekly then
 			self.gameBoardLogic:quitLevel()
 		end
 		
@@ -657,6 +675,7 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 		end
 
 		dcData.results = 3
+		FUUUManager:onGameDefiniteFinish(false , self.gameBoardLogic)
 		Director:sharedDirector():popScene()
 		DcUtil:logStageQuit(self.levelId, 0)
 	end
@@ -679,20 +698,20 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 			end
 
 			if self.levelType == GameLevelType.kRabbitWeekly then
-				local rabbitMgr = RabbitWeeklyManager:sharedInstance()
-				if rabbitMgr:getRemainingPlayCount() <= 0 then -- 没有可玩次数了
-					if not rabbitMgr.mainLevelItemCompleted then
-						CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip1'), 'negative', nil, 3)
-					elseif not rabbitMgr.shareItemCompleted then
-						CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip2'), 'negative', nil, 3)
-					elseif rabbitMgr:getRemainingPayCount() > 0 then
-						CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip3'), 'negative', nil, 3)
-					else
-						CommonTip:showTip(Localization:getInstance():getText('weekly.race.replay.tip'), 'negative', nil, 3)
-					end
-					onClosePanelBtnTappedCallback()
-					return
-				end
+				-- local rabbitMgr = RabbitWeeklyManager:sharedInstance()
+				-- if rabbitMgr:getRemainingPlayCount() <= 0 then -- 没有可玩次数了
+				-- 	if not rabbitMgr.mainLevelItemCompleted then
+				-- 		CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip1'), 'negative', nil, 3)
+				-- 	elseif not rabbitMgr.shareItemCompleted then
+				-- 		CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip2'), 'negative', nil, 3)
+				-- 	elseif rabbitMgr:getRemainingPayCount() > 0 then
+				-- 		CommonTip:showTip(Localization:getInstance():getText('weekly.race.rabbit.replay.tip3'), 'negative', nil, 3)
+				-- 	else
+				-- 		CommonTip:showTip(Localization:getInstance():getText('weekly.race.replay.tip'), 'negative', nil, 3)
+				-- 	end
+				-- 	onClosePanelBtnTappedCallback()
+				-- 	return
+				-- end
 			end
 
 			if self.levelType == GameLevelType.kTaskForRecall then 
@@ -717,7 +736,7 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 			local startGamePanel = StartGamePanel:create(self.levelId, self.levelType)
 
 			-- 重玩也要发送pass level
-			if self.levelType == GameLevelType.kRabbitWeekly then
+			if self.levelType == GameLevelType.kRabbitWeekly or self.levelType == GameLevelType.kSummerWeekly then
 				startGamePanel:setReplayCallback(replayStartGameCallback)
 			end
 
@@ -729,10 +748,12 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 			panel:setOnClosePanelCallback(onClosePanelBtnTappedCallback)
 			panel:popout()
 		end
+
+		
 	end
 
 	local mode = QuitPanelMode.QUIT_LEVEL
-	if self.levelType == GameLevelType.kMayDay then
+	if self.levelType == GameLevelType.kMayDay or self.levelType == GameLevelType.kSummerWeekly then
 		mode = QuitPanelMode.NO_REPLAY
 	end
 
@@ -742,20 +763,21 @@ function GamePlaySceneUI:onPauseBtnTapped(...)
 	quitPanel:setOnClosePanelBtnTapped(onClosePanelBtnTappedCallback)
 
 	-- -- 请不要随意在代码里面加上测试代码然后提交，如果一定需要提交测试代码，请加上__TEST的判断，然后这个变量可以在launcher的时候设置
-	-- if true then
-	-- 	--si xing guan ka ce shi
-	-- 	quitPanel:setOnPassLevelTappedCallback(function()
-	-- 		local tab = {20, 25, 45, 108, 112, 118, 119, 144, 227}
-	-- 		local levelConfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.levelId)
-	-- 		local starLevel = 3
-	-- 		local targetCount = 300
-	-- 		for k, v in ipairs(tab) do if self.levelId == v then starLevel = 4 break end end
-	-- 		self:passLevel(self.levelId, levelConfig.scoreTargets[starLevel] + 10, starLevel, 100, 0, targetCount, nil, 5)
-	-- 	end)
-	-- 	quitPanel:setAddScoreTappedCallback(function()
-	-- 		self.scoreProgressBar:addScore(50000, ccp(0, 0))
-	-- 	end)
-	-- end
+	if _G.isLocalDevelopMode then
+		--si xing guan ka ce shi
+		quitPanel:setOnPassLevelTappedCallback(function()
+			local tab = {20, 25, 45, 108, 112, 118, 119, 144, 227}
+			local levelConfig = LevelDataManager.sharedLevelData():getLevelConfigByID(self.levelId)
+			local starLevel = 3
+			local targetCount = 300
+			for k, v in ipairs(tab) do if self.levelId == v then starLevel = 4 break end end
+			self:passLevel(self.levelId, levelConfig.scoreTargets[starLevel] + 10, starLevel, 100, 0, targetCount, nil, 5)
+		end)
+		quitPanel:setAddScoreTappedCallback(function()
+			self.scoreProgressBar:addScore(50000, ccp(0, 0))
+			self.gameBoardLogic.totalScore = self.gameBoardLogic.totalScore + 50000;
+		end)
+	end
 	
 	PopoutManager:sharedInstance():add(quitPanel, false, false)
 end
@@ -840,7 +862,7 @@ function GamePlaySceneUI:passLevel(levelId, score, star, stageTime, coin, target
 			rewardItems = tmp
 		elseif levelType == GameLevelType.kMayDay then
 			local tmp = {}
-			-- table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
+			table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
 			table.insert(tmp, {itemId = ItemType.XMAS_BELL, num = targetCount})
 			table.insert(tmp, rewardItems[1])
 			rewardItems = tmp
@@ -850,40 +872,61 @@ function GamePlaySceneUI:passLevel(levelId, score, star, stageTime, coin, target
 			table.insert(tmp, rewardItems[1])
 			table.insert(tmp, rewardItems[2])
 			rewardItems = tmp
+		elseif levelType == GameLevelType.kSummerWeekly then
+			local tmp = {}
+			for _, v in pairs(rewardItems) do
+				table.insert(tmp, v)
+			end
+			table.insert(tmp, {itemId = ItemType.KWATER_MELON, num = targetCount})
+			rewardItems = tmp
 		elseif levelType == GameLevelType.kTaskForRecall then
 			rewardItems = {}
 		end
 
-		-----------------------------
-		-- Popout Game Success Panel
-		-- --------------------------
-		local levelSuccessPanel = LevelSuccessPanel:create(levelId, levelType, score, rewardItems, coin)
+		if levelType == GameLevelType.kSummerWeekly then
+			-- Director:sharedDirector():popScene()
+			-- local runningScene = Director:sharedDirector():getRunningSceneLua()
+			-- if runningScene then
+			-- 	local function popoutResultPanel()
+			-- 		local panel = SummerWeeklyRaceResultPanel:create(self:getStarLevelFromScore(score), score, rewardItems)
+			-- 		panel:popout()
+			-- 	end
+			-- 	runningScene:runAction(CCCallFunc:create(popoutResultPanel))
+			-- end
+			local panel = SummerWeeklyRaceResultPanel:create(self:getStarLevelFromScore(score), score, rewardItems)
+			panel:popout()
+		else
+			-----------------------------
+			-- Popout Game Success Panel
+			-- --------------------------
+			local levelSuccessPanel = LevelSuccessPanel:create(levelId, levelType, score, rewardItems, coin)
 
-		-- Set The Star Pop Position And Star Size
-		local bigStarSize	= self.scoreProgressBar:getBigStarSize()
-		local bigStarPosTable	= self.scoreProgressBar:getBigStarPosInWorldSpace()
+			-- Set The Star Pop Position And Star Size
+			local bigStarSize	= self.scoreProgressBar:getBigStarSize()
+			local bigStarPosTable	= self.scoreProgressBar:getBigStarPosInWorldSpace()
 
-		for index = 1,#bigStarPosTable do
-			local posX = bigStarPosTable[index].x
-			local posY = bigStarPosTable[index].y
-			levelSuccessPanel:setStarInitialPosInWorldSpace(index, ccp(bigStarPosTable[index].x, bigStarPosTable[index].y))
+			for index = 1,#bigStarPosTable do
+				local posX = bigStarPosTable[index].x
+				local posY = bigStarPosTable[index].y
+				levelSuccessPanel:setStarInitialPosInWorldSpace(index, ccp(bigStarPosTable[index].x, bigStarPosTable[index].y))
+			end
+
+			for index = 1,#bigStarPosTable do
+				levelSuccessPanel:setStarInitialSize(index, bigStarSize.width, bigStarSize.height)
+			end
+
+			-- Set The Hide Star Callback
+			local function hideScoreProgressBarStarCallback(starIndex, ...)
+				assert(type(starIndex) == "number")
+				assert(#{...} == 0)
+
+				self.scoreProgressBar:setBigStarVisible(starIndex, false)
+			end
+			levelSuccessPanel:registerHideScoreProgressBarStarCallback(hideScoreProgressBarStarCallback)
+
+			levelSuccessPanel:popout()
+			--ShareManager:onPassLevel(levelId, score, levelType)
 		end
-
-		for index = 1,#bigStarPosTable do
-			levelSuccessPanel:setStarInitialSize(index, bigStarSize.width, bigStarSize.height)
-		end
-
-		-- Set The Hide Star Callback
-		local function hideScoreProgressBarStarCallback(starIndex, ...)
-			assert(type(starIndex) == "number")
-			assert(#{...} == 0)
-
-			self.scoreProgressBar:setBigStarVisible(starIndex, false)
-		end
-		levelSuccessPanel:registerHideScoreProgressBarStarCallback(hideScoreProgressBarStarCallback)
-
-		levelSuccessPanel:popout()
-		--ShareManager:onPassLevel(levelId, score, levelType)
 	end
 
 	local isNewBranchUnlock = self:checkHiddenAreaUnlockAchievement(levelId, levelType, star)
@@ -1101,10 +1144,10 @@ function GamePlaySceneUI:addStep(levelId, score, star, isTargetReached, isAddSte
 		isAddStepCallback(false)
 	end
 
-	local addStepPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.ADD_FIVE_STEP)
-	addStepPanel:setOnUseTappedCallback(onUseBtnTapped)
-	addStepPanel:setOnCancelTappedCallback(onCancelBtnTapped)
-	addStepPanel:popout()
+	local addStepPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.ADD_FIVE_STEP, onUseBtnTapped, onCancelBtnTapped)
+	-- addStepPanel:setOnUseTappedCallback(onUseBtnTapped)
+	-- addStepPanel:setOnCancelTappedCallback(onCancelBtnTapped)
+	-- addStepPanel:popout()
 end
 
 -------------------------
@@ -1128,10 +1171,10 @@ function GamePlaySceneUI:showAddTimePanel(levelId, score, star, isTargetReached,
 		addTimeCallback(false)
 	end
 
-	local addStepPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.ADD_TIME)
-	addStepPanel:setOnUseTappedCallback(onUseBtnTapped)
-	addStepPanel:setOnCancelTappedCallback(onCancelBtnTapped)
-	addStepPanel:popout()
+	local addStepPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.ADD_TIME, onUseBtnTapped, onCancelBtnTapped)
+	-- addStepPanel:setOnUseTappedCallback(onUseBtnTapped)
+	-- addStepPanel:setOnCancelTappedCallback(onCancelBtnTapped)
+	-- addStepPanel:popout()
 end
 
 -------------------------
@@ -1150,10 +1193,10 @@ function GamePlaySceneUI:showAddRabbitMissilePanel( levelId, score, star, isTarg
 		isAddPropCallback(false)
 	end
 
-	local addPropPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.RABBIT_MISSILE)
-	addPropPanel:setOnUseTappedCallback(onUseBtnTapped)
-	addPropPanel:setOnCancelTappedCallback(onCancelBtnTapped)
-	addPropPanel:popout()
+	local addPropPanel = EndGamePropShowPanel:create(self.levelId, self.levelType, ItemType.RABBIT_MISSILE, onUseBtnTapped, onCancelBtnTapped)
+	-- addPropPanel:setOnUseTappedCallback(onUseBtnTapped)
+	-- addPropPanel:setOnCancelTappedCallback(onCancelBtnTapped)
+	-- addPropPanel:popout()
 end
 
 function GamePlaySceneUI:addTemporaryItem(itemId, itemNum, fromGlobalPosition, ...)
@@ -1171,13 +1214,17 @@ function GamePlaySceneUI:addTemporaryItem(itemId, itemNum, fromGlobalPosition, .
 	http:load(self.levelId, {itemId})
 end
 
-function GamePlaySceneUI:addTimeProp(propId, num, fromGlobalPosition, activityId)
+function GamePlaySceneUI:addTimeProp(propId, num, fromGlobalPosition, activityId, text)
 	local function onSuccessCallback()
 		local propMeta = MetaManager:getInstance():getPropMeta(propId)
 		assert(propMeta)
 		if propMeta and propMeta.expireTime then
 			local expireTime = os.time() * 1000 + propMeta.expireTime
-			self.propList:addTimeProp(propId, num, expireTime, fromGlobalPosition)
+			self.propList:addTimeProp(propId, num, expireTime, fromGlobalPosition, nil, text)
+
+			if self.gameBoardLogic.levelType == GameLevelType.kSummerWeekly then
+				SummerWeeklyMatchManager:getInstance().matchData:addDailyTimePropCount(1)
+			end
 		end
 	end
 
@@ -1562,10 +1609,17 @@ function GamePlaySceneUI:playLevelTargetPanelAnim(completeCallback)
 		self.levelTargetPanel:setTargets(target, onLevelTargetAnimationFinish, onTimeModeStart)
 		-- 感恩节和mayday一模一样，只是替换素材
 	elseif gamePlayType == GamePlayType.kMaydayEndless or gamePlayType == GamePlayType.kHalloween then
+		local targetTypeName = nil
+		if self.levelType == GameLevelType.kSummerWeekly then
+			targetTypeName = "summer_weekly"
+		else
+			targetTypeName = "dig_move_endless_mayday"
+		end
+
 		local jewelNum = math.pow(2, 32) - 1
-		local target = {{type= "dig_move_endless_mayday", id=1, num=0},
-						{type= "dig_move_endless_mayday", id=2, num =0}}	
-		self.targetType = "dig_move_endless_mayday"
+		local target = {{type= targetTypeName, id=1, num=0},
+						{type= targetTypeName, id=2, num =0}}	
+		self.targetType = targetTypeName
 		self.levelTargetPanel:setTargets(target, onLevelTargetAnimationFinish, onTimeModeStart)
 	elseif gamePlayType == GamePlayType.kRabbitWeekly then
 		local target = {{type="rabbit_weekly", id=1, num=0}}	
@@ -1604,6 +1658,7 @@ local function getGoodsId(propId)
 		print('buyed', buyed)
 		if buyed > 0 then
 			-- 买过打折的啦，只能买不打折的啦
+			--安卓支持第三方的情况下不再享有首次购买打折 
 			return 147 
 		else 
 			return 148
@@ -1643,8 +1698,9 @@ function GamePlaySceneUI:buyPropCallback(propId, ...)
 		if __ANDROID then -- ANDROID
 			print("android", propId)
 			local logic = IngamePaymentLogic:create(getGoodsId(propId))
-			local function onSuccess()
-				onBoughtCallback(propId, 1)
+			local function onSuccess(buyNum)
+				buyNum = buyNum or 1
+				onBoughtCallback(propId, buyNum)
 			end
 			self.propList:setItemTouchEnabled(false)
 			logic:buy(onSuccess, onExitCallback, onExitCallback)
@@ -1731,7 +1787,7 @@ function GamePlaySceneUI:runTopLevelHint(endCallBack)
 	sprite:setPositionXY(180, vOrigin.y + 460)
 	local function animPlay() sprite:addChild(anim) end
 	sprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.5), CCCallFunc:create(animPlay)))
-	local panel = GameGuideRunner:createPanelMini("")
+	local panel = GameGuideUI:panelMini("")
 	local pText = panel.ui:getChildByName("text")
 	local dimension = pText:getPreferredSize()
 	local text = TextField:create("", nil, 32, dimension, kCCTextAlignmentLeft, kCCVerticalTextAlignmentTop)
@@ -1795,7 +1851,7 @@ function GamePlaySceneUI:onGameAnimOver()
 			or gpt == GamePlayType.kDropDown 
 			or gpt == GamePlayType.kLightUp 
 			or gpt == GamePlayType.kOrder then
-				GameGuide:sharedInstance():tryIngameBuyPropsGuide()
+				self:ingameBuyPropGuide()
 		end
 	end
 
@@ -1907,6 +1963,7 @@ function GamePlaySceneUI:setMoveOrTimeStage(stageNumber)
 end
 
 function GamePlaySceneUI:promptBackProp()
+	print("start promptBackProp: ")
 	-- 把回退道具拖到屏幕中间，然后才去取坐标
 	self.propList.controller:onTouchMove({globalPosition = ccp(400, 0)})
 	local backProp, index = self.propList:findItemByItemID(10002)
@@ -1927,7 +1984,7 @@ function GamePlaySceneUI:promptBackProp()
 	-- CommonTip:showTip(Localization:getInstance():getText('no.venom.tips'), "positive", nil, 5)
 	local builder = InterfaceBuilder:create("flash/scenes/homeScene/homeScene.json")
 	-- local tip = builder:buildGroup('homeScene_infiniteEnergyTip')
-	local tip = GameGuideRunner:createPanelMini('no.venom.tips')
+	local tip = GameGuideUI:panelMini('no.venom.tips')
 	-- tip:getChildByName('txt'):setString(Localization:getInstance():getText('no.venom.tips'))
 	-- tip:getChildByName('bg'):setScaleX(-1)
 	-- tip:getChildByName('bg'):setAnchorPoint(ccp(1, 1))
@@ -1966,7 +2023,17 @@ function GamePlaySceneUI:promptBackProp()
 end
 
 function GamePlaySceneUI:setFireworkEnergy(energy)
-	self.propList:setSpringItemEnergy(energy)
+	self.propList:setSpringItemEnergy(energy, self.gameBoardLogic.theCurMoves)
+end
+
+function GamePlaySceneUI:getFireworkEnergy()
+	local item = self.propList.controller:findSpringItem()
+	if item then
+		return item:getTotalEnergy()
+	else
+		print("@@@@@@@@@@@@cannot find spring item!!!!!!!!!!!!!")
+		return 0
+	end
 end
 
 function GamePlaySceneUI:setFireworkPercent(percent)
@@ -2009,9 +2076,25 @@ function GamePlaySceneUI:playSpringCollectEffect(itemPosition)
 end
 
 function GamePlaySceneUI:tryFirstFullFirework()
-	if GameGuide then
-		local pos = self.propList:getSpringItemGlobalPosition()
-        GameGuide:sharedInstance():tryFirstFullFirework(pos)
+	if GameGuide  then
+			local winSize = Director:sharedDirector():getWinSize()
+
+            local icon = self.propList.controller:findSpringItemIcon()
+	        local worldPoint = icon:convertToWorldSpace(ccp(0, icon:getGroupBounds().size.height))
+
+            print("offset: ", worldPoint.x - winSize.width/2)
+            --move the icon to the center of the screen
+            local moveAct = CCMoveBy:create(0.3, ccp(winSize.width/2-worldPoint.x, 0))
+            local complete = CCCallFunc:create(function()
+
+                --updated the worldPoint
+				local pos = self.propList:getSpringItemGlobalPosition()
+        		GameGuide:sharedInstance():tryFirstFullFirework(pos)
+
+            end)
+            if not GameGuideData:sharedInstance():containInGuidedIndex(210002) then
+            	self.propList.content:runAction(CCSequence:createWithTwoActions(moveAct, complete))
+            end
     end
 end
 
@@ -2024,14 +2107,21 @@ end
 
 function GamePlaySceneUI:playFirstShowFireworkGuide()
 	if GameGuide then
-        local pos = self.propList:getSpringItemGlobalPosition()
-        GameGuide:sharedInstance():onFirstShowFirework(pos)
+		local pos = self.propList:getSpringItemGlobalPosition()
+		GameGuide:sharedInstance():onFirstShowFirework(pos)
     end
 end
 
 function GamePlaySceneUI:tryFirstQuestionMark(mainLogic)
 	if GameGuide then
 		GameGuide:sharedInstance():tryFirstQuestionMark(mainLogic)
+		
+		local summerWeeklyData = SummerWeeklyMatchManager:getInstance().matchData
+		print("summerWeeklyData.firstGuideRewarded: ",summerWeeklyData.firstGuideRewarded)
+		if summerWeeklyData and not summerWeeklyData.firstGuideRewarded then
+			self.gameBoardLogic.summerWeeklyData.dropPropsPercent = 100
+			summerWeeklyData.firstGuideRewarded = true
+		end
 	end
 end
 
@@ -2140,4 +2230,152 @@ function GamePlaySceneUI:playSquirrelAnimation( ... )
 	if self.squirrel then 
 		self.squirrel:playDozeAnimation()
 	end
+end
+
+function GamePlaySceneUI:hasInGameProp(propId)
+	if PropsModel.instance().addToBarProps and propId then
+		for _, v in pairs(PropsModel.instance().addToBarProps) do
+			if v.itemId == propId then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function GamePlaySceneUI:ingameBuyPropGuide()
+	local wSize = Director:sharedDirector():getWinSize()
+	local vOrigin = Director:sharedDirector():getVisibleOrigin()
+
+	UserManager:getInstance():setIngameBuyGuide(0)
+
+	if not __ANDROID then return false end
+	local u = UserManager:getInstance().user
+	if u.topLevelId < 40 then return false end
+	local userDefault = CCUserDefault:sharedUserDefault()
+	local key = "mm.buy.props.ingame.abc"
+    local isGuideComplete = userDefault:getBoolForKey(key)
+    if isGuideComplete then 
+    	return false 
+    else
+    	userDefault:setBoolForKey(key, true)
+    	userDefault:flush()
+    end
+    --check reg time
+    local timestamp = os.time({year=2015, month=4, day=18, hour=0, min=0, sec=0})
+    if UserManager:getInstance().mark.createTime / 1000 > timestamp then return false end
+    --check props 
+    if #PropsModel.instance().propItems > 5 then return false end
+
+    local plist = {10001, 10010, 10002, 10003, 10005, }--this order shoud not modify
+    local preList = {}
+    local bagData = BagManager:getInstance():getUserBagData()
+    local prePropData = PropsModel.instance().addToBarProps
+
+    for _, v in ipairs(prePropData) do
+		local tp = v.temporaryItemList
+		if tp then
+			for i, m in ipairs(tp) do
+				local tpid = m.itemId
+				print("test1,", tpid)
+				if m.itemNum > 0 then
+				
+					tpid = PropsModel.kTempPropMapping[tostring(tpid)]
+					print("test12,", tpid)
+    				if tpid then
+    					preList[tpid] = tpid
+    				end
+    			end
+			end
+		end
+	end
+
+    local function testProps(id)
+    	if preList[id] then
+			return true
+		end
+
+    	for _, v in ipairs(bagData) do
+    		print(v.itemId, id)
+    		if v.itemId == id then
+    			print("sdfas:", preList[v.itemId], preList[tostring(v.itemId)])
+    			if v.num > 0 then
+    				return true
+    			end
+    		end
+    	end
+
+    	return false
+    end
+
+    local hasItemNum0 = false
+    local itemIndex = -1
+    for i, v in ipairs(plist) do
+    	local exist = false
+    	if not testProps(v) then
+    		hasItemNum0 = true
+			itemIndex = i
+    		break
+    	end
+    end
+
+    if not hasItemNum0 then return false end
+    --check payment type
+    local propsId = plist[itemIndex]
+    local logic = IngamePaymentLogic:create(5, 1)
+    local payType, smsType = logic:getPaymentDecision()
+
+    if payType ~= IngamePaymentDecisionType.kPayWithType or smsType ~= Payments.CHINA_MOBILE then return false end
+
+    GameGuide:sharedInstance():forceStopGuide()
+    
+    local action = {type = "tempProp", opacity = 0xCC, index = itemIndex, 
+		text = "tutorial.game.text2003000", multRadius = 1.3,
+		panType = "down", panAlign = "viewY", panPosY = 450, 
+		maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5 , touchDelay = 1.1}
+
+	local pos = self:getPositionByIndex(itemIndex)
+	local trueMask = GameGuideUI:mask(0xCC, 1.1, ccp(pos.x, pos.y), 1.3)
+	trueMask:stopAllActions()
+	trueMask.setFadeIn(0.3, 0.4)
+	local function onTimeOut()
+		local function onTouch()
+			self.guideLayer:removeChildren()
+			CCUserDefault:sharedUserDefault():setBoolForKey(key, true)
+			CCUserDefault:sharedUserDefault():flush()
+		end
+		trueMask:addEventListener(DisplayEvents.kTouchTap, onTouch)
+	end
+	trueMask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(touchDelay), CCCallFunc:create(onTimeOut)))
+	local panel = GameGuideUI:panelS(nil, action, true)
+	self.guideLayer:addChild(trueMask)
+	self.guideLayer:addChild(panel)
+
+	local hand = GameGuideAnims:handclickAnim()
+	local pos = self:getPositionByIndex(action.index)
+
+	hand:setAnchorPoint(ccp(0.5, 0.5))
+	hand:setPosition(ccp(pos.x, pos.y))
+	self.guideLayer:addChild(hand)
+	
+	local activeItem = self.propList:findItemByItemID(propsId)
+	local touchLayer = LayerColor:create()
+	local onTouch2 = function(evt)
+		if activeItem and activeItem:hitTest(evt.globalPosition) then
+			UserManager:getInstance():setIngameBuyGuide(1)
+			self.guideLayer:removeChildren()
+			touchLayer:removeFromParentAndCleanup(true)
+			self:buyPropCallback(propsId)
+		end
+	end
+	touchLayer:changeWidthAndHeight(wSize.width, wSize.height)
+	
+	touchLayer:setColor(ccc3(0, 0, 0))
+	touchLayer:setOpacity(0)
+	touchLayer:setPosition(ccp(0, 0))
+	touchLayer:setTouchEnabled(true, 0, true)
+	touchLayer:ad(DisplayEvents.kTouchTap, onTouch2)
+	self.guideLayer:addChild(touchLayer)
+
+	return true
 end

@@ -47,7 +47,7 @@ function UncertainCfgMeta:init( config )
 		v.limitInAllItem = perlimit
 		str = str.."|"..v.limitInAllItem
 	end
-	print(str)
+	-- print(str)
 	perlimit = 0 
 	local str1 = "allCanFallingItemPer:"
 	for k = 1, #self.canfallingItemList do 
@@ -57,7 +57,7 @@ function UncertainCfgMeta:init( config )
 		v.limitInCanFallingItem = perlimit
 		str1 = str1.."|"..v.limitInCanFallingItem
 	end
-	print(str1)
+	-- print(str1)
 
 	perlimit = 0 
 	local str2 = "dropPropPer:"
@@ -70,7 +70,6 @@ function UncertainCfgMeta:init( config )
 		v.limitInProps = perlimit
 		str2 = str2.."|"..v.limitInProps
 	end
-	print(str2)
 end
 
 function UncertainCfgMeta:hasDropProps()

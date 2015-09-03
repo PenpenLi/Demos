@@ -27,6 +27,12 @@ local EffectPos_Up = {
 	{x = 0, y = 2}
 }
 
+local stoneOffset = {
+	{x=0, y=2},
+	{x=0, y=0},
+	{x=0.8, y=0.5},
+}
+
 function TileMagicStone:create(level, dir)
 	local tile = TileMagicStone.new(CCSprite:create())
 	tile:init(level, dir)
@@ -42,10 +48,15 @@ function TileMagicStone:init(level, dir)
 	self.direction = dir
 	self.rotation = 90 * (dir - 1)
 
-	local shadow = Sprite:createWithSpriteFrameName("stone_shadow.png")
-	self:addChildAt(shadow, SpriteZIndex.kShadow)
+	self.stoneSpriteContainer = Sprite:createEmpty()
+	self.stoneSpriteContainer:setAnchorPoint(ccp(0.5, 0.5))
+	self.stoneSpriteContainer:setRotation(self.rotation)
+	self:addChildAt(self.stoneSpriteContainer, SpriteZIndex.kStone)
+
+	local shadow = Sprite:createWithSpriteFrameName("stone_shadow")
 	shadow:setPosition(ccp(2, -2))
 	shadow:setRotation(self.rotation)
+	self:addChildAt(shadow, SpriteZIndex.kShadow)
 
 	self:updateStoneSprite()
 end
@@ -85,9 +96,14 @@ function TileMagicStone:updateStoneSprite()
 	if self.stoneSprite and not self.stoneSprite.isDisposed then
 		self.stoneSprite:removeFromParentAndCleanup(true)
 	end
+
 	local stoneSprite = self:createStoneWithLevel(self.level)
-	self:addChildAt(stoneSprite, SpriteZIndex.kStone)
-	stoneSprite:setRotation(self.rotation)
+	self.stoneSpriteContainer:addChild(stoneSprite)
+
+	local posOffset = stoneOffset[self.level+1]
+	if posOffset then
+		stoneSprite:setPosition(ccp(posOffset.x, posOffset.y))
+	end
 
 	self.stoneSprite = stoneSprite
 end
@@ -100,21 +116,27 @@ function TileMagicStone:removeStoneSprite()
 end
 
 function TileMagicStone:createStoneWithLevel(level)
-	local stoneFrame = string.format("stone%d_idle_0000.png", level)
-	local sprite = Sprite:createWithSpriteFrameName(stoneFrame)
-	return sprite
+	if level == TileMagicStoneConst.kMaxLevel then
+		local stoneFrame = string.format("stone%d_idle_0000", level)
+		local sprite = Sprite:createWithSpriteFrameName(stoneFrame)
+		return sprite
+	else
+		local stoneFrame = string.format("stone%d_active_0000", level)
+		local sprite = Sprite:createWithSpriteFrameName(stoneFrame)
+		return sprite
+	end
 end
 
 function TileMagicStone:idle()
 	if self.isDisposed then return end
 
 	local level = self.level or TileMagicStoneConst.kInitLevel
-	if level > TileMagicStoneConst.kInitLevel and self.stoneSprite and not self.stoneSprite.isDisposed then
-		local frames1 = SpriteUtil:buildFrames("stone"..level.."_idle_%04d.png", 1, 14) -- 1~15
-		local animate1 = SpriteUtil:buildAnimate(frames1, 1/AnimationFPS)
+	if level == 2 and self.stoneSprite and not self.stoneSprite.isDisposed then
+		local frames1 = SpriteUtil:buildFrames("stone"..level.."_idle_%04d", 0, 15) -- 1~15
+		local animate1 = SpriteUtil:buildAnimate(frames1, 1/24)
 
-		local frames2 = SpriteUtil:buildFrames("stone"..level.."_idle_%04d.png", 0, 14, true) -- 14~0
-		local animate2 = SpriteUtil:buildAnimate(frames2, 1/AnimationFPS)
+		local frames2 = SpriteUtil:buildFrames("stone"..level.."_idle_%04d", 0, 14, true) -- 14~0
+		local animate2 = SpriteUtil:buildAnimate(frames2, 1/24)
 
 		local sequence = CCArray:create()
 		sequence:addObject(CCDelayTime:create(0.7))
@@ -127,7 +149,65 @@ function TileMagicStone:idle()
 	end
 end
 
--- targetPos 是被影响的位置相对于本位置的偏移
+function TileMagicStone:buildFlySpriteAnim(targetPos, onAnimFinish)
+	local flySprite = Sprite:createWithSpriteFrameName("stone_active_fly_0000")
+	local flyFrames = SpriteUtil:buildFrames("stone_active_fly_%04d", 0, 9)
+	local flyAnim = SpriteUtil:buildAnimate(flyFrames, 1/AnimationFPS)
+	flySprite:runAction(CCRepeatForever:create(flyAnim))
+
+	flySprite:setAnchorPoint(ccp(0.5, 0.5))
+	flySprite:ignoreAnchorPointForPosition(false)
+
+	local flyX, flyY = -3, 3
+	if targetPos.x > 0 then flyY = -10 elseif targetPos.x < 0 then flyY = 10 end
+	if targetPos.y > 0 then flyX = 10 elseif targetPos.y < 0 then flyX = -10 end
+	flySprite:setPosition(ccp(flyX, flyY))
+	flySprite:setScaleX(0.86)
+	flySprite:setScaleY(1.08)
+	-- flySprite:setScaleX(1)
+	-- flySprite:setScaleY(1.25)
+	local dr, dc = targetPos.x, targetPos.y
+	local rotation = 0
+	if dc == 0 then
+		rotation = 90
+	elseif dr == 0 and dc > 0 then
+		rotation = 180
+	else
+		rotation = math.atan(dr / dc) * 59.72 -- 180 / 3.14
+		if rotation < 0 then rotation = 180 + rotation end
+	end
+	flySprite:setRotation(rotation)
+	if rotation >= 90 then
+		flySprite:setFlipY(true)
+	end
+
+	local sequence = CCArray:create()
+
+	if dr == 0 or dc == 0 then
+		local moveBy = CCMoveBy:create(16 / AnimationFPS, ccp(dc * 70, -dr * 70))
+		-- sequence:addObject(CCDelayTime:create(5 / AnimationFPS))
+		sequence:addObject(moveBy)
+		-- local scaleTo = CCScaleTo:create(9 / AnimationFPS, 0.46, 0.47)
+		local scaleTo = CCScaleTo:create(8 / AnimationFPS, 0.49, 0.50)
+		sequence:addObject(scaleTo)
+	else
+		local moveBy = CCMoveBy:create(13 / AnimationFPS, ccp(dc * 70, -dr * 70))
+		local scaleTo = CCScaleTo:create(6 / AnimationFPS, 0.49, 0.50)
+		sequence:addObject(moveBy)
+		sequence:addObject(scaleTo)
+	end
+
+	local function flyAnimCompleted()
+		if flySprite and not flySprite.isDisposed then
+			flySprite:removeFromParentAndCleanup(true)
+		end
+		if onAnimFinish then onAnimFinish() end
+	end
+	sequence:addObject(CCCallFunc:create(flyAnimCompleted))
+	flySprite:runAction(CCSequence:create(sequence))
+	return flySprite
+end
+
 function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish, targetPos)
 	if level > TileMagicStoneConst.kMaxLevel then level = TileMagicStoneConst.kMaxLevel end
 
@@ -137,9 +217,12 @@ function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish
 	end
 
 	local stoneSprite = TileMagicStone:createStoneWithLevel(level)
-	stoneSprite:setPosition(ccp(0, -0.5)) -- positioin fix
 	animSprite:addChildAt(stoneSprite, SpriteZIndex.kStone)
 	animSprite.stoneSprite = stoneSprite
+	local posOffset = stoneOffset[level+1]
+	if posOffset then
+		stoneSprite:setPosition(ccp(posOffset.x, posOffset.y))
+	end
 
 	local function onAnimFinishCallback()
 		if animSprite and not animSprite.isDisposed then
@@ -148,30 +231,19 @@ function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish
 		if onAnimFinish then onAnimFinish() end
 	end
 
-	local anim = nil
-	if level < TileMagicStoneConst.kMaxLevel then
-		local activeCover = Sprite:createWithSpriteFrameName(string.format("stone%d_active_cover.png", level))
-		activeCover:setOpacity(0)
-		animSprite:addChildAt(activeCover, SpriteZIndex.kCover)
+	local fps = 24
 
-		local sequence = CCArray:create()
-		local fadeIn = CCFadeIn:create(8 / AnimationFPS)
-
-		local fadeOut = CCFadeOut:create(10 / AnimationFPS)
-		local replaceStone = CCCallFunc:create(function()
-			animSprite.stoneSprite:removeFromParentAndCleanup(true)
-			-- level up
-			animSprite.stoneSprite = TileMagicStone:createStoneWithLevel(level + 1)
-			animSprite:addChildAt(animSprite.stoneSprite, SpriteZIndex.kStone)
-		end)
-		local anim2 = CCSpawn:createWithTwoActions(fadeOut, replaceStone)
-
-		sequence:addObject(fadeIn)
-		sequence:addObject(anim2)
-		sequence:addObject(CCCallFunc:create(onAnimFinishCallback))
-
-		activeCover:runAction(CCSequence:create(sequence))
-	else
+	if level == 0 then
+		local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames("stone0_active_%04d", 0, 29), 1/fps)
+		local actions = CCSequence:createWithTwoActions(anim, CCCallFunc:create(onAnimFinishCallback))
+		stoneSprite:runAction(actions)
+	elseif level == 1 then
+		local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames("stone1_active_%04d", 0, 14), 1/fps)
+		local actions = CCSequence:createWithTwoActions(anim, CCCallFunc:create(onAnimFinishCallback))
+		stoneSprite:runAction(actions)
+	elseif level == 2 then
+		stoneSprite:setScale(0.98)
+		stoneSprite:setPosition(ccp(-0.2, -0.3))
 		local animCD = 0
 		local function onAnimCountDown()
 			animCD = animCD - 1
@@ -179,10 +251,21 @@ function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish
 				onAnimFinishCallback()
 			end
 		end
-		local stoneActiveFrames = SpriteUtil:buildFrames("stone"..level.."_active_%04d.png", 0, 13)
-		local stoneActiveAnimate = SpriteUtil:buildAnimate(stoneActiveFrames, 1/24)
-		animSprite.stoneSprite:runAction(CCSequence:createWithTwoActions(stoneActiveAnimate, CCCallFunc:create(onAnimCountDown)))
+
+		local anim1 = SpriteUtil:buildAnimate(SpriteUtil:buildFrames("stone2_active_%04d", 0, 12), 1/fps)
+		local anim2 = SpriteUtil:buildAnimate(SpriteUtil:buildFrames("stone2_active_%04d", 12, 14), 1/fps)
+		local anim3 = SpriteUtil:buildAnimate(SpriteUtil:buildFrames("stone2_active_%04d", 12, 14, true), 1/fps)
+		local function onStoneAnimationFinish()
+			onAnimCountDown()
+		end
+		local animArr = CCArray:create()
+		animArr:addObject(anim1)
+		animArr:addObject(anim2)
+		animArr:addObject(anim3)
+		animArr:addObject(CCCallFunc:create(onStoneAnimationFinish))
+		stoneSprite:runAction(CCSequence:create(animArr))
 		animCD = animCD + 1
+
 		if targetPos and #targetPos > 0 then
 			local targetPosByUp = nil
 			if direction == MagicStoneDirConfig.kUp then
@@ -191,62 +274,7 @@ function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish
 				targetPosByUp = TileMagicStone:convertPosByRotationTimes(targetPos, 5 - direction)
 			end
 			for _, v in pairs(targetPosByUp) do
-				local flySprite = Sprite:createWithSpriteFrameName("stone_active_fly_0000.png")
-				local flyFrames = SpriteUtil:buildFrames("stone_active_fly_%04d.png", 0, 9)
-				local flyAnim = SpriteUtil:buildAnimate(flyFrames, 1/AnimationFPS)
-				flySprite:runAction(CCRepeatForever:create(flyAnim))
-
-				flySprite:setAnchorPoint(ccp(0.5, 0.5))
-				flySprite:ignoreAnchorPointForPosition(false)
-
-				local flyX, flyY = -3, 3
-				if v.x > 0 then flyY = -10 elseif v.x < 0 then flyY = 10 end
-				if v.y > 0 then flyX = 10 elseif v.y < 0 then flyX = -10 end
-				flySprite:setPosition(ccp(flyX, flyY))
-				flySprite:setScaleX(0.86)
-				flySprite:setScaleY(1.08)
-				-- flySprite:setScaleX(1)
-				-- flySprite:setScaleY(1.25)
-				local dr, dc = v.x, v.y
-				local rotation = 0
-				if dc == 0 then
-					rotation = 90
-				elseif dr == 0 and dc > 0 then
-					rotation = 180
-				else
-					rotation = math.atan(dr / dc) * 59.72 -- 180 / 3.14
-					if rotation < 0 then rotation = 180 + rotation end
-				end
-				flySprite:setRotation(rotation)
-				if rotation >= 90 then
-					flySprite:setFlipY(true)
-				end
-
-				local sequence = CCArray:create()
-
-				if dr == 0 or dc == 0 then
-					local moveBy = CCMoveBy:create(16 / AnimationFPS, ccp(dc * 70, -dr * 70))
-					-- sequence:addObject(CCDelayTime:create(5 / AnimationFPS))
-					sequence:addObject(moveBy)
-					-- local scaleTo = CCScaleTo:create(9 / AnimationFPS, 0.46, 0.47)
-					local scaleTo = CCScaleTo:create(8 / AnimationFPS, 0.49, 0.50)
-					sequence:addObject(scaleTo)
-				else
-					local moveBy = CCMoveBy:create(13 / AnimationFPS, ccp(dc * 70, -dr * 70))
-					local scaleTo = CCScaleTo:create(6 / AnimationFPS, 0.49, 0.50)
-					sequence:addObject(moveBy)
-					sequence:addObject(scaleTo)
-				end
-
-				local function flyAnimCompleted()
-					if flySprite and not flySprite.isDisposed then
-						flySprite:removeFromParentAndCleanup(true)
-					end
-					onAnimCountDown()
-				end
-				sequence:addObject(CCCallFunc:create(flyAnimCompleted))
-				flySprite:runAction(CCSequence:create(sequence))
-
+				local flySprite = TileMagicStone:buildFlySpriteAnim(v, function() onAnimCountDown() end)
 				animSprite:addChildAt(flySprite, SpriteZIndex.kCover)
 				animCD = animCD + 1
 			end
@@ -255,24 +283,3 @@ function TileMagicStone:createActiveAnim(texture, level, direction, onAnimFinish
 	animSprite:setRotation(90 * (direction - 1))
 	return animSprite
 end
-
--- function TileMagicStone:active(level, targetPos)
--- 	assert(level >= 0)
-
--- 	if self.isDisposed then return end
-
--- 	local function onAnimFinish()
--- 		self:updateStoneSprite()
--- 		self:idle()
--- 	end
-
--- 	local anim = TileMagicStone:createActiveAnim(level, self.direction, onAnimFinish, targetPos)
--- 	self:addChildAt(anim, SpriteZIndex.kCover)
--- 	self.level = level + 1
--- 	if self.level > 2 then self.level = 2 end
-
--- 	if self.stoneSprite and not self.stoneSprite.isDisposed then
--- 		self.stoneSprite:removeFromParentAndCleanup(true)
--- 		self.stoneSprite = nil
--- 	end
--- end

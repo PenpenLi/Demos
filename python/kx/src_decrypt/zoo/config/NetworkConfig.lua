@@ -1,7 +1,9 @@
 -- 为了测试修改成测试服务器
 -- local dynamicHost = "http://well.happyelements.net/promotion/";
--- local dynamicHost = "http://10.130.136.95/"; -- 柴智的机器
-local dynamicHost = "http://10.130.137.97/";
+-- local dynamicHost = "http://10.130.136.67/"; -- 柴智的机器
+-- local dynamicHost = "http://10.130.136.89/"; -- 小强的机器
+ -- local dynamicHost = "http://10.130.136.93/"; -- 真是可笑的机器
+local dynamicHost = "http://10.130.137.97/"
 -- local dynamicHost = "http://10.130.136.89/";
 -- local dynamicHost = "http://10.130.148.156:8080/";
 -- local dynamicHost = "http://animalmobile.happyelements.cn/";

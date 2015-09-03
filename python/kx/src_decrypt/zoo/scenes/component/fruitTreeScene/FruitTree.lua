@@ -20,6 +20,11 @@ function FruitTree:ctor()
 	self:setRefCocosObj(CCNode:create())
 end
 
+function FruitTree:dispose()
+	CocosObject.dispose(self)
+	InterfaceBuilder:unloadAsset(PanelConfigFiles.fruitTreeScene)
+end
+
 function FruitTree:_init(data)
 	-- data
 	FruitTreeModel:sharedInstance():setFruitInfo(data)
@@ -54,18 +59,24 @@ function FruitTree:_onFruitClicked(target)
 	local wSize = Director:sharedDirector():getWinSize()
 	local scene = Director:sharedDirector():getRunningScene()
 	if self.clickedFruit then
-		-- self.clickedFruit:getClickedFruit():removeClickedFruit()
-		-- self.maskLayer:removeFromParentAndCleanup(true)
-		-- self.maskLayer = nil
 		return
 	end
-	local guided = false
-	if GameGuide then
-		guided = GameGuide:sharedInstance():onFruitClicked(fruit:getId())
+	if fruit:getId() == 4 then
+		if self.tutorHand then
+			self.tutorHand:removeFromParentAndCleanup(true)
+			self.tutorHand = nil
+			CCUserDefault:sharedUserDefault():setIntegerForKey("fruit.tree.tutorial", 1)
+			CCUserDefault:sharedUserDefault():flush()
+			self:_clickTutor()
+			self.guided = true
+		end
+	else
+		CCUserDefault:sharedUserDefault():setIntegerForKey("fruit.tree.tutorial", 2)
+		CCUserDefault:sharedUserDefault():flush()
 	end
-	if guided then self.guided = true end
+
 	if not self.absoluteBlock and not self.clickedFruit then
-		local clickedFruit = fruit:createClickedFruit(guided, 0.1)
+		local clickedFruit = fruit:createClickedFruit(self.guided, 0.1)
 		if not self.maskLayer then
 			self.maskLayer = LayerColor:create()
 			self.maskLayer:changeWidthAndHeight(wSize.width, wSize.height)
@@ -87,6 +98,17 @@ function FruitTree:_onFruitClicked(target)
 end
 
 function FruitTree:endFruitTreeGuide()
+	if self.tutorHand then
+		self.tutorHand:removeFromParentAndCleanup(true)
+		self.tutorHand = nil
+		CCUserDefault:sharedUserDefault():setIntegerForKey("fruit.tree.tutorial", 2)
+		CCUserDefault:sharedUserDefault():flush()
+	elseif self.tutorLayer then
+		self.tutorLayer:removeFromParentAndCleanup(true)
+		self.tutorLayer = nil
+		CCUserDefault:sharedUserDefault():setIntegerForKey("fruit.tree.tutorial", 2)
+		CCUserDefault:sharedUserDefault():flush()
+	end
 	if self.clickedFruit then
 		self:_onFruitCanceled(self.clickedFruit)
 	end
@@ -139,16 +161,12 @@ function FruitTree:refresh(source, target)
 			end
 			fruit:addEventListener(kFruitEvents.kSelectedCancel, onClickedFruitCanceled)
 			local function onPick(evt)
-				if GameGuide then
-					GameGuide:sharedInstance():onFruitButtonClicked("pick")
-				end
+				self:endFruitTreeGuide()
 				self:dispatchEvent(Event.new(kFruitTreeEvents.kUpdateData, nil, self))
 			end
 			fruit:addEventListener(kFruitEvents.kPick, onPick)
 			local function onRegenerate(evt)
-				if GameGuide then
-					GameGuide:sharedInstance():onFruitButtonClicked("regen")
-				end
+				self:endFruitTreeGuide()
 				self:dispatchEvent(Event.new(kFruitTreeEvents.kUpdateData, nil, self))
 			end
 			fruit:addEventListener(kFruitEvents.kRegenerate, onRegenerate)
@@ -198,9 +216,49 @@ end
 
 function FruitTree:_onEnterHandler(evt)
 	if evt == "enterTransitionFinish" then
-		if GameGuide then
-			GameGuide:sharedInstance():onEnterFruitTree()
-		end
+		local index = CCUserDefault:sharedUserDefault():getIntegerForKey("fruit.tree.tutorial")
+		if index < 1 then self:_enterTutor() end
+	end
+end
+
+function FruitTree:_enterTutor()
+	local info = FruitTreeModel:sharedInstance():getFruitInfo()[4]
+	if not info or info.growCount < 5 then
+		CCUserDefault:sharedUserDefault():setIntegerForKey("fruit.tree.tutorial", 2)
+		CCUserDefault:sharedUserDefault():flush()
+		return
+	end
+
+	local hand = GameGuideAnims:handclickAnim(0.5)
+	local position = self.fruits[4]:getPosition()
+	hand:setAnchorPoint(ccp(0, 1))
+	hand:setPosition(ccp(position.x, position.y + 20))
+	self:addChild(hand)
+	self.tutorHand = hand
+end
+
+function FruitTree:_clickTutor()
+	local scene = Director:sharedDirector():getRunningScene()
+	if not scene then return end
+	local layer = Layer:create()
+	local action = {type = "fruitButton", text = "tutorial.game.text1601",
+		panType = "up", panAlign = "viewY", panPosY = 400, maskDelay = 0.3,
+		maskFade = 0.4, panDelay = 0.5, touchDelay = 1.1}
+	local panel = GameGuideUI:panelS(nil, action)
+	local skip = GameGuideUI:skipButton(Localization:getInstance():getText("tutorial.skip.step"), action, true)
+	skip:removeAllEventListeners()
+	local function onTouch()
+		self:endFruitTreeGuide()
+	end
+	skip:ad(DisplayEvents.kTouchTap, onTouch)
+	layer:addChild(skip)
+	layer:addChild(panel)
+	if scene.guideLayer then
+		scene.guideLayer:addChild(layer)
+		released = false
+		self.tutorLayer = layer
+	else
+		layer:dispose()
 	end
 end
 

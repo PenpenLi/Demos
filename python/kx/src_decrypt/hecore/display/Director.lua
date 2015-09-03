@@ -1,4 +1,5 @@
 require "hecore.display.Scene"
+require "zoo.qr.qrmanager"
 
 --
 -- Director ---------------------------------------------------------
@@ -19,7 +20,9 @@ local function commonKeypadHandler()
 	local runningScene = Director:sharedDirector():getRunningScene()
 	if runningScene then
 		local popoutPanel = PopoutManager:sharedInstance():getLastPopoutPanel()
-		if popoutPanel and type(popoutPanel.onKeyBackClicked) == "function" then
+		if QRManager:isQRScanning() == true then
+			QRManager:onKeyBackClicked()
+		elseif popoutPanel and type(popoutPanel.onKeyBackClicked) == "function" then
 			popoutPanel:onKeyBackClicked()
 		elseif type(runningScene.onKeyBackClicked) == "function" then
 			runningScene:onKeyBackClicked()

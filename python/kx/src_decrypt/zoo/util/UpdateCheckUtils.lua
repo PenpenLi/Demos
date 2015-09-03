@@ -139,9 +139,16 @@ function m:requestNewVersion()
         end
 
         local url = "http://itunes.apple.com/cn/lookup?id=791532221"
-        local timeout = 1000
+        local timeout = 2000
         local request = HttpRequest:createGet(url)
-        request:setConnectionTimeoutMs(timeout)
+
+        if __WP8 then
+            request:setConnectionTimeoutMs(5 * 1000)
+            timeout = 3000
+        else
+            request:setConnectionTimeoutMs(timeout)
+        end
+
         request:setTimeoutMs(timeout * 10)
         HttpClient:getInstance():sendRequest(onCheckResponse, request)
     end

@@ -165,6 +165,14 @@ function MarketBuyPanel:init(goodsId)
 	end
 
 	self:buildBubbleAnimation()
+
+	if __ANDROID then
+		self.uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
+		PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, self.goodsId, 1, self.amount, 0, 0)	
+	elseif __IOS then 
+		self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
+		PaymentIosDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, self.goodsId, 1, self.amount, 0)
+	end
 end
 
 
@@ -314,8 +322,6 @@ function MarketBuyPanel:onBuyButtonClick()
 	local userCash = UserManager:getInstance():getUserRef():getCash()
 
 	local function onSuccess(event)
-
-
 		local scene = HomeScene:sharedInstance()
 		local items = {}
 		local amounts = {}
@@ -334,13 +340,21 @@ function MarketBuyPanel:onBuyButtonClick()
 		end
 
 		BuyObserver:sharedInstance():onBuySuccess()
-
+		self.paySuccess = true
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+												self.amount, 0, 0, self.amount * self.price, 0, nil, 0)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+												self.amount, 0, 0, self.amount * self.price, 0)
+		end
 		CommonTip:showTip(Localization:getInstance():getText('buy.prop.panel.success'), 'positive', nil)
 		self:reload()
 	end
 
 	local function onFailure(event)
 		print(table.tostring(event))
+		self.failBeforePayEnd = true
 		local code = tonumber(event.data)
 		if not code then code = 730632 end
 
@@ -349,6 +363,13 @@ function MarketBuyPanel:onBuyButtonClick()
 		else
 			local txt = Localization:getInstance():getText('error.tip.'..code)
 			CommonTip:showTip(txt, 'negative', nil)
+			if __ANDROID then 
+				PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+													self.amount, 0, 0, self.amount * self.price, 1, code, 0)
+			elseif __IOS then 
+				PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+													self.amount, 0, 0, self.amount * self.price, 1, code)
+			end
 		end
 	end
 
@@ -380,19 +401,20 @@ function MarketBuyPanel:goldNotEnough()
 	local function createGoldPanel()
 		local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
 		if index ~= 0 then
-			local panel = createMarketPanel()
-			panel:slideToPage(index)
+			local panel = createMarketPanel(index)
+			-- panel:slideToPage(index)
 			self:onCloseBtnTapped()
 		end
 	end
 	local function askForGoldPanel()
-		local text = {
-			tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		}
-		CommonTipWithBtn:setShowFreeFCash(true)
-		CommonTipWithBtn:showTip(text, "negative", createGoldPanel, nil, {y = self:getPositionY()})
+		-- local text = {
+		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+		-- }
+		-- CommonTipWithBtn:setShowFreeFCash(true)
+		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, nil, {y = self:getPositionY()})
+		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil, self.uniquePayId):popout()
 	end
 	askForGoldPanel()
 end
@@ -449,6 +471,19 @@ function MarketBuyPanel:popout()
 end
 
 function MarketBuyPanel:onCloseBtnTapped()
+	if not self.paySuccess then 
+		local endResult = 3
+		if self.failBeforePayEnd then 
+			endResult = 4
+		end
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+												self.amount, 0, 0, self.amount * self.price, endResult, nil, 0)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+												self.amount, 0, 0, self.amount * self.price, endResult)
+		end
+	end
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename("skeleton/tutorial_animation/texture.png"))
 	PopoutManager:sharedInstance():remove(self, true)
 	self.allowBackKeyTap = false

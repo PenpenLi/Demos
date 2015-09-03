@@ -41,7 +41,6 @@ function DestroyItemLogic:destroyDecision(mainLogic)
 					if item.ItemType == GameItemType.kBalloon then 
 						deletedAction.addInfo = "balloon"
 					end
-
 					mainLogic:addDestroyAction(deletedAction)
 				end
 			end
@@ -96,6 +95,10 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runGameItemDigGroundDecLogic(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_DigJewleDec then
 		DestroyItemLogic:runGameItemDigJewelDecLogic(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Gold_ZongZi_Active then
+		DestroyItemLogic:runGameItemDigGoldZongZiDecLogic(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Bottle_Blocker_Explode then
+		DestroyItemLogic:runGameItemBottleBlockerDecLogic(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Monster_frosting_dec then 
 		DestroyItemLogic:runGameItemMonsterFrostingLogic(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Black_Cute_Ball_Dec then
@@ -118,6 +121,8 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runGameItemQuestionMarkProtect(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
 		DestroyItemLogic:runGameItemMagicStoneActive(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Monster_Jump then
+		DestroyItemLogic:runningGameItemActionMonsterJump(mainLogic, theAction, actid, actByView)
 	end
 end
 
@@ -195,17 +200,23 @@ function DestroyItemLogic:runningGameItemActionWitchBomb(mainLogic, theAction, a
 			-- print('theAction.col', theAction.col)
 			local c1, c2 = theAction.col, theAction.col
 			local r1, r2 = theAction.rows.r1, theAction.rows.r2
-			local item1 = mainLogic.gameItemMap[r1][c1]
-			local item2 = mainLogic.gameItemMap[r2][c2]
+			local item1 = nil
+			if mainLogic.gameItemMap[r1] then
+				item1 = mainLogic.gameItemMap[r1][c1]
+			end
+			local item2 = nil
+			if mainLogic.gameItemMap[r2] then
+				item2 = mainLogic.gameItemMap[r2][c2]
+			end
 			if item1 and item1.isEmpty == false then
 				SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r1, c1, 1, true)  --可以作用银币
 				BombItemLogic:tryCoverByBomb(mainLogic, r1, c1, true, 1)
-				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c1, 3)
+				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r1, c1, 3, nil, actid)
 			end
 			if item2 and item2.isEmpty == false then
 				SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r2, c2, 1, true)  --可以作用银币
 				BombItemLogic:tryCoverByBomb(mainLogic, r2, c2, true, 1)
-				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r2, c2, 3) 
+				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r2, c2, 3, nil, actid) 
 			end
 			-- 消除冰柱
 			local upRow, downRow = r1, r2
@@ -220,6 +231,7 @@ function DestroyItemLogic:runningGameItemActionWitchBomb(mainLogic, theAction, a
 		end
 		if theAction.col <= 0 then
 			-- print('action over')
+			mainLogic:resetSpecialEffectList(actid)  --- 特效生命周期中对同一个障碍(boss)的作用只有一次的保护标志位重置
 			mainLogic.destroyActionList[actid] = nil
 		end
 	end
@@ -263,6 +275,27 @@ function DestroyItemLogic:runningGameItemActionMagicLampCharging(mainLogic, theA
 	mainLogic:setNeedCheckFalling()
 	mainLogic:addNeedCheckMatchPoint(r, c)
 	mainLogic.destroyActionList[actid] = nil
+end
+
+function DestroyItemLogic:runningGameItemActionMonsterJump( mainLogic, theAction, actid, actByView )
+	-- body
+	if theAction.addInfo == "over" then
+		theAction.addInfo = ""
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local gameItemMap = mainLogic.gameItemMap
+		local itemList = {gameItemMap[r][c], gameItemMap[r][c+1], gameItemMap[r+1][c], gameItemMap[r+1][c+1]}
+		for k, v in pairs(itemList) do 
+			v:cleanAnimalLikeData()
+			mainLogic:checkItemBlock(v.y,v.x)
+		end
+		mainLogic.destroyActionList[actid] = nil
+		FallingItemLogic:preUpdateHelpMap(mainLogic)
+
+		if theAction.completeCallback then 
+			theAction.completeCallback()
+		end
+	end
+
 end
 
 function DestroyItemLogic:runningGameItemActionMaydayBossLossBlood(mainLogic, theAction, actid, actByView)
@@ -344,6 +377,10 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		DestroyItemLogic:runGameItemViewDigGroundDec(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_DigJewleDec then 
 		DestroyItemLogic:runGameItemViewDigJewelDec(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Bottle_Blocker_Explode then 
+		DestroyItemLogic:runGameItemViewBottleBlockerDec(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Gold_ZongZi_Active then 
+		DestroyItemLogic:runGameItemViewDigGoldZongZiDec(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Monster_frosting_dec then 
 		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 			DestroyItemLogic:runGameItemViewMonsterFrostingDec(boardView, theAction)
@@ -368,6 +405,28 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		DestroyItemLogic:runGameItemActionSandClean(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItemMatchAt_IceDec then
 		DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)	
+	elseif theAction.actionType == GameItemActionType.kItem_Monster_Jump then
+		DestroyItemLogic:runGameItemActionMonsterJump( boardView, theAction )
+	end
+end
+
+function DestroyItemLogic:runGameItemActionMonsterJump( boardView, theAction )
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+		local function jumpCallback( ... )
+			-- body
+			boardView:viberate()
+		end
+
+		local function finishCallback( ... )
+			-- body
+			theAction.addInfo = "over"
+		end
+		itemView:playMonsterJumpAnimation(jumpCallback, finishCallback)
 	end
 end
 
@@ -822,6 +881,88 @@ function DestroyItemLogic:runGameItemViewDigJewelDec( boardView, theAction )
 		local c = theAction.ItemPos1.y
 		local item = boardView.baseMap[r][c]
 		item:playDigJewelDecAnimation(boardView)
+	end
+end
+
+function DestroyItemLogic:runGameItemDigGoldZongZiDecLogic( mainLogic,  theAction, actid)
+	-- body
+	if theAction.actionStatus == GameActionStatus.kRunning then 
+		if theAction.actionDuring == GamePlayConfig_GameItemDigJewelDeleteAction_CD - 4 then
+			local item = mainLogic.gameItemMap[theAction.ItemPos1.x][theAction.ItemPos1.y]
+			if item then item.digBlockCanbeDelete = true end
+		end
+	end
+
+	if theAction.actionStatus == GameActionStatus.kWaitingForDeath then
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+
+		mainLogic.destroyActionList[actid] = nil
+	end
+end
+
+function DestroyItemLogic:runGameItemViewDigGoldZongZiDec( boardView, theAction )
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then 
+		theAction.actionStatus = GameActionStatus.kRunning
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playDigGoldZongZiDecAnimation(boardView)
+	end
+end
+
+function DestroyItemLogic:runGameItemBottleBlockerDecLogic( mainLogic,  theAction, actid)
+	if theAction.actionStatus == GameActionStatus.kRunning then 
+		local item = mainLogic.gameItemMap[theAction.ItemPos1.x][theAction.ItemPos1.y]
+
+		local bottleRow = item.y
+		local bottleCol = item.x
+		if item.bottleState == BottleBlockerState.HitAndChanging then
+			if theAction.actionDuring == GamePlayConfig_MaxAction_time - 60 then
+				--瓶子消掉一层
+				-- print("RRR *********************   " , item.ItemColorType , theAction.newColor)
+				item.ItemColorType = theAction.newColor
+				item.bottleState = BottleBlockerState.Waiting
+				mainLogic:addNeedCheckMatchPoint(bottleRow, bottleCol)
+				mainLogic:setNeedCheckFalling()
+				theAction.actionStatus = GameActionStatus.kWaitingForDeath
+			end
+		elseif item.bottleState == BottleBlockerState.ReleaseSpirit then
+			-- if theAction.actionDuring == GamePlayConfig_MaxAction_time - 16 then
+			--瓶子完全碎掉，释放十字特效
+			local destroyAroundAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItem_Bottle_Destroy_Around,
+					IntCoord:create(bottleRow, bottleCol),
+					nil,
+					GamePlayConfig_MaxAction_time)
+			mainLogic:addDestructionPlanAction(destroyAroundAction)
+			theAction.actionStatus = GameActionStatus.kWaitingForDeath
+			-- end
+		else
+			assert(false, "unexcept bottle state:"..tostring(item.bottleState))
+			theAction.actionStatus = GameActionStatus.kWaitingForDeath
+		end
+	end
+
+	if theAction.actionStatus == GameActionStatus.kWaitingForDeath then
+		mainLogic.destroyActionList[actid] = nil
+	end
+end
+
+function DestroyItemLogic:runGameItemViewBottleBlockerDec( boardView, theAction )
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then 
+		theAction.actionStatus = GameActionStatus.kRunning
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+
+		theAction.newColor = GameExtandPlayLogic:randomBottleBlockerColor(boardView.gameBoardLogic, r, c)
+
+		item:playBottleBlockerHitAnimation(boardView , theAction.newBottleLevel , theAction.newColor)
 	end
 end
 

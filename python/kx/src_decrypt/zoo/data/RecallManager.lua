@@ -106,7 +106,7 @@ end
 
 function RecallManager:initLocalService()
 	local cachedLocalUserData = Localhost.getInstance():readLastLoginUserData()
-	if cachedLocalUserData then
+	if cachedLocalUserData and cachedLocalUserData.user then
 		UserManager:getInstance():decode(cachedLocalUserData.user)
 	end
 end

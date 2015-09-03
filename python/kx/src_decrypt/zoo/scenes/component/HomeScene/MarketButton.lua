@@ -19,6 +19,9 @@ function MarketButton:init(...)
     self.discount:setAnchorPoint(ccp(0.5, 0.5))
     self.new:setVisible(false)
     self.new:setAnchorPoint(ccp(0.5, 0.5))
+    self.thirdPayPromo = self.ui:getChildByName('thirdpay_promo')
+    self.thirdPayPromo:setAnchorPointCenterWhileStayOrigianlPosition()
+    self.thirdPayPromo:setVisible(false)
 
 end
 
@@ -64,4 +67,50 @@ function MarketButton:buildAnimation()
     actions:addObject(delay)
     local repeatAction = CCRepeatForever:create(CCSequence:create(actions))
     return repeatAction
+end
+
+function MarketButton:playTopTip(tipTxt)
+    self.topTip = ResourceManager:sharedInstance():buildGroup("market_btn_tip_homeScene")
+    self.topTip:getChildByName('txt'):setString(tipTxt)
+    self.ui:addChild(self.topTip)
+    self.topTip:setPosition(ccp(0, 105))
+    self.topTip:runAction(self:buildAnimation())
+
+end
+
+function MarketButton:stopTopTip()
+    if self.topTip then
+        self.topTip:removeFromParentAndCleanup(true)
+        self.topTip = nil
+    end
+end
+
+function MarketButton:showThirdPayPromotion(isShow, seconds)
+    if self.isDisposed then return end
+    if not seconds or seconds <= 0 then
+        seconds = 0
+    end
+    self.thirdPayPromo:setVisible(isShow)
+    if isShow then
+        self.thirdPayPromo:runAction(self:buildAnimation())
+        self:showDiscount(false) --避免冲突
+    else
+        self.thirdPayPromo:stopAllActions()
+    end
+    local function timeup()
+        if self.isDisposed then return end
+        self.thirdPayPromo:stopAllActions()
+        self.thirdPayPromo:setVisible(false)
+        self:showDiscount(MarketManager:sharedInstance():shouldShowMarketButtonDiscount())
+        self:showNew(MarketManager:sharedInstance():shouldShowMarketButtonNew())
+        if self.thirdPaySchedId then
+            CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.thirdPaySchedId)
+        end
+    end
+    if self.thirdPaySchedId then
+        CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.thirdPaySchedId)
+    end
+    if seconds > 0 then
+        self.thirdPaySchedId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(timeup,seconds,false)
+    end
 end

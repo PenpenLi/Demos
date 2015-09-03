@@ -40,17 +40,19 @@ local function onResourcePrompt( data )
 	print("onResourcePrompt:"..tostring(needsize))
 	local config = parseDynamicUserData(userdata)
 	local force = false
-	if config and config["force"] == "1" then force = true end
+	if config and (config["force"] == "1" or config["review"] == "1") then force = true end
 	print("require silent dynamic loading"..table.tostring(config))
 
 	-- 以updateinfo.type为准 
 	-- if needsize > 0 then
 		local button = HomeScene:sharedInstance().updateVersionButton
 		local panel = DynamicUpdatePanel:create(onConfirmLoad, onCancelLoad, needsize,force)
-		if button and not button.isDisposed then
-			button.wrapper:setTouchEnabled(false)
+		if panel then 
+			if button and not button.isDisposed then
+				button.wrapper:setTouchEnabled(false)
+			end
+			panel:popout()
 		end
-		panel:popout()
 		return panel
 	-- else data.resultHandler(0) end
 	-- return nil
@@ -71,7 +73,10 @@ function DynamicUpdatePanel:onCheckDynamicUpdate(isAutoPopout)
 	if scene then
 		local function onResourceLoaderCallback( event, data )
 			print("event:", event, table.tostring(data))
-			if event == ResCallbackEvent.onPrompt then currentPanel = onResourcePrompt(data)
+			if event == ResCallbackEvent.onPrompt then
+				if not currentPanel then
+					currentPanel = onResourcePrompt(data)
+				end
 			elseif event == ResCallbackEvent.onSuccess then 
 				if currentPanel then 
 					currentPanel:onSuccess() 
@@ -114,9 +119,14 @@ function DynamicUpdatePanel:onCheckDynamicUpdate(isAutoPopout)
 end
 
 function DynamicUpdatePanel:create(onConfirmLoad, onCancelLoad, needsize,force)
+	local updateInfo = UserManager:getInstance().updateInfo
+	if not updateInfo then return nil end
 	local item = DynamicUpdatePanel.new()
 	item:loadRequiredResource(PanelConfigFiles.panel_game_setting)
-	item:buildUI(onConfirmLoad, onCancelLoad, needsize,force)
+	if not item:buildUI(onConfirmLoad, onCancelLoad, needsize,force) then
+		item:dispose()
+		item = nil
+	end
 	return item
 end
 
@@ -152,7 +162,10 @@ function DynamicUpdatePanel:buildUI(onConfirmLoad, onCancelLoad, needsize,requir
 	title:setText(Localization:getInstance():getText("new.version.dynamic.title"))
 	title:setPositionX((bg:getGroupBounds().size.width - title:getContentSize().width) / 2)
 
-	local rewards = UserManager:getInstance().updateInfo.rewards
+	local rewards
+	local updateInfo = UserManager:getInstance().updateInfo
+	if type(updateInfo) ~= "table" then return false end
+	rewards = updateInfo.rewards
 	if type(rewards) ~= "table" then rewards = {} end
 
 	local actualHeight = 0
@@ -294,6 +307,8 @@ function DynamicUpdatePanel:buildUI(onConfirmLoad, onCancelLoad, needsize,requir
 		closeBtn:setVisible(false)
 		closeBtn:rma()
 	end
+
+	return true
 end
 function DynamicUpdatePanel:refreshLayout(immediate)
 	if self.isDisposed then return end

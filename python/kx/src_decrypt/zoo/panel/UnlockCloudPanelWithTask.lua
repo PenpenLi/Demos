@@ -162,7 +162,7 @@ function UnlockCloudPanelWithTask:initPayArea( ... )
 	self.useWindmillBtn:setString(Localization:getInstance():getText('unlock.cloud.panel.button.unlock'))
 	self.useWindmillBtn:ad(DisplayEvents.kTouchTap, function () self:onUseWindmillBtnTapped() end)
 
-	if __ANDROID then -- ANDROID
+	if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsMeta.id) then -- ANDROID
 		self.useWindmillBtn:setIcon(nil)
 		local text = string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), goodsMeta.rmb / 100)
 		self.useWindmillBtn:setNumber(text)
@@ -204,19 +204,13 @@ function UnlockCloudPanelWithTask:tryShowGuide()
 	end
 
 	local armature = CommonSkeletonAnimation:createTutorialMoveIn2()
-	local animation = armature:getAnimation()
-	
-	local function onAnimationEvent( eventType )
-		if armature:hn(eventType) then armature:dp(Event.new(eventType, nil, ret)) end
-	end 
-	if animation then animation:registerScriptHandler(onAnimationEvent) end
 
-	local function animationCallback()
+	local function animationCallback(evt)
 		if self.isDisposed then return end
 		self:tryRemoveGuide()
 	end
 	armature:removeAllEventListeners()
-	armature:addEventListener(kAnimationEvents.kComplete, animationCallback)
+	armature:addEventListener(ArmatureEvents.COMPLETE, animationCallback)
 
 	local askFriend = (FriendManager.getInstance():getFriendCount() >= 3)
 
@@ -229,10 +223,10 @@ function UnlockCloudPanelWithTask:tryShowGuide()
 	scene:addChild(armature)
 	self.armature = armature
 	if askFriend then
-		local pos = ccp(askFriendBtnWorldPos.x + 140, askFriendBtnWorldPos.y + 110)
+		local pos = ccp(askFriendBtnWorldPos.x + 160, askFriendBtnWorldPos.y + 110)
 		armature:setPosition(pos)
 	else
-		local pos = ccp(taskBtnWorldPos.x + 140, taskBtnWorldPos.y + 110)
+		local pos = ccp(taskBtnWorldPos.x + 180, taskBtnWorldPos.y + 110)
 		armature:setPosition(pos)
 	end
 
@@ -397,8 +391,12 @@ function UnlockCloudPanelWithTask:onUseWindmillBtnTapped(...)
 		--print("use gold unlock cloud failed !")
 		self.onEnterForeGroundCallback  = nil
 		local failTxtKey
-		if __ANDROID then failTxtKey = "unlock.cloud.panel.use.rmb.unlock.failed" -- ANDROID
-		else failTxtKey = "unlock.cloud.panel.use.gold.unlock.failed" end -- IOS and PC
+		local goodMeta	= MetaManager.getInstance():getGoodMetaByItemID(self.lockedCloudId)
+		if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodMeta.id) then 
+			failTxtKey = "unlock.cloud.panel.use.rmb.unlock.failed" -- ANDROID
+		else 
+			failTxtKey = "unlock.cloud.panel.use.gold.unlock.failed" 
+		end -- IOS and PC
 		local failTxtValue	= Localization:getInstance():getText(failTxtKey, {})
 		CommonTip:showTip(failTxtValue)
 		-- self.useWindmillBtn.ui:setTouchEnabled(true)
@@ -443,13 +441,14 @@ function UnlockCloudPanelWithTask:onUseWindmillBtnTapped(...)
 					panel:popout()
 				else onSendUnlockMsgCanceled() end
 			end
-			local text = {
-				tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-				yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-				no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			}
-			CommonTipWithBtn:setShowFreeFCash(true)
-			CommonTipWithBtn:showTip(text, "negative", createGoldPanel, onSendUnlockMsgCanceled)
+			-- local text = {
+			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+			-- }
+			-- CommonTipWithBtn:setShowFreeFCash(true)
+			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, onSendUnlockMsgCanceled)
+			GoldlNotEnoughPanel:create(createGoldPanel, onSendUnlockMsgCanceled, nil):popout()
 		else
 			local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
 			logic:setOnSuccessCallback(onSendUnlockMsgSuccess)

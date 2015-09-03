@@ -96,6 +96,7 @@ function SnsProxy:getAuthorizeType()
 end
 
 -- called
+-- called
 function SnsProxy:isLogin()
     print("SnsProxy:isLogin")
     if PrepackageUtil:isPreNoNetWork() then return false end
@@ -107,13 +108,12 @@ function SnsProxy:isLogin()
     end
 
     local userData = Localhost.getInstance():readUserDataByUserID(lastLoginUser.uid)
-    print("userData:"..table.tostring(userData))
+    -- print("userData:"..table.tostring(userData))
     if userData and userData.openId then
-        if __ANDROID and PlatformConfig:isWeiboMergeToQQAccount() then
-            print("userData.snsType:"..table.tostring(userData.authorType))
-            if not userData.authorType then return false end
-            self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
-        end
+        print("userData.snsType:"..table.tostring(userData.authorType))
+        if not userData.authorType then return false end
+        self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
+
         return authorProxy:isLogin()
     end
     return false
@@ -218,7 +218,10 @@ end
 
 
 -- called
-function SnsProxy:syncSnsFriend()
+function SnsProxy:syncSnsFriend(sns_token)
+    if not sns_token then 
+        sns_token = _G.sns_token
+    end
     print("SnsProxy:syncSnsFriend")
     if authorProxy:isLogin() then
         local callback = {
@@ -246,6 +249,9 @@ function SnsProxy:syncSnsFriend()
                     http:addEventListener(Events.kError, onRequestError)
 
                     http:load(friendOpenIds)
+                else
+                    --即使没获取到也得切换好友
+                    SyncSnsFriendHttp.new():load({})           
                 end
             end,
             onError = function( err, msg )

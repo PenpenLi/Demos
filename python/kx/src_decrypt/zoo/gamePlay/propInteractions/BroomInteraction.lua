@@ -23,8 +23,12 @@ function BroomInteraction:handleTouchBegin(x, y)
     end
 
     if self.currentState == self.waitingState then
-        self.itemPos = {r = touchPos.x, c = touchPos.y}
-        self:setCurrentState(self.touchedState)
+        if self.boardView.gameBoardLogic:canUseBroom(touchPos.x, touchPos.y) then
+            self.itemPos = {r = touchPos.x, c = touchPos.y}
+            self:setCurrentState(self.touchedState)
+        else
+            PropsView:playBroomDisableAnimation(self.boardView, IntCoord:create(touchPos.x, touchPos.y))
+        end
     end
 end
 

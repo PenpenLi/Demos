@@ -49,7 +49,8 @@ function ActivityIconButton:init( source,version )
 
 	self.wrapper:addChildAt(self:buildIcon(),0)
 
-	self.wrapper:setTouchEnabled(true)
+	self.wrapper:setTouchEnabled(false)
+	self.wrapper:setTouchEnabled(true,0,false)
 	self.wrapper:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)

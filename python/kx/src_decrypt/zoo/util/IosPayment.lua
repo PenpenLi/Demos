@@ -1,4 +1,7 @@
 require "zoo.util.IosPaymentCallback"
+require 'zoo.gameGuide.IosPayGuide'
+require "zoo.payment.PaymentEventDispatcher"
+require "zoo.payment.PaymentIosDCUtil"
 
 IosPayment = {}
 
@@ -16,15 +19,26 @@ function IosPayment:showPayment(filterSkuIds, getFunc, errorFunc)
 	return IosPayment:getInstance():showPayment_callback(filterSkuIds, callback)
 end
 
-function IosPayment:buy(productId, price, currency, extend, completeFunc, errorFunc)
-	DcUtil:payStart(nil,nil,productId,nil)
+function IosPayment:buy(productId, price, currency, extend, completeFunc, errorFunc, dcEventDispatcher)
 	local function complete( ... )
+		if dcEventDispatcher then 
+			dcEventDispatcher:dispatchIosBuySuccess()
+		end
+		UserManager:getInstance():getUserExtendRef().payUser = true
+		UserService:getInstance():getUserExtendRef().payUser = true
+		UserManager:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
+		UserService:getInstance():getUserExtendRef():setLastPayTime(Localhost:time())
 		completeFunc( ... )
-		DcUtil:payEnd(nil,nil,productId,nil,0)
 	end
 	local function error( ... )
-		errorFunc( ... )
-		DcUtil:payEnd(nil,nil,productId,nil,1)
+		if dcEventDispatcher then 
+			dcEventDispatcher:dispatchIosBuyFailed()
+		end
+		if IosPayGuide:tryPopFailGuidePanel(errorFunc) then
+			return 
+		else
+			errorFunc( ... )
+		end
 	end
 
 	local callback = IosPaymentCallback:init_getFunc_completeFunc_errorFunc(nil, complete, error)

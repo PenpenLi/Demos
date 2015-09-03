@@ -182,21 +182,28 @@ function MarketManager:getGoldProductInfo(uicallback)
             local tmp, final = {}, {}
             for k, v in ipairs(node) do
                 v.sort = tonumber(v.sort)
+                v.newSort = tonumber(v.newSort)
                 v.id = tonumber(v.id)
                 v.cash = tonumber(v.cash)
                 v.rmb = tonumber(v.rmb)
                 v.extraCash = tonumber(v.extraCash)
                 v.discount = tonumber(v.discount)
                 v.iapPrice = v.rmb / 100
-                if type(v.tag) ~= "string" then v.tag = "ingame" end
+                if not v.tag or type(v.tag) ~= "string" then 
+                    v.tag = "ingame" 
+                end
                 if not tmp[v.tag] then
                     tmp[v.tag] = {}
                     table.insert(tmp[v.tag], v)
-                    final[tonumber(v.sort)] = {name = v.tag}
-                else table.insert(tmp[v.tag], v) end
+                    final[v.tag] = {name = v.tag}
+                else 
+                    table.insert(tmp[v.tag], v) 
+                end
             end
-            for k, v in ipairs(final) do
-                for i, j in ipairs(tmp[v.name]) do table.insert(v, j) end
+            for k, v in pairs(final) do
+                for i, j in ipairs(tmp[v.name]) do 
+                    table.insert(v, j) 
+                end
             end
             self:onGetAndroidGoldListFinish(localGoldInfo, final)
         end
@@ -205,7 +212,18 @@ function MarketManager:getGoldProductInfo(uicallback)
         isRequestingProductInfo = false;
     end
     local function androidGetGoldListFail(evt)
-        self:onGetAndroidGoldListFinish(localGoldInfo)
+        local info = self.buyLogic:getMeta()
+        local fakeRemote = {}
+        for k, v in pairs(info) do
+            if v.id ~= 18 then
+                if not v.tag or type(v.tag) ~= "string" then v.tag = "ingame" end
+                if not fakeRemote[v.tag] then
+                    fakeRemote[v.tag] = {name = v.tag}
+                end
+                table.insert(fakeRemote[v.tag], v)
+            end
+        end
+        self:onGetAndroidGoldListFinish(localGoldInfo, fakeRemote)
         if uicallback then uicallback(); end
         isRequestingProductInfo = false;
     end
@@ -227,13 +245,14 @@ function MarketManager:getGoldProductInfo(uicallback)
         isRequestingProductInfo = false;
     end
 
-    if not isRequestingProductInfo then
+    if not isRequestingProductInfo then        
+        isRequestingProductInfo = true
         if __ANDROID then
             -- local list
             self.buyLogic:getProductInfo(onAndroidGetLocalListFinish, getGoldListFail, getGoldListTimeout, getGoldListCanceled)
             -- remote list
-            if PlatformConfig:isMarketAliPaySupport() or
-                PlatformConfig:isMarketWechatPaySupport() then
+            local norm, wechat, alipay, qihoo, wandoujia = PaymentManager:getInstance():getWindMillTabShowState()
+            if wechat or alipay or qihoo or wandoujia then
                 local animation, listening = nil, true
                 local function onCloseButtonTap()
                     if animation then
@@ -259,7 +278,13 @@ function MarketManager:getGoldProductInfo(uicallback)
                 local params = string.format("?name=product_android&uid=%s&_v=%s", uid, _G.bundleVersion)
                 url = url .. params
                 local request = HttpRequest:createGet(url)
-                request:setConnectionTimeoutMs(1 * 1000)
+                local connection_timeout = 2
+
+                if __WP8 then 
+                    connection_timeout = 5
+                end
+
+                request:setConnectionTimeoutMs(connection_timeout * 1000)
                 request:setTimeoutMs(30 * 1000)
                 HttpClient:getInstance():sendRequest(onCallback, request)
             else
@@ -268,7 +293,6 @@ function MarketManager:getGoldProductInfo(uicallback)
         else
             self.buyLogic:getProductInfo(iosGetGoldListFinish, getGoldListFail, getGoldListTimeout, getGoldListCanceled)
         end
-        isRequestingProductInfo = true;
     end
     
 end
@@ -298,38 +322,41 @@ function MarketManager:onGetIOSGoldListFinish(iapConfig)
     table.sort(self.productItems, function(a, b) return tonumber(a.cash) < tonumber(b.cash) end)
 
     local coinsTab = self:getCoinsTab();
-    for i,v in ipairs(self.productItems) do table.insert(coinsTab, v) end
+    for i,v in ipairs(self.productItems) do table.insert(coinsTab.goodsIds, v) end
 end
 
 function MarketManager:onGetAndroidGoldListFinish(localConfig, remoteConfig)
     self.productItems = {}
     local network = true
     if type(remoteConfig) ~= "table" then
-        remoteConfig =  {{name="ingame"}, {name="wechat"}, {name="alipay"}}
+        remoteConfig =  {{name="ingame"}, {name="wechat_2"}, {name="alipay_2"}, {name="qihoo_2"}, {name="wandoujia_2"}}
         network = false
     end
-    for k, v in ipairs(remoteConfig) do
+
+    for k, v in pairs(remoteConfig) do
         if v.name == "ingame" then
             while #v > 0 do table.remove(v, 1) end
             for i, j in ipairs(localConfig) do
-                if type(j.tag) ~= "string" then table.insert(v, j) end
+                if type(j.tag) ~= "string" or j.tag == "ingame" then table.insert(v, j) end
             end
         end
-        if v.name == "ingame" or v.name == "wechat" or v.name == "alipay" then
-            if v.name == "ingame" then v.enabled = (AndroidPayment.getInstance():getDefaultSmsPayment() or
-                PlatformConfig:isBigPayPlatform() or
-                not PlatformConfig:isMarketWechatPaySupport() and
-                not PlatformConfig:isMarketAliPaySupport()) or not network
-            elseif v.name == "wechat" then v.enabled = PlatformConfig:isMarketWechatPaySupport()
-            elseif v.name == "alipay" then v.enabled = PlatformConfig:isMarketAliPaySupport() end
-            if v.name == "wechat" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWechat end
-            elseif v.name == "alipay" then for i, j in ipairs(v) do j.payType = PlatformPayType.kAlipay end end
+        local norm, wechat, alipay, qihoo, wandoujia = PaymentManager:getInstance():getWindMillTabShowState()
+        if v.name == "ingame" or v.name == "wechat_2" or v.name == "alipay_2" or v.name == "qihoo_2" or v.name == "wandoujia_2" then
+            if v.name == "ingame" then v.enabled = norm
+            elseif v.name == "wechat_2" then v.enabled = wechat
+            elseif v.name == "alipay_2" then v.enabled = alipay 
+            elseif v.name == "qihoo_2" then v.enabled = qihoo
+            elseif v.name == "wandoujia_2" then v.enabled = wandoujia  end
+            if v.name == "wechat_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWechat end
+            elseif v.name == "alipay_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kAlipay end 
+            elseif v.name == "qihoo_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kQihoo end
+            elseif v.name == "wandoujia_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWandoujia end end
             table.sort(v, function(a, b) return tonumber(a.cash) < tonumber(b.cash) end)
             table.insert(self.productItems, v)
         end
     end
     local coinsTab = self:getCoinsTab();
-    for i,v in ipairs(self.productItems) do table.insert(coinsTab, v) end
+    for i,v in ipairs(self.productItems) do table.insert(coinsTab.goodsIds, v) end
     self:updateLocalPaymentInfo()
 end
 

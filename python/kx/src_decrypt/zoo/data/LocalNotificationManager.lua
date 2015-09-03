@@ -17,6 +17,9 @@ LocalNotificationType = {
 	kCallBackActivity = 20,			--后端直接推送
 	kAnniversaryCakeFriend = 21,	--活动 后端直接推送
 	kAnniversaryCakeFinish = 22,	--活动 前端本地推送
+	kDragonBoatZongziFinish = 24,   --活动 前端包粽子直接完成
+	kSummerShowOffPassFriend = 25,  --周赛 夏日周赛超越好友炫耀
+	kSummerShareFinish = 26, 		--活动 前端冰淇淋完成推送
 }
 
 --由后端发起的推送 不需要在本地加优先级

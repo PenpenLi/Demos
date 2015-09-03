@@ -23,7 +23,7 @@ end
 function CommonTipWithBtn:showTip(text, panType, yesCallback, noCallback, position, isHideCancelBtn)
 	local panel = CommonTipWithBtn:create(text, tType[panType], yesCallback, noCallback, position)
 	if not panel then
-		return
+		return nil
 	end
 
 	if isHideCancelBtn then 
@@ -44,7 +44,10 @@ function CommonTipWithBtn:showTip(text, panType, yesCallback, noCallback, positi
 	if showFreeFCash then
         FreeFCashPanel:showWithOwnerCheck(panel)
     end
+
+    return panel
 end
+
 function CommonTipWithBtn:loadRequiredResource( panelConfigFile )
 	self.panelConfigFile = panelConfigFile
 	self.builder = InterfaceBuilder:create(panelConfigFile)
@@ -149,10 +152,18 @@ function CommonTipWithBtn:init(text, panType, yesCallback, noCallback, position)
 			self:fadeOut()
 		end
 		self.greenBtn:ad(DisplayEvents.kTouchTap, onYes)
+
+		if self.afterScaledCallback then
+			self.afterScaledCallback()
+		end
 	end
 	self:runAction(CCSequence:createWithTwoActions(CCEaseBackOut:create(CCScaleTo:create(0.2, 1)), CCCallFunc:create(onScaled)))
 
 	return true
+end
+
+function CommonTipWithBtn:setAfterScaledCallback(afterScaledCallback)
+	self.afterScaledCallback = afterScaledCallback
 end
 
 function CommonTipWithBtn:onCloseBtnTapped()

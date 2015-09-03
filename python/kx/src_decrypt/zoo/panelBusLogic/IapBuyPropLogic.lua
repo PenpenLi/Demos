@@ -1,5 +1,14 @@
 if __IOS then
 	require "zoo.util.IosPayment"
+	require 'zoo.gameGuide.IosPayGuide'
+end
+
+local function getMetaItems(items)
+	local t = {}
+	for k,v in pairs(items) do
+		table.insert(t, {itemId = v.itemId, num = v.num})
+	end
+	return t
 end
 
 IapBuyPropLogic = class()
@@ -11,8 +20,8 @@ function IapBuyPropLogic:midEnergyBottle()
 		if v.id == product.id then product = v end
 	end
 	local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
-	local ret = {id = product.id, price = product.price, itemId = meta.items[1].itemId, goodsId = product.goodsId,
-		num = meta.items[1].num, productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
+	local ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+		productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
 
 	return ret
 end
@@ -24,8 +33,8 @@ function IapBuyPropLogic:addStep()
 		if v.id == product.id then product = v end
 	end
 	local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
-	local ret = {id = product.id, price = product.price, itemId = meta.items[1].itemId, goodsId = product.goodsId,
-		num = meta.items[1].num, productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
+	local ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+		productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
 
 	return ret
 end
@@ -37,19 +46,49 @@ function IapBuyPropLogic:rabbitWeeklyPlayCard()
 		if v.id == product.id then product = v end
 	end
 	local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
-	local ret = {id = product.id, price = product.price, itemId = meta.items[1].itemId, goodsId = product.goodsId,
-		num = meta.items[1].num, productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
+	local ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+		productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
 
 	return ret
 end
 
-function IapBuyPropLogic:buy(data, successCallback, failCallback)
+function IapBuyPropLogic:oneYuanShop()
+	local product = {id = 14, cash = 0, discount = 2, extraCash = 0, goodsId = 213,
+		price = 1, productId = "com.happyelements.animal.gold.cn.14"}
+	for k, v in ipairs(MetaManager:getInstance().product) do
+		if v.id == product.id then product = v end
+	end
+	local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
+	local ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+		productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
+
+	return ret
+end
+
+function IapBuyPropLogic:buy(data, successCallback, failCallback, dcDispatcher)
 	local function onSuccess()
-		if data.itemId >= 10000 and data.itemId < 20000 and data.itemId ~= 10054 then
-			local user = UserManager:getInstance()
-			local serv = UserService:getInstance()
-			user:addUserPropNumber(data.itemId, data.num)
-			serv:addUserPropNumber(data.itemId, data.num)
+
+		for k, v in pairs(data.items) do
+			if v.itemId >= 10000 and v.itemId < 20000 and v.itemId ~= 10054 then
+				local user = UserManager:getInstance()
+				local serv = UserService:getInstance()
+				user:addUserPropNumber(v.itemId, v.num)
+				serv:addUserPropNumber(v.itemId, v.num)
+			elseif v.itemId == ItemType.COIN then
+				UserManager:getInstance().user:setCoin(UserManager:getInstance().user:getCoin() + v.num)
+	            UserService:getInstance().user:setCoin(UserService:getInstance().user:getCoin() + v.num)
+	            if HomeScene:sharedInstance().coinButton then
+	                HomeScene:sharedInstance():checkDataChange()
+	                HomeScene:sharedInstance().coinButton:updateView()
+	            end
+			elseif v.itemId == ItemType.GOLD then
+				UserManager:getInstance().user:setCash(UserManager:getInstance().user:getCash() + v.num)
+	            UserService:getInstance().user:setCash(UserService:getInstance().user:getCash() + v.num)
+	            if HomeScene:sharedInstance().goldButton then
+	                HomeScene:sharedInstance():checkDataChange()
+	                HomeScene:sharedInstance().goldButton:updateView()
+	            end
+			end
 		end
 
 		local userExtend = UserManager:getInstance().userExtend
@@ -71,7 +110,8 @@ function IapBuyPropLogic:buy(data, successCallback, failCallback)
 		GlobalEventDispatcher:getInstance():dispatchEvent(
 			Event.new(kGlobalEvents.kConsumeComplete, {
 				price = data.price,
-				props = Localization:getInstance():getText("prop.name."..tostring(data.itemId)),
+				-- props = Localization:getInstance():getText("prop.name."..tostring(data.itemId)),
+				props = Localization:getInstance():getText("goods.name.text"..tostring(data.goodsId)),
 		}))
 	end
 	local function onFail()
@@ -79,9 +119,9 @@ function IapBuyPropLogic:buy(data, successCallback, failCallback)
 	end
 
 	if __IOS then
-		IosPayment:buy(data.productIdentifier, data.iapPrice, data.priceLocale, "", onSuccess, onFail)
+		IosPayment:buy(data.productIdentifier, data.iapPrice, data.priceLocale, "", onSuccess, onFail, dcDispatcher)
 	elseif __WIN32 then
-		onSuccess()
+		onFail()
 	else
 		onFail()
 	end

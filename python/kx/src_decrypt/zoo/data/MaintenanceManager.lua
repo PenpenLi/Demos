@@ -15,13 +15,37 @@ function MaintenanceFeature:fromXML( src )
 	self.beginDate = src.beginDate
 	self.endDate = src.endDate
 	self.platformStr = src.platform
-	local platformList = self.platformStr:split(',')
+	local platformList = string.split(self.platformStr, ',')
 	self.platform = {}
 	for k, v in ipairs(platformList) do
 		if type(v) == "string" and string.len(v) > 0 then table.insert(self.platform, v) end
 	end
 
 	--print("MaintenanceFeature", self.enable, src.enable)
+end
+function MaintenanceFeature:encode()
+	local ret = {}
+	ret.enable = self.enable
+	ret.id = self.id
+	ret.name = self.name
+	ret.version = self.version
+	ret.beginDate = self.beginDate
+	ret.endDate = self.endDate
+	ret.platformStr = self.platformStr
+	ret.platform = table.clone(self.platform)
+
+	return ret
+end
+function MaintenanceFeature:fromLua(src)
+	if not src then return end
+	self.enable = tostring(src.enable) == "true"
+	self.id = tonumber(src.id)
+	self.name = src.name
+	self.version = src.version
+	self.beginDate = src.beginDate
+	self.endDate = src.endDate
+	self.platformStr = src.platformStr
+	self.platform = src.platform
 end
 
 local instance = nil
@@ -33,8 +57,22 @@ function MaintenanceManager:getInstance()
 end
 
 function MaintenanceManager:initialize(onFinish)
+	self:readFromStorage()
 	if PrepackageUtil:isPreNoNetWork() then return end
 	self:onlineLoad(onFinish)
+end
+
+function MaintenanceManager:readFromStorage()
+	local data = Localhost:readFromStorage("Maintenance.ds")
+	self:fromLua(data)
+end
+
+function MaintenanceManager:writeToStorage()
+	local data = {}
+	for i,v in ipairs(MaintenanceManager) do
+		table.insert(data, v:encode())
+	end
+	Localhost:writeToStorage(data, "Maintenance.ds")
 end
 
 function MaintenanceManager:onlineLoad(onFinish)
@@ -47,7 +85,14 @@ function MaintenanceManager:onlineLoad(onFinish)
 	url = url .. params
   	print("MaintenanceManager:", url)
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(1 * 1000)
+
+  	local connection_timeout = 2
+
+	if __WP8 then 
+	   	connection_timeout = 5
+	end
+
+    request:setConnectionTimeoutMs(connection_timeout * 1000)
     request:setTimeoutMs(30 * 1000)
    
     local function onRegisterFinished( response )
@@ -57,7 +102,11 @@ function MaintenanceManager:onlineLoad(onFinish)
     		local message = response.body
     		local metaXML = xml.eval(message)
     		local confList = xml.find(metaXML, "maintenance")
+    		while #self > 0 do
+    			table.remove(self, 1)
+    		end
     		self:fromXML(confList)
+    		self:writeToStorage()
     		UpdateCheckUtils:getInstance():run()
     		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMaintenanceChange))
     	end
@@ -75,6 +124,19 @@ function MaintenanceManager:fromXML( src )
 		if type(v) == "table" then
 			local feature = MaintenanceFeature.new()
 			feature:fromXML(v)
+			table.insert(MaintenanceManager, feature)
+		end		
+	end
+end
+
+function MaintenanceManager:fromLua(src)
+	print("MaintenanceManager:fromLua")
+	if not src then return end
+	self.version = src.version
+	for k,v in pairs(src) do	
+		if type(v) == "table" then
+			local feature = MaintenanceFeature.new()
+			feature:fromLua(v)
 			table.insert(MaintenanceManager, feature)
 		end		
 	end

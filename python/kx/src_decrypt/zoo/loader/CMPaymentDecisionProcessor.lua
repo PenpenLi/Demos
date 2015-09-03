@@ -30,8 +30,16 @@ function Processor:getLocationInfo()
     end
 
     local request = HttpRequest:createPost("http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json")
-    request:setConnectionTimeoutMs(1000)
-    request:setTimeoutMs(3000)
+    local timeout = 3
+    local connection_timeout = 2
+
+    if __WP8 then 
+        timeout = 30
+        connection_timeout = 5
+    end
+
+    request:setConnectionTimeoutMs(connection_timeout * 1000)
+    request:setTimeoutMs(timeout * 1000)
     HttpClient:getInstance():sendRequest(callbackHanler, request)
 
 end

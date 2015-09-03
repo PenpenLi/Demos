@@ -296,7 +296,7 @@ function RabbitWeeklyLevelInfoPanel:init(parentPanel, levelId, ...)
     self.startBtn.num        = self.startBtn.groupNode:getChildByName('num')
 
     local goods = MetaManager:getInstance():getGoodMeta(RabbitWeeklyManager.playCardGoodsId)
-	if __ANDROID then -- ANDROID
+	if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goods.id) then -- ANDROID
 		self.price = goods.rmb / 100
 	else -- else, on IOS and PC we use gold!
 		self.price = goods.qCash
@@ -457,7 +457,8 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
 	    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onStartBtnTapped() end)
 	elseif _mgr():getRemainingPayCount() > 0 then
 		local userExtend = UserManager:getInstance().userExtend
-		if __ANDROID then
+		local goods = MetaManager:getInstance():getGoodMeta(RabbitWeeklyManager.playCardGoodsId)
+		if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goods.id) then
 			local mark = _text("buy.gold.panel.money.mark")
 			local text = _text("weekly.race.panel.rabbit.button2")
             local label = string.format("%s%0.2f %s", mark, self.price, text)

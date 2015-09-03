@@ -14,6 +14,8 @@ function IapBuyMiddleEnergyPanel:create(energyPanel, buyCallback, maxTopPosYInWo
 end
 
 function IapBuyMiddleEnergyPanel:_init(energyPanel, buyCallback, maxTopPosYInWorldSpace)
+	self.paySuccess = false
+	self.failBeforePayEnd = false
 	-- data
 	self.maxTopPosYInWorldSpace = maxTopPosYInWorldSpace
 	self.energyPanel = energyPanel
@@ -110,6 +112,10 @@ function IapBuyMiddleEnergyPanel:_init(energyPanel, buyCallback, maxTopPosYInWor
 	end
 	button:addEventListener(DisplayEvents.kTouchTap, onBuy)
 
+	self.data = data
+	self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
+	PaymentIosDCUtil.getInstance():sendPayStart(Payments.IOS_RMB, 0, self.uniquePayId, self.data.productIdentifier, 1, 1, 1)
+
 	return true
 end
 
@@ -124,6 +130,15 @@ function IapBuyMiddleEnergyPanel:popout()
 end
 
 function IapBuyMiddleEnergyPanel:remove()
+	if not self.paySuccess then 
+		local endResult = 3
+		if self.failBeforePayEnd then 
+			endResult = 4
+		end
+		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier,
+								 1, 1, 1, self.data.iapPrice, 0, endResult)
+	end
+
 	local function onAnimFinished()
 		if self and not self.isDisposed then
 			PopoutManager:sharedInstance():remove(self)
@@ -221,7 +236,19 @@ function IapBuyMiddleEnergyPanel:_playFadeOutAnim(animFinishCallback, ...)
 end
 
 function IapBuyMiddleEnergyPanel:_onBuyMidEnergy(data, successCallback, failCallback)
-	IapBuyPropLogic:buy(data, successCallback, failCallback)
+	local peDispatcher = PaymentEventDispatcher.new()
+	local function successDcFunc(evt)
+		self.paySuccess = true
+		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 1, self.data.iapPrice, 0, 0)
+	end
+	local function failedDcFunc(evt)
+		self.failBeforePayEnd = true
+		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 1, self.data.iapPrice, 0, 1)
+	end
+	peDispatcher:addEventListener(PaymentEvents.kIosBuySuccess, successDcFunc)
+	peDispatcher:addEventListener(PaymentEvents.kIosBuyFailed, failedDcFunc)
+
+	IapBuyPropLogic:buy(data, successCallback, failCallback, peDispatcher)
 end
 
 function IapBuyMiddleEnergyPanel:onCloseBtnTapped()

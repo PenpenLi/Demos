@@ -41,6 +41,7 @@ function ProfileRef:ctor(src)
 	self.name = ""
 	self.headUrl = "0"
 	self.snsId = ""
+	self.snsMap = {}
 	if src ~= nil then self:fromLua(src) end
 end
 function ProfileRef:haveName()
@@ -54,6 +55,85 @@ function ProfileRef:getDisplayName()
 	if self:haveName() then return HeDisplayUtil:urlDecode(self.name)
 	else return "ID:"..tostring(self.uid) end
 end
+
+function ProfileRef:getSnsInfo(authorizeType)
+	if PlatformAuthDetail[authorizeType] then
+		for k,v in pairs(self.snsMap) do
+			if v.snsPlatform == PlatformAuthDetail[authorizeType].name then
+				return v
+			end
+		end
+	end
+	return nil
+end
+
+function ProfileRef:setSnsInfo( authorizeType,snsName,name,headUrl )
+	if PlatformAuthDetail[authorizeType] then
+		local snsInfo = self:getSnsInfo(authorizeType)
+		if not snsInfo then
+			snsInfo = { snsPlatform = PlatformAuthDetail[authorizeType].name }
+			table.insert(self.snsMap,snsInfo)
+		end
+		if snsName then 
+			snsInfo.snsName = HeDisplayUtil:urlEncode(snsName)
+		end
+		if name then 
+			snsInfo.name = HeDisplayUtil:urlEncode(name)
+		end
+		if headUrl then
+			snsInfo.headUrl = headUrl
+		end
+	end
+end
+
+function ProfileRef:getSnsUsername(authorizeType)
+	if PlatformAuthDetail[authorizeType] then
+		local snsInfo = self:getSnsInfo(authorizeType)
+		if snsInfo then 
+			return HeDisplayUtil:urlDecode(snsInfo.snsName or "") --认为snsName一定有
+		else
+			return nil
+		end
+	else
+		return nil
+	end
+end
+-- function ProfileRef:setSnsUsername(authorizeType,snsName)
+-- 	if PlatformAuthDetail[authorizeType] then
+
+-- 		-- self.snsMap[PlatformAuthDetail[authorizeType].name] = HeDisplayUtil:urlEncode(snsName)
+-- 	end
+-- end
+
+function ProfileRef:isPhoneBound()
+	for k,v in pairs(self.snsMap) do
+		if v.snsPlatform == PlatformAuthDetail[PlatformAuthEnum.kPhone].name then
+			return true
+		end
+	end
+
+	return false
+end
+
+function ProfileRef:isSNSBound()
+	for k,v in pairs(self.snsMap) do
+		if v.snsPlatform ~= PlatformAuthDetail[PlatformAuthEnum.kPhone].name then
+			return true
+		end
+	end
+
+	return false
+end
+
+function ProfileRef:isQQBound()
+	for k, v in pairs(self.snsMap) do
+		if v.snsPlatform == PlatformAuthDetail[PlatformAuthEnum.kQQ].name then
+			return true
+		end
+	end
+	return false
+end
+
 function ProfileRef:fromLua( src )
 	if not src then
 		print("  [WARNING] ProfileRef lua data is nil")
@@ -64,12 +144,31 @@ function ProfileRef:fromLua( src )
 	self.name = src.name
 	self.headUrl = src.headUrl
 	self.snsId = src.snsId
+
+	self.snsMap = src.snsMap or {}
+	-- for k, v in pairs(src.snsMap or {}) do
+	-- 	if v.snsPlatform then
+	-- 		self.snsMap[v.snsPlatform] = v.snsName or ""
+	-- 	end
+	-- end
+
+	if _G.sns_token then 
+		for k,v in pairs(self.snsMap) do
+			if v.snsPlatform == PlatformConfig:getPlatformAuthName() then
+				self.name = v.name
+				self.headUrl = v.headUrl
+				break 
+			end
+	 	end 
+	end
+
 	if self.name == nil then self.name = "" end
 	if self.headUrl == nil or self.headUrl == "" then self.headUrl = "" .. math.floor(math.random() * 11) end
 
 	if string.find(self.headUrl, "ani://") ~= nil then
 		self.headUrl = string.sub(self.headUrl, 7)
 	end
+
 end
 
 --
@@ -354,6 +453,12 @@ function UserExtendRef:hasEnteredInviteCode()
 	return 1 == bit.band(self.flag, 0x01)
 end
 
+function UserExtendRef:hasFirstThirdPay()
+	if not self.flag then return true end
+	local bit = require("bit")
+	return 1 == bit.band(bit.rshift(self.flag, 8), 0x01)
+end
+
 function UserExtendRef:setEnteredInviteCode(isSet)
 	if not self.flag then return end
 	local bit = require("bit")
@@ -364,6 +469,21 @@ function UserExtendRef:setEnteredInviteCode(isSet)
 			self.flag = self.flag - 1
 		end
 	end
+end
+
+function UserExtendRef:allowChangePhoneBinding()
+	if not self.flag then return true end
+	return not self:isFlagBitSet(8)
+end
+
+function UserExtendRef:isIosGuideRewardReceived()
+	if not self.flag then return true end -- 未联网或没有flag值
+	return self:isFlagBitSet(10)
+end
+
+function UserExtendRef:setIosGuideRewardReceived(value)
+	if not self.flag then return end
+	self:setFlagBit(10, (value == true))
 end
 
 function UserExtendRef:isFlagBitSet(bitIndex)

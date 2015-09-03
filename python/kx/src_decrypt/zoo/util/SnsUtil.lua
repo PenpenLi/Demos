@@ -13,9 +13,7 @@ function SnsUtil.sendInviteMessage( shareType, shareCallback )
 	local plarformName = StartupConfig:getInstance():getPlatformName()
 	-- 分享的链接地址
 	local link = NetworkConfig.redirectURL.."?invitecode="..invitecode.."&uid="..tostring(UserManager:getInstance().uid).."&pid="..tostring(plarformName)
-	if __WP8 then 
-		link = Wp8Utils:GetMarketDownloadUrl() 
-	elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then -- 微信分享用
+	if PlatformConfig:isPlatform(PlatformNameEnum.k360) then -- 微信分享用
 		link = link.."&package=android_360" 
 	end
 	-- 分享回调
@@ -131,7 +129,7 @@ end
 
 function SnsUtil.sendLevelMessage( shareType, levelType, levelId, shareCallback )
 	local timer = os.time() or 0
-	local datetime = tostring(os.date("%y%m%d", timer))
+	local datetime = tostring(os.date("%y%m%d%H", timer))
 	local levelId = levelId or 1
 	local txtToShare = ""
 	local shareTitle = Localization:getInstance():getText("share.feed.title")
@@ -249,10 +247,14 @@ function SnsUtil.weeklyRaceShareSurpass( shareType, levelId, shareCallback)
 	SnsUtil.sendImageLinkMessage( shareType, nil, nil, thumb, imageURL, shareCallback)
 end
 
-function SnsUtil.shareRabbitWeeklyMatchFeed( shareType, shareCallback)
+function SnsUtil.shareSummerWeeklyMatchFeed( shareType, shareCallback)
 	local datetime = tostring(os.date("%y%m%d", timer))
 	local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/thumb_main.png")
-	local imageURL = string.format("http://static.manimal.happyelements.cn/feed/rabbit_weekly_match_feed.jpg?v="..datetime)
+	local imageURL = CCFileUtils:sharedFileUtils():fullPathForFilename("share/summer_weekly_match_feed.jpg")
+
+	if __IOS or PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+		imageURL = string.format("http://static.manimal.happyelements.cn/feed/summer_weekly_match_feed.jpg?v="..datetime)
+	end
 	
 	if not shareCallback then -- default callback
 		shareCallback = {

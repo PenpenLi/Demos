@@ -2,36 +2,95 @@ AndroidPayment = class()
 
 local decisionStoragePath = "/smspaydecision.ds"
 local defaultSMSPaymentDecision = [[
-	local androidPlatformName = StartupConfig:getInstance():getPlatformName() 
-	local province = Cookie.getInstance():read(CookieKey.kLocationProvince)
-	if (province == "宁夏" or province == "福建" or province == "天津" or province == "山西" or province == "甘肃" or province == "新疆" or province == "内蒙古" or province == "河南" or province == "陕西" or province == "山东") then
-		return {  Payments.CHINA_MOBILE_GAME,Payments.CHINA_UNICOM,Payments.CHINA_TELECOM }
-	end
-	if province == "江西" then
-		local udid = MetaInfo:getInstance():getUdid()
-		if udid then
-			local subStr = string.sub(udid, -5)
-			if subStr then
-				local numUid = tonumber(subStr, 36)
-				if numUid and numUid % 5 == 0 then
-					return {Payments.CHINA_MOBILE_GAME,Payments.CHINA_MOBILE,Payments.CHINA_UNICOM,Payments.CHINA_TELECOM }
-				end
+local androidPlatformName = StartupConfig:getInstance():getPlatformName() 
+local province = Cookie.getInstance():read(CookieKey.kLocationProvince)
+local numVersion = tonumber(_G.bundleVersion:split(".")[2])
+
+local result = {}
+local cmmmBanlist = {"陕西", "山西", "浙江", "江苏", "江西", "宁夏", "新疆", "甘肃", "山东", "辽宁"}
+local cmgameBanlist = {"河南", "黑龙江", "广西", "重庆"}
+local cmmmOptimalList= {"广东", "河北"}
+local cm = table.clone(PlatformConfig.paymentConfig.chinaMobilePayment)
+local cu = {Payments.CHINA_UNICOM}
+local ct = {Payments.CHINA_TELECOM}
+local cuBanList = {"江苏", "广东"}
+local ctBanList = {"河北", "广西"} 
+
+if table.includes(cuBanList, province) then
+	cu = {}
+end
+
+if table.includes(ctBanList, province) then
+	ct = {}
+end
+
+if numVersion < 23 
+	or (numVersion == 23 and (androidPlatformName == "91" 
+		or androidPlatformName == "baiduapp" 
+		or androidPlatformName == "duoku" 
+		or androidPlatformName == "hao123" 
+		or androidPlatformName == "tieba"))
+	then
+	cm = {Payments.CHINA_MOBILE_GAME}
+end
+
+if province == "河南" then
+	local isRatioOn = false
+	local udid = MetaInfo:getInstance():getUdid()
+	if udid then
+		local subStr = string.sub(udid, -5)
+		if subStr then
+			local numUid = tonumber(subStr, 16)
+			if numUid and numUid % 5 < 3 then
+				isRatioOn = true
 			end
 		end
 	end
-	if androidPlatformName == "he" then
-		local udid = MetaInfo:getInstance():getUdid()
-		if udid then
-			local subStr = string.sub(udid, -5)
-			if subStr then
-				local numUid = tonumber(subStr, 36)
-				if numUid and numUid % 2 == 0 then
-					return {Payments.CHINA_MOBILE_GAME,Payments.CHINA_MOBILE,Payments.CHINA_UNICOM,Payments.CHINA_TELECOM }
-				end
+
+	local isSupportThirdParty = false	
+	local thirdPartyPayment = PlatformConfig.paymentConfig.thirdPartyPayment
+	if type(thirdPartyPayment) == "table" then
+		if #thirdPartyPayment > 1 then
+			isSupportThirdParty = true
+		elseif #thirdPartyPayment == 1 then
+			if not table.includes(thirdPartyPayment, Payments.UNSUPPORT) then
+				isSupportThirdParty = true
 			end
 		end
+	elseif type(thirdPartyPayment) == "string" then
+		if thirdPartyPayment ~= Payments.UNSUPPORT then
+			isSupportThirdParty = true
+		end
 	end
-	return {Payments.CHINA_MOBILE,Payments.CHINA_MOBILE_GAME,Payments.CHINA_UNICOM,Payments.CHINA_TELECOM }
+
+	if isRatioOn and isSupportThirdParty then
+		table.insert(cmmmBanlist, "河南")
+	end
+end
+
+local cmmmIndex = table.indexOf(cm, Payments.CHINA_MOBILE)
+if cmmmIndex and table.includes(cmmmBanlist, province) then
+	table.remove(cm, cmmmIndex)
+end
+
+local cmgameIndex = table.indexOf(cm, Payments.CHINA_MOBILE_GAME)
+if cmgameIndex and table.includes(cmgameBanlist, province) then
+	table.remove(cm, cmgameIndex)
+end
+
+if table.indexOf(cm, Payments.CHINA_MOBILE) and table.indexOf(cm, Payments.CHINA_MOBILE_GAME) then
+	if table.includes(cmmmOptimalList, province) then
+		cm = {Payments.CHINA_MOBILE, Payments.CHINA_MOBILE_GAME}
+	else
+		cm = {Payments.CHINA_MOBILE_GAME, Payments.CHINA_MOBILE}
+	end
+end
+
+for _, v in ipairs(cm) do table.insert(result, v) end
+for _, v in ipairs(cu) do table.insert(result, v) end
+for _, v in ipairs(ct) do table.insert(result, v) end
+
+return result
 ]]
 local instance
 function AndroidPayment.getInstance()
@@ -43,6 +102,10 @@ function AndroidPayment.getInstance()
 end
 
 function AndroidPayment:init()
+	self.thirdPartyPayment = {}
+	self.chinaMobilePayment = Payments.UNSUPPORT
+	self.chinaUnicomPayment = Payments.UNSUPPORT
+	self.chinaTelecomPayment = Payments.UNSUPPORT
 end
 
 function AndroidPayment:getAPSMgr()
@@ -53,7 +116,12 @@ end
 function AndroidPayment:getOperator() 
 	local metaInfo = luajava.bindClass("com.happyelements.android.MetaInfo")
 	if metaInfo then
-		return metaInfo:getNetOperatorType():getValue()
+		local optype = metaInfo:getNetOperatorType()
+		if optype then 
+			return optype:getValue()
+		else
+			return 0 -- present unknown
+		end
 	else
 		return 0 -- present unknown
 	end
@@ -122,6 +190,14 @@ function AndroidPayment:getThirdPartPayment()
 	elseif currentPayType == PlatformPayType.kAlipay then 
 		if table.includes(self.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then
 			thirdPartyPayment = PlatformPaymentThirdPartyEnum.kALIPAY
+		end
+	elseif currentPayType == PlatformPayType.kQihoo then 
+		if table.includes(self.thirdPartyPayment, PlatformPaymentThirdPartyEnum.k360) then
+			thirdPartyPayment = PlatformPaymentThirdPartyEnum.k360
+		end
+	elseif currentPayType == PlatformPayType.kWandoujia then 
+		if table.includes(self.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWDJ) then
+			thirdPartyPayment = PlatformPaymentThirdPartyEnum.kWDJ
 		end
 	end
 	return thirdPartyPayment
@@ -202,7 +278,7 @@ function AndroidPayment:filterCTPayment()
 	if table.includes(result, ctPayment) then
 		return ctPayment
 	end
-	return PlatformPaymentChinaUnicomEnum.kUnsupport
+	return PlatformPaymentChinaTelecomEnum.kUnsupport
 end
 
 function AndroidPayment:getDefaultSmsPayment()
@@ -268,14 +344,21 @@ function AndroidPayment:isPaymentTypeSupported(paymentType)
 	return paymentType and (isCMSupported or isCUSupported or isCTSupported or isThirdPartySupported)
 end
 
+--已弃用
 function AndroidPayment:getPaymentsChoosement()
 	local result = {}
-	local ctPaymentChoosement = self:filterCTPayment()
-	if ctPaymentChoosement and ctPaymentChoosement ~= Payments.UNSUPPORT then result[ctPaymentChoosement] = true end
-	local cuPaymentChoosement = self:filterCUPayment()
-	if cuPaymentChoosement and cuPaymentChoosement ~= Payments.UNSUPPORT then result[cuPaymentChoosement] = true end
-	local cmPaymentChoosement = self:filterCMPayment()
-	if cmPaymentChoosement and cmPaymentChoosement ~= Payments.UNSUPPORT then result[cmPaymentChoosement] = true end
+	local operator = self:getOperator()
+	print("getOperator:", operator)
+	if operator == TelecomOperators.CHINA_MOBILE then
+		local cmPaymentChoosement = self:filterCMPayment()
+		if cmPaymentChoosement and cmPaymentChoosement ~= Payments.UNSUPPORT then result[cmPaymentChoosement] = true end
+	elseif operator == TelecomOperators.CHINA_UNICOM then
+		local cuPaymentChoosement = self:filterCUPayment()
+		if cuPaymentChoosement and cuPaymentChoosement ~= Payments.UNSUPPORT then result[cuPaymentChoosement] = true end
+	elseif operator == TelecomOperators.CHINA_TELECOM then
+		local ctPaymentChoosement = self:filterCTPayment()
+		if ctPaymentChoosement and ctPaymentChoosement ~= Payments.UNSUPPORT then result[ctPaymentChoosement] = true end
+	end
 
 	for i, v in ipairs(self.thirdPartyPayment) do
 		if v == PlatformPaymentThirdPartyEnum.kWECHAT then 
@@ -301,7 +384,7 @@ function AndroidPayment:isSmsPaymentSupported()
 end
 
 function AndroidPayment:isThirdPartyPaymentSupported()
-	return getNormalThirdPartPayment() ~= Payments.UNSUPPORT
+	return self:getNormalThirdPartPayment() ~= Payments.UNSUPPORT
 end
 
 function AndroidPayment:initCMPaymentDecisionScript()

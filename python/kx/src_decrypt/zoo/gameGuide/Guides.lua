@@ -24,34 +24,6 @@ local vo = Director:sharedDirector():getVisibleOrigin()
 
 Guides = table.const
 {
-	-- 弹出新手面板
-	[0] = {
-		appear = {
-			{type = "scene", scene = "worldMap"},
-			{type = "topLevel", para = 1},
-			{type = "onceOnly"}
-		},
-		action = {
-			[1] = {type = "beginnerPanel"},
-		},
-		disappear = {
-			{type = "popdown", popdown = "beginnerPanel"},
-		}
-	},
-	-- 转盘引导
-	[1] = {
-		appear = {
-			{type = "turnTableEnable", value = true},
-			{type = "onceOnly"},
-		},
-		action = {
-			[1] = {type = "turnTableSlide", delay = 2},
-		},
-		disappear = {
-			{type = "popdown", popdown = "turnTablePanel"},
-			{type = "turnTableEnable", value = false},
-		},
-	},
 	-- 第1关，点击关卡花
 	[10] = {
 		appear = {
@@ -928,69 +900,6 @@ Guides = table.const
 		disappear = {
 		}
 	},
-	--解锁16关金银果树提示
-	[160] = {
-		appear = {
-			{type = "scene", scene = "worldMap"},
-			{type = "button", button = "fruitTree"},
-			{type = "topLevel", para = 16},
-			{type = "noPopup"},
-			{type = "onceOnly"},
-		},
-		action = {
-			[1] = {type = "fruitTreeButton", opacity = 0xCC,
-				text = "tutorial.game.text1600", panType = "down", panAlign = "viewY",
-				panPosY = 500, maskDelay = 0.3, maskFade = 0.4, panDelay = 0.5, touchDelay = 1.1
-			},
-		},
-		disappear = {
-			{type = "popup"},
-			{type = "result", key = "fruitTreeButton", value = false},
-			{type = "scene", scene = "game"},
-			{type = "scene", scene = "fruitTree"},
-		}
-	},
-	--金银果树点击果实
-	[161] = {
-		appear = {
-			{type = "scene", scene = "fruitTree"},
-			{type = "noPopup"},
-			{type = "onceOnly"},
-			{type = "success", guide = {160},},
-		},
-		action = {
-			[1] = {type = "clickFruit", index = 4, limitGrowCount = 5, handDelay = 0.5},
-		},
-		disappear = {
-			{type = "scene", scene = "game"},
-			{type = "scene", scene = "worldMap"},
-			{type = "popup"},
-			{type = "fruitClicked", index = 4},
-		}
-	},
-	--金银果树果实操作
-	[162] = {
-		appear = {
-			{type = "scene", scene = "fruitTree"},
-			{type = "noPopup"},
-			{type = "onceOnly"},
-			{type = "fruitClicked", index = 4},
-			{type = "success", guide = {160, 161},},
-		},
-		action = {
-			[1] = {type = "fruitButton", text = "tutorial.game.text1601",
-				panType = "up", panAlign = "viewY", panPosY = 400, maskDelay = 0.3,
-				maskFade = 0.4, panDelay = 0.5, touchDelay = 1.1
-			},
-		},
-		disappear = {
-			{type = "scene", scene = "game"},
-			{type = "scene", scene = "worldMap"},
-			{type = "fruitNotClicked"},
-			{type = "fruitButtonClick", button = "pick"},
-			{type = "fruitButtonClick", button = "regen"},
-		}
-	},
 	--第17关，时间关目标说明
 	[170] = {
 		appear = {
@@ -1046,44 +955,6 @@ Guides = table.const
 			},
 		},
 		disappear = {}
-	},
-	[310] = {
-		appear = {
-			{type = "noPopup"},
-			{type = "scene", scene = "worldMap"},
-			{type = "button", button = "weeklyRace"},
-			{type = "topLevel", para = 31},
-			{type = "onceOnly"}
-		},
-		action = {
-			[1] = {type = "weeklyRaceButton", opacity = 0xCC, index = 1, 
-				text = "tutorial.game.text3100", maskPos = ccp(536, 940),multRadius=1.1 ,
-				panType = "down", panAlign = "winY", panPosY = 1080,
-				maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
-			},
-		},
-		disappear = {
-			{type = "popup"},
-		}
-	},
-	[311] = {
-		appear = {
-			{type = "noPopup"},
-			{type = "scene", scene = "worldMap"},
-			{type = "button", button = "rabbitWeeklyRace"},
-			{type = "topLevel", para = 31},
-			{type = "onceOnly"}
-		},
-		action = {
-			[1] = {type = "rabbitWeeklyButton", opacity = 0xCC, index = 1, 
-				text = "tutorial.game.text3100", maskPos = ccp(536, 940),multRadius=1.1 ,
-				panType = "down", panAlign = "winY", panPosY = 1080,
-				maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
-			},
-		},
-		disappear = {
-			{type = "popup"},
-		}
 	},
 	--第47关，目标是直线特效时候的引导
 	[470] = {
@@ -1456,9 +1327,7 @@ Guides = table.const
 					},
 			},
 		},
-		disappear = {
-			{},
-		},
+		disappear = {},
 	},
 
 --第196关，地格说明	
@@ -1515,12 +1384,49 @@ Guides = table.const
 			{type = "swap", from = ccp(7, 3), to = ccp(6, 3)},
 		}
 	},
---第211关，雪怪说明	
-	[2110] = {
+	--[[
+	不要打开，否则进关卡就卡死-。-
+	--第211关，雪怪说明	 ,废弃
+    [2110] = {
+		appear = {},
+		action = {},
+		disappear = {}
+	},
+	-- 消除第一次，雪怪右上角处的冰消除，进入下一步说明,废弃
+	[2111] = {
+		appear = {},
+		action = {},
+		disappear = {}
+	},
+	--]]
+--弹框引导
+	[2114] = {
+		appear = {
+			{type = "hasGuide", guideArray = {2110, 2111}},
+			{type = "scene", scene = "game", para ={212, 215, 223, 228, 229, 237, 239, 243, 249, 252, 255, 258, 264, 269, 284, 296, 302, 342, 350, 375, 395, 431, 462, 506, 536}},
+			{type = "numMoves", para = 0},
+			{type = "noPopup"},
+			{type = "onceOnly"},
+			{type = "onceLevel"}
+		},
+		action = {
+		    [1] = {type = "showTile", opacity = 0xCC, 
+				array = {
+				    [1] = {r = 9, c = 1, countR = 9, countC = 9}, 
+				}, 
+				text = "tutorial.game.text21104",panType = "up", panAlign = "matrixD", panPosY = 7.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},
+		},
+		disappear = {}
+	},
+
+--新引导
+	[2112] = {
 		appear = {
 			{type = "scene", scene = "game", para = 211},
 			{type = "numMoves", para = 0},
-			{type = "topLevel", para = 211},
+			--{type = "topLevel", para = 211},
 			{type = "noPopup"},
 			{type = "onceOnly"},
 			{type = "onceLevel"}
@@ -1551,15 +1457,15 @@ Guides = table.const
 		}
 	},
 	-- 消除第一次，雪怪右上角处的冰消除，进入下一步说明
-	[2111] = {
+	[2113] = {
 		appear = {
 			{type = "scene", scene = "game", para = 211},
 			{type = "numMoves", para = 1},
-			{type = "topLevel", para = 211},
+			--{type = "topLevel", para = 211},
 			{type = "noPopup"},
 			{type = "staticBoard"},
 			{type = "onceLevel"},
-			{type = "curLevelGuided", guide = { 2110 },},
+			{type = "curLevelGuided", guide = { 2112 },},
 		},
 		action = {
 			[1] = {type = "showTile", opacity = 0xCC, 
@@ -1572,10 +1478,22 @@ Guides = table.const
 				text = "tutorial.game.text21102",panType = "up", panAlign = "matrixD", panPosY = 5.5 ,
 				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
 			},
+			[2] = {type = "showTile", opacity = 0xCC, 
+				array = {
+				    [1] = {r = 4, c = 2, countR = 1, countC = 1},
+				    [2] = {r = 4, c = 3, countR = 1, countC = 1},
+				    [3] = {r = 5, c = 2, countR = 1, countC = 1},
+				    [4] = {r = 5, c = 3, countR = 1, countC = 1}, 
+				    [5] = {r = 4, c = 7, countR = 1, countC = 1},
+				    [6] = {r = 4, c = 8, countR = 1, countC = 1},
+				    [7] = {r = 5, c = 7, countR = 1, countC = 1},
+				    [8] = {r = 5, c = 8, countR = 1, countC = 1},
+				}, 
+				text = "tutorial.game.text21103",panType = "up", panAlign = "matrixD", panPosY = 6.5 ,
+				panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+			},
 		},
-		disappear = {
-			{},
-		}
+		disappear = {}
 	},
 --第241关，黑色毛球说明	
 	[2410] = {
@@ -2110,7 +2028,7 @@ Guides = table.const
 		},
 	[210000] = {
 			appear = {
-				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
+				{type = "scene", scene = "game", para = {230007, 230008, 230009, 230010, 230011, 230012}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstShowFirework', value = true}
@@ -2118,7 +2036,7 @@ Guides = table.const
 			action = {	
 			    [1] = {type = "showProp",
 				opacity = 0xCC, index = 1, 
-				text = "tutorial.game.text190001", 
+				text = "tutorial.game.text230001", 
 				multRadius=1.1 ,
 				panType = "down", panAlign = "winY", panPosY = 600, panFlip = "true", offsetX = -58,
 				maskDelay = 1,maskFade = 0.4 ,panDelay = 1, touchDelay = 1, propId = 9999,
@@ -2129,7 +2047,7 @@ Guides = table.const
 		},
 	[210001] = {
 			appear = {
-				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
+				{type = "scene", scene = "game", para = {230007, 230008, 230009, 230010, 230011, 230012}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstQuestionMark', value = true}
@@ -2138,7 +2056,7 @@ Guides = table.const
 			    [1] = {type = "showTile", opacity = 0xCC, 
 					array = {[1] = {r = 1, c = 1, countR = 1, countC = 1 }}, 
 					offsetY = 4.5,
-					text = "tutorial.game.text190002",panType = "up", panAlign = "matrixD", panPosY = 4.5, panFlip="true",
+					text = "tutorial.game.text230002",panType = "up", panAlign = "matrixD", panPosY = 4.5, panFlip="true",
 					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
 				},	
 			},
@@ -2147,7 +2065,7 @@ Guides = table.const
 		},
 	[210002] = {
 			appear = {
-				{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
+				{type = "scene", scene = "game", para = {230007, 230008, 230009, 230010, 230011, 230012}},
 				{type = "onceOnly"},
 				{type = "noPopup"},
 				{type = 'waitSignal', name = 'firstFullFirework', value = true}
@@ -2155,7 +2073,7 @@ Guides = table.const
 			action = {	
 			    [1] = {type = "showCustomizeArea", opacity = 0xCC, 
 					offsetX = -80, offsetY = -65, width = 150, height = 150, position = ccp(349, 131), --默认值
-					text = "tutorial.game.text190003",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
+					text = "tutorial.game.text230003",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
 					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
 				}
 			},
@@ -2164,7 +2082,7 @@ Guides = table.const
 		},
 	[210003] = {
 		appear = {
-			{type = "scene", scene = "game", para = {210006, 210007, 210008, 210009, 210010}},
+			{type = "scene", scene = "game", para ={230007, 230008, 230009, 230010, 230011, 230012}},
 			{type = "onceLevel"},
 			{type = "noPopup"},
 			{type = 'waitSignal', name = 'showFullFireworkTip', value = true}
@@ -2172,7 +2090,7 @@ Guides = table.const
 		action = {	
 			[1] = {type = "showProp",
 				opacity = 0xCC, index = 1, 
-				text = "tutorial.game.text190004", 
+				text = "tutorial.game.text230004", 
 				multRadius=1.1 ,
 				panType = "down", panAlign = "winY", panPosY = 600, panFlip = "true", offsetX = -58,
 				maskDelay = 1,maskFade = 0.4 ,panDelay = 1, touchDelay = 1, propId = 9999,
@@ -2181,6 +2099,68 @@ Guides = table.const
 		disappear = {
 		},
 	},
+	--端午节关卡引导
+    [220000] = {
+			appear = {
+				{type = "scene", scene = "game", para = {220001,220002,220003,220004,220005}},
+				{type = "noPopup"},
+				{type = "numMoves", para = 0},
+				{type = "onceOnly"},
+				{type = "onceLevel"},
+			},
+			action = {
+				[1] = {type = "showTile", opacity = 0xCC, 
+					array = {}, 
+					text = "tutorial.game.text2000010",panType = "up", panAlign = "matrixD", panPosY = 3.5 ,panFlip="true",
+					panDelay = 5.2, maskDelay = 5.1 ,maskFade = 0.4,touchDelay = 1.7
+				}
+			},
+			disappear = {
+			},
+		},
+	[220001] = {
+			appear = {
+				{type = "scene", scene = "game", para = {220001,220002,220003,220004,220005}},
+				{type = "noPopup"},
+				{type = "onceOnly"},
+				{type = "onceLevel"},
+				{type = 'halloweenBoss'},
+				{type = "numMoves", para = 0},
+			},
+			action = {	
+			    [1] = {type = "showTile", opacity = 0xCC, 
+					array = {[1] = {r = 1, c = 1, countR = 2, countC = 9 }}, 
+					text = "tutorial.game.text2000011",panType = "up", panAlign = "matrixD", panPosY = 3.5 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},		
+				[2] = {type = "showTile", opacity = 0xCC, 
+					array = {[1] = {r = 9, c = 3, countR = 2, countC = 3 }}, 
+					text = "tutorial.game.text2000012",panType = "up", panAlign = "matrixD", panPosY = 2 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},
+			},
+			disappear = {
+				{type = "swap", from = ccp(2, 7), to = ccp(2, 8)},
+			},
+		},
+	[220002] = {
+			appear = {
+				{type = "scene", scene = "game", para = {220001,220002,220003,220004,220005}},
+				{type = "noPopup"},
+				{type = "onceOnly"},
+				{type = "onceLevel"},
+				{type = "goldZongzi"},
+				{type = "numMoves", para = 0},
+			},
+			action = {	
+			    [1] = {type = "showTile", opacity = 0xCC, 
+					array = {[1] = {r = 1, c = 1, countR = 1, countC = 1 }}, 
+					text = "tutorial.game.text2000013",panType = "up", panAlign = "matrixD", panPosY = 3.5 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},
+			},
+			disappear = {},
+		},
 --第496关，流沙说明
 	[4960] = {
 			appear = {
@@ -2281,6 +2261,25 @@ Guides = table.const
 		disappear = {
 		},
 	},
+--第586关，移动地块说明
+	[5860] = {
+			appear = {
+				{type = "scene", scene = "game", para = 586},
+				{type = "numMoves", para = 0},
+				{type = "topLevel", para = 586},
+				{type = "noPopup"},
+				{type = "onceOnly"},
+				{type = "onceLevel"}
+			},
+			action = {
+				[1] = {type = "showTile", opacity = 0xCC, 
+					array = {{r = 3, c = 4, countR = 1, countC = 1}}, 
+					text = "tutorial.game.text58600",panType = "up", panAlign = "matrixD", panPosY = 5 ,panFlip="true",
+					panDelay = 1.1, maskDelay = 0.8 ,maskFade = 0.4,touchDelay = 1.7
+				},			
+			},
+			disappear = {},
+		},
 
 }
 

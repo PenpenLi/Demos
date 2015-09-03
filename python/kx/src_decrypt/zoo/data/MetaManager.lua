@@ -16,6 +16,7 @@ end
 
 local function parseItemDict(metaXML, childName, cls )
 	local result = {}
+	
 	local xmlList = xml.find(metaXML, childName)
 	for i,v in ipairs(xmlList) do
 		local p = cls.new()
@@ -62,10 +63,6 @@ function MetaManager:initialize()
 		self.product = parseItemDict(metaXML, "product", ProductMetaRef)
 		self.gift_blocker = parseItemDict(metaXML, "gift_blocker", GiftBlockerMetaRef)
 	else
-		self.level_star = parseItemDict(metaXML, "level_star", LevelStarMetaRef)
-		self.diggerMatchReward = parseItemDict(metaXML, "diggerMatchReward", DiggerMatchRewardMetaRef)
-		self.diggerMatchGemReward = parseItemDict(metaXML, "diggerMatchGemReward", DiggerMatchGemRewardMetaRef)
-		self.diggerMatchRankReward = parseItemDict(metaXML, "diggerMatchRankReward", DiggerMatchRankRewardMetaRef)
 		self.gamemode_prop = parseItemDict(metaXML, "gamemode_prop", GameModePropMetaRef)
 		self.coin_blocker = parseItemDict(metaXML, "coin_blocker", CoinBlockerMetaRef)
 		self.vip_level = parseItemDict(metaXML, "vip_level", VipLevelMetaRef)
@@ -103,6 +100,7 @@ function MetaManager:initialize()
 
 		self.activity_rewards = parseItemDict(metaXML,'activity_rewards',ActivityRewardsMetaRef)
 		self.rewards = parseItemDict(metaXML, "rewards", RewardsRef)
+		self.summerWeeklyRewards = parseItemDict(metaXML,'summer_week_match',SummerWeeklyLevelRewardsRef)
 
 		self.level_status = parseItemDict(metaXML, "level_status", LevelStatusRef)
 		
@@ -222,6 +220,9 @@ function MetaManager:getGoodMeta(goodId)
 end
 function MetaManager:getGoodPayCodeMeta(goodId)
 	return self.goodsPayCode[goodId]
+end
+function MetaManager:getProductAndroidMeta(goodId)
+	return self.product_android[goodId]
 end
 function MetaManager:getGoodMetaByItemID( itemId )
 	for k,v in pairs(self.goods) do

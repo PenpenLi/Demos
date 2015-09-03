@@ -101,12 +101,12 @@ function UserManager:checkDateChange()
         -- if  HomeScene:sharedInstance().weeklyRaceBtn then
         --     HomeScene:sharedInstance().weeklyRaceBtn:update()
         -- end
-        if compareResult < 0 then -- 往后跨天才认为是真正的跨天
-	        RabbitWeeklyManager:sharedInstance():onDayChange(lastDate, currentDate) 
-	        if  HomeScene:sharedInstance().rabbitWeeklyButton then
-	            HomeScene:sharedInstance().rabbitWeeklyButton:update()
-	        end
-	    end
+     --    if compareResult < 0 then -- 往后跨天才认为是真正的跨天
+	    --     RabbitWeeklyManager:sharedInstance():onDayChange(lastDate, currentDate) 
+	    --     if  HomeScene:sharedInstance().rabbitWeeklyButton then
+	    --         HomeScene:sharedInstance().rabbitWeeklyButton:update()
+	    --     end
+	    -- end
     end	
 end
 
@@ -247,6 +247,7 @@ function UserManager:clone(dst)
 	dst.dimeProvince = self.dimeProvince
 	dst.timeProps = cloneClassTableArray(self.timeProps, TimePropRef)
 	dst.userType = self.userType
+	dst.setting = self.setting
 end
 
 
@@ -479,7 +480,8 @@ function UserManager:initFromLua( src )
 	self.lostType = src.lostType
 	-- 用户类型,做白名单判断,普通用户=0
 	self.userType = src.userType or 0
-
+	-- 存储在后端的设置 目前用于获取用户支付类型
+	self.setting = src.setting or 0
 	-- android dime middle energy
 	self.dimePlat = src.dimePlat
 	if type(self.dimePlat) == "table" then
@@ -706,6 +708,20 @@ function UserManager:setUserPropNumber(itemId, newNumber, ...)
 	self:addUserProp(newProp)
 end
 
+-- add in ver1.25
+function UserManager:addRewards(rewards)
+	if type(rewards) == "table" then
+		for _, v in pairs(rewards) do
+			if v.itemId == 2 then
+				self.user:setCoin(self.user:getCoin() + v.num)
+			elseif v.itemId == 14 then
+				self.user:setCash(self.user:getCash() + v.num)
+			else
+				self:addUserPropNumber(v.itemId, v.num)
+			end
+		end
+	end
+end
 
 function UserManager:getUserPropNumber(itemId, ...)
 	assert(type(itemId) == "number")
@@ -1022,6 +1038,27 @@ function UserManager:isSameInviteCodePlatform( code )
 	end
 
 	return isYYBCode(code) == isYYBCode(self.inviteCode)
-	
+end
 
+function UserManager:isYYBInviteCodePlatform(code)
+	code = code or self.inviteCode
+
+	local codeNum = tonumber(code)
+	codeNum = math.floor(codeNum/1000000000)
+	if 1<= codeNum and codeNum <=3 then 
+		return true
+	end
+	return false
+end
+
+function UserManager:setIngameBuyGuide(var)
+	self.ingameBuyPropsGuide = var
+end
+
+function UserManager:getIngameBuyGuide()
+	if self.ingameBuyPropsGuide == 1 then
+		self.ingameBuyPropsGuide = 0
+		return true
+	end
+	return false
 end

@@ -71,5 +71,5 @@ function HoneyBottleStateInLoop:getClassName()
 end
 
 function HoneyBottleStateInLoop:getNextState()
-	return self.context.furballSplitStateInLoop
+	return self.context.tileBlockerStateInLoop
 end

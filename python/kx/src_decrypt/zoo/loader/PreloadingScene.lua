@@ -9,7 +9,8 @@ require "zoo.ui.ButtonBuilder"
 
 require "zoo.util.FrameLoader"
 require "zoo.util.HeadImageLoader"
-require "zoo.util.WeChatSDK"require "zoo.util.GameCenterSDK"
+require "zoo.util.WeChatSDK"
+require "zoo.util.GameCenterSDK"
 
 require "zoo.scenes.HomeScene"
 require "zoo.scenes.PreloadingSceneUI"
@@ -28,6 +29,13 @@ require "hecore.sns.SnsProxy"
 require "zoo.util.SnsUtil"
 
 require "zoo.panel.AnnouncementPanel"
+require "zoo.util.YYBTMSelfUpdateManager"
+
+require "zoo.gameGuide.BindPhoneGuideLogic"
+
+require "zoo.panel.phone.LoginAndRegisterPanel"
+require "zoo.panel.phone.PhoneRegisterPanel"
+require "zoo.panel.phone.PasswordValidatePanel"
 
 kLoginErrorType = table.const {
     register = 1,
@@ -39,15 +47,20 @@ kLoginErrorType = table.const {
 local PreloadingScene = class(Scene)
 
 function PreloadingScene:onInit()
-        ArmatureFactory:setUseTexturePacker(false)
-        LevelMapManager.getInstance():initialize()
-        MetaManager.getInstance():initialize()
-        GameCenterSDK:getInstance():authenticateLocalUser()
-        self:handleCMPaymentDecision()
-        PreloadingSceneUI:initUI(self)
-        self:checkNeedRegister()
-        self:preloadResource() 
+    self.name = "PreloadingScene"
+    if MaintenanceManager.getInstance():isEnabled("PhoneAccountSystem") then
+        PlatformConfig:setPhonePlatformAuth()
+    end
+    LevelMapManager.getInstance():initialize()
+    MetaManager.getInstance():initialize()
+    GameCenterSDK:getInstance():authenticateLocalUser()
+    self:handleCMPaymentDecision()
+    PreloadingSceneUI:initUI(self)
+    self:checkNeedRegister()
+    self:preloadResource() 
+    if not PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then--应用宝版本公告先不弹，检测省流量更新后再弹
         self:loadAnnouncement()
+    end
 end
 
 function PreloadingScene:updateConfig()
@@ -89,6 +102,18 @@ function PreloadingScene:handleCMPaymentDecision()
     decisionProcessor:start()
 end
 
+function PreloadingScene:toggleLoginUIElements(enable)
+    if self.antiAddictionText then
+        self.antiAddictionText:setVisible(enable)
+    end
+    if self.startButton then
+        self.startButton:setVisible(enable)
+    end
+    if self.blueButton then
+        self.blueButton:setVisible(enable)
+    end
+end
+
 function PreloadingScene:loadAnnouncement( ... )
 
     AnnouncementPanel.loadAnnouncement(function( xml )
@@ -108,7 +133,8 @@ function PreloadingScene:loadAnnouncement( ... )
         if not self.isLoadResourceComplete then 
             self.announcements = announcements
         else
-           AnnouncementPanel:create(announcements,self):popout() 
+            self:toggleLoginUIElements(false) 
+            AnnouncementPanel:create(announcements,self):popout(function () self:toggleLoginUIElements(true) end) 
         end
     end)
 end
@@ -137,13 +163,39 @@ function PreloadingScene:checkNeedRegister()
     registerDetectProcessor:start()
 end
 
+local yybisSkiped = false
 function PreloadingScene:preloadResource()
+    if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+        --应用宝省流量更新逻辑
+        local checkUpdateEnableResult = function(result)
+            print("RRR   YYB Update  yybUpdateMaintenanceIsOn = " .. tostring(result))
+            if result then
+                YYBTMSelfUpdateManager:getInstance():showUpdatePanel(self)
+            else
+                if YYBTMSelfUpdateManager:getInstance().isSkiped == false then
+                    self:loadAnnouncement()
+                    self.progressBar:setVisible(true)
+                    self:doLoadResource()
+                    YYBTMSelfUpdateManager:getInstance().isSkiped = true
+                end
+            end
+        end
+        self.progressBar:setVisible(false)
+        YYBTMSelfUpdateManager:getInstance():checkUpdateEnable(checkUpdateEnableResult)
+    else
+        self:doLoadResource()
+    end
+end
+
+function PreloadingScene:doLoadResource()
     local function onLoadResourceComplete(evt)
         evt.target:rma()
-        self:buildAuthUI()
+        -- self:buildAuthUI()
 
         if self.announcements then 
-            AnnouncementPanel:create(self.announcements,self):popout()
+            AnnouncementPanel:create(self.announcements,self):popout(function () self:buildAuthUI() end)
+        else
+            self:buildAuthUI()
         end
         self.isLoadResourceComplete = true
 
@@ -171,6 +223,7 @@ function PreloadingScene:buildAuthUI()
     else
         local redButton, blueButton = PreloadingSceneUI:buildOAuthLoginButtons(self)
         self:redefineButtonForPlatform(redButton, blueButton)
+        -- BindPhoneGuideLogic:get():onShowLoginBtn(self.oauthButton)
     end
 
     he_log_info("auto_test_apk_start_success")
@@ -198,11 +251,72 @@ function PreloadingScene:redefineButtonForPlatform(redButton, blueButton)
 end
 
 function PreloadingScene:updateOAuthButtonState()
+    if MaintenanceManager.getInstance():isEnabled("PhoneAccountSystem") then
+        PlatformConfig:setPhonePlatformAuth()
+    end
+
+    self.oauthButton = self.redButton -- 默认情况下，红按钮
     if self.redButton.agreement then
         if self.redButton.agreement.touchLayer and not self.redButton.agreement.touchLayer.isDisposed then
             self.redButton.agreement.touchLayer:setTouchEnabled(true)
         end
         CCUserDefault:sharedUserDefault():setBoolForKey("game.user.agreement.checked", false)
+    end
+
+    local function checkAgreement( cb )
+        if self.antiAddictionText and self.antiAddictionText:isVisible() then
+            self.antiAddictionText:setVisible(false)
+        end
+
+        if self.redButton.agreement then
+            if not self.redButton.agreement.isDisposed and
+                self.redButton.agreement.checked then
+                if self.redButton.agreement.touchLayer and not self.redButton.agreement.touchLayer.isDisposed then
+                    self.redButton.agreement.touchLayer:setTouchEnabled(false)
+                end
+                cb()
+                CCUserDefault:sharedUserDefault():setBoolForKey("game.user.agreement.checked", true)
+            else
+                CommonTip:showTip(Localization:getInstance():getText("loading.agreement.button.reject"))       
+            end
+        else
+            cb()
+        end        
+    end
+
+    local function onTouchGuestLogin(evt)
+        checkAgreement(function( ... )
+            self:onGuestButtonTouched()
+
+            DcUtil:UserTrack({ category='login', sub_category='login_click_custom' })
+        end)
+    end
+
+    local function onTouchOAuthLogin(evt)
+        checkAgreement(function( ... )
+            self:onOAuthButtonTouched()
+        end)
+    end
+
+    local function onTouchChangeAccount(evt)
+        checkAgreement(function( ... )
+            self:onChangeAccountButtonTouched()
+        end)
+    end
+
+    local lastAuthorType = PlatformConfig:getLastPlatformAuthType()
+    if lastAuthorType and not PlatformConfig:hasAuthConfig(lastAuthorType) then
+        self:logoutWithChangeAccout()
+    end
+
+    local isLogin = false
+    if SnsProxy then
+        isLogin = SnsProxy:isLogin() or (SnsProxy:isPhoneLogin() and not SnsProxy:isPhoneLoginExpire())
+
+        if SnsProxy:isPhoneLogin() and SnsProxy:isPhoneLoginExpire() then
+            self:logoutWithChangeAccout()
+            self.lastPhoneLoginExpire = true
+        end
     end
 
     if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
@@ -212,47 +326,11 @@ function PreloadingScene:updateOAuthButtonState()
         local platformLoginTip = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
         
         self.redButton:setString(platformLoginTip)
-        local function onTouchOAuthLogin(evt)
-            self:onOAuthButtonTouched()
-        end
         self.redButton:removeEventListenerByName(DisplayEvents.kTouchTap)
         self.redButton:addEventListener(DisplayEvents.kTouchTap, onTouchOAuthLogin)
         self.redButton:setTouchEnabled(true)
         self.redButton:setVisible(true)
         return
-    end
-
-    local isLogin = false
-    if SnsProxy and SnsProxy.isLogin and type(SnsProxy.isLogin) == "function" then
-        isLogin = SnsProxy:isLogin()
-    end
-
-    local function onTouchGuestLogin(evt)
-        if PlatformConfig:isWeiboMergeToQQAccount() then
-            if not isLogin then --游客直接开始游戏
-                self:onGuestButtonTouched()
-            else 
-                self:selectSNSAccountLogin(false)
-            end
-        else
-            self:onGuestButtonTouched()
-        end
-    end
-
-    local function onTouchOAuthLogin(evt)
-        if PlatformConfig:isWeiboMergeToQQAccount() then 
-            if isLogin then
-                if SnsProxy:getAuthorizeType() == PlatformAuthEnum.kQQ then --QQ登录开始游戏
-                    self:onOAuthButtonTouched()        
-                else
-                    self:selectSNSAccountLogin(true)
-                end
-            else
-                self:selectSNSAccountLogin(false)
-            end
-        else
-            self:onOAuthButtonTouched()
-        end
     end
 
     local function displayLoginTipLabel()
@@ -274,41 +352,25 @@ function PreloadingScene:updateOAuthButtonState()
         self.redButton:removeEventListenerByName(DisplayEvents.kTouchTap)
         self.redButton:addEventListener(DisplayEvents.kTouchTap, onTouchOAuthLogin)
         self.blueButton:removeEventListenerByName(DisplayEvents.kTouchTap)
-        self.blueButton:addEventListener(DisplayEvents.kTouchTap, onTouchGuestLogin)
+        self.blueButton:addEventListener(DisplayEvents.kTouchTap, onTouchChangeAccount)
+
+        self.oauthButton = self.blueButton
     else
-        local platform = self:getPlatformNameLocalization()
-
-        -- if PlatformConfig:isPlatform(PlatformNameEnum.kMI) then -- 多平台，显示账号登录
-        --     platform = Localization:getInstance():getText("platform.platform")
-        -- end
-
-        if PlatformConfig:isWeiboMergeToQQAccount() then
+        local platform = nil     
+        if PlatformConfig:isMultipleAuthConfig() then
             platform = Localization:getInstance():getText("platform.platform")
-        end
-
-        local platformLoginTip = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
-        if PlatformConfig:isAuthConfig(PlatformAuthEnum.kWeibo) then
-            self.redButton:setString(Localization:getInstance():getText("button.start.game.immediately")) -- loading.tips.start.btn.guest
-            self.blueButton:setString(platformLoginTip)      
-
-            self.redButton:removeEventListenerByName(DisplayEvents.kTouchTap)
-            self.redButton:addEventListener(DisplayEvents.kTouchTap, onTouchGuestLogin)
-            self.blueButton:removeEventListenerByName(DisplayEvents.kTouchTap)
-            self.blueButton:addEventListener(DisplayEvents.kTouchTap, onTouchOAuthLogin)
-
-            if not self.loginTipsLabelPostionFixed then
-                displayLoginTipLabel()
-                self.loginTipsLabelPostionFixed = true
-            end
         else
-            self.redButton:setString(platformLoginTip)
-            self.blueButton:setString(Localization:getInstance():getText("loading.tips.start.btn.guest"))
-
-            self.redButton:removeEventListenerByName(DisplayEvents.kTouchTap)
-            self.redButton:addEventListener(DisplayEvents.kTouchTap, onTouchOAuthLogin)
-            self.blueButton:removeEventListenerByName(DisplayEvents.kTouchTap)
-            self.blueButton:addEventListener(DisplayEvents.kTouchTap, onTouchGuestLogin)
+            platform = self:getPlatformNameLocalization()
         end
+        local platformLoginTip = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
+
+        self.redButton:setString(platformLoginTip)
+        self.blueButton:setString(Localization:getInstance():getText("loading.tips.start.btn.guest"))
+
+        self.redButton:removeEventListenerByName(DisplayEvents.kTouchTap)
+        self.redButton:addEventListener(DisplayEvents.kTouchTap, onTouchOAuthLogin)
+        self.blueButton:removeEventListenerByName(DisplayEvents.kTouchTap)
+        self.blueButton:addEventListener(DisplayEvents.kTouchTap, onTouchGuestLogin)
     end
 
     if self.blueButton then 
@@ -325,35 +387,38 @@ function PreloadingScene:updateOAuthButtonState()
 end
 
 function PreloadingScene:onGuestButtonTouched()
-    local function login()
-        local isLogin = SnsProxy:isLogin()
-        if isLogin then
-            -- change account
-            self:changeAccount()
-        else
-            -- guest login
-            self:alertBeforeGuestLogin()
-            self:hideButtons()
-        end
+    self:alertBeforeGuestLogin()
+    self:hideButtons()
+end
+
+function PreloadingScene:onChangeAccountButtonTouched( ... )
+
+    local function onSelectSnsLogin( evt )
+        self:updateOAuthButtonState()
+        SnsProxy:setAuthorizeType(evt.data)
+
+        self:changeAccount()
     end
 
-    if self.antiAddictionText and self.antiAddictionText:isVisible() then
-        self.antiAddictionText:setVisible(false)
+    local function onSelectPhoneLoginComplete( evt )
+        -- local loginInfo = evt.data
+        -- self:doLogin(loginInfo, true)
+
+        self:oauthRegisterDetect()
     end
-    if self.blueButton.agreement then
-        if not self.blueButton.agreement.isDisposed and
-            self.blueButton.agreement.checked then
-            if self.blueButton.agreement.touchLayer and not self.blueButton.agreement.touchLayer.isDisposed then
-                self.blueButton.agreement.touchLayer:setTouchEnabled(false)
-            end
-            login()
-            CCUserDefault:sharedUserDefault():setBoolForKey("game.user.agreement.checked", true)
-        else
-            CommonTip:showTip(Localization:getInstance():getText("loading.agreement.button.reject"))       
-        end
-    else
-        login()
+
+    local function onCancel( ... )
+        self:updateOAuthButtonState()
+        self:clearStatus()
     end
+
+    local processor = require("zoo.loader.SelectAccountLoginProcessor").new()
+    processor:addEventListener(processor.Events.kSnsLogin, onSelectSnsLogin)
+    processor:addEventListener(processor.Events.kPhoneLoginComplete,onSelectPhoneLoginComplete)
+    processor:addEventListener(processor.Events.kCancel,onCancel)
+    processor:start(self,true)
+
+    self:hideButtons()
 end
 
 function PreloadingScene:changeAccount()
@@ -398,55 +463,6 @@ function PreloadingScene:changeAccount()
     oauthChangeAccountProcessor:start(self)
 end
 
-function PreloadingScene:selectSNSChangeAccount(authorizeType)
-    local oauthChangeAccountProcessor = require("zoo.loader.OAuthChangeAccountProcessor").new()
-
-    local function onChangeAccountComplete(evt)
-        evt.target:rma()
-        self:hideButtons()
-        if evt.data then
-            local loginInfo = evt.data
-            self:selectSNSDoLogin(loginInfo, true)
-        else
-            self:selectSNSOAuthRegisterDetect()
-        end
-    end
-
-    local function onChangeAccountError(evt)
-        evt.target:rma()
-        CommonTip:showTip(Localization:getInstance():getText("error.tip.-2"),'negative',nil,1)
-        self:updateOAuthButtonState()
-    end
-
-    local function onChangeAccountCancel(evt)
-        evt.target:rma()
-        self:updateOAuthButtonState()
-    end
-
-    local function onChangeAccountReady(evt)
-        -- do not remove event listener here, just logout ready
-        local function cancelLoginCallback()
-            oauthChangeAccountProcessor:rma()
-            self:updateOAuthButtonState()
-        end
-
-        self:changeUIOnSNSLogin(cancelLoginCallback)
-    end
-
-    local function onBeforeChangeAccount( ... )
-        SnsProxy:setAuthorizeType(authorizeType)
-    end
-
-    oauthChangeAccountProcessor:addEventListener(oauthChangeAccountProcessor.Events.kBeforeChangeAccount,onBeforeChangeAccount)
-    oauthChangeAccountProcessor:addEventListener(Events.kComplete, onChangeAccountComplete)
-    oauthChangeAccountProcessor:addEventListener(Events.kError, onChangeAccountError)
-    oauthChangeAccountProcessor:addEventListener(Events.kCancel, onChangeAccountCancel)
-    -- oauthChangeAccountProcessor:addEventListener(Events.kStart, onChangeAccountReady)
-    oauthChangeAccountProcessor:start(self)
-
-    onChangeAccountReady()
-end
-
 function PreloadingScene:alertBeforeGuestLogin()
     local function confirmGuestLogin(evt)
         evt.target:rma()
@@ -465,35 +481,43 @@ function PreloadingScene:alertBeforeGuestLogin()
 end
 
 function PreloadingScene:onOAuthButtonTouched()
-    local function login()
-        local isLogin = SnsProxy:isLogin()
-        print("onOAuthButtonTouched " .. tostring(isLogin))
-        if isLogin then
-            -- login with cached OAuth info
-            self:oauthLoginWithCache()
-            self:hideButtons()
-        else
-            -- login with OAuth request
-            self:oauthLoginWithRequest()
-        end
+    local isLogin = SnsProxy:isLogin() or SnsProxy:isPhoneLogin()
+    print("onOAuthButtonTouched " .. tostring(isLogin))
+    if isLogin then
+        -- login with cached OAuth info
+        self:oauthLoginWithCache()
+        self:hideButtons()
+    else
+        self:selectAccountLogin()
+        self:hideButtons()
+    end
+end
+
+function PreloadingScene:selectAccountLogin( ... )
+
+    local function onSelectSnsLogin( evt )
+        self:updateOAuthButtonState()
+        SnsProxy:setAuthorizeType(evt.data)
+
+        self:oauthLoginWithRequest()
     end
 
-    if self.antiAddictionText and self.antiAddictionText:isVisible() then
-        self.antiAddictionText:setVisible(false)
+    local function onSelectPhoneLoginComplete( evt )
+        -- local loginInfo = evt.data
+        -- self:doLogin(loginInfo, true)
+        self:oauthRegisterDetect()
     end
-    if self.redButton.agreement then
-        if not self.redButton.agreement.isDisposed and self.redButton.agreement.checked then
-            if self.redButton.agreement.touchLayer and not self.redButton.agreement.touchLayer.isDisposed then
-                self.redButton.agreement.touchLayer:setTouchEnabled(false)
-            end
-            login()
-            CCUserDefault:sharedUserDefault():setBoolForKey("game.user.agreement.checked", true)
-        else
-            CommonTip:showTip(Localization:getInstance():getText("loading.agreement.button.reject"))
-        end
-    else
-        login()
+
+    local function onCancel( ... )
+        self:updateOAuthButtonState()
+        self:clearStatus()
     end
+
+    local processor = require("zoo.loader.SelectAccountLoginProcessor").new()
+    processor:addEventListener(processor.Events.kSnsLogin, onSelectSnsLogin)
+    processor:addEventListener(processor.Events.kPhoneLoginComplete,onSelectPhoneLoginComplete)
+    processor:addEventListener(processor.Events.kCancel,onCancel)
+    processor:start(self,false,self.lastPhoneLoginExpire)
 end
 
 function PreloadingScene:oauthLoginWithCache()
@@ -507,7 +531,7 @@ function PreloadingScene:oauthLoginWithCache()
         self:oauthLoginWithRequest()
     end
 
-    if PlatformConfig:isPlatform(PlatformNameEnum.k360) then
+    if PlatformConfig:isPlatform(PlatformNameEnum.k360) and SnsProxy:getAuthorizeType() == PlatformAuthEnum.k360 then
         self:changeUIOnGuestLogin()
     end
 
@@ -562,102 +586,6 @@ function PreloadingScene:oauthLoginWithRequest()
     end
 end
 
-function PreloadingScene:selectSNSOAuthLoginWithRequest()
-    print("oauthLoginWithRequest")
-    local isCancel = false
-
-    local function onLoginSuccess(evt)
-        print("oauthLoginProcessor " .. "onLoginSuccess")
-        evt.target:rma()
-        self.requireButtons = false
-        self:hideButtons()
-        self:selectSNSOAuthRegisterDetect()
-        self:clearStatus()
-    end
-
-    local function onLoginFail(evt)
-        print("oauthLoginProcessor " .. "onLoginFail")
-        evt.target:rma()
-        self.requireButtons = false
-        self:updateOAuthButtonState()
-        self:clearStatus()
-    end
-
-    local function onLoginCancel(evt)
-        print("oauthLoginProcessor " .. "onLoginCancel")
-        evt.target:rma()
-        isCancel = true
-        self:updateOAuthButtonState()
-        self:clearStatus()
-    end
-
-    local oauthLoginProcessor = require("zoo.loader.OAuthLoginWithRequestProcessor").new()
-    oauthLoginProcessor:addEventListener(Events.kComplete, onLoginSuccess)
-    oauthLoginProcessor:addEventListener(Events.kError, onLoginFail)
-    oauthLoginProcessor:addEventListener(Events.kCancel, onLoginCancel)
-    oauthLoginProcessor:start(self)
-
-    local function cancelLoginCallback()
-        oauthLoginProcessor:rma()
-        self:updateOAuthButtonState()
-    end
-
-    if not isCancel then
-        self:changeUIOnSNSLogin(cancelLoginCallback)
-    end
-end
-
-function PreloadingScene:selectSNSAccountLogin( isWeiboCacheLogin,isErrorBack )
-
-    local function onWeiboCacheLogin( ... )
-        self:onOAuthButtonTouched()
-    end
-
-    local function onSelectComplete(evt)
-        local authorizeType = evt.data
-
-        evt.target:rma()
-        
-        local isLogin = SnsProxy:isLogin()
-        if isLogin then
-            self:selectSNSChangeAccount(authorizeType)
-        else
-            SnsProxy:setAuthorizeType(authorizeType)
-            self:selectSNSOAuthLoginWithRequest()
-        end
-
-        self:clearStatus()
-    end
-
-    local function onSelectCancel( evt )
-        evt.target:rma()
-        self:updateOAuthButtonState()
-        self:clearStatus()
-    end
-
-    local processor = require("zoo.loader.SelectSNSAccountLoginProcessor").new()
-    processor:addEventListener(processor.Events.kWeiboCacheLogin,onWeiboCacheLogin)
-    processor:addEventListener(processor.Events.kComplete, onSelectComplete)
-    processor:addEventListener(processor.Events.kCancel,onSelectCancel)
-
-
-    if self.redButton.agreement and not isErrorBack then
-        if not self.redButton.agreement.isDisposed and self.redButton.agreement.checked then
-            if self.redButton.agreement.touchLayer and not self.redButton.agreement.touchLayer.isDisposed then
-                self.redButton.agreement.touchLayer:setTouchEnabled(false)
-            end
-            processor:start(self,isWeiboCacheLogin,isErrorBack)
-            CCUserDefault:sharedUserDefault():setBoolForKey("game.user.agreement.checked", true)
-        else
-            CommonTip:showTip(Localization:getInstance():getText("loading.agreement.button.reject"))
-        end
-    else
-        processor:start(self,isWeiboCacheLogin,isErrorBack)
-    end
-
-
-end
-
 function PreloadingScene:oauthRegisterDetect()
     local function guestLoginOldUser(evt)
         evt.target:rma()
@@ -674,24 +602,6 @@ function PreloadingScene:oauthRegisterDetect()
     registerDetectProcessor:ad(registerDetectProcessor.events.kLocalOldUser, guestLoginOldUser)
     registerDetectProcessor:ad(registerDetectProcessor.events.kLocalNewUser, guestLoginNewUser)
     registerDetectProcessor:start()
-end
-
-function PreloadingScene:selectSNSOAuthRegisterDetect( ... )
-    local function guestLoginOldUser(evt)
-        evt.target:rma()
-        local loginInfo = Localhost.getInstance():getLastLoginUserConfig()
-        self:selectSNSDoLogin(loginInfo, true)
-    end
-
-    local function guestLoginNewUser(evt)
-        evt.target:rma()
-        self:selectSNSRegisterOAuthUser()
-    end
-
-    local registerDetectProcessor = require("zoo.loader.NeedRegisterDetectProcessor").new()
-    registerDetectProcessor:ad(registerDetectProcessor.events.kLocalOldUser, guestLoginOldUser)
-    registerDetectProcessor:ad(registerDetectProcessor.events.kLocalNewUser, guestLoginNewUser)
-    registerDetectProcessor:start()    
 end
 
 
@@ -762,83 +672,11 @@ function PreloadingScene:doLogin(loginInfo, isOAuth)
     MaintenanceManager.getInstance():initialize() -- require uid. initialize here
 end
 
-function PreloadingScene:selectSNSDoLogin(loginInfo, isOAuth )
-    local function onLoginFinish(evt)
-        evt.target:rma()
-        self:clearStatus()
-        self:onSelectSNSLoadLoginFinish()
-    end
-
-    local function onLoginFail(evt)
-        evt.target:rma()
-        
-        -- login请求失败:游客登录时直接进入游戏; OAuth登录时如果openId对应的用户有本地数据记录则直接进入游戏,否则需要刷新按钮
-        if isOAuth then
-            local localUserConfig = Localhost.getInstance():getLastLoginUserConfig()
-            local userData = nil
-            if localUserConfig then 
-                userData = Localhost.getInstance():readUserDataByUserID(localUserConfig.uid)
-            end
-
-            if userData 
-                and _G.sns_token
-                and userData.openId == _G.sns_token.openId
-                then 
-                self:clearStatus()
-                self:onSelectSNSLoadLoginFinish()
-            else
-                local msg = Localization:getInstance():getText("loading.tips.register.failure."..kLoginErrorType.register)
-                CommonTip:showTip(msg, "negative")
-
-                self:clearStatus()
-                self.requireButtons = false
-                self:updateOAuthButtonState()
-            end
-        else
-            self:clearStatus()
-            self:onSelectSNSLoadLoginFinish()
-        end
-
-    end
-
-    local loginProcessor = require("zoo.loader.LoginServerProcessor").new() 
-    loginProcessor:ad(Events.kComplete, onLoginFinish)
-    loginProcessor:ad(Events.kError, onLoginFail)
-    loginProcessor:start(loginInfo)
-
-    self:changeUIOnGuestLogin()
-
-    MaintenanceManager.getInstance():initialize() -- require uid. initialize here    
-end
-
 function PreloadingScene:registerOAuthUser()
     local function onRegisterSuccess(evt)
         evt.target:rma()
         local loginInfo = evt.data
         self:doLogin(loginInfo, true)
-    end
-
-    local function onRegisterError(evt)
-        evt.target:rma()
-        local msg = Localization:getInstance():getText("loading.tips.register.failure."..kLoginErrorType.register)
-        CommonTip:showTip(msg, "negative")
-        self:clearStatus()
-        self:updateOAuthButtonState()
-    end
-
-    local registerNewUserProcessor = require("zoo.loader.RegisterNewUserProcessor").new()
-    registerNewUserProcessor:ad(Events.kComplete, onRegisterSuccess)
-    registerNewUserProcessor:ad(Events.kError, onRegisterError)
-    registerNewUserProcessor:start()
-
-    self:changeUIOnRegister()
-end
-
-function PreloadingScene:selectSNSRegisterOAuthUser()
-    local function onRegisterSuccess(evt)
-        evt.target:rma()
-        local loginInfo = evt.data
-        self:selectSNSDoLogin(loginInfo, true)
     end
 
     local function onRegisterError(evt)
@@ -996,9 +834,11 @@ function PreloadingScene:startGame()
         or PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) 
         or __IOS_FB 
         or __IOS_QQ 
-        or (kUserLogin and sns_token and PlatformConfig:isWeiboMergeToQQAccount() and SnsProxy:getAuthorizeType() == PlatformAuthEnum.kQQ)
+        or (_G.kUserSNSLogin and SnsProxy:getAuthorizeType() == PlatformAuthEnum.kQQ)
     then
-        SnsProxy:syncSnsFriend()
+        if not PlatformConfig:isQQPlatform() then
+            SnsProxy:syncSnsFriend()
+        end
     end
 end
 
@@ -1035,14 +875,15 @@ end
 
 function PreloadingScene:onLoadLoginFinish()
     self:loadLevelConfigDynamicUpdate()
-    local openId, accessToken
+    local openId, accessToken,authorType
     if kUserLogin and sns_token then 
         openId = sns_token.openId
         accessToken = sns_token.accessToken
+        authorType = sns_token.authorType
     end
 
     if openId and accessToken then 
-        self:syncOAuthData(openId, accessToken) 
+        self:syncOAuthData(openId, accessToken,authorType) 
     else
         self:startGame()
     end
@@ -1053,117 +894,14 @@ function PreloadingScene:loadLevelConfigDynamicUpdate()
     levelConfigUpdateProcessor:start()
 end
 
-function PreloadingScene:onSelectSNSLoadLoginFinish()
-
-    local function onComplete( ... )
-        self:onLoadLoginFinish()
-    end
-    
-    local function onQQLogin( ... )
-        self:selectSNSChangeAccount(PlatformAuthEnum.kQQ)
-    end
-
-    local function onWeiboLogin( ... )
-        self:selectSNSChangeAccount(PlatformAuthEnum.kWeibo)
-    end
-
-    local function onCancel( ... )
-        self:logout()
-        self:clearStatus()
-        self:updateOAuthButtonState()
-    end
-
-    local function onError( ... )
-        self:logout()
-        self:clearStatus()
-        self:updateOAuthButtonState()
-    end
-
-    local function onMergeError( evt )
-        local isWeiboCacheLogin = evt.data
-
-        self:logout()
-        self:clearStatus()
-        -- 
-        self:selectSNSAccountLogin(isWeiboCacheLogin,true)
-    end
-
-    local processor = require("zoo.loader.SelectSNSAccountLoginFinishProcessor").new()
-    processor:addEventListener(processor.Events.kComplete,onComplete)
-    processor:addEventListener(processor.Events.kQQLogin,onQQLogin)
-    processor:addEventListener(processor.Events.kWeiboLogin,onWeiboLogin)
-    processor:addEventListener(processor.Events.kCancel,onCancel)
-    processor:addEventListener(processor.Events.kMergeError,onMergeError)
-    processor:addEventListener(processor.Events.kError,onError)
-    processor:start(self)
-
-end
-
--- function PreloadingScene:onLoadLoginFinish()
---     local function startGame()
---         local openId, accessToken
---         if kUserLogin and sns_token then 
---             openId = sns_token.openId
---             accessToken = sns_token.accessToken
---         end
---         if openId and accessToken then 
---             self:syncOAuthData(openId, accessToken) 
---         else
---             self:startGame()
---         end
---     end
-
---     if self:isNeedChangeToMiAccount() then
---         self:recommendChangeToMiAccount(startGame)
---     else
---         startGame()
---     end
--- end
-
 function PreloadingScene:isNeedChangeToMiAccount()
     return __ANDROID and PlatformConfig:isPlatform(PlatformNameEnum.kMI) 
             and SnsProxy:getAuthorizeType() == PlatformAuthEnum.kWeibo
             and sns_token 
 end
--- 建议玩家切换到小米账号
-function PreloadingScene:recommendChangeToMiAccount(onChangeFinish)
-    local function onComplete(evt)
-        self:clearStatus()
-        if onChangeFinish then onChangeFinish() end
-    end
 
-    local function onError(evt)
-        evt.target:rma()
-        self:logout()
-        self:clearStatus()
-        self:updateOAuthButtonState()
-    end
 
-    local function onCancel(evt)
-        evt.target:rma()
-        self:clearStatus()
-        -- self:updateOAuthButtonState()
-        self:oauthLoginWithRequest() -- 弹出登陆框
-    end
-
-    local function onAsGuest(evt)
-        evt.target:rma()
-        self:logout()
-        self:clearStatus()
-        self:guestRegisterDetect()
-    end
-
-    local changeProcessor = require("zoo.loader.MiLoginChangeAccountProcessor").new()
-    changeProcessor:addEventListener(changeProcessor.Events.kComplete, onComplete)
-    changeProcessor:addEventListener(changeProcessor.Events.kError, onError)
-    changeProcessor:addEventListener(changeProcessor.Events.kCancel, onCancel)
-    changeProcessor:addEventListener(changeProcessor.Events.kAsGuest, onAsGuest)
-    changeProcessor:start(self)
-end
-
--- 
-
-function PreloadingScene:syncOAuthData(openId, accessToken)
+function PreloadingScene:syncOAuthData(openId,accessToken,authorType)
     local function onSyncSuccess(evt)
         evt.target:rma()
         self:startGame()
@@ -1187,7 +925,7 @@ function PreloadingScene:syncOAuthData(openId, accessToken)
     syncProcessor:addEventListener(syncProcessor.events.kSyncSuccess, onSyncSuccess)
     syncProcessor:addEventListener(syncProcessor.events.kSyncCancel, onSyncCancel)
     syncProcessor:addEventListener(syncProcessor.events.kSyncCancelLogout, onSyncCancelLogout)
-    syncProcessor:start(openId, accessToken)
+    syncProcessor:start(openId, accessToken,authorType)
 
     self:changeUIOnConnect()
 end
@@ -1226,10 +964,12 @@ function PreloadingScene:_logout(deleteUserData)
     Localhost.getInstance():deleteGuideRecord()
     Localhost.getInstance():deleteMarkPriseRecord()
     Localhost.getInstance():deletePushRecord()
+    Localhost.getInstance():deleteWeeklyMatchData()
+    Localhost.getInstance():deleteLocalExtraData()
     LocalNotificationManager.getInstance():cancelAllAndroidNotification()
 
     CCUserDefault:sharedUserDefault():setStringForKey("game.devicename.userinput", "")
-    CCUserDefault:sharedUserDefault():setIntegerForKey("thisWeekNoSelectAccount",0)
+    -- CCUserDefault:sharedUserDefault():setIntegerForKey("thisWeekNoSelectAccount",0)
     CCUserDefault:sharedUserDefault():flush()
 
     _G.kDeviceID = UdidUtil:revertUdid()

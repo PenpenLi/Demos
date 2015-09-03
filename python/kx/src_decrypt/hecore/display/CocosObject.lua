@@ -319,15 +319,15 @@ function CocosObject:setAnchorPoint(v) self.refCocosObj:setAnchorPoint(v) end
 
 
 function CocosObject:setAnchorPointCenterWhileStayOrigianlPosition(posAdjust)
-
-	self:setAnchorPointWhileStayOriginalPosition(ccp(0.5, 0.5), posAdjust)
+	-- unused parameter posAdjust.
+	self:setAnchorPointWhileStayOriginalPosition(ccp(0.5, 0.5))
 end
 
 function CocosObject:setToParentCenterHorizontal(...)
 	assert(#{...} == 0)
 
 	-- Get Parent Size
-	he_log_warning("this method to get group bounds, is the size in parent space !")
+	-- he_log_warning("this method to get group bounds, is the size in parent space !")
 	local parent = self:getParent()
 	assert(parent)
 	local parentSize = parent:getGroupBounds().size
@@ -372,35 +372,32 @@ end
 
 function CocosObject:setAnchorPointWhileStayOriginalPosition(newAnchorPoint, posAdjust)
 	assert(newAnchorPoint)
-	
-	--local selfSize		= self:getGroupBounds().size
-	local selfSize		= self:getContentSize()
+	-- unused parameter posAdjust.
 
-	local originalAnchorX	= self:getAnchorPoint().x
-	local originalAnchorY	= self:getAnchorPoint().y
+	local contentSize = self:getContentSize()
+	local scale = self:getScale()
+	local rotation = self:getRotation()
+	local position = self:getPosition()
+	local skewX = self:getSkewX()
+	local skewY = self:getSkewY()
 
-	--local deltaAnchorX	= 0.5 - originalAnchorX
-	--local deltaAnchorY	= 0.5 - originalAnchorY
-	local deltaAnchorX = newAnchorPoint.x - originalAnchorX
-	local deltaAnchorY = newAnchorPoint.y - originalAnchorY
+	-- process scale
+	local tmpAnchor = {}
+	tmpAnchor.x = (newAnchorPoint.x - self:getAnchorPoint().x) * contentSize.width * scale
+	tmpAnchor.y = (newAnchorPoint.y - self:getAnchorPoint().y) * contentSize.height * scale
 
-	local deltaDistanceX	= selfSize.width * deltaAnchorX
-	local deltaDistanceY	= selfSize.height * deltaAnchorY
+	-- process rotation
+	local cosRotation, sinRotation = math.cos(rotation * math.pi / 180), math.sin(rotation * math.pi / 180)
+	local deltaAnchor = {}
+	deltaAnchor.x = tmpAnchor.x * cosRotation + tmpAnchor.y * sinRotation
+	deltaAnchor.y = tmpAnchor.y * cosRotation - tmpAnchor.x * sinRotation
 
-	--self:setAnchorPoint(ccp(0.5,0.5))
+	-- process skew
+	deltaAnchor.x = deltaAnchor.x + contentSize.height * math.tan(skewX * math.pi / 180) / 2
+	deltaAnchor.y = deltaAnchor.y + contentSize.width * math.tan(skewY * math.pi / 180) / 2
+
 	self:setAnchorPoint(ccp(newAnchorPoint.x, newAnchorPoint.y))
-
-	local curPosX		= self:getPositionX()
-	local curPosY		= self:getPositionY()
-
-	local newPosX		= curPosX + deltaDistanceX
-	local newPosY		= curPosY + deltaDistanceY
-
-	if posAdjust then 
-		self:setPosition(ccp(newPosX+posAdjust.x, newPosY+posAdjust.y))
-	else
-		self:setPosition(ccp(newPosX, newPosY))
-	end
+	self:setPositionXY(position.x + deltaAnchor.x, position.y + deltaAnchor.y)
 end
 
 function CocosObject:isIgnoreAnchorPointForPosition() return self.refCocosObj:isIgnoreAnchorPointForPosition() end
@@ -740,6 +737,73 @@ end
 -- ClippingNode ---------------------------------------------------------
 --
 ClippingNode = class(CocosObject)
+--倍儿蛋疼的bug，改得也是莫名其妙，中间加个node居然好了(wp8 上，叠加的clipping node出现部分遮挡不了)
+---------------------------wp8------------------------------------------------------------
+if __WP8 then
+function ClippingNode:setRefCocosObj(clippingNode)
+	if clippingNode == nil or clippingNode == self.clippingNode then return end
+
+	self.clippingNode = clippingNode
+
+	local refCocosObj = CCNode:create()
+	self.clippingNode:setPosition(0,0)
+	refCocosObj:addChild(self.clippingNode)
+
+	CocosObject.setRefCocosObj(self, refCocosObj)
+end
+
+function ClippingNode:addChild(child)
+	self:addChildAt(child, #self.list);
+end
+
+-- index: [0 - getNumOfChildren]
+function ClippingNode:addChildAt(child, index)
+
+    if not child or not child.refCocosObj then return end;
+	local added = self:contains(child);
+	if added then
+		--assert(false)
+		return
+	end;
+
+	local compare = child.refCocosObj;
+	
+	if kHitAreaObjectName == child.name then 
+        self.clippingNode:addChild(compare, index, kHitAreaObjectTag);
+    else
+        self.clippingNode:addChild(compare, index);
+    end
+		
+    local oldIndex = table.getn(self.list);
+	table.insert(self.list, index+1, child);
+	child.parent = self;
+
+	--update index
+	for i, v in ipairs(self.list) do v.index = i-1 end;
+    if index ~= oldIndex then self:refreshIndex() end;
+end
+
+--CCNode
+function ClippingNode:getStencil() return self.clippingNode:getStencil() end
+function ClippingNode:setStencil(v) self.clippingNode:setStencil(v) end
+
+--GLfloat, 1.0f by default
+function ClippingNode:getAlphaThreshold() return self.clippingNode:getAlphaThreshold() end
+function ClippingNode:setAlphaThreshold(v) self.clippingNode:setAlphaThreshold(v) end
+
+function ClippingNode:isInverted() return self.clippingNode:isInverted() end
+function ClippingNode:setInverted(v) self.clippingNode:setInverted(v) end
+
+--update size, call before getGroupBounds()
+-- NOT TESTED YET
+function ClippingNode:updateGroupBounds()
+	local hitArea = self.clippingNode:getChildByTag(kHitAreaObjectTag)
+	local stencil = self.clippingNode:getStencil()
+	hitArea:setCotnentSize(stencil:getContentSize())
+end
+
+---------------------------wp8------------------------------------------------------------
+else
 
 --CCNode
 function ClippingNode:getStencil() return self.refCocosObj:getStencil() end
@@ -752,19 +816,38 @@ function ClippingNode:setAlphaThreshold(v) self.refCocosObj:setAlphaThreshold(v)
 function ClippingNode:isInverted() return self.refCocosObj:isInverted() end
 function ClippingNode:setInverted(v) self.refCocosObj:setInverted(v) end
 
---static creation function
-function ClippingNode:create (clipRect, target)
-  if not clipRect then
-    print("invalid params for buildClippingNode")
-    return 
-  end
-  local stencilNode = CCLayerColor:create(ccc4(255,255,255,255), clipRect.size.width, clipRect.size.height)
-  local node = ClippingNode.new(CCClippingNode:create(stencilNode))
-  node.className = "ClippingNode"
-  if target then node:addChild(target) end
-  return node
+--update size, call before getGroupBounds()
+-- NOT TESTED YET
+function ClippingNode:updateGroupBounds()
+	local hitArea = self.refCocosObj:getChildByTag(kHitAreaObjectTag)
+	local stencil = self.refCocosObj:getStencil()
+	hitArea:setCotnentSize(stencil:getContentSize())
 end
 
+end
+--static creation function
+function ClippingNode:create (clipRect, target)
+	if not clipRect then
+		print("invalid params for buildClippingNode")
+		return 
+	end
+	local stencilNode = CCLayerColor:create(ccc4(255,255,255,255), clipRect.size.width, clipRect.size.height)
+	local node = ClippingNode.new(CCClippingNode:create(stencilNode))
+	
+	node.className = "ClippingNode"
+	if target then node:addChild(target) end
+	return node
+end
+
+--override ctor
+function ClippingNode:ctor(refCocosObj)
+	CocosObject.ctor(self, refCocosObj)
+	local size = self:getGroupBounds().size
+	local groupBounds = CCLayerColor:create(ccc4(255,255,255,255), size.width, size.height)
+	groupBounds:setTag(kHitAreaObjectTag)
+	groupBounds:setOpacity(0)
+	self.refCocosObj:addChild(groupBounds)
+end
 
 --
 -- SimpleClippingNode ---------------------------------------------------------
@@ -781,6 +864,18 @@ end
 
 function SimpleClippingNode:setRecalcPosition(value)
 	self.refCocosObj:setRecalcPosition(value)
+end
+
+-- override setContentSize
+function SimpleClippingNode:setContentSize(v)
+	CocosObject.setContentSize(self, v)
+	if not self.groupBoundsCocosObj then
+		local groupBounds = CCLayerColor:create(ccc4(255,255,255,255), v.width, v.height)
+		groupBounds:setTag(kHitAreaObjectTag)
+		groupBounds:setOpacity(0)
+		self.refCocosObj:addChild(groupBounds)
+		self.groupBoundsCocosObj = groupBounds
+	end
 end
 
 ---------------------------------

@@ -34,6 +34,9 @@ ResourceConfig = {
 		"flash/scenes/flowers/target_icon.plist",
 
 		"flash/gameguide/guidespanImage.plist",
+		"flash/quick_select_level.plist",
+		"flash/quick_select_animation.plist",
+		
 	},
 	json={
 		"flash/scenes/homeScene/home.json",		
@@ -176,7 +179,13 @@ PanelConfigFiles.panel_nick_name = "ui/panel_nick_name.json"
 PanelConfigFiles.panel_push_activity = "ui/panel_push_activity.json"
 PanelConfigFiles.panel_mark_energy_notionce = "ui/panel_mark_energy_notionce.json"
 PanelConfigFiles.panel_turntable = "ui/panel_turntable.json"
-PanelConfigFiles.panel_rabbit_weekly_v2 = "ui/panel_rabbit_week_match.json"
+PanelConfigFiles.panel_rabbit_weekly_v2 = "ui/panel_rabbit_week_match.json" -- not use anymore since 1.25
 PanelConfigFiles.recall_ui = "ui/RecallUI.json"
 PanelConfigFiles.panel_ad_video = "ui/AdVideoPanel.json"
 PanelConfigFiles.panel_buy_confirm = "ui/panel_buy_confirm.json"
+PanelConfigFiles.panel_register = "ui/phone_register_panel.json"
+PanelConfigFiles.qr_code_panel = "ui/qr_code_panel.json"
+PanelConfigFiles.third_pay_guide_panel = "ui/third_pay_guide_panel.json"
+PanelConfigFiles.ios_pay_cartoon_panel = "ui/ios_pay_guide_help.json"
+PanelConfigFiles.two_choice_panel = "ui/TwoChoicePanel.json"
+PanelConfigFiles.third_pay_show_priority_panel = "ui/third_pay_show_priority_panel.json"

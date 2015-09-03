@@ -196,13 +196,15 @@ function UpdateSJSuccessPanel:onOkTapped()
 			if image then image:setVisible(false) end
 			if numText then numText:setVisible(false) end 
 		end
+
+		UserManager.getInstance().updateRewards = nil
 	end
 	local function onFail( evt ) 
 		
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
 		self:onCloseBtnTapped()
 
-	   	UserManager.getInstance().updateReward = nil
+	   	UserManager.getInstance().updateRewards = nil
 	end
 	local http = GetUpdateRewardHttp.new(true)
 	http:ad(Events.kComplete, onSuccess)

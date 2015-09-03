@@ -103,11 +103,11 @@ function PropInfoPanel:init(panelType, levelId)
 			end
 		end
 	end
+	local propListItemFixedWidth = 631
 	for i = 1, #self.propList do
-		self.propList[i]:setPosition(ccp((bgSize.width - 40 - self.propList[i]:getGroupBounds().size.width) / 2, self.listHeight))
+		self.propList[i]:setPosition(ccp((bgSize.width - 40 - propListItemFixedWidth) / 2, self.listHeight))
 		self.propVisualList:addChild(self.propList[i])
 		self.listHeight = self.listHeight - self.propList[i].height
-		print(self.listHeight)
 	end	
 
 	-- 设置互动事件监听
@@ -217,7 +217,6 @@ function PropInfoPanel:buildPropListItem(propId)
 	propListItem.btnPlayText = propListItem.btnPlay:getChildByName("text")
 
 	-- 设置文字（需要更新本地化文件）
-	print(propId)
 	local propName = Localization:getInstance():getText("prop.name."..propId)
 	propListItem.propName:setString(propName)
 	propListItem.propDesc:setString(Localization:getInstance():getText("level.prop.tip."..propId, {n = "\n"}))
@@ -234,7 +233,7 @@ function PropInfoPanel:buildPropListItem(propId)
 	local ac = propListItem.animation:getAnchorPoint()
 	propListItem.animation:setAnchorPoint(ccp(0, 1))
 	pos = propListItem.animePlaceholder:getPosition()
-	size = propListItem:getGroupBounds().size
+	local size = propListItem:getGroupBounds().size
 	propListItem.height = size.height
 	propListItem.animation:setPosition(ccp(pos.x, pos.y))
 	propListItem.animePlaceholder:getParent():addChildAt(propListItem.animation, 0)

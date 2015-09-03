@@ -223,7 +223,7 @@ function MatchCoverLogic:doEffectToLightUp(mainLogic, r, c)
 	local item = mainLogic.gameItemMap[r][c]
 	local board = mainLogic.boardmap[r][c]
 	------2.冰层变化------
-	if not item:hasLock() and board.iceLevel > 0 then
+	if item:canEffectLightUp() and board.iceLevel > 0 then
 		----1-1.数据变化
 		board.iceLevel = board.iceLevel - 1;
 
@@ -254,7 +254,7 @@ function MatchCoverLogic:doEffectSandAtPos(mainLogic, r, c)
 	local board = mainLogic.boardmap[r][c]
 	local item = mainLogic.gameItemMap[r][c]
 
-	if not item:hasLock() and board.sandLevel > 0 then
+	if item:canEffectLightUp() and board.sandLevel > 0 then
 		board.sandLevel = board.sandLevel - 1
 		local sandCleanAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -309,22 +309,32 @@ function MatchCoverLogic:doEffectChainsAtPos(mainLogic, r, c)
 		ret = true
 	end
 
-	if r - 1 > 0 and not mainLogic:isTheSameMatchData(r, c, r-1, c) then 
+	local function canEffectNearby(r2, c2)
+		if not mainLogic:isPosValid(r2, c2) then return false end
+		local item2 = mainLogic.gameItemMap[r2][c2]
+		if (item2 and not item2:canEffectChains())  -- 该位置不能影响自己格内的冰柱
+				or not mainLogic:isTheSameMatchData(r, c, r2, c2) then -- 或者两者不属于同一匹配组
+			return true
+		end
+		return false
+	end
+
+	if canEffectNearby(r-1, c) then 
 		if self:doEffectChainsAtPosWithDirs(mainLogic, r-1, c, {ChainDirConfig.kDown}) then
 			ret = true
 		end
 	end
-	if r + 1 <= #mainLogic.swapHelpMap and not mainLogic:isTheSameMatchData(r, c, r+1, c) then 
+	if canEffectNearby(r+1, c) then 
 		if self:doEffectChainsAtPosWithDirs(mainLogic, r+1, c, {ChainDirConfig.kUp}) then
 			ret = true
 		end
 	end
-	if c - 1 > 0 and not mainLogic:isTheSameMatchData(r, c, r, c-1) then 
+	if canEffectNearby(r, c-1) then 
 		if self:doEffectChainsAtPosWithDirs(mainLogic, r, c-1, {ChainDirConfig.kRight}) then
 			ret = true
 		end
 	end
-	if c + 1 <= #mainLogic.swapHelpMap[r] and not mainLogic:isTheSameMatchData(r, c, r, c+1) then 
+	if canEffectNearby(r, c+1) then 
 		if self:doEffectChainsAtPosWithDirs(mainLogic, r, c+1, {ChainDirConfig.kLeft}) then
 			ret = true
 		end
@@ -404,12 +414,18 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
 	    mainLogic:addDestroyAction(action)
 	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
 		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
+	elseif item.ItemType == GameItemType.kBottleBlocker and item.bottleLevel > 0 and item:isAvailable() then
+		if item.bottleState == BottleBlockerState.Waiting then
+			GameExtandPlayLogic:decreaseBottleBlocker(mainLogic, r, c , 1 , false)
+		end
 	end
 
-	self:doEffectChainsAtPos(mainLogic, r, c)
+	if item:canEffectChains() then
+		self:doEffectChainsAtPos(mainLogic, r, c)
+	end
 end
 
-
+--周围有东西被消除，触发相应的障碍逻辑
 function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	if r<=0 or r>#mainLogic.boardmap or c<=0 or c>#mainLogic.boardmap[r] then return false end;
 
@@ -419,7 +435,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	local t_count = count
 	
 	if not item:isAvailable() then return  end
-
+	local hashoney = item.honeyLevel > 0
 	--蜂蜜------------------
 	if item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, 1 )
@@ -558,6 +574,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	elseif item.ItemType == GameItemType.kCoin 
 		and (item.ItemStatus == GameItemStatusType.kNone 
 		or item.ItemStatus == GameItemStatusType.kItemHalfStable)
+		and not hashoney
 		then
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchBy_Snow)
@@ -616,6 +633,9 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	elseif item.digJewelLevel > 0 and item.digBlockCanbeDelete == true  then
 		item.digBlockCanbeDelete = false
 		GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c)
+	elseif item.ItemType == GameItemType.kGoldZongZi and item.digGoldZongZiLevel > 0 and item.digBlockCanbeDelete == true then
+		item.digBlockCanbeDelete = false
+		GameExtandPlayLogic:decreaseDigGoldZongZi(mainLogic, r, c)
 	elseif item.bigMonsterFrostingType > 0 then 
 		--add score
 		local addScore = GamePlayConfig_Score_MatchBy_Snow

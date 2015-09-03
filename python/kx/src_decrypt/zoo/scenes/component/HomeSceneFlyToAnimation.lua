@@ -244,6 +244,7 @@ end
 -- 	number,
 --	flyDuration,
 --	delayTime,
+-- 	showIcon,
 -- 	startCallback(coinSprite), -- may be nil
 -- 	reachCallback(coinSprite), -- may be nil
 -- 	finishCallback,
@@ -256,6 +257,7 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 	if not self.bagButton or self.bagButton.isDisposed then return end
 	config.number = config.number or 1
 	config.flyDuration, config.delayTime = config.flyDuration or 0.8, config.delayTime or 0.3
+	if type(config.showIcon) ~= "boolean" then config.showIcon = true end
 	local props = {}
 	for i = 1, config.number do
 		local prop
@@ -266,6 +268,13 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 		table.insert(props, prop)
 	end
 	props[1]:setVisible(true)
+
+	local iconSprite = nil
+	if config.showIcon then
+		iconSprite = Sprite:createWithSpriteFrameName("bagButtonImage0000")
+		iconSprite:setPosition(self.bagButton:getFlyToPosition())
+	end
+
 	local function onStart(target)
 		for k, v in ipairs(props) do
 			if v == target and props[k + 1] and not props[k + 1].isDisposed then
@@ -276,7 +285,9 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 	end
 	local function onReach(target)
 		if target and not target.isDisposed then target:setVisible(false) end
-		if self.bagButton and not self.bagButton.isDisposed then self.bagButton:playHighlightAnim() end
+		if config.showIcon then
+			iconSprite:runAction(CCSequence:createWithTwoActions(CCScaleTo:create(0.1, 1.5), CCScaleTo:create(0.4, 1)))
+		end
 		if config.reachCallback then config.reachCallback(target) end
 	end
 	local function onFinish()
@@ -284,11 +295,20 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 			props[1]:removeFromParentAndCleanup(true)
 			table.remove(props, 1)
 		end
+		if config.showIcon then
+			local function removeSelf() iconSprite:removeFromParentAndCleanup(true) end
+			local function onDelayOver()
+				iconSprite:runAction(CCSequence:createWithTwoActions(CCFadeOut:create(0.2), CCCallFunc:create(removeSelf)))
+			end
+			iconSprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCCallFunc:create(onDelayOver)))
+		end
 		if config.finishCallback then config.finishCallback() end
 	end
+
 	local jumpToConfig = {
 		duration = config.flyDuration,
 		sprites = props,
+		icon = iconSprite,
 		dstPosition = self.bagButton:getFlyToPosition(),
 		dstSize = self.bagButton:getFlyToSize(),
 		easeIn = true,
@@ -299,14 +319,26 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 	}
 	local ret = {}
 	ret.sprites = props
+
 	ret.play = function(self)
 		if not self.bagButton or self.bagButton.isDisposed or self.played then return false end
+		if jumpToConfig.icon then
+			local icon = jumpToConfig.icon
+			icon:setVisible(true)
+			icon:setOpacity(0)
+			if not icon:getParent() then
+				local scene = Director:sharedDirector():getRunningSceneLua()
+				scene:addChild(icon)
+			end
+			icon:runAction(CCFadeIn:create(0.2))
+		end
 		self.played = true
 		jumpToConfig.extendAction = CCSequence:createWithTwoActions(CCDelayTime:create(config.flyDuration - 0.1), CCFadeOut:create(0.1))
 		JumpFlyToAnimation:create(jumpToConfig)
 		return true
 	end
 	ret.bagButton = self.bagButton
+
 	return ret
 end
 
@@ -451,15 +483,17 @@ function HomeSceneFlyToAnimation:levelNodeJumpToBagAnimation(props, position, fi
 			table.insert(icons, prop)
 		end
 	end
+
+	local iconSprite = Sprite:createWithSpriteFrameName("bagButtonImage0000")
+	iconSprite:setPosition(self.bagButton:getFlyToPosition())
+
 	local counter = 1
 	local function onReach()
 		if icons[counter] and not icons[counter].isDisposed then
 			icons[counter]:setVisible(false)
 			counter = counter + 1
 		end
-		if not self.bagButton.isDisposed and self.bagButton.playHighlightAnim then
-			self.bagButton:playHighlightAnim()
-		end
+		iconSprite:runAction(CCSequence:createWithTwoActions(CCScaleTo:create(0.1, 1.5), CCScaleTo:create(0.4, 1)))
 		GamePlayMusicPlayer:playEffect(GameMusicType.kGetRewardProp)	
 	end
 	local function onFinish()
@@ -467,11 +501,17 @@ function HomeSceneFlyToAnimation:levelNodeJumpToBagAnimation(props, position, fi
 			icons[1]:removeFromParentAndCleanup(true)
 			table.remove(icons, 1)
 		end
+		local function removeSelf() iconSprite:removeFromParentAndCleanup(true) end
+		local function onDelayOver()
+			iconSprite:runAction(CCSequence:createWithTwoActions(CCFadeOut:create(0.2), CCCallFunc:create(removeSelf)))
+		end
+		iconSprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCCallFunc:create(onDelayOver)))
 		if finishCallback then finishCallback() end
 	end
 	local config = {
 		duration = 0.8,
 		sprites = icons,
+		icon = iconSprite,
 		dstPosition = self.bagButton:getFlyToPosition(),
 		dstSize = self.bagButton:getFlyToSize(),
 		easeIn = true,
@@ -494,6 +534,9 @@ function HomeSceneFlyToAnimation:levelNodeJumpToBagAnimation(props, position, fi
 		v:runAction(CCSequence:create(sequence))
 		parent:addChild(v)
 	end
+	iconSprite:setOpacity(0)
+	parent:addChild(iconSprite)
+	iconSprite:runAction(CCFadeIn:create(0.2))
 
 	return true
 end

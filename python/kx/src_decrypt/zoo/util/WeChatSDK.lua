@@ -128,19 +128,27 @@ function WeChatAndroid:sendImageMessage( message, thumb, image, shareCallback)
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	local shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(emptyCallback, nil))
+	local shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(finalCallBack, nil))
 	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
-	finalCallBack.onSuccess()
-	--玩家分享就算成功
+	-- if self.sdk:isWXInstalled() then 
+	-- 	finalCallBack.onSuccess()
+	-- 	--玩家分享就算成功
+	-- else
+	-- 	finalCallBack.onError()
+	-- end
 	return shareResult
 end
 function WeChatAndroid:sendImageLinkMessage( message, thumb, imageURL, shareCallback )
 	shareProxy:setShareType(PlatformShareEnum.kWechat)
 	local finalCallBack = shareCallback;
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
-	local shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(emptyCallback, nil))
+	local shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(finalCallBack, nil))
 	--微信新版（6.0.X）导致分享到朋友圈的图片 或者分享后没回调 或者直接无法分享
-	finalCallBack.onSuccess()
+	-- if self.sdk:isWXInstalled() then 
+	-- 	finalCallBack.onSuccess()
+	-- else
+	-- 	finalCallBack.onError()
+	-- end
 	--玩家分享就算成功
 	return shareResult
 end
@@ -152,11 +160,15 @@ function WeChatAndroid:sendLinkMessage( title, message, thumb, webpageUrl, isSen
 	if not finalCallBack then finalCallBack=defaultShareCallback end;
 	local shareResult = nil
 	if weChatScene==1 then 
-		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(emptyCallback, nil))
+		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
 		--weChatScene == 1 是发送到朋友圈 
 		--微信新版（6.0.X）导致分享到朋友圈的链接分享后没回调 
-		finalCallBack.onSuccess()
-		--玩家分享就算成功
+		-- if self.sdk:isWXInstalled() then 
+		-- 	finalCallBack.onSuccess()
+		-- 	--玩家分享就算成功
+		-- else
+		-- 	finalCallBack.onError()
+		-- end
 	else
 		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
 	end
@@ -164,6 +176,87 @@ function WeChatAndroid:sendLinkMessage( title, message, thumb, webpageUrl, isSen
 end
 
 function WeChatAndroid:screenShots( saveFile, thumbFile, onFileSaved )
+	local snapCallback = luajava.createProxy("org.cocos2dx.lib.Cocos2dxSnapCallback", {
+    	onSnapshot = function(status)
+        	if onFileSaved ~= nil then onFileSaved(status) end
+      	end
+    })
+    self.sdk:screenShots(saveFile, thumbFile, snapCallback)
+	return true
+end
+
+--
+-- WeChatAndroidQQ ---------------------------------------------------------
+--
+-- initialize
+local instanceAndroidQQ = nil
+WeChatAndroidQQ = {sdk=nil}
+
+function WeChatAndroidQQ.getInstance()
+	if not instanceAndroidQQ then
+		instanceAndroidQQ = WeChatAndroidQQ;
+		print("=========================Startup WeChatAndroidQQ============================");
+		instanceAndroidQQ.sdk = luajava.bindClass("com.happyelements.hellolua.share.WeChatUtil").INSTANCE
+	end
+	return instanceAndroidQQ;
+end
+
+function WeChatAndroidQQ:openWechat()
+	return self.sdk:openWechat()
+end
+
+function WeChatAndroidQQ:sendTextMessage( message, isSendToFeeds, shareCallback)	
+	-- MSDK不支持纯文本分享
+	if not shareCallback then 
+		shareCallback.onCancel() 
+	end
+	return false
+end
+
+function WeChatAndroidQQ:sendImageMessage( message, thumb, image, shareCallback)
+	shareProxy:setShareType(PlatformShareEnum.kWechat)
+	local finalCallBack = shareCallback;
+	if not finalCallBack then finalCallBack=defaultShareCallback end;
+	local shareResult = false
+	if self.sdk:isWXInstalled() then 
+		shareResult = self.sdk:sendImageMessage(message, thumb, image, buildCallbackAndroid(finalCallBack, nil))
+	else
+		finalCallBack.onError()
+	end
+	return shareResult
+end
+function WeChatAndroidQQ:sendImageLinkMessage( message, thumb, imageURL, shareCallback )
+	-- shareProxy:setShareType(PlatformShareEnum.kWechat)
+	-- local finalCallBack = shareCallback;
+	-- if not finalCallBack then finalCallBack=defaultShareCallback end;
+	-- local shareResult = false
+	-- if self.sdk:isWXInstalled() then 
+	-- 	shareResult = self.sdk:sendImageLinkMessage(message, thumb, imageURL, buildCallbackAndroid(finalCallBack, nil))
+	-- else
+	-- 	finalCallBack.onError()
+	-- end
+	-- return shareResult
+	--这个分享的原意是分享到朋友圈，但msdk里对应这个的分享只能分享到会话，所以直接转换成大图分享
+	return self:sendImageMessage(message, thumb, imageURL, shareCallback)
+	--return self:sendLinkMessage("开心消消乐", message, thumb, "http://xxl.happyelements.com", false, shareCallback)
+end
+function WeChatAndroidQQ:sendLinkMessage( title, message, thumb, webpageUrl, isSendToFeeds, shareCallback )
+	shareProxy:setShareType(PlatformShareEnum.kWechat)
+	local weChatScene = 1
+	if isSendToFeeds == false then weChatScene = 0 end 
+	local finalCallBack = shareCallback;
+	if not finalCallBack then finalCallBack=defaultShareCallback end;
+	local shareResult = false
+	if self.sdk:isWXInstalled() then
+		shareResult = self.sdk:sendLinkMessage(message, title, weChatScene, thumb, webpageUrl, buildCallbackAndroid(finalCallBack, nil))
+	else
+		finalCallBack.onError()
+	end
+	
+	return shareResult
+end
+
+function WeChatAndroidQQ:screenShots( saveFile, thumbFile, onFileSaved )
 	local snapCallback = luajava.createProxy("org.cocos2dx.lib.Cocos2dxSnapCallback", {
     	onSnapshot = function(status)
         	if onFileSaved ~= nil then onFileSaved(status) end
@@ -307,11 +400,42 @@ function WeChatSDK:ctor()
 		self.sdk = WeChatiOS:getInstance()
 	end
 	if __ANDROID then
-		self.sdk = WeChatAndroid:getInstance()
+		if PlatformConfig:isQQPlatform() then
+			self.sdk = WeChatAndroidQQ:getInstance()
+		else
+			self.sdk = WeChatAndroid:getInstance()
+		end
 	end
 	if __WP8 then
 		self.sdk = WeChatWP8:getInstance()
 	end
+end
+
+local animation, listening, shareCanceled = nil, true, false
+function WeChatSDK:removeLoading()
+	print("WeChatSDK:removeLoading")
+	if animation then
+        listening = false
+        animation:removeFromParentAndCleanup(true)
+        animation = nil
+    end
+end
+
+function WeChatSDK:showLoading(shareCallback)
+	print("WeChatSDK:showLoading")
+	listening = true
+	shareCanceled = false
+    local function onCloseButtonTap()
+    	shareCanceled = true
+        self:removeLoading()
+
+        if shareCallback and shareCallback.onError then
+			shareCallback.onError(1000, "cancel share")
+        end
+    end
+    local scene = Director:sharedDirector():getRunningScene()
+    local tips = Localization:getInstance():getText("share.feed.loading.tips")
+    animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap, tips)
 end
 
 function WeChatSDK:openWechat()
@@ -322,29 +446,73 @@ function WeChatSDK:sendTextMessage( message, isSendToFeeds, shareCallback )
 	if self.sdk then return self.sdk:sendTextMessage(message, isSendToFeeds, shareCallback) end
 end
 
+function WeChatSDK:buildProxy(shareCallback)
+	local callbackProxy = {
+		onSuccess=function(result)
+			self:removeLoading()
+			if not shareCanceled and shareCallback and shareCallback.onSuccess then
+				shareCallback.onSuccess(result)
+			end
+		end,
+		onError=function(errCode, msg) 
+			self:removeLoading()
+			if errCode == 1000 then --手动取消
+				--CommonTip:showTip(Localization:getInstance():getText("share.feed.cancel.tips1"), "negative")
+			elseif errCode == 1001 and not shareCanceled then --超时取消
+				--CommonTip:showTip(Localization:getInstance():getText("share.feed.time.out.tips"), "negative")
+			end
+
+			if not shareCanceled and shareCallback and shareCallback.onError then
+				shareCallback.onError(errCode, msg)
+			end
+		end,
+		onCancel=function()
+			self:removeLoading()
+			if not shareCanceled and shareCallback and shareCallback.onCancel then
+				shareCallback.onCancel()
+			end
+		end
+	}
+
+	return callbackProxy
+end
+
 function WeChatSDK:sendImageMessage( message, thumb, image, shareCallback )
-	if self.sdk then return self.sdk:sendImageMessage(message, thumb, image, shareCallback) end
+	if self.sdk then 
+		local proxy = self:buildProxy(shareCallback)
+		self:showLoading(proxy)
+		return self.sdk:sendImageMessage(message, thumb, image, proxy) 
+	end
 end
 
 function WeChatSDK:sendImageLinkMessage( message, thumb, image, shareCallback)
-	if self.sdk then return self.sdk:sendImageLinkMessage(message, thumb, image, shareCallback) end
+	print("WeChatSDK:sendImageLinkMessage")
+	if self.sdk then 
+		local proxy = self:buildProxy(shareCallback)
+		self:showLoading(proxy)
+		return self.sdk:sendImageLinkMessage(message, thumb, image, proxy) 
+	end
 end
 
 function WeChatSDK:sendLinkMessage( title, message, thumb, webpageUrl, isSendToFeeds, shareCallback)
-	if self.sdk then return self.sdk:sendLinkMessage(title, message, thumb, webpageUrl, isSendToFeeds, shareCallback) end
+	if self.sdk then 
+		local proxy = self:buildProxy(shareCallback)
+		self:showLoading(proxy)
+		return self.sdk:sendLinkMessage(title, message, thumb, webpageUrl, isSendToFeeds, proxy) 
+	end
 end
 
 function WeChatSDK:sendLevelMessage( level, message )
 	level = level or 1
 	message = message or ""
 	local timer = os.time() or 0
-	local datetime = tostring(os.date("%y%m%d", timer))
+	local datetime = tostring(os.date("%y%m%d%h", timer))
 	local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/thumb_main.png")
 	local imageURL = nil
 	if LevelType:isMainLevel(level) then
-		imageURL = string.format("http://static.manimal.happyelements.cn/level/jt0001%04d.jpg?v="..datetime, level)
+		imageURL = string.format("http://static.manimal.happyelements.cn/level/jt0001%04d.jpg?t="..datetime, level)
 	elseif LevelType:isHideLevel(level) then
-		imageURL = string.format("http://static.manimal.happyelements.cn/level/hide%04d.jpg?v="..datetime, level - LevelConstans.HIDE_LEVEL_ID_START)
+		imageURL = string.format("http://static.manimal.happyelements.cn/level/hide%04d.jpg?t="..datetime, level - LevelConstans.HIDE_LEVEL_ID_START)
 	end
 	--local imageURL = "http://118.85.203.45/upload/matter/news/jpg/2012/10/12/16/13500308532577532.jpg"
 	--CCFileUtils:sharedFileUtils():fullPathForFilename(string.format("level/weixin%04d.png", level)) 

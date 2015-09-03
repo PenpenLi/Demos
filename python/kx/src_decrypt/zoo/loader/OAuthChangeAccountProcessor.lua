@@ -25,11 +25,14 @@ function Processor:changeUserAccount( lastUserData )
 end
 
 function Processor:loginNewOAuthAccount(context)
+    local authorType = SnsProxy:getAuthorizeType()
+
     local lastData = context:logoutWithChangeAccout()
     local function onAccountChange(status, loginResult)
         context.requireButtons = false
         if status == SnsCallbackEvent.onSuccess and loginResult then
             _G.sns_token = loginResult
+            _G.sns_token.authorType = authorType
             self:changeUserAccount(lastData)
         else 
             self:dispatchEvent(Event.new(Events.kError, nil, self))

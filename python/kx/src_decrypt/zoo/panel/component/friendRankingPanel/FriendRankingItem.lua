@@ -337,8 +337,10 @@ end
 function FriendRankingItem:onSelectBtnTap(event)
 	if not self.selected then 
 		if self.isSnsFriend then
-			local platform = PlatformConfig:getPlatformNameLocalization()
-			platform = platform or ""
+			local platform = ""
+			if _G.sns_token and _G.sns_token.authorType then
+				platform = PlatformConfig:getPlatformNameLocalization(_G.sns_token.authorType)
+			end
 			CommonTip:showTip(Localization:getInstance():getText("add.friend.panel.delete.platform.friend", {platform = platform}))
 		else
 			self.selected  = true

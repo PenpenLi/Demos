@@ -59,7 +59,8 @@ end
 function RabbitWeeklyMode:afterFail()
     -- TODO
     -- popout revive panel
-   GameExtandPlayLogic:showUFOReveivePanel(self, true)
+    --FUUUManager:update(self)
+    GameExtandPlayLogic:showUFOReveivePanel(self, true)
 end
 
 function RabbitWeeklyMode:useMove()

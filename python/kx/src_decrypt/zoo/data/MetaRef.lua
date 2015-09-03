@@ -59,6 +59,26 @@ local function parseItemList( src )
 	return result
 end
 
+local function parseConditionRewardList(src)
+	if type(src) ~= "string" then return {} end
+
+	local result = {}
+	local rewards = string.split(src, ";")
+
+	if rewards then
+		for i, v in ipairs(rewards) do
+			local reward = RewardsWithConditionRef.new()
+			reward:fromLua(v)
+			result[i] = reward
+		end
+		table.sort(result, function(a,b) return a.condition < b.condition end)
+		for index, k in ipairs(result) do
+			k.id = index
+		end
+	end
+	return result
+end
+
 local function parseIngameLimitDict( src )
 	if not src then return {} end
 	assert(type(src) == "string")
@@ -155,7 +175,9 @@ function GlobalServerConfig:ctor()
 	self.new_user_reward_qq = {}
 	self.week_match_levels = {}
 	self.rabbit_week_match_levels = {}
+	self.summer_week_match_levels = {}
 	self.ingame_limit = {}
+	self.ingame_limit_low = {}
 end
 function GlobalServerConfig:fromLua( src )
 	if not src then
@@ -185,7 +207,11 @@ function GlobalServerConfig:fromLua( src )
 				value = parseItemList(value)
 			elseif key == 'rabbit_week_match_levels' then
 				value = parseItemList(value)
+			elseif key == 'summer_week_match_levels' then
+				value = parseItemList(value)
 			elseif key == 'ingame_limit' then 
+				value = parseIngameLimitDict(value)
+			elseif key == 'ingame_limit_low' then 
 				value = parseIngameLimitDict(value)
 			else
 				value = tonumber(value)
@@ -225,47 +251,6 @@ function MetaRef:fromLua( src )
 end
 
 --
--- LevelStarMetaRef ---------------------------------------------------------
---
--- <level_star id="1" score1="100" score2="200" score3="300"/>
-LevelStarMetaRef = class(MetaRef)
-function LevelStarMetaRef:ctor()
-	self.id = 0
-	self.score1 = 0
-	self.score2 = 0
-	self.score3 = 0
-end
-
---
--- DiggerMatchRewardMetaRef ---------------------------------------------------------
---
--- <diggerMatchReward id="1" maxRange="1" minRange="1" rewards="2:100"/> 
-DiggerMatchRewardMetaRef = class(MetaRef)
-function DiggerMatchRewardMetaRef:ctor()
-	self.id = 0
-	self.maxRange = 1
-	self.minRange = 1
-	self.rewards = {}
-end
-function DiggerMatchRewardMetaRef:fromLua( src )
-	if not src then
-		print("  [WARNING] lua data is nil at DiggerMatchRewardMetaRef:fromLua")
-		return
-	end
-
-	for k,v in pairs(src) do
-		if k == "rewards" then
-			self.rewards = parseItemDict(v)
-		else 
-			if type(k) == "string" then 
-				self[k] = tonumber(v)
-				if debugDataRef then print(k, v) end
-			end
-		end
-	end
-end
-
---
 -- DiggerMatchGemRewardMetaRef ---------------------------------------------------------
 --
 -- <diggerMatchGemReward id="1" gemCount="1" rewards="2:100"/> 
@@ -292,12 +277,6 @@ function DiggerMatchGemRewardMetaRef:fromLua( src )
 		end
 	end
 end
-
---
--- DiggerMatchRankRewardMetaRef ---------------------------------------------------------
---
--- <diggerMatchRankReward id="1" maxRange="1" minRange="1" rewards="2:100"/> 
---DiggerMatchRankRewardMetaRef = class(DiggerMatchRewardMetaRef)
 
 --
 -- GameModePropMetaRef ---------------------------------------------------------
@@ -429,6 +408,8 @@ function GoodsMetaRef:ctor()
 	self.sort = 0
 	self.fCash = 0
 	self.discountFCash = 0
+	self.sign = nil
+	self.thirdRmb = 0
 end
 function GoodsMetaRef:fromLua( src )
 	if not src then
@@ -454,6 +435,8 @@ function GoodsMetaRef:fromLua( src )
 			self.beginDate = tostring(v)
 		elseif k == "endDate" then
 			self.endDate = tostring(v)
+		elseif k == "sign" then 
+			self.sign = tostring(v)
 		else 
 			if type(k) == "string" then
 				self[k] = tonumber(v)
@@ -1238,6 +1221,78 @@ function RewardsRef:fromLua(src)
 		if k == "rewards" then
 			self.rewards = parseItemDict(v)
 		else self[k] = tonumber(v) end
+	end
+end
+
+RewardsWithConditionRef = class(MetaRef)
+function RewardsWithConditionRef:ctor()
+	self.id = 0
+	self.condition = 0
+	self.items = {}
+end
+
+function RewardsWithConditionRef:fromLua(src)
+	if type(src) == "string" then
+		local vals = string.split(src, "=")
+		local condition = 0
+		local items = {}
+		if #vals > 1 then
+			condition = tonumber(vals[1])
+			items = parseItemDict(vals[2])
+		elseif #vals == 1 then
+			items = parseItemDict(vals[1])
+		end
+		self.condition = condition
+		self.items = items
+	end
+end
+
+SummerWeeklyLevelRewardsRef = class(MetaRef)
+function SummerWeeklyLevelRewardsRef:ctor()
+	self.id = 0
+	self.levelId = 0
+	self.dailyRewards = {} 		-- 每日奖励list
+	self.weeklyRewards = {}		-- 每周奖励
+	self.rankRewards = {}		-- 排名奖励
+	self.surpassRewards = {}	-- 每超越一名好友的奖励
+	self.rankMinNum = 20		-- 进入排行榜的最低成绩
+	self.surpassLimit = 200		-- 超越好友奖励最大奖励人数
+end
+
+function SummerWeeklyLevelRewardsRef:fromLua(src)
+	local function parseDailyRewards(src)
+		if type(src) ~= "string" then return {} end
+		local ret = {}
+		local dailyRewards = string.split(src, "|")
+		if dailyRewards and #dailyRewards > 0 then
+			for i, v in ipairs(dailyRewards) do
+				ret[i] = parseConditionRewardList(v)
+			end
+		end
+		print("dailyRewards:", tostring(ret))
+		return ret
+	end
+
+	for k, v in pairs(src) do
+		if k == 'id' then 
+			self.id = tonumber(v)
+		elseif k == "levelId" then	
+			self.levelId = tonumber(v)
+		elseif k == 'dailyReward' then
+			self.dailyRewards = parseDailyRewards(v)
+		elseif k == 'weeklyReward' then
+			self.weeklyRewards = parseConditionRewardList(v)
+		elseif k == 'rankReward' then
+			self.rankRewards = parseConditionRewardList(v)
+		elseif k == 'surpassReward' then
+			self.surpassRewards = parseItemDict(v)
+		elseif k == 'rankMinNum' then
+			self.rankMinNum = tonumber(v)
+		elseif k == 'surpassLimit' then
+			self.surpassLimit = tonumber(v)
+		else
+			self[k] = tonumber(v)
+		end
 	end
 end
 

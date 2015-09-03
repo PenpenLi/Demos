@@ -1,7 +1,7 @@
 TimerUtil = {}
 
 TimerUtil.inited = false
-TimerUtil.autoInterval = 0.04
+TimerUtil.autoInterval = 0.016
 TimerUtil.timeMap = {}
 TimerUtil.autoCountDonwTextMap = {}
 TimerUtil.timeIdConut = 1
@@ -18,9 +18,10 @@ function TimerUtil.init()
 
 		local function onAutoUpdated()
 			TimerUtil.check()
-			setTimeOut(onAutoUpdated , TimerUtil.autoInterval)
 		end
-
+		
+		local scheduler = CCDirector:sharedDirector():getScheduler()
+		TimerUtil.schedulerTimerId = scheduler:scheduleScriptFunc(onAutoUpdated, TimerUtil.autoInterval , false)
 		onAutoUpdated()
 	end
 end
@@ -150,18 +151,23 @@ function TimerUtil.setAutoCountDonwText(text , startSec , endSec , perSec , form
 		end
 		
 		if obj.text and not obj.text.isDisposed then
-			obj.text:setString( convertSecondToHMSFormat(obj.ss) )
+			obj.text:setString( convertSecondToHHMMSSFormat(obj.ss) )
 		end
 
-		if obj.pf and type(obj.pf) == "function" then
-			obj.pf()
-		end
-
-		if result then
-			if obj.ef and type(obj.ef) == "function" then
-				obj.ef()
+	    local function doCallbackFunction()
+	    	if obj.pf and type(obj.pf) == "function" then
+				obj.pf()
 			end
-		end
+
+			if result then
+				if obj.ef and type(obj.ef) == "function" then
+					obj.ef()
+				end
+			end
+	    end
+
+	    pcall(doCallbackFunction)
+		
 	end
 
 	data.tid = TimerUtil.addAlarm( onTimer , perSec , 0 , data)

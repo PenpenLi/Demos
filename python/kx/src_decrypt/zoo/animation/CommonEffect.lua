@@ -332,21 +332,10 @@ function CommonEffect:buildExplodeEffect()
 	return node
 end
 
-function CommonEffect:buildGetPropLightAnim( ... )
+function CommonEffect:buildGetPropLightAnimWithoutBg()
 	local fps = 30
 	FrameLoader:loadImageWithPlist("flash/get_prop_bganim.plist")
-	local anim = Layer:create()
-	anim.blackLayer = LayerColor:create()
-	local winSize = CCDirector:sharedDirector():getWinSize()
-	local blackBgScale = 1
-
-	local blackWidth = winSize.width*blackBgScale
-	local blackHeight = winSize.height*blackBgScale
-	anim.blackLayer:changeWidthAndHeight(blackWidth, blackHeight)
-	anim.blackLayer:setPosition(ccp(-blackWidth/2,-blackHeight/2))
-	anim.blackLayer:setOpacity(150)
-	anim:addChild(anim.blackLayer)
-
+	local anim = Sprite:createEmpty()
 	anim.lightBg1 = Sprite:createWithSpriteFrameName("circleLight.png")
 	anim.lightBg1:setAnchorPoint(ccp(0.5, 0.5))
 	anim.lightBg1:setScale(0.6)
@@ -419,8 +408,8 @@ function CommonEffect:buildGetPropLightAnim( ... )
 	for i = 1, 14 do
 		local star = createStarAnim()
 		local op = ops[i%4 + 1]
-		local posX = (40 - math.random(30)) * op.x
-		local posY = (40 - math.random(30)) * op.y
+		local posX = (400 - math.random(400)) / 10 * op.x -- [0, 40]
+		local posY = (400 - math.random(400)) / 10 * op.y -- [0, 40]
 
 		local pos = ccp(posX, posY)
 		star:setPosition(pos)
@@ -457,8 +446,28 @@ function CommonEffect:buildGetPropLightAnim( ... )
 		anim:addChild(star)
 	end
 
+	return anim
+end
+
+function CommonEffect:buildGetPropLightAnim( text )
+	local anim = Layer:create()
+	anim.blackLayer = LayerColor:create()
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	local blackBgScale = 1
+
+	local blackWidth = winSize.width*blackBgScale*2
+	local blackHeight = winSize.height*blackBgScale
+	anim.blackLayer:changeWidthAndHeight(blackWidth, blackHeight)
+	anim.blackLayer:setPosition(ccp(-blackWidth/2,-blackHeight/2))
+	anim.blackLayer:setOpacity(150)
+	anim:addChild(anim.blackLayer)
+
+	local lightAnim = CommonEffect:buildGetPropLightAnimWithoutBg()
+	lightAnim:setScale(1.23)
+	anim:addChild(lightAnim)
+
 	local sequenceArr3 = CCArray:create()
-	sequenceArr3:addObject(CCDelayTime:create(2))
+	sequenceArr3:addObject(CCDelayTime:create(2.5))
 	sequenceArr3:addObject(CCFadeTo:create(0.3, 0))
 	local function onAnimationFinished()
 		anim:removeFromParentAndCleanup(true)
@@ -468,13 +477,13 @@ function CommonEffect:buildGetPropLightAnim( ... )
 	anim.blackLayer:stopAllActions()             
 	anim.blackLayer:runAction(CCSequence:create(sequenceArr3))
 
-	local label = TextField:create(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.14"), nil, 30)
-	label:setAnchorPoint(ccp(0.5, 0.5))
-	label:setPosition(ccp(0, -150))
-	anim:addChild(label)
-
-	anim:setScale(1.23)
-	
+	if type(text) == "string" then
+		local label = TextField:create(text, nil, 30)
+		label:setHorizontalAlignment(kCCTextAlignmentCenter)
+		label:setAnchorPoint(ccp(0.5, 0.5))
+		label:setPosition(ccp(0, 180))
+		anim:addChild(label)
+	end
 	return anim
 end
 

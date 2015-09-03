@@ -6,8 +6,8 @@
 
 require "zoo.panel.basePanel.BasePanel"
 require "zoo.panel.component.startGamePanel.rankList.RankList"
-require "zoo.panel.weeklyRace.WeeklyRaceRankList"
-require "zoo.panel.rabbitWeekly.RabbitWeeklyRankList"
+-- require "zoo.panel.weeklyRace.WeeklyRaceRankList"
+-- require "zoo.panel.rabbitWeekly.RabbitWeeklyRankList"
 
 
 ---------------------------------------------------
@@ -63,6 +63,10 @@ function PanelWithRankList:init(levelId, levelType, topPanel, panelName, ...)
 	self.rankList = self:buildRankListByLevelType(levelId, levelType)
 	--self:addChild(self.rankList)
 	rankListPanelClipping:addChild(self.rankList)
+
+	if self.hiddenRankList then
+		if self.rankList then self.rankList:setButtonsEnable(false) end
+	end
 
 	-- Craete Top Panel
 	self.topPanel	= topPanel
@@ -124,9 +128,9 @@ function PanelWithRankList:buildRankListByLevelType( levelId, levelType )
 	local rankList = nil
 	-- Create Rank List Panel
 	if levelType == GameLevelType.kDigWeekly then
-		rankList   = WeeklyRaceRankList:create(levelId, self)
+		-- rankList   = WeeklyRaceRankList:create(levelId, self)
 	elseif levelType == GameLevelType.kRabbitWeekly then
-		rankList = RabbitWeeklyRankList:create(levelId, self)
+		-- rankList = RabbitWeeklyRankList:create(levelId, self)
 	else
 		rankList	= RankList:create(levelId, self)
 	end

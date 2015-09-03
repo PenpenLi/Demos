@@ -1,4 +1,4 @@
-HorizontalAlignments = {kLeft = 1, kCenter = 2, kRight = 3}
+HorizontalAlignments = {kLeft = 1, kCenter = 2, kRight = 3, kJustified = 4}
 
 HorizontalTileLayout = class(Layer)
 
@@ -287,12 +287,16 @@ function HorizontalTileLayoutWithAlignment:__layout(playAnimation)
     if #self.items == 0 then return end
 
     local contentWidth = 0
-    for k, v in pairs(self.items) do
-        local itemWidth = v:getWidth() or v:getGroupBounds().size.width
-        contentWidth = contentWidth + itemWidth + self.itemHorizontalMargin
+    if self.alignment == HorizontalAlignments.kJustified then
+        contentWidth = self.width
+    else
+        for k, v in pairs(self.items) do
+            local itemWidth = v:getWidth() or v:getGroupBounds().size.width
+            contentWidth = contentWidth + itemWidth + self.itemHorizontalMargin
+        end
     end
 
-    assert(contentWidth < self.width, 'HorizontalTileLayoutWithAlignment:__layout(playAnimation): your content width is too wide.')
+    assert(contentWidth <= self.width, 'HorizontalTileLayoutWithAlignment:__layout(playAnimation): your content width is too wide.')
 
     local offsetX = 0 
     if self.alignment == HorizontalAlignments.kLeft then
@@ -317,6 +321,9 @@ function HorizontalTileLayoutWithAlignment:__layout(playAnimation)
         end
 
         local itemWidth = v:getWidth() or v:getGroupBounds().size.width
+        if self.alignment == HorizontalAlignments.kJustified then
+            itemWidth = self.width / #self.items
+        end
         x = x + itemWidth + self.itemHorizontalMargin
     end
 end

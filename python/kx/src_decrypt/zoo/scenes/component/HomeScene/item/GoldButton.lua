@@ -242,3 +242,39 @@ function GoldButton:stopHasNotificationAnim(...)
 	end
 	print("stopHasNotificationAnim in goldbutton called!");
 end
+
+function GoldButton:playTip(text, seconds)
+	print('GoldButton:playTip', seconds)
+	local function _playTip()
+		IconButtonBase.playOnlyTipAnim(self);
+		self.glow:setVisible(true);
+
+		local animationTime = 0.5;
+		local fadeIn = CCEaseSineInOut:create(CCFadeIn:create(animationTime))
+		local fadeOut = CCEaseSineInOut:create(CCFadeOut:create(animationTime))
+		local seq = CCSequence:createWithTwoActions(fadeIn, fadeOut)
+		assert(self.glow);
+		self.glow:runAction(CCRepeatForever:create(seq))
+		self:setTipString(text);
+	end
+	IconButtonBase.stopHasNotificationAnim(self);
+	self.glow:stopAllActions();
+	self.glow:setVisible(false);
+	local function onTick()
+		if self.isDisposed then return end
+		_playTip()
+		if self.schedId then
+			CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedId)
+			self.schedId = nil
+		end
+	end
+	if self.schedId then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedId)
+		self.schedId = nil
+	end		
+	if seconds > 0 then
+		self.schedId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTick, seconds, false)
+	else
+		_playTip()
+	end
+end

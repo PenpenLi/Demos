@@ -10,6 +10,10 @@ function string:escape()
     return (self:gsub('[%-%.%+%[%]%(%)%$%^%%%?%*]','%%%1'):gsub('%z','%%z'))
 end
 
+function string.isEmpty(str)
+	return type(str) ~= "string" or not str or #str==0
+end
+
 function string:strip(pattern)
   local s = self
   pattern = pattern or "%s+"
@@ -33,6 +37,10 @@ function string.ends(String,End)
    return End=='' or string.sub(String,-string.len(End))==End
 end
 
+function localize(key, params)
+	return Localization:getInstance():getText(key, params)
+end
+
 function hex2ccc3( hex )
   local integer = tonumber(hex, 16)
   local ret = HeDisplayUtil:ccc3FromUInt(integer)
@@ -48,6 +56,10 @@ function setTimeOut(func, time)
   end
   scheduleScriptFuncID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onScheduleScriptFunc,time,false)
   return scheduleScriptFuncID
+end
+
+function cancelTimeOut(timeOutID)
+	if timeOutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(timeOutID) end
 end
 
 function delay(timeBeforeDelay)

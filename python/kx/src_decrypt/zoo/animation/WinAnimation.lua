@@ -28,6 +28,7 @@ local function createAnimal( name, parent )
 	local position = animal_positions[name]
 	local node = ArmatureNode:create(name)
 	node.name = name
+	node:setAnimationScale(2.5)
 	node:playByIndex(0)
 	node:setPosition(ccp(position.x, -position.y))
 	node:setVisible(false)
@@ -78,7 +79,7 @@ function TimebackAnimation:create(onAnimationFinishCallback)
 	FrameLoader:loadArmature( "skeleton/timeback_animation" )
 	local node = ArmatureNode:create("back_clock_anime")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(0.75)
 	container:addChild(node)
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename("skeleton/timeback_animation/texture.png"))
 
@@ -118,7 +119,7 @@ function AddEnergyAnimation:create()
 	local container = CocosObject:create()
 	local node = ArmatureNode:create("huanxiong_sad_loop_anime")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	container:addChild(node)
 	return container
 end
@@ -128,7 +129,6 @@ function WeeklyRaceAddEnergyAnimation:create()
 	local container = CocosObject:create()
 	local node = ArmatureNode:create("tutorial_upzhousai")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
 	node:setScale(0.8)
 	container:addChild(node)
 	container:setScaleX(-1)
@@ -136,6 +136,16 @@ function WeeklyRaceAddEnergyAnimation:create()
 	return container
 end
 
+--加五步面板的小浣熊动画
+AddFiveStepAnimation = class(CocosObject)
+function AddFiveStepAnimation:create()
+	local container = CocosObject:create()
+	local node = ArmatureNode:create("huanxiong_point_to_anime")
+	node:playByIndex(0)
+	node:setAnimationScale(1.25)
+	container:addChild(node)
+	return container
+end
 --
 -- CommonSkeletonAnimation ---------------------------------------------------------
 --
@@ -143,44 +153,44 @@ CommonSkeletonAnimation = class()
 function CommonSkeletonAnimation:createTutorialUp()
 	local node = ArmatureNode:create("tutorial_up")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	return node
 end
 function CommonSkeletonAnimation:createTutorialDown()
 	local node = ArmatureNode:create("tutorial_down")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	return node
 end
 function CommonSkeletonAnimation:createTutorialNormal()
 	local node = ArmatureNode:create("tutorial_normal")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	return node
 end
 function CommonSkeletonAnimation:createTutorialMoveIn2()
 	local node = ArmatureNode:create("movein_tutorial_2")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	return node
 end
 function CommonSkeletonAnimation:createTutorialMoveIn()
 	local node = ArmatureNode:create("movein_tutorial")
 	node:playByIndex(0)
-	node:setAnimationScale(0.5)
+	node:setAnimationScale(1.25)
 	return node
 end
 function CommonSkeletonAnimation:createFailAnimation()
 	local container = CocosObject:create()
 	local character = ArmatureNode:create("fail_animation")
 	character:playByIndex(0)
-	character:setAnimationScale(0.5)
+	character:setAnimationScale(1.25)
 	container:addChild(character)
 
 	local function createBird()
 		local bird = ArmatureNode:create("bird_fly_animation")
 		bird:playByIndex(0)
-		bird:setAnimationScale(0.5)
+		bird:setAnimationScale(1.25)
 		container:addChild(bird)
 	end
 	createBird()
@@ -223,28 +233,16 @@ function CommonSkeletonAnimation:creatTutorialAnimation(propId)
 	local propName = kTutorialPropAnimation[tostring(propId)]
 	if propName then
 		local node = ArmatureNode:create(propName)
-		node:setAnimationScale(0.5)
-		node.stoped = false
-		node.isInitialized = false
+		node:setAnimationScale(1.25)
 		node:playByIndex(0)
-		local animation = node:getAnimation()
-		local function onAnimationEvent( eventType )
-			if node.isInitialized == false and eventType == "start" then 
-				node:stop() 
-				node.isInitialized = true
-			end
-			if node.stoped == false and eventType == "complete" then node:playByIndex(0) end
-		end 
-		animation:registerScriptHandler(onAnimationEvent)
-
 		node.playAnimation = function( self )
-			self.stoped = false
-			self:playByIndex(0)
+			node:playByIndex(0, 0)
 		end
 		node.stopAnimation = function ( self )
-			self.stoped = true
+			node:gotoAndStopByIndex(0, 0)
 		end
-		node:update(0)
+		node:update(0.001)
+		node:stop()
 		return node
 	else return nil end
 end

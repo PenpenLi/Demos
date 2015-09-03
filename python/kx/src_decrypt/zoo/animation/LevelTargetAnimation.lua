@@ -10,8 +10,9 @@ kLevelTargetType = {drop = "drop", dig_move = "dig_move", time = "time", ice = "
 					order1 = "order1", order2 = "order2", order3 = "order3", order4 = "order4", order5 = "order5", 
                     dig_move_endless = "dig_move_endless",
                     dig_move_endless_qixi = "dig_move_endless_qixi",
-                    dig_move_endless_mayday = "dig_move_endless_mayday",
+                    dig_move_endless_mayday = "dig_move_endless_mayday",            
                     rabbit_weekly = "rabbit_weekly",
+                    summer_weekly = "summer_weekly",
                     sea_order = "order6",
                     acorn = "acorn",
                      }
@@ -33,6 +34,7 @@ kLevelTargetTypeTexts = {drop = "level.target.drop.mode",
                          rabbit_weekly = "level.target.rabbit.weekly.mode",
                          sea_order = "level.target.sea.order.mode",
                          acorn = "level.start.drop.key.mode",
+                         summer_weekly = "weeklyrace.summer.target",
                            }
 
 LevelTargetAnimation = class()
@@ -163,11 +165,10 @@ function LevelTargetAnimation:getTargetTypeByTargets()
 				selectedItem.type == kLevelTargetType.ice or
 				selectedItem.type == kLevelTargetType.move or 
                 selectedItem.type == kLevelTargetType.dig_move_endless or
-               
                 selectedItem.type == kLevelTargetType.dig_move_endless_qixi or
                 selectedItem.type == kLevelTargetType.dig_move_endless_mayday or
-               
                 selectedItem.type == kLevelTargetType.rabbit_weekly or 
+                selectedItem.type == kLevelTargetType.summer_weekly or 
                 selectedItem.type == kLevelTargetType.acorn
                  then
 				return selectedItem.type
@@ -191,7 +192,9 @@ function LevelTargetAnimation:isEndlessMode()
     return isDigMoveEndless or isRabbitMatch
 end
 function LevelTargetAnimation:isEndLessMayDayMode()
-	return self:getTargetTypeByIndex(1) == kLevelTargetType.dig_move_endless_mayday
+	local isEndLessMayDay = self:getTargetTypeByIndex(1) == kLevelTargetType.dig_move_endless_mayday
+	local isSummerWeekly = self:getTargetTypeByIndex(1) == kLevelTargetType.summer_weekly
+	return isEndLessMayDay or isSummerWeekly
 end
 function LevelTargetAnimation:isSeaOrderMode()
 	return self:getTargetTypeByIndex(1) == kLevelTargetType.sea_order
@@ -214,7 +217,7 @@ function LevelTargetAnimation:setTargetNumber( itemType, itemId, itemNum, animat
             self.c1:setTargetNumber(itemId, itemNum, animate, globalPosition)
         elseif itemType == kLevelTargetType.rabbit_weekly then 
         	self.c1:setTargetNumber(itemId, itemNum, animate, globalPosition)
-        elseif itemType == kLevelTargetType.dig_move_endless_mayday then
+        elseif itemType == kLevelTargetType.dig_move_endless_mayday or itemType == kLevelTargetType.summer_weekly then
         	if itemId == 2 then
         		self.c2:setTargetNumber(itemId, itemNum, animate, globalPosition)
         	else
@@ -242,7 +245,7 @@ function LevelTargetAnimation:revertTargetNumber( itemType, itemId, itemNum )
 		self.c1:revertTargetNumber(itemId, itemNum)
 	elseif itemType == kLevelTargetType.time then
 		self.time:revertTargetNumber(itemId, itemNum) -- this mode have no fly animation
-	elseif itemType == kLevelTargetType.dig_move_endless_mayday then
+	elseif itemType == kLevelTargetType.dig_move_endless_mayday or itemType == kLevelTargetType.summer_weekly then
 		if itemId == 0 then
 			self.c1:revertTargetNumber( itemId, itemNum)
 		elseif itemId == 2 then 

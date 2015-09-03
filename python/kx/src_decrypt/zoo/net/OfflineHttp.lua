@@ -468,3 +468,34 @@ function GetNewUserRewardsHttp:load(rewardType)
 		{ requestTime = Localhost:time() },
 		loadCallback, rpc.SendingPriority.kHigh, false)
 end
+
+SettingHttp = class(HttpBase)
+function SettingHttp:load(settingFlag)
+	actId = actId or 0
+	local context = self
+	local body = {setting=settingFlag}
+
+	if NetworkConfig.useLocalServer then
+		UserService.getInstance():cacheHttp(kHttpEndPoints.setting, body)
+		if NetworkConfig.writeLocalDataStorage then 
+			Localhost:getInstance():flushCurrentUserData()
+		else 
+			print("Did not write user data to the device.") 
+		end
+		context:onLoadingComplete()
+		return
+	end
+
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	he_log_info("SettingHttp fail, err: " .. err)
+	    	context:onLoadingError(err)
+	    else
+	    	he_log_info("SettingHttp success")
+	    	context:onLoadingComplete()
+	    end
+	end
+	
+	self.transponder:call(kHttpEndPoints.setting, body, loadCallback, rpc.SendingPriority.kHigh, false)
+end

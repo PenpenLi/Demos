@@ -5,6 +5,7 @@ NotRemindFlag = table.const {
   PHOTO_ALLOW = "photo_allow",
   GPS_ALLOW = "gps_allow",
   SMS_ALLOW = "sms_allow",
+  CAMERA_ALLOW = "camera_allow",
 }
 
 --@notRemind 写在本地的某个提示不再提示的标识 将字符串作为Key传入 不要轻易改动 来自NotRemindFlag其中之一 自行添加

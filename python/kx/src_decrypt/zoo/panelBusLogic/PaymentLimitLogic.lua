@@ -1,3 +1,4 @@
+require "zoo.payment.PaymentManager"
 
 -- 需要限额的支付方式
 -- local PaymentsMaxLimitMap = {
@@ -17,12 +18,21 @@
 
 PaymentLimitLogic = {}
 
+local function getLimitConfig()
+	local limitConfig = MetaManager:getInstance().global.ingame_limit
+	-- if PaymentManager.getInstance():checkThirdPartPaymentEabled() then 
+	-- 	--支持三方支付时 短代限额大幅下调 鼓励三方支付
+	-- 	limitConfig = MetaManager:getInstance().global.ingame_limit_low
+	-- end
+	return limitConfig
+end
+
 -- 当前支付方式是不是需要限额
 function PaymentLimitLogic:isNeedLimit(paymentType)
+	local limitConfig = getLimitConfig()
+	print(table.tostring(limitConfig))
 
-	print(table.tostring(MetaManager:getInstance().global.ingame_limit))
-
-	return MetaManager:getInstance().global.ingame_limit[paymentType] ~= nil
+	return limitConfig[paymentType] ~= nil
 end
 
 -- 当前支付方式是不是超过限额
@@ -84,17 +94,19 @@ local function getPaymentInfo( paymentType )
 	return paymentInfo,paymentInfos
 end
 function PaymentLimitLogic:isExceedDailyLimit(paymentType)
-	if MetaManager:getInstance().global.ingame_limit[paymentType] then 
+	local limitConfig = getLimitConfig()
+	if limitConfig[paymentType] then 
 		local paymentInfo = getPaymentInfo(paymentType)
-		return paymentInfo.daily >= MetaManager:getInstance().global.ingame_limit[paymentType].daily
+		return paymentInfo.daily >= limitConfig[paymentType].daily
 	else
 		return false
 	end
 end
 function PaymentLimitLogic:isExceedMonthlyLimit(paymentType)
-	if MetaManager:getInstance().global.ingame_limit[paymentType] then 
+	local limitConfig = getLimitConfig()
+	if limitConfig[paymentType] then 
 		local paymentInfo = getPaymentInfo(paymentType)
-		return paymentInfo.monthly >= MetaManager:getInstance().global.ingame_limit[paymentType].monthly
+		return paymentInfo.monthly >= limitConfig[paymentType].monthly
 	else
 		return false
 	end
@@ -102,7 +114,8 @@ end
 
 -- 
 function PaymentLimitLogic:buyComplete(paymentType,price)
-	if MetaManager:getInstance().global.ingame_limit[paymentType] then 
+	local limitConfig = getLimitConfig()
+	if limitConfig[paymentType] then 
 		local paymentInfo,paymentInfos = getPaymentInfo(paymentType)
 
 		paymentInfo.daily = paymentInfo.daily + price

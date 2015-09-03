@@ -78,9 +78,11 @@ function HalloweenBossState:onEnter()
                     GamePlayConfig_MaxAction_time
                 )
             action.destPositions = destPositions
+            action.dropAddMove = boss.dropAddMove
+            action.dropBellOnDie = boss.dropBellOnDie
             action.completeCallback = dieCallback
             self.mainLogic:addGameAction(action)
-        elseif boss.move >= boss.maxMove - 1 then
+        elseif not self.inBonus and boss.maxMove > 0 and boss.move >= boss.maxMove - 1 then
 
             local changeCount = boss.genBellCount + boss.genCloudCount
 
@@ -102,9 +104,9 @@ function HalloweenBossState:onEnter()
             boss.move = 0
 
         else
-            if self.mainLogic.isInStep then
-                boss.move = boss.move + 1
-            end
+            -- if self.mainLogic.isInStep then
+            --     boss.move = boss.move + 1
+            -- end
             self:handleComplete()
         end
     else
@@ -144,6 +146,7 @@ function HalloweenBossStateInLoop:create(context)
     v.context = context
     v.mainLogic = context.mainLogic
     v.boardView = v.mainLogic.boardView
+    v.inBonus = false
     return v
 end
 
@@ -152,7 +155,7 @@ function HalloweenBossStateInLoop:getClassName()
 end
 
 function HalloweenBossStateInLoop:getNextState()
-    return self.context.tileBlockerStateInLoop
+    return self.context.digScrollGroundStateInLoop
 end
 
 HalloweenBossStateInBonus = class(HalloweenBossState)
@@ -162,6 +165,7 @@ function HalloweenBossStateInBonus:create( context )
     v.context = context
     v.mainLogic = context.mainLogic
     v.boardView = v.mainLogic.boardView
+    v.inBonus = true
     return v
 end
 
@@ -170,5 +174,5 @@ function HalloweenBossStateInBonus:getClassName()
 end
 
 function HalloweenBossStateInBonus:getNextState()
-    return self.context.gameOverState
+    return self.context.elephantBossState
 end

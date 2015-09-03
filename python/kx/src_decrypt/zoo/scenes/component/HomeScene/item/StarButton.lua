@@ -7,6 +7,7 @@
 require "zoo.scenes.component.HomeScene.item.CloudButton"
 require "zoo.scenes.component.HomeScene.item.StarButtonTip"
 require "zoo.panel.HiddenBranchIntroductionPanel"
+require "zoo.panel.quickselect.QuickSelectLevelPanel"
 
 ---------------------------------------------------
 -------------- StarButton
@@ -158,21 +159,36 @@ function StarButton:init(...)
 		self:onTouchEnd(event)
 	end
 
+	local function onTouchTap( event )
+		-- body
+		self:onTouchTap(event)
+	end
+
 	self.ui:setTouchEnabled(true, 0, true)
 	self.ui:addEventListener(DisplayEvents.kTouchBegin, onTouchBegin)
 	self.ui:addEventListener(DisplayEvents.kTouchEnd, onTouchEnd)
+	self.ui:addEventListener(DisplayEvents.kTouchTap, onTouchTap)
 end
 
 function StarButton:onTouchBegin(event)
-	local normalTotalStar = UserManager:getInstance():getFullStarInOpenedRegion()
-	local hiddenTotalStar = MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion()
 
-	if hiddenTotalStar > 0 then
-		self.tip:setContent(self.normalStar, self.hiddenStar, normalTotalStar, hiddenTotalStar)
-		self.tip:setVisible(true)
-		GamePlayMusicPlayer:playEffect(GameMusicType.kClickBubble)
+	self.isTipShown = false
+	local function longtimeTouch( ... )
+		-- body
+		local normalTotalStar = UserManager:getInstance():getFullStarInOpenedRegion()
+		local hiddenTotalStar = MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion()
+
+		if hiddenTotalStar > 0 then
+			self.tip:setContent(self.normalStar, self.hiddenStar, normalTotalStar, hiddenTotalStar)
+			self.tip:setVisible(true)
+			GamePlayMusicPlayer:playEffect(GameMusicType.kClickBubble)
+		end
+
+		self.isTipShown = true
 	end
-
+	
+	self.longtimeScheduleScriptFuncID = setTimeOut(longtimeTouch, 1)
+	
 	-- local metaModel = MetaModel:sharedInstance()
 	-- local branchList = metaModel:getHiddenBranchDataList()
 	-- local panel = HiddenBranchIntroductionPanel:create()
@@ -181,6 +197,18 @@ end
 
 function StarButton:onTouchEnd(event)
 	self.tip:setVisible(false)
+	if self.longtimeScheduleScriptFuncID then
+		cancelTimeOut(self.longtimeScheduleScriptFuncID)
+		self.longtimeScheduleScriptFuncID = nil
+	end
+end
+
+function StarButton:onTouchTap( event )
+	-- body
+	if not self.isTipShown then
+		local panel = QuickSelectLevelPanel:create()
+		panel:popout()
+	end
 end
 
 function StarButton:positionLabel(...)
@@ -226,7 +254,6 @@ function StarButton:positionLabel(...)
 		manualAdjustDenominatorPosY = -11
 
 	end
-
 
 	self.numerator:setPosition(ccp(curNumeratorPos.x + manualAdjustNumeratorPosX, curNumeratorPos.y + manualAdjustNumeratorPosY))
 	self.separator:setPosition(ccp(curSeparatorPos.x + manualAdjustSeparatorPosX, curSeparatorPos.y + manualAdjustSeparatorPosY))
@@ -354,4 +381,10 @@ function StarButton:create(...)
 	local newStarButton = StarButton.new()
 	newStarButton:init()
 	return newStarButton
+end
+
+function StarButton:onAddToStage( ... )
+	-- body
+	self.ui:setTouchEnabled(true, 0, true)
+	self:onTouchEnd()
 end

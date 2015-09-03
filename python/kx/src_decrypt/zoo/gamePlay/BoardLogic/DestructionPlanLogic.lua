@@ -85,6 +85,8 @@ function DestructionPlanLogic:runViewAction(boardView, theAction)
 		DestructionPlanLogic:runGameItemActionSnailMove(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
 		DestructionPlanLogic:runGameItemActionMagicStone(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Bottle_Destroy_Around then
+		DestructionPlanLogic:runnGameItemActionBottleBlockerDestroyAround(boardView, theAction)
 	end
 end
 
@@ -114,15 +116,65 @@ function DestructionPlanLogic:runningGameItemAction(mainLogic, theAction, actid)
 		DestructionPlanLogic:runningGameItemActionSnailMove(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Stone_Active then
 		DestructionPlanLogic:runningGameItemActionMagicStoneActive(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Bottle_Destroy_Around then
+		DestructionPlanLogic:runningGameItemActionBottleBlockerDestroyAroundActive(mainLogic, theAction, actid)
 	end
 end
+
+function DestructionPlanLogic:runningGameItemActionBottleBlockerDestroyAroundActive(mainLogic, theAction, actid)
+
+	if theAction.actionStatus == GameActionStatus.kRunning then
+
+		local item = mainLogic.gameItemMap[theAction.ItemPos1.x][theAction.ItemPos1.y]
+
+		local bottleRow = item.y
+		local bottleCol = item.x
+
+		local function explodeItem(r,c)
+
+			if r >= 1 and r <= 9 and c >= 1 and c <= 9 then
+				local item = nil
+				if mainLogic.gameItemMap[r] then
+					item = mainLogic.gameItemMap[r][c]
+				end
+
+				if item then
+					SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1, true)
+					BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1, true)
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, 1, actId)
+					--if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
+					--	SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, 1, actid)
+					--end
+				end
+			end
+		end
+
+		explodeItem(bottleRow + 1 , bottleCol)
+		explodeItem(bottleRow - 1 , bottleCol)
+		explodeItem(bottleRow     , bottleCol + 1)
+		explodeItem(bottleRow     , bottleCol - 1)
+
+		explodeItem(bottleRow     , bottleCol)
+		-- 消除一层瓶子四周的冰柱
+		SpecialCoverLogic:specialCoverChainsAroundPos(mainLogic, bottleRow, bottleCol, {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft})
+		
+		mainLogic:checkItemBlock(bottleRow, bottleCol)
+		mainLogic:setNeedCheckFalling()
+
+		theAction.actionStatus = GameActionStatus.kWaitingForDeath
+	end
+	
+end
+
 
 function DestructionPlanLogic:runningGameItemActionMagicStoneActive(mainLogic, theAction, actid)
 	local r = theAction.ItemPos1.x
 	local c = theAction.ItemPos1.y
 
 	if theAction.addInfo == "over" then
-		mainLogic.destructionPlanList[actid] = nil
+		if theAction.addInfo1 == "animFinish" then -- 等待动画播完
+			mainLogic.destructionPlanList[actid] = nil
+		end
 	else
 		theAction.addInt = theAction.addInt + 1
 		if theAction.addInt == 16 then -- PC是16
@@ -157,6 +209,12 @@ function DestructionPlanLogic:runningGameItemActionMagicStoneActive(mainLogic, t
 	end
 end
 
+function DestructionPlanLogic:runnGameItemActionBottleBlockerDestroyAround(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+	end
+end
+
 function DestructionPlanLogic:runGameItemActionMagicStone(boardView, theAction)
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning
@@ -165,7 +223,11 @@ function DestructionPlanLogic:runGameItemActionMagicStone(boardView, theAction)
 		local item = boardView.baseMap[r][c]
 
 		theAction.addInt = 1
-		item:playStoneActiveAnim(theAction.magicStoneLevel, theAction.targetPos)
+		local function onAnimFinished()
+			theAction.addInfo1 = "animFinish"
+		end
+		item:playStoneActiveAnim(theAction.magicStoneLevel, theAction.targetPos, onAnimFinished)
+
 		if theAction.magicStoneLevel < TileMagicStoneConst.kMaxLevel then
 			theAction.addInfo = "over"
 		end
@@ -687,6 +749,7 @@ function DestructionPlanLogic:runingGameItemSpecialBombColorAction(mainLogic, th
 						IntCoord:create(v.x, v.y),
 						nil,
 						GamePlayConfig_SpecialBomb_BirdAnimal_Shake_Time)
+					ShakeAction.theItemColor = color
 					mainLogic:addGameAction(ShakeAction)
 				end
 			end

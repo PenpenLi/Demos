@@ -15,14 +15,16 @@ function CommonTip:showTip(text, panType, callback, duration)
 		table.insert(panels, panel)
 		while #panels > 2 do
 			panels[1]:removeSchedule()
-			panels[1]:removeFromParentAndCleanup(true)
+			--panels[1]:removeFromParentAndCleanup(true)
+			PopoutManager:sharedInstance():remove(panels[1], true)
 			table.remove(panels, 1)
 		end
-		scene:addChild(panel)
+		--scene:addChild(panel)
+		PopoutManager:sharedInstance():add(panel, false, true)
 	end
+
+	return panel
 end
-
-
 
 function CommonTip:loadRequiredResource( panelConfigFile )
 	self.panelConfigFile = panelConfigFile
@@ -80,7 +82,7 @@ function CommonTip:init(text, panType, callback, duration)
 	self.background:setPosition(ccp(bgPos.x, bgPos.y + add))
 	self.background2:setPosition(ccp(bgPos2.x, bgPos2.y + add))
 	local size = self.ui:getGroupBounds().size
-	self:setPosition(ccp(vSize.width / 2, (vSize.height - size.height) / 2 + vOrigin.y + originSize.height / 3))
+	self:setPosition(ccp(vSize.width / 2, (vSize.height - size.height) / 2 + vOrigin.y + originSize.height / 3 - vSize.height))
 	self:setScale(0)
 
 	local function onTimeout() self:fadeOut() end
@@ -121,7 +123,8 @@ function CommonTip:removeSchedule()
 end
 
 function CommonTip:removeSelf()
-	self:removeFromParentAndCleanup(true)
+	--self:removeFromParentAndCleanup(true)
+	PopoutManager:sharedInstance():remove(self, true)
 	if self.callback then
 		self.callback()
 	end

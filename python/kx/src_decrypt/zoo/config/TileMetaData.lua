@@ -71,6 +71,10 @@ function TileMetaData:hasMagicStoneProperty()
 	return false, nil
 end
 
+function TileMetaData:getCrossStrengthValue()
+	return self.crossStrengthValue
+end
+
 function TileMetaData:setTileData(index)
 	self.tileProperties[index] = true
 end
@@ -187,7 +191,7 @@ function TileMetaData:convertFromBitToTileIndex(value, x, y)
 	return t
 end
 
-function TileMetaData:convertArrayFromBitToTile(bitMap, stringMap)
+function TileMetaData:convertArrayFromBitToTile(bitMap, stringMap , crossStrengthCfg)
 	local t = {}
 	for h = 1, #bitMap do
 		local rt = {}
@@ -197,6 +201,14 @@ function TileMetaData:convertArrayFromBitToTile(bitMap, stringMap)
 			if stringMap and stringMap[h] and stringMap[h][w] then
 				tileData:convertFromStringToTileIndex(stringMap[h][w])
 			end
+
+			tileData.crossStrengthValue = 0
+			if crossStrengthCfg and type(crossStrengthCfg) == "table" then
+				if crossStrengthCfg[h] and type(crossStrengthCfg[h]) == "table" then
+					tileData.crossStrengthValue = tonumber(crossStrengthCfg[h][w] or 0)
+				end 
+			end
+
 			table.insert(rt, tileData)
 		end
 	end

@@ -71,7 +71,9 @@ function PassLevelLogic:start(...)
 		if self.levelType == GameLevelType.kDigWeekly and not _isQixiLevel then
 			WeeklyRaceManager:sharedInstance():onPassLevel(self.targetCount)
 		elseif self.levelType == GameLevelType.kRabbitWeekly then
-			RabbitWeeklyManager:sharedInstance():onPassLevel(self.targetCount, self.levelId)
+			-- RabbitWeeklyManager:sharedInstance():onPassLevel(self.targetCount, self.levelId)
+		elseif self.levelType == GameLevelType.kSummerWeekly then
+			SummerWeeklyMatchManager:getInstance():onPassLevel(self.levelId, self.targetCount)
 		end
 
 		--------------

@@ -190,7 +190,7 @@ function RabbitWeeklyGetFreePlayPanel:initBuyItems()
     local userExtend = UserManager:getInstance().userExtend
     for i=1,2 do
         local buyItemRes = self.ui:getChildByName("itemBuy"..i)
-        if __ANDROID then
+        if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goods.id) then
             self["buyItem"..i] = RabbitWeeklyGetFreePlayItem:create(buyItemRes, false)
             local price = goods.rmb / 100
             local mark = _text("buy.gold.panel.money.mark")
@@ -241,6 +241,7 @@ function RabbitWeeklyGetFreePlayPanel:onBuyItemBtnTapped()
     local function onFinish()
         self:updatePanel()
     end
+
     RabbitWeeklyManager:sharedInstance():buyPlayCard( onSuccess, onFail, onCancel, onFinish, true)
 end
 

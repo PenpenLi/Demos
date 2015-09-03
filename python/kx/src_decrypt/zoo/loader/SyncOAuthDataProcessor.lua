@@ -9,11 +9,12 @@ Processor.events = {
     kSyncCancelLogout = "syncCancelLogout",
 }
 
-function Processor:start(openId, accessToken)
+function Processor:start(openId, accessToken, authorType)
     local function onSyncFinish()
         print("sync qzone done. get user profile")
         _G.kUserSNSLogin = true -- 平台账号登录
-        Localhost.getInstance():setCurrentUserOpenId(openId)
+
+        Localhost.getInstance():setCurrentUserOpenId(openId,nil,authorType)
 
         local function onSuccessCallback(result)
             self:dispatchEvent(Event.new(self.events.kSyncSuccess, nil, self))
@@ -26,8 +27,12 @@ function Processor:start(openId, accessToken)
         local function onCancelCallback()
             self:dispatchEvent(Event.new(self.events.kSyncSuccess, nil, self))
         end
-        SnsProxy:getUserProfile(onSuccessCallback,onErrorCallback,onCancelCallback)
 
+        if SnsProxy:getAuthorizeType() == PlatformAuthEnum.kPhone then 
+            onSuccessCallback()
+        else
+            SnsProxy:getUserProfile(onSuccessCallback,onErrorCallback,onCancelCallback)
+        end
         -- if PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) 
         --     or PlatformConfig:isPlatform(PlatformNameEnum.k360) 
         --     or PlatformConfig:isPlatform(PlatformNameEnum.kMI) 
@@ -50,7 +55,12 @@ function Processor:start(openId, accessToken)
                 self:dispatchEvent(Event.new(self.events.kSyncCancel, nil, self))
             end
         }
-        SnsProxy:logout(logoutCallback) 
+
+        if SnsProxy:getAuthorizeType() == PlatformAuthEnum.kPhone then
+            self:dispatchEvent(Event.new(self.events.kSyncCancelLogout, nil, self))
+        else
+            SnsProxy:logout(logoutCallback)
+        end 
     end
 
     local function onSyncError()
@@ -71,15 +81,23 @@ function Processor:start(openId, accessToken)
         onSyncCancel()
     end
 
+
+    local snsPlatform = PlatformConfig:getPlatformAuthName(authorType)
+
+    local snsName = nil
+    if authorType == PlatformAuthEnum.kPhone then
+        snsName = Localhost:getLastLoginPhoneNumber()
+    end
+
     if __ANDROID and NetworkConfig.mockQzoneSk ~= nil then
         local function onUserInputSK( input )
             NetworkConfig.mockQzoneSk = input
-            local logic = QzoneSyncLogic.new(openId, accessToken)
+            local logic = QzoneSyncLogic.new(openId, accessToken,snsPlatform)
             logic:sync(onSyncFinish, onSyncCancel, onSyncError)
         end
         AlertDialogImpl:input( "Test SK", "Session key:", NetworkConfig.mockQzoneSk, "OK", "Cancel", onUserInputSK, nil)
     else
-        local logic = QzoneSyncLogic.new(openId, accessToken)
+        local logic = QzoneSyncLogic.new(openId, accessToken,snsPlatform,snsName)
         logic:sync(onSyncFinish, onSyncCancel, onSyncError)
     end
 end

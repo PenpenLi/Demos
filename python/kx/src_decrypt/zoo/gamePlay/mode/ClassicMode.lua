@@ -58,6 +58,7 @@ function ClassicMode:revertUIFromBackProp()
 end
 
 function ClassicMode:afterFail()
+  --FUUUManager:update(self)
   GameExtandPlayLogic:showAddTimePanel(self)
 end
 

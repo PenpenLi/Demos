@@ -39,6 +39,7 @@ GameItemOrderType_ST = table.const -- Special Target
 	kSnail = 4,
 	kGreyCuteBall = 5,
 	kBrownCuteBall = 6,
+	kBottleBlocker = 7,
 }
 
 GameItemOrderType_Others = table.const

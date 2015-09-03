@@ -267,12 +267,13 @@ function LadyBugTaskItem:onReOpenBtnTapped(...)
 					panel:popout()
 				else enableTouch() end
 			end
-			local text = {
-				tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-				yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-				no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			}
-			CommonTipWithBtn:showTip(text, "negative", createGoldPanel, enableTouch)
+			-- local text = {
+			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+			-- }
+			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, enableTouch)
+			GoldlNotEnoughPanel:create(createGoldPanel, enableTouch, nil):popout()
 		else
 
 			local function onSuccess()

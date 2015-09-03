@@ -2,6 +2,7 @@ DigMoveMode = class(MoveMode)
 
 function DigMoveMode:initModeSpecial(config)
 	self.mainLogic.digJewelLeftCount = tonumber(config.clearTargetLayers)
+	self.mainLogic.digJewelTotalCount = tonumber(config.clearTargetLayers)
 end
 
 function DigMoveMode:onGameInit()

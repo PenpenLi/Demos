@@ -406,6 +406,12 @@ function RankList:init(levelId, panelWithRank, ...)
 	end
 end
 
+function RankList:setButtonsEnable(enable)
+	if self.addFriendBtn then
+		self.addFriendBtn:setTouchEnabled(false)
+	end
+end
+
 function RankList:onAddFriendButtonTapped(...)
 	assert(#{...} == 0)
 
@@ -549,6 +555,9 @@ function RankList:playChangeRankAnim(oldNumber, newNumber, animFinishCallback, .
 	self.myRankLabel:setVisible(false)
 	self.rankNumLabel:setVisible(false)
 	--self.notHaveRankLabel:setVisible(false)
+	if self.rankLabelWrapper:numberOfRunningActions() ~= 0 then
+		self.rankLabelWrapper:stopAllActions()
+	end
 	self.rankLabelWrapper:setScale(1)
 
 	-- New Rank Reached

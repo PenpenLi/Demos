@@ -516,8 +516,50 @@ function EnergyPanel:init(continueCallback, ...)
 		self.item2:registerItemNumberChangeCallback(onChange)
 	else
 		self.goldBuyMidBtn:setVisible(false)
+	-- 	if self.item2:getItemNumber() <= 0 then
+	-- 		self.goldBuyMidBtn:setVisible(true)
+	-- 		self.goldBuyMidBtn:setColorMode(kGroupButtonColorMode.blue)
+	-- 		self.goldBuyMidBtn:useStaticLabel(44, nil, ccc3(255, 255, 255))
+	-- 		self.goldBuyMidBtn:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
+	-- 		self.goldBuyMidBtn:ad(DisplayEvents.kTouchTap, function () self:onAndroidBuyMidEnergy() end)
+	-- 		self.goldBuyMidBtn:setEnabled(true)
+	-- 	else
+	-- 		self.goldBuyMidBtn:setVisible(false)
+	-- 		self.goldBuyMidBtn:setEnabled(false)
+	-- 	end
 	end
 end
+
+-- function EnergyPanel:onAndroidBuyMidEnergy()
+-- 	print('onAndroidBuyMidEnergy')
+-- 	local function onSuccess()
+-- 		print('onAndroidBuyMidEnergy onSuccess')
+-- 		if self.isDisposed then return end
+-- 		self.item2:updateItemNumber()
+-- 		HomeScene:sharedInstance().goldButton:updateView()
+-- 	end
+-- 	local function onFail()
+-- 		print('onAndroidBuyMidEnergy onFail')
+-- 		--没什么需要做的
+-- 	end
+-- 	local function onCancel()
+-- 		print('onAndroidBuyMidEnergy onCancel')
+-- 		--没什么需要做的
+-- 	end
+-- 	local buyLogic = BuyLogic:create(17, 2)
+-- 	local price = buyLogic:getPrice()
+-- 	local userCash = UserManager:getInstance().user:getCash()
+-- 	if userCash < price then
+-- 		local ingame = IngamePaymentLogic:create(17, 1)
+-- 		if ingame:tryThirdPayPromotion(onSuccess, onFail, onCancel) then
+-- 			return
+-- 		end
+-- 	end
+-- 	local buyPropPanel = BuyPropPanel:create(17)
+-- 	buyPropPanel:setBoughtCallback(onSuccess)
+-- 	buyPropPanel:setExitCallback(onCancel)
+-- 	buyPropPanel:popout()
+-- end
 
 function EnergyPanel:onCloseBtnTapped()
 	if self.tappedState == self.TAPPED_STATE_NONE then
@@ -713,13 +755,14 @@ function EnergyPanel:onBuyAndContinueBtnTapped(event, ...)
 					panel:popout()
 				end
 			end
-			local text = {
-				tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-				yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-				no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			}
-			CommonTipWithBtn:setShowFreeFCash(true)
-			CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+			-- local text = {
+			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+			-- }
+			-- CommonTipWithBtn:setShowFreeFCash(true)
+			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+			GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
 			-- CommonTip:showTip(Localization:getInstance():getText("buy.prop.panel.err.no.gold"), "negative", createGoldPanel)
 		else
 
@@ -1426,8 +1469,8 @@ function EnergyPanel:onBuyBtnTapped(...)
 		
 		local function enableClick()
 			if self.isDisposed then return end
-			self.buyBtn:setTouchEnabled(true)
-			self.buyBtn:setButtonMode(true)
+			-- self.buyBtn:setTouchEnabled(true)
+			-- self.buyBtn:setButtonMode(true)
 			self.onEnterForeGroundCallback = nil
 		end
 
@@ -1439,8 +1482,8 @@ function EnergyPanel:onBuyBtnTapped(...)
 		end
 
 		if __ANDROID then -- ANDROID
-			self.buyBtn:setTouchEnabled(false)
-			self.buyBtn:setButtonMode(false)
+			-- self.buyBtn:setTouchEnabled(false)
+			-- self.buyBtn:setButtonMode(false)
 			local logic = IngamePaymentLogic:create(18)
 			self.onEnterForeGroundCallback = enableClick  --微信未登录取消时无回调，所以加此逻辑
 			logic:buy(onBoughtCallback, enableClick, enableClick)

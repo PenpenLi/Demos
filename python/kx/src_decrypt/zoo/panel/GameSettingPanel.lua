@@ -2,6 +2,7 @@ require "zoo.baseUI.ButtonWithShadow"
 require "zoo.panel.component.quitPanel.QuitPanelButton"
 require "zoo.util.IllegalWordFilterUtil"
 require "zoo.panel.CDKeyPanel"
+require "zoo.panel.QRCodePanel"
 
 GameSettingPanel = class(BasePanel)
 function GameSettingPanel:initAvatar( group )
@@ -154,6 +155,7 @@ function GameSettingPanel:initInput(onBeginCallback)
 	input:ad(kTextInputEvents.kEnded, onTextEnd)
 	self.nameLabel:addChild(input)
 	self.input = input
+	self.inputOriPos = self.input:getPosition()
 	inputSelect:dispose()
 end
 local function startAppBar(sub)
@@ -233,6 +235,7 @@ function GameSettingPanel:init()
 	self.soundPauseIcon	= self.controlpanel:getChildByName("soundpause")
 	self.notificationPauseIcon	= self.controlpanel:getChildByName("notificationpause")
 	self.bg = self.ui:getChildByName("_newBg")
+	self.qrcode = self.ui:getChildByName("qrcode")
 
 	self.soundBtnTip	= self.controlpanel:getChildByName("soundtip")
 	self.musicBtnTip	= self.controlpanel:getChildByName("musictip")
@@ -334,6 +337,22 @@ function GameSettingPanel:init()
 		if schedule then
 			Director:sharedDirector():getScheduler():unscheduleScriptEntry(schedule)
 			schedule = nil
+		end
+	end
+
+	if not showWeiSheQuBtn then
+		if not self:supportThirdPay() or PlatformConfig:isPlatform(PlatformNameEnum.kMiPad) then
+			--不显示三方设置按钮
+			self.controlpanel:getChildByName('thirdpaybtn'):removeFromParentAndCleanup(true)
+			self.controlpanel:getChildByName('thirdpaytip'):removeFromParentAndCleanup(true)
+			self.controlpanel:getChildByName('thirdpaypause'):removeFromParentAndCleanup(true)
+			self.controlpanel:getChildByName('sep3'):removeFromParentAndCleanup(true)
+			self.controlpanel:getChildByName('bg'):setPreferredSize(CCSizeMake(337, 81))		
+			self.cdkeyBtn:setPositionX(self.cdkeyBtn:getPositionX() - (447-337))
+			self.controlpanel:getChildByName('bg2'):setPositionX(self.controlpanel:getChildByName('bg2'):getPositionX() - (447-337))
+			self.controlpanel:setPositionX(self.controlpanel:getPositionX() + 55)
+		else
+			self:buildThirdPayBtn(stopSchedule)
 		end
 	end
 
@@ -521,6 +540,18 @@ function GameSettingPanel:init()
 	end
 	schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut, 5, false)
 
+	local function onQRCode()
+		QRCodePostPanel:create():popout()
+	end
+
+	if inviteCode and inviteCode ~= "" then
+		self.qrcode:setTouchEnabled(true)
+		self.qrcode:setButtonMode(true)
+		self.qrcode:addEventListener(DisplayEvents.kTouchTap, onQRCode)
+	else
+		self.qrcode:setVisible(false)
+	end
+
 	--[[if __WP8 then
 		self.btn1:setVisible(false)
 		local x1 = self.btn1:getPosition().x
@@ -569,19 +600,125 @@ local function getFAQurl()
 	local sig = getKeyValueStr("sig",HeMathUtils:md5(level..platform.."client"..timeStamp..UID..version..secret),true)
 
 	local finalUrl = preUrl..lv..pf..src..ts..uid..ver..sig
-	print(finalUrl)
+	-- print(finalUrl)
 	return finalUrl
+end
+
+local function encodeUri(str)
+    local ret = HeDisplayUtil:urlEncode(str)
+    return ret
+end
+
+local function getFAQParams()
+	local deviceOS = "android"
+	local appId = "1002"
+	local secret = "andridxxl!sx0fy13d2"
+	
+	if __ANDROID and PlatformConfig:isQQPlatform() then -- android应用宝
+		appId = "1003"
+		secret = "yybxxl!1f0ft03ef"
+	elseif __IOS then
+		deviceOS = "ios"
+		appId = "1001"
+		secret = "iosxxl!23rj8945fc2d3"
+	end
+	
+	local parameters = {}
+
+	local metaInfo = MetaInfo:getInstance()
+	parameters["app"] = appId
+	parameters["os"] = deviceOS
+	parameters["mac"] = metaInfo:getMacAddress()
+	parameters["model"] = metaInfo:getDeviceModel()
+	parameters["osver"] = metaInfo:getOsVersion()
+	parameters["udid"] = metaInfo:getUdid()
+	local network = "UNKNOWN"
+	if __ANDROID then
+		network = luajava.bindClass("com.happyelements.android.MetaInfo"):getNetworkTypeName()
+	else
+		network = Reachability:getNetWorkTypeName()
+	end
+	parameters["network"] = network
+
+	parameters["vip"] = 0
+	parameters["src"] = "client"
+	parameters["lang"] = "zh-Hans"
+
+	parameters["pf"] = StartupConfig:getInstance():getPlatformName() or ""
+	parameters["uuid"] = _G.kDeviceID or ""
+
+	local user = UserManager:getInstance().user
+	parameters["level"] = user:getTopLevelId()
+	local markData = UserManager:getInstance().mark
+	local createTime = markData and markData.createTime or 0
+	parameters["ct"] = tonumber(createTime) / 1000
+	parameters["lt"] = PlatformConfig:getLoginTypeName()
+	if __IOS then
+		parameters["pt"] = "apple"
+	else
+		local pt = AndroidPayment.getInstance():getDefaultSmsPayment()
+		local ptName = "NOSIM"
+		if pt then ptName = PaymentNames[pt] end
+		parameters["pt"] = tostring(ptName)
+	end
+	parameters["gold"] = user:getCash()
+	parameters["silver"] = user:getCoin()
+	parameters["uver"] = ResourceLoader.getCurVersion()
+	parameters["uid"] = user.uid
+	local name = ""
+	if UserManager.getInstance().profile and UserManager.getInstance().profile:haveName() then
+		name = UserManager.getInstance().profile:getDisplayName()
+	end
+	parameters["name"] = name
+	parameters["ver"] = _G.bundleVersion
+	parameters["ts"] = os.time()
+	parameters["ext"] = ""
+
+	local paramKeys = {}
+	for k, v in pairs(parameters) do
+		table.insert(paramKeys, k)
+	end
+	table.sort(paramKeys)
+	local md5Src = ""
+	for _, v in pairs(paramKeys) do
+		md5Src = md5Src..tostring(parameters[v])
+	end
+	local sig = HeMathUtils:md5(md5Src)
+	-- calc sig
+	parameters["sig"] = sig
+	return parameters
+end
+
+local function getNewFAQurl(params)
+	local parameters = params or getFAQParams()
+	local faqUrl = "http://fansclub.happyelements.com/fans/qa.php"
+	-- local faqUrl = "http://fansclub.happyelements.com/kefu/qa.php"
+	local isFirstParam = true
+	for k, v in pairs(parameters) do
+		local join = "&"
+		if isFirstParam then 
+			join = "?"
+			isFirstParam = false
+		end
+		faqUrl = faqUrl .. join .. k .. "=" .. encodeUri(tostring(v))
+	end
+	-- print("!!!!!!faqUrl = ", faqUrl)
+	return faqUrl
 end
 
 function GameSettingPanel:onBtn1Tapped(event, ...)
 	PopoutManager:sharedInstance():remove(self, true)
 	if __IOS and kUserLogin then 
-		GspEnvironment:getCustomerSupportAgent():setFAQurl(getFAQurl()) 
+		local params = getFAQParams()
+		GspEnvironment:getCustomerSupportAgent():setExtraParams(params) 
+		GspEnvironment:getCustomerSupportAgent():setFAQurl(getNewFAQurl(params)) 
 		GspEnvironment:getCustomerSupportAgent():ShowJiraMain() 
 	elseif __ANDROID then
 		if kUserLogin then
 			local onButton1Click = function()
-				GspProxy:setFAQurl(getFAQurl())
+				local params = getFAQParams()
+				GspProxy:setExtraParams(params)
+				GspProxy:setFAQurl(getNewFAQurl(params))
 				GspProxy:showCustomerDiaLog()  
 			end
 			CommonAlertUtil:showPrePkgAlertPanel(onButton1Click,NotRemindFlag.PHOTO_ALLOW,Localization:getInstance():getText("pre.tips.photo"));
@@ -589,58 +726,12 @@ function GameSettingPanel:onBtn1Tapped(event, ...)
 			CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips", "negative"))
 		end
 	elseif __WP8 then
-		Wp8Utils:ShowMessageBox("QQ群: 114278702\n联系客服: xiaoxiaole@happyelements.com", "开心消消乐沟通渠道")
+		Wp8Utils:ShowMessageBox("QQ群: 114278702(满) 313502987\n联系客服: xiaoxiaole@happyelements.com", "开心消消乐沟通渠道")
 	end
 end
 
 function GameSettingPanel:onBtn2Tapped(event, ...)
 	--PopoutManager:sharedInstance():remove(self, true)
---[[
-local size = CCDirector:sharedDirector():getVisibleSize()
-
-local c = YouKuViewController:create()
-
-local version = "1";
-local vid = "XNTMyMTExODc2";
-local client_id = "3e7ecc095c50c2f0";
-local client_secret = "3d22e6f2bd37ac3a4f1227cdc97548d7";
-
-waxClass{"CallbackLink",NSObject,protocols={"CallbackLink"}}
-function CallbackLink:linkParam(url)
-    print("link:"..url)
-    local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/wechat_icon.png")
-    local shareCallback = {
-        onSuccess = function(result)
-            print("success...")
-        end,
-        onError = function(errCode, errMsg)
-            print("error...")
-        end,
-        onCancel = function()
-            print("error...")
-        end,
-    }
-
---SnsUtil.sendLinkMessage(PlatformShareEnum.kWechat, "test_link", "link", thumb, "http://www.baidu.com", true, shareCallback)
-end
-
-function CallbackLink:backToGame( ... )
-	print("CallbackLink:backToGame....")
-end
-
-function CallbackLink:test_b_c( a,b,c )
-	print(a)
-	print(b)
-	print(c)
-	print("----------------")
-end
-
-c:setCallbackLink(CallbackLink:init())
-
-c:initHtmlURLStr("http://10.130.136.47/player.html")
-c:presentYouKu()
-do return end
---]]
 	if __IOS_FB then
 		SnsProxy:inviteFriends(nil)
 	else
@@ -789,9 +880,123 @@ function GameSettingPanel:updateUserProfile()
 	local http = UpdateProfileHttp.new()
 	http:load(profile.name, profile.headUrl)
 end
+
+function GameSettingPanel:becomeSecondPanel()	
+	if self.input and self.inputOriPos then 
+		self.input:setPosition(ccp(self.inputOriPos.x - 2000, self.inputOriPos.y))
+	end
+end
+
+function GameSettingPanel:reBecomeTopPanel()
+	if self.input and self.inputOriPos then 
+		self.input:setPosition(ccp(self.inputOriPos.x + 2000, self.inputOriPos.y))	
+	end
+end
+
 function GameSettingPanel:create()
 	local newQuitPanel = GameSettingPanel.new()
 	newQuitPanel:loadRequiredResource(PanelConfigFiles.panel_game_setting)
 	newQuitPanel:init()
 	return newQuitPanel
+end
+
+function GameSettingPanel:buildThirdPayBtn(stopSchedule)
+	local paymentConfig = PlatformConfig.paymentConfig.thirdPartyPayment
+	local icon, enableTip, disableTip
+	disableTip = localize('game.setting.panel.pay.close.tip')
+	if table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kWECHAT)
+	and table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kALIPAY) then
+		icon = self:buildInterfaceGroup('wechat_ali_pay_icon')
+		enableTip = localize('game.setting.panel.pay.wechat.alipay.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kWECHAT)
+	and table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kQQ) then
+		icon = self:buildInterfaceGroup('wechat_tencent_pay_icon')
+		enableTip = localize('game.setting.panel.pay.wechat.tencent.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kWECHAT) then
+		icon = self:buildInterfaceGroup('wechat_pay_icon')
+		enableTip = localize('game.setting.panel.pay.wechat.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kALIPAY) then
+		icon = self:buildInterfaceGroup('ali_pay_icon')
+		enableTip = localize('game.setting.panel.pay.alipay.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.k360) then
+		icon = self:buildInterfaceGroup('360_pay_icon')
+		enableTip = localize('game.setting.panel.pay.360.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kMI) then
+		icon = self:buildInterfaceGroup('mi_pay_icon')
+		enableTip = localize('game.setting.panel.pay.mi.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kQQ) then
+		icon = self:buildInterfaceGroup('qq_pay_icon')
+		enableTip = localize('game.setting.panel.pay.tencent.open.tip')
+	elseif table.exist(paymentConfig, PlatformPaymentThirdPartyEnum.kWDJ) then
+		icon = self:buildInterfaceGroup('wdj_pay_icon')
+		enableTip = localize('game.setting.panel.pay.wdj.open.tip')
+	end
+	if not icon then 
+		print(debug.traceback())
+		print('THIRD PAY CONFIG ERROR!!!!!')
+		return
+	end
+
+	local ph = self.controlpanel:getChildByName('thirdpaybtn')
+	ph:setVisible(false)
+	ph:getParent():addChildAt(icon, ph:getZOrder())
+	-- icon:setPosition(ccp(ph:getPositionX() + 30, ph:getPositionY() - 28))
+	icon:setPosition(ccp(ph:getPositionX(), ph:getPositionY() - 5))
+	icon:setScale(ph:getContentSize().width * ph:getScaleX() / icon:getGroupBounds().size.width)
+
+	local function onThirdPayBtnTapped()
+		stopSchedule()
+		if PaymentManager:getInstance():getNotDefaultThirdPayOpen() then -- 未开启三方
+			self.thirdpaypause:setVisible(false)
+			PaymentManager:getInstance():setNotDefaultThirdPayOpen(false) -- 开启
+			self.thirdpaytip:setString(enableTip)
+			DcUtil:UserTrack({category = "set", sub_category = "3thbuy_setting", enable = 0}) 
+		else
+			self.thirdpaypause:setVisible(true)
+			PaymentManager:getInstance():setNotDefaultThirdPayOpen(true) -- 关闭
+			self.thirdpaytip:setString(disableTip)
+			DcUtil:UserTrack({category = "set", sub_category = "3thbuy_setting", enable = 1})
+		end
+		self:playShowHideLabelAnim(self.thirdpaytip)
+	end
+	self.thirdpaybtn = icon
+	self.thirdpaypause = self.controlpanel:getChildByName('thirdpaypause')
+	self.thirdpaytip = self.controlpanel:getChildByName('thirdpaytip')
+
+	if PaymentManager:getInstance():getNotDefaultThirdPayOpen() then
+		self.thirdpaypause:setVisible(true)
+	else
+		self.thirdpaypause:setVisible(false)
+	end
+
+	table.insert(self.tips, self.thirdpaytip)
+
+	icon:ad(DisplayEvents.kTouchTap, onThirdPayBtnTapped)
+	icon:setTouchEnabled(true, 0, true)
+	icon:setButtonMode(true)
+end
+
+function GameSettingPanel:supportThirdPay()
+	if __IOS then return false end
+	if type(PlatformConfig.paymentConfig.thirdPartyPayment) == 'table' then
+		if PlatformConfig.paymentConfig.thirdPartyPayment[1] == PlatformPaymentThirdPartyEnum.kUnsupport then
+			return false
+		end
+	else 
+		if PlatformConfig.paymentConfig.thirdPartyPayment == PlatformPaymentThirdPartyEnum.kUnsupport then
+			return false
+		end
+	end
+	return true
+end
+
+function GameSettingPanel:getHCenterInScreenX()
+	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
+	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
+	local selfWidth		= self.bg:getGroupBounds().size.width
+
+	local deltaWidth	= visibleSize.width - selfWidth
+	local halfDeltaWidth	= deltaWidth / 2
+
+	return visibleOrigin.x + halfDeltaWidth
 end

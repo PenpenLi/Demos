@@ -37,8 +37,9 @@ function ActivityButton:init()
 
 	self.ui:getChildByName("text3"):setVisible(false)
 	
-	self.ui:setTouchEnabled(true,1,true)
-	self.ui:setButtonMode(true)
+	self.wrapper:setTouchEnabled(false)
+	self.wrapper:setTouchEnabled(true,0,false)
+	self.wrapper:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)
 	self.clickReplaceScene = true

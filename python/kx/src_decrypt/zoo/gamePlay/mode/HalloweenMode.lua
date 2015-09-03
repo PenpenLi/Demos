@@ -1,40 +1,99 @@
 require "zoo.config.HalloweenBossConfig"
+require "zoo.config.LevelDropPropConfig"
 HalloweenMode = class(MoveMode)
 
 
-local ground_upgrade_interval       = 3     -- upgrade ground per 4 rows
+local ground_upgrade_interval       = 2     -- upgrade ground per 2 rows
 local add_max_jewel_interval        = 6     -- max_jewel adds 1 per 6 rows
-local generate_add_move_interval    = 2     -- generate 1 add_move per 2 rows
-local max_jewel_limit               = 15    -- max jewel limit is 15
-local initial_max_jewel             = 1
+local generate_add_move_interval    = 5     -- generate 1 add_move per 2(halloween)|5(dragonboat) rows
+local max_jewel_limit               = 8    -- max jewel limit is 15
+local initial_max_jewel             = 6
 local max_generate_row              = 2
 local generate_boss_interval        = 4
 local generate_jewel_interval       = 2
+
+local GroundGenerator = class()
+
+function GroundGenerator:create(mainLogic)
+    local ret = GroundGenerator.new()
+    ret:init(mainLogic)
+    return ret
+end
+
+function GroundGenerator:init(mainLogic)
+    self.mainLogic = mainLogic
+    self.level1 = 13
+    self.level2 = 5
+    self.level3 = 0
+    self.curIndex = 0
+    self.genCount = 0
+    self.groundPool = self:genNewGroundPool()
+end
+
+function GroundGenerator:genGround()
+    if self.curIndex >= #self.groundPool then
+        self.groundPool = self:genNewGroundPool()
+        self.curIndex = 0
+    end
+    self.curIndex = self.curIndex + 1
+    return self.groundPool[self.curIndex]
+end
+
+function GroundGenerator:genNewGroundPool()
+    if self.genCount > 0 and self.genCount % ground_upgrade_interval == 0 then
+        if self.level2 < 10 and self.level3 < 3 then
+            if self.level2 < 1 or self.mainLogic.randFactory:rand(1, 100) > 50 then -- 1 -> 2
+                self.level1 = self.level1 - 1
+                self.level2 = self.level2 + 1
+            else -- 2 -> 3
+                self.level2 = self.level2 - 1
+                self.level3 = self.level3 + 1
+            end
+        elseif self.level2 < 10 then
+            self.level1 = self.level1 - 1
+            self.level2 = self.level2 + 1
+        elseif self.level3 < 3 then
+            self.level2 = self.level2 - 1
+            self.level3 = self.level3 + 1
+        end
+    end
+    self.groundPool = {}
+    for i = 1, self.level1 do table.insert(self.groundPool, 1) end
+    for i = 1, self.level2 do table.insert(self.groundPool, 2) end
+    for i = 1, self.level3 do table.insert(self.groundPool, 3) end
+
+    local length = self.level1 + self.level2 + self.level3
+    -- 打乱次序
+    for i =1 , length do 
+        local selector = self.mainLogic.randFactory:rand(1, length)
+        self.groundPool[1], self.groundPool[selector] = self.groundPool[selector], self.groundPool[1]
+    end
+    self.genCount = self.genCount + 1
+    -- print("GroundGenerator:genNewGroundPool:", table.tostring(self.groundPool))
+    return self.groundPool
+end
 
 function HalloweenMode:initModeSpecial(config)
     self.mainLogic.digJewelCount = DigJewelCount.new()
     self.mainLogic.maydayBossCount = 0
 
     -- initialize ground pool
-    self.groundPool = {}
-    for i=1, 9*max_generate_row do
-        self.groundPool[i] = 1 -- level 1 ground
-    end
     self.rowCountSinceLastGroundUpgrade = 0
     self.maxJewel = initial_max_jewel
     self.generatedRowCount = 0
-
+    self.rowCountSinceLastAddMove = 0
+    self.bossGenRowCountDown = 1
 
     self.lastGenBossTimes = 0
     self.lastGenJewelTimes = 0
     -- 魔法地格的数据结构  保存地格的id和击中的次数
     self.mainLogic.magicTileStruct = {}
     self.mainLogic:updateAllMagicTiles()
+    self.mainLogic.dragonBoatPropConfig = LevelDropPropConfig:create(config.dragonBoatPropGen)
+
+    print("dragonBoatPropGen:", table.tostring(self.mainLogic.dragonBoatPropConfig))
     HalloweenBossConfig.reinit()
-    
 end
-
-
 
 function HalloweenMode:afterFail()
     print('HalloweenMode:afterFail')
@@ -68,8 +127,10 @@ function HalloweenMode:onGameInit()
         context.mainLogic.fsm:initState()
 
         self.generatedRowCount = 0
+        self.rowCountSinceLastAddMove = 0
         self.lastGenJewelTimes = 0
         self.lastGenBossTimes  = 0
+        self.groundGenerator = GroundGenerator:create(self.mainLogic)
     end
 
     local function playPrePropAnimation()
@@ -85,6 +146,81 @@ function HalloweenMode:onGameInit()
     end
 
     local extraItemMap, extraBoardMap = context:getExtraMap(0, #context.mainLogic.digBoardMap)
+
+    local platform = UserManager.getInstance().platform
+    local uid = UserManager.getInstance().uid
+    if not uid then uid = "12345" end
+    local zongziFileKey = "goldZongZiFileKey_" .. tostring(platform) .. "_u_".. tostring(uid) .. ".ds"
+
+    local localData = Localhost:readFromStorage(zongziFileKey)
+    if not localData then
+        localData = {}
+        localData.lastData = {}
+    end
+    local lastDataList = localData.lastData[tostring(context.mainLogic.level)]
+    if not lastDataList then 
+        lastDataList = {} 
+        localData.lastData[tostring(context.mainLogic.level)] = lastDataList
+    end
+    local randomPackage = 3
+    local randomIndex = 1
+    local randomSelect = 1
+    local zongziIndex = 0
+
+    local resetRandomSelect = function()
+        
+        randomIndex = 1
+        zongziIndex = zongziIndex + 1
+
+        local lastRandom = lastDataList[zongziIndex]
+        if not lastRandom then
+            randomSelect = context.mainLogic.randFactory:rand(1, randomPackage)
+        else
+            randomSelect = context.mainLogic.randFactory:rand(1, tonumber(randomPackage - 1) )
+            if randomSelect >= lastRandom then
+                randomSelect = randomSelect + 1
+            end
+        end
+        lastDataList[zongziIndex] = randomSelect
+    end
+
+    resetRandomSelect()
+
+    for r = 1, #extraItemMap do
+        for c = 1, #extraItemMap[r] do
+
+            local item = extraItemMap[r][c]  --GameItemData
+
+            if item and item.ItemType == GameItemType.kGoldZongZi then
+
+                if randomIndex ~= randomSelect then
+                    item.ItemType = GameItemType.kDigGround 
+                    item.digGoldZongZiLevel = 0
+                    item.digJewelLevel = 0
+                    item.digGroundLevel = 1
+                    item.isBlock = true 
+                    item.isEmpty = false
+                    item.isNeedUpdate = true
+                else
+                    item.ItemType = GameItemType.kGoldZongZi 
+                    item.digGoldZongZiLevel = 1
+                    item.digJewelLevel = 0
+                    item.digGroundLevel = 0
+                    item.isBlock = true 
+                    item.isEmpty = false
+                    item.isNeedUpdate = true
+                end
+
+                if randomIndex == randomPackage then
+                    resetRandomSelect()
+                else
+                    randomIndex = randomIndex + 1
+                end
+            end 
+        end
+    end
+    Localhost:writeToStorage( localData , zongziFileKey )
+
     self.mainLogic:updateAllMagicTiles(extraBoardMap)
     -- print('extraItemMap', #extraItemMap, 'extraBoardMap', #extraBoardMap)
     self.mainLogic.boardView:initDigScrollView(extraItemMap, extraBoardMap, true)
@@ -107,8 +243,14 @@ function HalloweenMode:reachTarget()
     return false
 end
 
+function HalloweenMode:onBossDie()
+    local leftGroundRow = self:getDigGroundMaxRow()
+    self.bossGenRowCountDown = 5 - leftGroundRow
+    print("HalloweenMode:onBossDie, bossGenRowCountDown=", self.bossGenRowCountDown)
+end
+
 function HalloweenMode:getExtraMap(passedRow, additionRow)
-    -- print('passedRow, additionRow', passedRow, additionRow, '#self.mainLogic.digItemMap', #self.mainLogic.digItemMap, '#self.mainLogic.gameItemMap', #self.mainLogic.gameItemMap)
+    print('passedRow, additionRow', passedRow, additionRow, '#self.mainLogic.digItemMap', #self.mainLogic.digItemMap, '#self.mainLogic.gameItemMap', #self.mainLogic.gameItemMap)
     -- debug.debug()
     local itemMap = {}
     local boardMap = {}
@@ -217,32 +359,49 @@ function HalloweenMode:checkScrollDigGround(stableScrollCallback)
 
         local function localCallback()
             self.mainLogic:updateAllMagicTiles()
-            local boss = self.mainLogic:getHalloweenBoss()
-            if not boss then
-                local position = nil
-                for r = 1, #self.mainLogic.gameItemMap do
-                    for c = 1, #self.mainLogic.gameItemMap[r] do
-                        local item = self.mainLogic.gameItemMap[r][c]
-                        if item.isHalloweenBottle then
-                            position = {r = r, c = c}                            
-                        end
+
+            local position = nil
+            local goldZongziPos = nil
+            for r = 1, #self.mainLogic.gameItemMap do
+                for c = 1, #self.mainLogic.gameItemMap[r] do
+                    local item = self.mainLogic.gameItemMap[r][c]
+                    if item.isHalloweenBottle then
+                        position = {r = r, c = c}                            
+                    end
+                    if item.ItemType == GameItemType.kGoldZongZi and not goldZongziPos then
+                        goldZongziPos = {r = r, c = c}
                     end
                 end
-                local action = GameBoardActionDataSet:createAs(
-                        GameActionTargetType.kGameItemAction,
-                        GameItemActionType.kItem_Halloween_Boss_Create,
-                        IntCoord:create(position.r, position.c),
-                        nil,
-                        GamePlayConfig_MaxAction_time
-                    )
-                action.completeCallback = stableScrollCallback
-                self.mainLogic:addGameAction(action)
+            end
 
-                if not self.firstBoss then
-                    self.firstBoss = true
-                    GameGuide:sharedInstance():onHalloweenBossFirstComeout(self:getGuideTilePos())
+            if goldZongziPos then
+                -- print("~~~~~~~~~~~~~~~goldZongziPos~~~~~~~~~~")
+                GameGuide:sharedInstance():onGoldZongziAppear(goldZongziPos)
+            end
+
+            local boss = self.mainLogic:getHalloweenBoss()
+            if not boss then
+                if position then
+                    local action = GameBoardActionDataSet:createAs(
+                            GameActionTargetType.kGameItemAction,
+                            GameItemActionType.kItem_Halloween_Boss_Create,
+                            IntCoord:create(position.r, position.c),
+                            nil,
+                            GamePlayConfig_MaxAction_time
+                        )
+                    action.completeCallback = stableScrollCallback
+                    self.mainLogic:addGameAction(action)
+
+                    if not self.firstBoss then
+                        self.firstBoss = true
+                        local guideTilePos = self:getGuideTilePos()
+                        if guideTilePos then
+                            GameGuide:sharedInstance():onHalloweenBossFirstComeout(guideTilePos)
+                        end
+                    end
+                else
+                    stableScrollCallback()
                 end
-                
             else
                 stableScrollCallback()
             end
@@ -321,20 +480,9 @@ function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
     local genBoss = (self.mainLogic:getHalloweenBoss() == nil)
 
     if genBoss then
-        local startRow, endRow = 0, 0
-        if moveUpRow == 1 then
-            startRow = #extraItemMap
-            endRow = startRow
-        elseif moveUpRow == 2 then
-            startRow = #extraItemMap - 1
-            endRow = startRow + 1
-        elseif moveUpRow == 3 then
-            startRow = #extraItemMap - 2
-            endRow = startRow + 2
-        end
-
-        local selectionPool = {}
-        for r = startRow, endRow do
+        if self.bossGenRowCountDown <= moveUpRow then
+            local selectionPool = {}
+            local r = #extraItemMap - moveUpRow + self.bossGenRowCountDown
             if extraItemMap[r] then
                 -- 优先选择一级云块
                 for c = 1, #extraItemMap[r] do
@@ -362,14 +510,15 @@ function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
                     end
                 end
             end
+
+            -- 生成鹿角
+            selector = selectionPool[self.mainLogic.randFactory:rand(1, #selectionPool)]
+            extraItemMap[selector.r][selector.c].isHalloweenBottle = true
+            selector.r = selector.r - moveUpRow 
+        else
+            self.bossGenRowCountDown = self.bossGenRowCountDown - moveUpRow
         end
-
-        -- 生成鹿角
-        selector = selectionPool[self.mainLogic.randFactory:rand(1, #selectionPool)]
-        extraItemMap[selector.r][selector.c].isHalloweenBottle = true
-        selector.r = selector.r - moveUpRow 
     end
-
 
     self.mainLogic.passedRow = self.mainLogic.passedRow + moveUpRow
     self.mainLogic.boardView:hideItemViewLayer()
@@ -392,14 +541,6 @@ function HalloweenMode:getDigGroundMaxRow()
 end
 
 function HalloweenMode:hasBossOnMap()
-    local gameItemMap = self.mainLogic.gameItemMap
-    for r = #gameItemMap, 1, -1 do -- 从最后一行开始，效率更高
-        for c = 1, #gameItemMap[r] do 
-            if gameItemMap[r][c].ItemType == GameItemType.kBoss then 
-                return true
-            end
-        end
-    end
     return false
 end
 
@@ -436,6 +577,7 @@ function HalloweenMode:generateGroundRow(rowCount)
 
     print('rowCount', rowCount)
     -- 生成magic tile
+    -- 复用地形中所有超级地块的位置
     local magicTileIndex = {}
     local digTileMapCount = #self.mainLogic.digBoardMap
     print('digTileMapCount', digTileMapCount)
@@ -457,11 +599,9 @@ function HalloweenMode:generateGroundRow(rowCount)
     -- debug.debug()
 
     self.generatedRowCount = self.generatedRowCount + rowCount
+    self.rowCountSinceLastAddMove = self.rowCountSinceLastAddMove + rowCount
 
-    self:upgradeGround(rowCount)
-
-    -- local genBossCount = self:getGenBossCount()
-    local genJewelCount = self:getGenJewelCount()
+    local genJewelCount = self:getGenJewelCount(rowCount)
 
     print('rowCount', rowCount)
     print('generatedRowCount', self.generatedRowCount)
@@ -476,16 +616,28 @@ function HalloweenMode:generateGroundRow(rowCount)
     print('GEN jewel', self.maxJewel)
     for i = 1, genJewelCount do
         local selector = self.mainLogic.randFactory:rand(1, length)
+
         while usedIndex[selector] == true and #usedIndex < length do
             selector = self.mainLogic.randFactory:rand(1, length)
         end
         usedIndex[selector] = true
-        result[selector] = self:getJewelTileDef(selector)
+        result[selector] = self:getJewelTileDef()
+    end
+
+    local shouldAddMove = self:shouldAddMove()
+    print('shouldAddMove:', shouldAddMove)
+    if shouldAddMove then
+        local selector = self.mainLogic.randFactory:rand(1, length)
+        while usedIndex[selector] == true and #usedIndex < length do
+            selector = self.mainLogic.randFactory:rand(1, length)
+        end
+        usedIndex[selector] = true
+        result[selector] = self:getAddMoveTileDef()
     end
 
     for i=1, length do 
-        if result[i] == nil then 
-            result[i] = self:getGroundTileDef(i)
+        if not result[i] then 
+            result[i] = self:getGroundTileDef()
         end
     end
 
@@ -494,57 +646,42 @@ function HalloweenMode:generateGroundRow(rowCount)
     end
 
     return result
-
 end
 
-function HalloweenMode:getMaxJewel()
-    local maxJewel = initial_max_jewel + math.floor(self.generatedRowCount / add_max_jewel_interval)
-    return maxJewel
-end
-
-function HalloweenMode:upgradeGround(rowCount)
-    self.rowCountSinceLastGroundUpgrade = self.rowCountSinceLastGroundUpgrade + rowCount
-    if self.rowCountSinceLastGroundUpgrade >= ground_upgrade_interval then
-
-        local counter  = 0
-        local length = 9 * max_generate_row
-        while counter <= length do
-            counter = counter + 1
-            local selector = self.mainLogic.randFactory:rand(1, length)
-            if self.groundPool[selector] and self.groundPool[selector] < 3 then
-                self.groundPool[selector] = self.groundPool[selector] + 1
-                break
-            end
+function HalloweenMode:testGen()
+    for i = 1, 30 do
+        local str = ""
+        for j = 1, 18 do
+            local ground = self.groundGenerator:genGround()
+            str = str .. ground
         end
-        self.rowCountSinceLastGroundUpgrade = self.rowCountSinceLastGroundUpgrade - ground_upgrade_interval
+        print(str)
     end
 end
 
 function HalloweenMode:getGenBossCount()
-    local genBossTimes = math.floor(self.generatedRowCount / generate_boss_interval)
-    -- print('genBossTimes', genBossTimes, self.lastGenBossTimes)
-    if genBossTimes > self.lastGenBossTimes then
-        self.lastGenBossTimes = genBossTimes
-        return 1
-    else
-        return 0
-    end
+    return 0
 end
 
-function HalloweenMode:getGenJewelCount()
+function HalloweenMode:getMaxJewelPerTwoRows()
+    local maxJewel = initial_max_jewel + math.floor(self.generatedRowCount / add_max_jewel_interval)
+    return math.min(maxJewel, max_jewel_limit)
+end
+
+function HalloweenMode:getGenJewelCount(rowCount)
     local genJewelTimes = math.floor(self.generatedRowCount / generate_jewel_interval)
-    -- print('genJewelTimes', genJewelTimes, self.lastGenJewelTimes)
-    if genJewelTimes > self.lastGenJewelTimes then
-        local diff = genJewelTimes - self.lastGenJewelTimes
-        self.lastGenJewelTimes = genJewelTimes
-        return self:getMaxJewel() * diff
-    end
-    return 0
+    local result = math.floor(self:getMaxJewelPerTwoRows() / 2 * rowCount)
+    return result
 end
 
 
 function HalloweenMode:shouldAddMove(rowCount)
-    if true then return false end -- 此模式不生成+5
+    if self.rowCountSinceLastAddMove >= generate_add_move_interval then
+        self.rowCountSinceLastAddMove = self.rowCountSinceLastAddMove - generate_add_move_interval
+        return true
+    else 
+        return false
+    end
 end
 
 function HalloweenMode:getAddMoveTileDef()
@@ -555,8 +692,8 @@ function HalloweenMode:getAddMoveTileDef()
     return tileDef
 end
 
-function HalloweenMode:getGroundTileDef(index)
-    local level = self.groundPool[index] or 1
+function HalloweenMode:getGroundTileDef()
+    local level = self.groundGenerator:genGround()
     local tileDef = TileMetaData.new()
     tileDef:addTileData(TileConst.kDigGround)
     tileDef:addTileData(TileConst.kBlocker)
@@ -570,8 +707,8 @@ function HalloweenMode:getGroundTileDef(index)
     return tileDef
 end
 
-function HalloweenMode:getJewelTileDef(index)
-    local level = self.groundPool[index] or 1
+function HalloweenMode:getJewelTileDef()
+    local level = self.groundGenerator:genGround()
     local tileDef = TileMetaData.new()
     -- print('level', level)
     tileDef:addTileData(TileConst.kBlocker)
@@ -586,29 +723,12 @@ function HalloweenMode:getJewelTileDef(index)
 end
 
 function HalloweenMode:getBossTileDef()
-    local tileDef = TileMetaData.new()
-    tileDef:addTileData(TileConst.kBlocker)
-    tileDef:addTileData(TileConst.kMayDayBlocker4)
-    return tileDef
 end
 
 function HalloweenMode:getBossEmptyTileDef()
-    local tileDef = TileMetaData.new()
-    tileDef:addTileData(TileConst.kBlocker)
-    tileDef:addTileData(TileConst.kMaydayBlockerEmpty)
-    return tileDef
 end
 
 function HalloweenMode:initBossBlood()
-    local gameItemMap = self.mainLogic.gameItemMap
-    for r = 1, #gameItemMap do
-        for c = 1, #gameItemMap[r] do
-            local item = gameItemMap[r][c]
-            if item.ItemType == GameItemType.kBoss and item.bossLevel > 0 then
-                item.blood = 10
-            end
-        end
-    end
 end
 
 function HalloweenMode:getGuideTilePos()

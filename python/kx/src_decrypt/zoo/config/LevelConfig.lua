@@ -2,6 +2,7 @@ require "zoo.config.TileMetaData"
 require "zoo.config.SnailConfigData"
 require "zoo.data.LevelMapManager"
 require "zoo.config.UncertainCfgMeta"
+require "zoo.config.TileMoveConfig"
 
 
 -----------------------------------------------------------------------------
@@ -53,11 +54,12 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kDigJewel_1]		= {"flash/dig_block.plist"},
 	[TileConst.kDigJewel_2]		= {"flash/dig_block.plist"},
 	[TileConst.kDigJewel_3]		= {"flash/dig_block.plist"},
+	[TileConst.kGoldZongZi]		= {"flash/dig_block.plist"},
 	[TileConst.kSuperBlocker]	= {"flash/dig_block.plist"},
 	[TileConst.kAddMove]		= {"flash/add_move.plist"},
 	[TileConst.kTileBlocker]	= {"flash/TileBlocker.plist"},
 	[TileConst.kTileBlocker2]	= {"flash/TileBlocker.plist"},
-	[TileConst.kBigMonster]		= {"flash/big_monster.plist"},
+	[TileConst.kBigMonster]		= {"flash/big_monster.plist", "flash/big_monster_ext.plist"},
 	[TileConst.kBlackCute]		= {"flash/ball_black.plist"},
 	[TileConst.kMimosaLeft]		= {"flash/mimosa.plist"},
 	[TileConst.kMimosaRight]	= {"flash/mimosa.plist"},
@@ -66,13 +68,14 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kSnailSpawn]		= {"flash/snail.plist", "flash/snail_road.plist"},
 	[TileConst.kSnail]			= {"flash/snail.plist", "flash/snail_road.plist"},
 	[TileConst.kSnailCollect]	= {"flash/snail.plist", "flash/snail_road.plist"},
-	[TileConst.kMayDayBlocker1] = {"flash/boss_cat.plist"},
-	[TileConst.kMayDayBlocker2] = {"flash/boss_cat.plist"},
-	[TileConst.kMayDayBlocker3] = {"flash/boss_cat.plist"},
-	[TileConst.kMayDayBlocker4] = {"flash/boss_cat.plist"},
+	[TileConst.kMayDayBlocker1] = {"flash/boss_elephant.plist"},
+	[TileConst.kMayDayBlocker2] = {"flash/boss_elephant.plist"},
+	[TileConst.kMayDayBlocker3] = {"flash/boss_elephant.plist"},
+	[TileConst.kMayDayBlocker4] = {"flash/boss_elephant.plist"},
 	[TileConst.kRabbitProducer] = {"flash/rabbit.plist", "flash/scenes/gamePlaySceneUI/rabbitModeText.plist"},
 	[TileConst.kMagicLamp]		= {"flash/magic_lamp.plist"},
 	[TileConst.kHoneyBottle]	= {"flash/honey_bottle.plist"},
+	[TileConst.kHoney]			= {"flash/honey_bottle.plist"},
 	[TileConst.kAddTime]		= {"flash/add_time.plist"},
 	[TileConst.kMagicTile]		= {"flash/magic_tile.plist"},
 	[TileConst.kSand]			= {"flash/sand_idle_clean.plist", "flash/sand_move.plist"},
@@ -106,6 +109,8 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kMagicStone_Right]= {"flash/magic_stone.plist"},
 	[TileConst.kMagicStone_Down]= {"flash/magic_stone.plist"},
 	[TileConst.kMagicStone_Left]= {"flash/magic_stone.plist"},
+	[TileConst.kMoveTile]		= {"flash/map_move_tile.plist"},
+	[TileConst.kBottleBlocker]		= {"flash/bottle_blocker.plist"},
 }
 
 -----------------------------------------------------------------------------
@@ -148,7 +153,8 @@ function LevelConfig:ctor()
 	self.rabbitInitNum = 0							-- 初始兔子数
 	self.honeys = 0    
 
-	self.dropBuff = nil								-- 神奇掉落规则            
+	self.dropBuff = nil								-- 神奇掉落规则    
+	self.tileMoveCfg = nil      					-- 移动地块配置  
 end
 
 function LevelConfig:loadConfig(level, config)
@@ -156,7 +162,9 @@ function LevelConfig:loadConfig(level, config)
 	self.gameMode = config.gameModeName				--游戏模式
 	self.numberOfColors = config.numberOfColours	--颜色数量
 
-	self.tileMap = TileMetaData:convertArrayFromBitToTile(config.tileMap, config.tileMap2)	--将配置的数据赋值给tilemap。地形信息
+	self.crossStrengthCfg = config.crossStrengthCfg --障碍附加参数（如妖精瓶子的等级）
+
+	self.tileMap = TileMetaData:convertArrayFromBitToTile(config.tileMap, config.tileMap2, self.crossStrengthCfg)	--将配置的数据赋值给tilemap。地形信息
 	if config.uncertainCfg1 and config.uncertainCfg2 then
 		self.uncertainCfg1 = UncertainCfgMeta:create(config.uncertainCfg1)                      --boss掉血产生的问号障碍配置
 		self.uncertainCfg2 = UncertainCfgMeta:create(config.uncertainCfg2)                      --boss死亡产生的问号障碍配置
@@ -186,6 +194,7 @@ function LevelConfig:loadConfig(level, config)
 	self.seaAnimalMap = config.seaAnimalMap
 	self.seaFlagMap = config.seaFlagMap
 	self.dropBuff = config.dropBuff
+	self.tileMoveCfg = TileMoveConfig:create(config.moveTileCfg)
 
 	self.rabbitInitNum = config.rabbitInitNum   	-- 初始兔子数量
 	self.honeys = config.honeys                     -- 蜂蜜罐转化为蜂蜜的数量
@@ -217,6 +226,9 @@ function LevelConfig:loadConfig(level, config)
 		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.clearTargetLayers = config.clearTargetLayers
 		self.layerAmount = 0
+		if self.gameMode == AnimalGameMode.kHalloween then
+			self.dragonBoatPropGen = config.dragonBoatPropGen	-- 端午关卡道具掉落配置
+		end
 	end
 end
 
@@ -332,12 +344,15 @@ function LevelConfig:getDependingSpecialAssetsList()
 	or self.gameMode == AnimalGameMode.kHalloween  
 	 then
 	 	if self.gameMode == AnimalGameMode.kHalloween  then
-	 		resNameMap["flash/xmas_boss.plist"] = true
+	 		-- resNameMap["flash/xmas_boss.plist"] = true
+	 		resNameMap["flash/dragonboat_boss1.plist"] = true
+	 		resNameMap["flash/dragonboat_boss2.plist"] = true
+	 		-- resNameMap["flash/dragonboat_boss3.plist"] = true
 	 	end
 	 	if self.gameMode == AnimalGameMode.kMaydayEndless  then
 	 		-- resNameMap["flash/animation/spring_festival.plist"] = true
-	 		resNameMap["flash/animation/boss_cat_item.plist"] = true
-	 		resNameMap["flash/animation/boss_cat_item_use.plist"] = true
+	 		--resNameMap["flash/animation/boss_cat_item.plist"] = true
+	 		--resNameMap["flash/animation/boss_cat_item_use.plist"] = true
 	 	end
 		resNameMap["flash/add_move.plist"] = true
 		calculateTileNeedAssets(self.digTileMap)

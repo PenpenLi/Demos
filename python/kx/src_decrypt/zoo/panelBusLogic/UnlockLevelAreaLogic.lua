@@ -204,9 +204,19 @@ function UnlockLevelAreaLogic:start(unlockType, friendIds, ...)
 		print("UnlockLevelAreaLogicUnlockType.USE_WINDMILL_COIN")
 		print(itemId, self.itemIdToGoodsIdMap[itemId])
 		if __ANDROID then -- ANDROID
-			local logic = IngamePaymentLogic:create(self.itemIdToGoodsIdMap[itemId])
-			logic:ignoreSecondConfirm(true)
-			logic:buy(onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled)
+			if PaymentManager.getInstance():checkCanWindMillPay(self.itemIdToGoodsIdMap[itemId]) then
+				local uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
+				PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, self.itemIdToGoodsIdMap[itemId], 1, 1, 0, 1)
+
+	   			local logic = WMBBuyItemLogic:create()
+	            local buyLogic = BuyLogic:create(self.itemIdToGoodsIdMap[itemId], 2)
+	            buyLogic:getPrice()
+	            logic:buy(self.itemIdToGoodsIdMap[itemId], 1, uniquePayId, buyLogic, onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled, onSendUnlockLevelAreaCanceled)
+			else
+				local logic = IngamePaymentLogic:create(self.itemIdToGoodsIdMap[itemId])
+				logic:ignoreSecondConfirm(true)
+				logic:buy(onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled)
+			end
 		else -- else, on IOS and PC we use gold!
 			local logic = BuyLogic:create(self.itemIdToGoodsIdMap[itemId], moneyType)
 			logic:getPrice()

@@ -10,6 +10,7 @@ local _rootUrl = nil
 local _activitys = nil
 local _loadFromNetwork = false
 local _lastRequestTime = 0
+local unLoadConfigs = {}
 
 local function unrequire(m)
 	package.loaded[m] = nil
@@ -293,7 +294,14 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 
 	  	print("ActivityUtil:", url)
 		local request = HttpRequest:createGet(url)
-	    request:setConnectionTimeoutMs(1 * 1000)
+
+    	local connection_timeout = 2
+
+	    if __WP8 then 
+	        connection_timeout = 5
+	    end
+	    
+	    request:setConnectionTimeoutMs(connection_timeout * 1000)
 	    request:setTimeoutMs(30 * 1000)
 
 
@@ -340,11 +348,12 @@ end
 local function filter( activitys )
 
 	local ret = {}
-	for k,v in pairs(activitys) do
+	for k,v in pairs(activitys or {}) do
 		local config = require("activity/" .. v.source)
-			
+		print("require activity: ", v.source)
+
 		local result = false
-		if config.isSupport and pcall(function( ... ) result = config.isSupport() end) then
+		if type(config) == "table" and config.isSupport and pcall(function( ... ) result = config.isSupport() end) then
 			-- 白名单判断
 			if result then 
 				if type(config.isInWhiteList) == "function" then
@@ -399,8 +408,10 @@ function ActivityUtil:getActivitys(callback)
 		_activitys = {}
 		callback({})
 	end
-
-	requestConfig(requestSuccess,requestError,1,false)
+	--on wp8,disable activity
+	if not (__WP8 and _G.disableActivity) == true then
+		requestConfig(requestSuccess,requestError,1,false)
+	end
 end
 
 function ActivityUtil:getNetworkActivitys(callback)
@@ -443,53 +454,21 @@ function ActivityUtil:reloadActivitys(callback)
 	end
 
 	local function requestSuccess(activitys)
+
 		for _,v in pairs(oldActivitys) do
 			local newActivity = table.find(activitys,function(a) return v.source == a.source end)
 			-- 下线或者有更新
+
 			local config = oldConfigs[v.source]
 			if config and (newActivity == nil or newActivity.version ~= v.version or __WIN32) then
-				
-				if config.notice and type(config.notice) == "string" then
-					CCTextureCache:sharedTextureCache():removeTextureForKey(
-						CCFileUtils:sharedFileUtils():fullPathForFilename("activity/" .. config.notice)
-					)
-				end
-				if config.icon then
-					if type(config.icon) == "string" then 
-						CCTextureCache:sharedTextureCache():removeTextureForKey(
-							CCFileUtils:sharedFileUtils():fullPathForFilename("activity/" .. config.icon)
-						)
-					elseif type(config.icon) == "table" then
-						for _,v in pairs(config.icon.resource or {}) do
-							if string.ends(v,".json") then 
-								InterfaceBuilder:removeLoadedJson("activity/" .. v)
-							end
-						end
-						for _,v in pairs(config.icon.src or {}) do
-							ResManager:getInstance():removeResourcesMap("src/activity/" .. v)
-							unrequire("activity/" .. v)
-						end
-					end
-				end
 
-				for _,v in pairs(config.resource or {}) do
-					if string.ends(v,".strings") then
-						Localization:getInstance():removeFile("activity/" .. v)
-					elseif string.ends(v,".json") then 
-						InterfaceBuilder:removeLoadedJson("activity/" .. v)
-					end
+				if not unLoadConfigs[v.source] then
+					unLoadConfigs[v.source] = {}
 				end
-				for _,v in pairs(config.src or {}) do
-					ResManager:getInstance():removeResourcesMap("src/activity/" .. v)
-					unrequire("activity/" .. v)
-				end
-				for _,v in pairs(config.resource or {}) do
-					ResManager:getInstance():removeResourcesMap("activity/" .. v)
-				end
+				table.insert(unLoadConfigs[v.source],config)
+
 			end
 		end
-
-		CCFileUtils:sharedFileUtils():purgeCachedEntries()
 
 		_activitys = activitys
 		callback(filter(_activitys))
@@ -539,6 +518,7 @@ function ActivityUtil:loadRes(source,version,onSuccess,onError,onProcess)
 		-- 加载文案
 		for k,v in pairs(config.resource) do
 			if string.ends(v,".strings") then
+				Localization:getInstance():removeFile("activity/" .. v)
 				Localization:getInstance():loadFile("activity/" .. v)
 			end
 		end
@@ -588,6 +568,58 @@ function ActivityUtil:loadRes(source,version,onSuccess,onError,onProcess)
 
 	loadActivityRes(source,version,{source},{},loadConfigSuccess,loadError)
 	
+end
+
+function ActivityUtil:unLoadResIfNecessary( source )
+	if not self:needUpdate(source) then 
+		return
+	end
+
+	for _,config in pairs(unLoadConfigs[source] or {}) do
+
+		if config.notice and type(config.notice) == "string" then
+			CCTextureCache:sharedTextureCache():removeTextureForKey(
+				CCFileUtils:sharedFileUtils():fullPathForFilename("activity/" .. config.notice)
+			)
+		end
+		if config.icon then
+			if type(config.icon) == "string" then 
+				CCTextureCache:sharedTextureCache():removeTextureForKey(
+					CCFileUtils:sharedFileUtils():fullPathForFilename("activity/" .. config.icon)
+				)
+			elseif type(config.icon) == "table" then
+				for _,v in pairs(config.icon.resource or {}) do
+					if string.ends(v,".json") then 
+						InterfaceBuilder:removeLoadedJson("activity/" .. v)
+					end
+				end
+				for _,v in pairs(config.icon.src or {}) do
+					unrequire("activity/" .. v)
+				end
+			end
+		end
+
+		for _,v in pairs(config.resource or {}) do
+			if string.ends(v,".json") then 
+				InterfaceBuilder:removeLoadedJson("activity/" .. v)
+			end
+		end
+		for _,v in pairs(config.src or {}) do
+			unrequire("activity/" .. v)
+		end
+	end
+
+	CCFileUtils:sharedFileUtils():purgeCachedEntries()
+
+	unLoadConfigs[source] = {}
+end
+
+function ActivityUtil:needUpdate( source )
+	if unLoadConfigs[source] then
+		return table.size(unLoadConfigs[source]) > 0
+	else
+		return false
+	end
 end
 
 -- 获取缓存活动对应的版本
@@ -822,7 +854,8 @@ function ActivityUtil:hasRewardMark( source )
 	return false
 end
 
-function ActivityUtil:clearRewardMark( source )
+--added v1.25
+function ActivityUtil:setRewardMark( source, hasReward )
 	local config = require("activity/" .. source)
 	if not config.actId or self:isNoMarkActivity(config.actId) then
 		return 
@@ -835,7 +868,7 @@ function ActivityUtil:clearRewardMark( source )
 
 	for k,v in pairs(actInfos) do
 		if v.actId == config.actId then
-			v.reward = false
+			v.reward = hasReward
 		end
 	end
 
@@ -850,6 +883,10 @@ function ActivityUtil:clearRewardMark( source )
 	for k,v in pairs(self.onActivityStatusChangeCallbacks) do
 		v.func(v.obj,source)
 	end
+end
+
+function ActivityUtil:clearRewardMark( source )
+	self:setRewardMark(source, false)
 end
 
 function ActivityUtil:getBeginTime( source )

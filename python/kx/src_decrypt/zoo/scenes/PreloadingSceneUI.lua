@@ -21,15 +21,16 @@ local function addSpriteFramesWithFile( plistFilename, textureFileName )
   	return realPngPath, realPlistPath
 end
 
-local function showUserAgreement()
+function PreloadingSceneUI.showUserAgreement()
 	local vSize = Director:sharedDirector():getVisibleSize()
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
 	local scene = Director:sharedDirector():getRunningScene()
 	if not scene or scene.isDisposed then return end
+
 	local layer = LayerColor:create()
 	layer:changeWidthAndHeight(vSize.width, vSize.height)
 	layer:setColor(ccc3(255, 255, 255))
-	layer:setPositionXY(vOrigin.x, vOrigin.y - vSize.height)
+	layer:setPositionXY(vOrigin.x, vOrigin.y)
 	layer:setTouchEnabled(true, 0, true)
 	local title = TextField:create(Localization:getInstance():getText("loading.agreement.layer.title"), nil, 36)
 	title:setColor(ccc3(0, 0, 0))
@@ -68,7 +69,8 @@ local function showUserAgreement()
 	local scrollBounding = scrollable:getGroupBounds()
 	layer:addChild(scrollable)
 	local button = Layer:create()
-	local buttonImg = Sprite:createWithSpriteFrameName("preloadingscene_greenbuttonline0000")
+	local pngPath, plistPath = addSpriteFramesWithFile( "flash/loading.plist", "flash/loading.png" )
+	local buttonImg = Sprite:createWithSpriteFrameName("preloadingscene_greenbuttonline0000") 
 	local buttonImgSize = buttonImg:getContentSize()
 	button:addChild(buttonImg)
 	local buttonText = TextField:create(Localization:getInstance():getText("loading.agreement.layer.button"), nil, 40)
@@ -78,13 +80,17 @@ local function showUserAgreement()
 	layer:addChild(button)
 	local function onButton()
 		layer:dispatchEvent(Event.new(Events.kComplete, nil, layer))
-		layer:removeFromParentAndCleanup(true)
+		--layer:removeFromParentAndCleanup(true)
+		PopoutManager:sharedInstance():remove(layer, true)
+		CCSpriteFrameCache:sharedSpriteFrameCache():removeSpriteFramesFromFile(plistPath)
 	end
 	button:setTouchEnabled(true)
 	button:setButtonMode(true)
 	button:addEventListener(DisplayEvents.kTouchTap, onButton)
-	scene:addChild(layer)
-	layer:runAction(CCMoveTo:create(0.2, ccp(vOrigin.x, vOrigin.y)))
+	--scene:addChild(layer)
+	layer:runAction(CCMoveTo:create(0.2, ccp(vOrigin.x,  - vSize.height)))
+	--print("layer parent: ",layer:getParent())
+	PopoutManager:sharedInstance():add(layer, false, false)
 
 	return layer
 end
@@ -153,7 +159,7 @@ local function userAgreementTexts()
 			end, 0.1)
 		end
 		agreementTouchLayer:setTouchEnabled(false)
-		local layer = showUserAgreement()
+		local layer = PreloadingSceneUI.showUserAgreement()
 		layer:addEventListener(Events.kComplete, onClose)
 	end
 	agreementTouchLayer:setTouchEnabled(true)

@@ -70,6 +70,23 @@ function IconButtonBase:init(ui, ...)
 	self.wrapper:setTouchEnabled(true, 0, true)
 	self.wrapper:ad(DisplayEvents.kTouchTap, onTouch)
 
+	if __ANDROID then
+		local function refreshTexture()
+			if self.isDisposed then
+				GlobalEventDispatcher:getInstance():removeEventListener(kGlobalEvents.kEnterForeground, refreshTexture)
+				return
+			end
+			self:runAction(CCCallFunc:create(function()
+				if self.isDisposed then return end
+				if self.tip then
+					local label = self.tip:getChildByName("label")
+					label:setString("default tip text")
+					label:setString(self.tipLabelTxt)
+				end
+			end))
+		end
+		GlobalEventDispatcher:getInstance():addEventListener(kGlobalEvents.kEnterForeground, refreshTexture)
+	end
 end
 
 function IconButtonBase:setTipString(str, ...)
@@ -358,3 +375,30 @@ end
 -- 	self:stopAllActions()
 -- 	self:runAction(moveToAction)
 -- end
+function IconButtonBase:showWeeklyBtnTutor(key, textKey)
+	local scene = HomeScene:sharedInstance()
+	local layer = Layer:create()
+	local pos = self:getPosition()
+	local parent = self:getParent()
+	local position = parent:convertToWorldSpace(pos)
+	local mask = GameGuideUI:mask(0xCC, 1, ccp(position.x - 10, position.y - self.wrapperHeight - 20),
+		nil, true, self.wrapperWidth + 20, self.wrapperHeight + 20, false)
+	mask:stopAllActions()
+	mask.setFadeIn(0.3, 0.4)
+	local function onTimeOut()
+		local function onTouch()
+			layer:removeFromParentAndCleanup(true)
+			CCUserDefault:sharedUserDefault():setBoolForKey(key, true)
+			CCUserDefault:sharedUserDefault():flush()
+		end
+		mask:addEventListener(DisplayEvents.kTouchTap, onTouch)
+	end
+	mask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(touchDelay), CCCallFunc:create(onTimeOut)))
+	layer:addChild(mask)
+	local action = {text = textKey, maskPos = ccp(536, 940), multRadius=1.1 ,
+				panType = "up", panAlign = "winY", panPosY = 600,
+				maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1}
+	local panel = GameGuideUI:panelS(nil, action, true)
+	layer:addChild(panel)
+	scene.guideLayer:addChild(layer)
+end

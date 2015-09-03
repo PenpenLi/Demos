@@ -394,7 +394,7 @@ function LevelSuccessTopPanel:getAllRewardIds( levelId, levelType )
 	if self.levelType == GameLevelType.kDigWeekly then
 		allRewardIds[ItemType.GEM] = ItemType.GEM
 	elseif self.levelType == GameLevelType.kMayDay then
-		-- allRewardIds[ItemType.XMAS_BOSS] = ItemType.XMAS_BOSS
+		allRewardIds[ItemType.XMAS_BOSS] = ItemType.XMAS_BOSS
 		allRewardIds[ItemType.XMAS_BELL] = ItemType.XMAS_BELL
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		allRewardIds[ItemType.WEEKLY_RABBIT] = ItemType.WEEKLY_RABBIT
@@ -447,7 +447,7 @@ function LevelSuccessTopPanel:getDefaultRewards( levelReward, smallestLevel )
 	if self.levelType == GameLevelType.kDigWeekly then
 		result[ItemType.GEM] = getRewardItemNumber(ItemType.GEM)
 	elseif self.levelType == GameLevelType.kMayDay then
-		-- result[ItemType.XMAS_BOSS] = getRewardItemNumber(ItemType.XMAS_BOSS)
+		result[ItemType.XMAS_BOSS] = getRewardItemNumber(ItemType.XMAS_BOSS)
 		result[ItemType.XMAS_BELL] = getRewardItemNumber(ItemType.XMAS_BELL)
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		result[ItemType.WEEKLY_RABBIT] = getRewardItemNumber(ItemType.WEEKLY_RABBIT)

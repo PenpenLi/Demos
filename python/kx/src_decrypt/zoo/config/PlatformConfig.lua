@@ -1,4 +1,6 @@
 PlatformNameEnum = {
+    kIOS        = "apple",
+    kWP8        = "windowsphone",
     kHE         = "he",   
     kQQ         = "yingyongbao",
     kYYB_CENTER = "yybcenter",
@@ -9,6 +11,11 @@ PlatformNameEnum = {
     kYYB_VIDEO  = "yybvideo",
     kYYB_NEWS   = "yybnews",
     kYYB_QQ     = "yybqq",
+    kYYB_PC     = "yybpc",
+    kYYB_CORE     = "yybcore",
+    kYYB_SHOP   = "yybshop",
+    kYYB_TMS_CENTER     = "yybtmscenter",
+    kYYB_TMS_SHOP     = "yybtmsshop",
     k360        = "360",
     kDuoku      = "duoku",
     kWDJ        = "wandoujia",
@@ -40,6 +47,7 @@ PlatformNameEnum = {
     kJinliPre   = "jinli_pre",
     kLenovoPre  = "lenovo_pre",
     kDoovPre    = "doov_pre",
+    kCoolpadPre = "coolpad_pre",
     k189Store   = "189store",
     kLanYue     = "lanyue",
     kLiQu       = "liqu",
@@ -66,7 +74,21 @@ PlatformNameEnum = {
     kFeiLiu     = "feiliu",
     k9Bang      = "9bang",
     kDangLe     = "dangle",
-
+    kJJ         = "jj",
+    kLeshop     = "leshop",
+    kBaidule    = "baidule",
+    kSamsung    = "samsung",
+    kZm         = "zm",
+    kAoruan     = "aoruan",
+    kSohu       = "sohu",
+    kYiwan      = "yiwan",
+    kDK         = "dk",
+    kALI        = "ali",
+    kBaiduLemon = "baidulemon",
+    kBaiduWifi  = "baiduwifi",
+    kPP         = "pp",
+    kTF         = "tf",
+    kWTWDPre    = "wtwd_pre",
 }
 
 PlatformAuthEnum = {
@@ -76,6 +98,7 @@ PlatformAuthEnum = {
     kWDJ    = 3,
     kMI     = 4,
     k360    = 5,
+    kPhone  = 6,
 }
 
 PlatformAuthDetail = {
@@ -98,6 +121,10 @@ PlatformAuthDetail = {
     [PlatformAuthEnum.k360]     = {
         name="360", 
         localization=Localization:getInstance():getText("platform.360"),
+        },
+    [PlatformAuthEnum.kPhone]   = {
+        name="phone",
+        localization=Localization:getInstance():getText("platform.phone"),
         },
 }
 
@@ -125,6 +152,26 @@ Payments = {
     ALIPAY          = 12,
     WO3PAY          = 13,   --联通CUCCWO 3网计费
     VIVO          = 14,   --VIVO的SDK，默认短代。超限额、或无sim卡则使用第三方支付（包括支付宝，财付通，网银和充值卡）
+    WIND_MILL       = 15,   --代表风车币支付(打点需求)
+    IOS_RMB         = 16,   --代表IOS的RMB支付(打点需求)
+}
+
+PaymentNames = {
+    [Payments.UNSUPPORT] = "UNSUPPORT",
+    [Payments.CHINA_MOBILE] = "CHINA_MOBILE",
+    [Payments.CHINA_UNICOM] = "CHINA_UNICOM",
+    [Payments.CHINA_TELECOM] = "CHINA_TELECOM",
+    [Payments.WDJ] = "WDJ",
+    [Payments.QQ] = "QQ",
+    [Payments.MI] = "MI",
+    [Payments.QIHOO] = "QIHOO",
+    [Payments.MDO] = "MDO",
+    [Payments.CHINA_MOBILE_GAME] = "CHINA_MOBILE_GAME",
+    [Payments.DUOKU] = "DUOKU",
+    [Payments.WECHAT] = "WECHAT",
+    [Payments.ALIPAY] = "ALIPAY",
+    [Payments.WO3PAY] = "WO3PAY",
+    [Payments.VIVO] = "VIVO",
 }
 -- 调起sdk前
 PaymentsNeedPreOrder = {
@@ -169,6 +216,7 @@ PlatformShareEnum = {
     kMiTalk = 2,
     kWeibo = 3,
     k360 = 4,
+    kQQ = 5,
 }
 
 PlatformPayType = {
@@ -176,13 +224,19 @@ PlatformPayType = {
     kWechat = 2,
     kAlipay = 3,
     kVivo = 4,
+    kQihoo = 5,
+    kWandoujia = 6,
+}
+
+--包里默认有手机登录的平台
+AndroidHasPhonePlatformNames = {
+    PlatformNameEnum.kTF,
 }
 
 local AndroidPlatformConfigs = {
     kHE = {
         name = PlatformNameEnum.kHE,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
@@ -191,10 +245,31 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+    kHE_2 = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
+    kHEWithoutWeibo = {
+        name = nil,
+        authConfig = PlatformAuthEnum.kQQ,
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC},
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
     kPreMM = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC},
@@ -203,10 +278,31 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+    kPreMM_2 = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC},
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
     kCMCCMM = {
         name = PlatformNameEnum.kCMCCMM,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
+    kCMCCMM_2 = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC },
@@ -219,18 +315,18 @@ local AndroidPlatformConfigs = {
         name = PlatformNameEnum.kQQ,
         authConfig = PlatformAuthEnum.kQQ,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kQQ},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
         },
-        shareConfig = { PlatformShareEnum.kWechat }
+        shareConfig = { PlatformShareEnum.kWechat, PlatformShareEnum.kQQ }
     },
     kWDJ = {
         name = PlatformNameEnum.kWDJ,
         authConfig = PlatformAuthEnum.kWDJ,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWDJ, PlatformPaymentThirdPartyEnum.kWECHAT},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWDJ},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
@@ -241,7 +337,7 @@ local AndroidPlatformConfigs = {
         name = PlatformNameEnum.k360,
         authConfig = PlatformAuthEnum.k360,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.k360, PlatformPaymentThirdPartyEnum.kWECHAT},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.k360},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME},
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
@@ -252,7 +348,7 @@ local AndroidPlatformConfigs = {
         name = PlatformNameEnum.kMiPad,
         authConfig = PlatformAuthEnum.kMI,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kMI, PlatformPaymentThirdPartyEnum.kWECHAT},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kMI},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnsupport,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
@@ -263,7 +359,7 @@ local AndroidPlatformConfigs = {
         name = PlatformNameEnum.kMiTalk,
         authConfig = PlatformAuthEnum.kMI,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kUnsupport},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
@@ -283,10 +379,9 @@ local AndroidPlatformConfigs = {
     },
     kCUCCWO = {
         name = PlatformNameEnum.kCUCCWO,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = { PlatformPaymentThirdPartyEnum.kUnsupport },
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
@@ -295,8 +390,7 @@ local AndroidPlatformConfigs = {
     },
     k3GRoad = {
         name = PlatformNameEnum.k3GRoad,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
@@ -307,8 +401,7 @@ local AndroidPlatformConfigs = {
     },
     kCooou = {
         name = PlatformNameEnum.kCooou,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
@@ -319,10 +412,9 @@ local AndroidPlatformConfigs = {
     },
     kCMGame = {
         name = PlatformNameEnum.kCMGame,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = { PlatformPaymentThirdPartyEnum.kUnsupport },
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnsupport,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
@@ -331,10 +423,9 @@ local AndroidPlatformConfigs = {
     },
     kHEWithCMGame = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = { PlatformPaymentThirdPartyEnum.kUnsupport },
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
@@ -343,8 +434,7 @@ local AndroidPlatformConfigs = {
     },
     kHEWithMDO = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME, PlatformPaymentChinaMobileEnum.kCMCC },
@@ -353,12 +443,22 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+    kHEWithMDO_2 = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME, PlatformPaymentChinaMobileEnum.kCMCC },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
     kHEMM = {
         name = PlatformNameEnum.kHEMM,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = { PlatformPaymentThirdPartyEnum.kUnsupport },
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnsupport,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
@@ -367,8 +467,7 @@ local AndroidPlatformConfigs = {
     },
     kHEWithoutCM = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
@@ -377,10 +476,22 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+
+    kHEWithoutMM = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
+
     kHEWithoutCT = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
@@ -389,10 +500,20 @@ local AndroidPlatformConfigs = {
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+    kHEWithoutCT_2 = {
+        name = nil,
+        authConfig = { PlatformAuthEnum.kWeibo, PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = { PlatformPaymentThirdPartyEnum.kUnsupport },
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
     kOppo = {
         name = PlatformNameEnum.kOppo,
-        authConfig = PlatformAuthEnum.kWeibo,
-        -- mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
@@ -405,7 +526,7 @@ local AndroidPlatformConfigs = {
         name = PlatformNameEnum.kUC,
         authConfig = PlatformAuthEnum.kGuest,
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY },
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
@@ -414,20 +535,31 @@ local AndroidPlatformConfigs = {
     },
     kSj = {
         name = PlatformNameEnum.kSj,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
-            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kUnsupport},
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC },
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kTelecom
         },
         shareConfig = { PlatformShareEnum.kWechat }
     },
+
+    kLeshop = {
+        name = PlatformNameEnum.kLeshop,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
+        paymentConfig = {
+            thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kWECHAT, PlatformPaymentThirdPartyEnum.kALIPAY},
+            chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMGAME },
+            chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnicom,
+            chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport
+        },
+        shareConfig = { PlatformShareEnum.kWechat }
+    },
+
     kHEWithout3rdPay = {
         name = nil,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kUnsupport},
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kCMCC, PlatformPaymentChinaMobileEnum.kCMGAME },
@@ -438,11 +570,10 @@ local AndroidPlatformConfigs = {
     },
     kVivo = {
         name = PlatformNameEnum.kVivo,
-        authConfig = PlatformAuthEnum.kWeibo,
-        mergeToAuthConfig = PlatformAuthEnum.kQQ,
+        authConfig = { PlatformAuthEnum.kWeibo,PlatformAuthEnum.kQQ },
         paymentConfig = {
             thirdPartyPayment = {PlatformPaymentThirdPartyEnum.kVIVO},
-            chinaMobilePayment = PlatformPaymentChinaMobileEnum.kUnsupport,
+            chinaMobilePayment = {PlatformPaymentChinaMobileEnum.kUnsupport},
             chinaUnicomPayment = PlatformPaymentChinaUnicomEnum.kUnsupport,
             chinaTelecomPayment = PlatformPaymentChinaTelecomEnum.kUnsupport,
         },
@@ -451,41 +582,58 @@ local AndroidPlatformConfigs = {
 }
 
 -- 派生平台定义, key为派生源头平台的名称, 需要在AndroidPlatformConfigs中预定义
+-- 凡带_2,_3的 都是与原本的在三方平台配置上有差异的 如kHE包含三方微信支付宝，而kHE_2只包含微信
 local ForkPlatformMap = {
     kHE = { 
-        PlatformNameEnum.kLenovo, 
         PlatformNameEnum.kCoolpad,
-        PlatformNameEnum.kAnZhi,
         PlatformNameEnum.kUUCun,
-        PlatformNameEnum.kYouKu,
-        PlatformNameEnum.kJinShan,
-        PlatformNameEnum.kMI,
-        PlatformNameEnum.kLenovoGame,
+        PlatformNameEnum.kJinShan, 
         PlatformNameEnum.kLetv,
         PlatformNameEnum.kBBK,
         PlatformNameEnum.kHTC,
-        PlatformNameEnum.kZY,
-        PlatformNameEnum.kJinli, 
+        PlatformNameEnum.kJinli,
+        PlatformNameEnum.kYouKu,
+        PlatformNameEnum.kSamsung,
+        PlatformNameEnum.kZm,
+        PlatformNameEnum.kDangLe,
+        PlatformNameEnum.kLemon,
+        PlatformNameEnum.kALI,
+        PlatformNameEnum.kMZ,
+        PlatformNameEnum.kCoolpadPre,
+        PlatformNameEnum.kTF,
+        
     },
-    kPreMM = {
-        PlatformNameEnum.kJinliPre, 
-        PlatformNameEnum.kLenovoPre,   
+    kHE_2 = { 
+        PlatformNameEnum.kLenovo, 
+        PlatformNameEnum.kAnZhi,
+        PlatformNameEnum.kLenovoGame,
+    },
+    kHEWithoutWeibo = {
+        PlatformNameEnum.kWTWDPre,
+    },
+    kPreMM = {  
         PlatformNameEnum.kDoovPre, 
+        PlatformNameEnum.kJinliPre,
+        PlatformNameEnum.kLenovoPre, 
+    },
+    
+    kPreMM_2 = {
          
+        PlatformNameEnum.kDK,
     },
     kCMCCMM = {
-        PlatformNameEnum.kSina,
         PlatformNameEnum.kMobileMM,
+    },
+    kCMCCMM_2 = {
+        PlatformNameEnum.kSina,
         PlatformNameEnum.kSpringMM,
         PlatformNameEnum.kAndroidMM, 
-        PlatformNameEnum.kLvAn,
-        PlatformNameEnum.kLemon,
         PlatformNameEnum.kSogou,
+        PlatformNameEnum.kLvAn,
         PlatformNameEnum.kMT,
-        PlatformNameEnum.kMZ,
         PlatformNameEnum.kFeiLiu,
         PlatformNameEnum.k9Bang,
-        PlatformNameEnum.kDangLe,
+        PlatformNameEnum.kYiwan,
     },
     kHEWithCMGame = {
         PlatformNameEnum.kZTEPre,
@@ -496,10 +644,14 @@ local ForkPlatformMap = {
         PlatformNameEnum.k91,
         PlatformNameEnum.kBaiDuApp,
         PlatformNameEnum.kBaiDuTieBa,
+    },
+    kHEWithMDO_2 = {
         PlatformNameEnum.kHao123,
     },
     kHEWithoutCT = {
         PlatformNameEnum.kTYD,
+    },
+    kHEWithoutCT_2 = {
         PlatformNameEnum.k4399,
     },
     kHEWithoutCM = {
@@ -514,6 +666,8 @@ local ForkPlatformMap = {
     },
     kHEWithout3rdPay = {
         PlatformNameEnum.kHuaWei, 
+        PlatformNameEnum.kMI,
+        PlatformNameEnum.kJJ,
     },
     kQQ = {
         PlatformNameEnum.kYYB_CENTER,
@@ -524,12 +678,25 @@ local ForkPlatformMap = {
         PlatformNameEnum.kYYB_VIDEO,
         PlatformNameEnum.kYYB_NEWS,
         PlatformNameEnum.kYYB_QQ,
+        PlatformNameEnum.kYYB_PC,
+        PlatformNameEnum.kYYB_CORE,
+        PlatformNameEnum.kYYB_SHOP,
+        PlatformNameEnum.kYYB_TMS_CENTER,
+        PlatformNameEnum.kYYB_TMS_SHOP,
     },
+    kHEWithoutMM ={
+        PlatformNameEnum.kBaidule,
+        PlatformNameEnum.kAoruan,
+        PlatformNameEnum.kSohu,
+        PlatformNameEnum.kBaiduLemon, --没有百度sdk,只是他们的一个渠道
+        PlatformNameEnum.kBaiduWifi, --没有百度sdk,只是他们的一个渠道
+        PlatformNameEnum.kPP,
+    }
 }
 
 local IOSPlatformConfigs = {
-    kHE = {
-        name = PlatformNameEnum.kHE,
+    kIOS = {
+        name = PlatformNameEnum.kIOS,
         authConfig = PlatformAuthEnum.kQQ,
         paymentConfig = {
             thirdPartyPayment = PlatformPaymentThirdPartyEnum.kUnsupport,
@@ -542,8 +709,8 @@ local IOSPlatformConfigs = {
 }
 
 local WP8PlatformConfigs = {
-    kHE = {
-        name = PlatformNameEnum.kHE,
+    kWP8 = {
+        name = PlatformNameEnum.kWP8,
         authConfig = PlatformAuthEnum.kGuest,
         paymentConfig = {
             thirdPartyPayment = PlatformPaymentThirdPartyEnum.kUnsupport,
@@ -558,7 +725,7 @@ local WP8PlatformConfigs = {
 local WIN32PlatformConfigs = {
     kHE = {
         name = PlatformNameEnum.kHE,
-        authConfig = PlatformAuthEnum.kGuest,
+        authConfig = PlatformAuthEnum.kGuest,--PlatformAuthEnum.kGuest,
         paymentConfig = {
             thirdPartyPayment = PlatformPaymentThirdPartyEnum.kUnsupport,
             chinaMobilePayment = { PlatformPaymentChinaMobileEnum.kUnsupport },
@@ -624,15 +791,35 @@ local function initPlatformConfig()
         PlatformConfig = AndroidPlatformConfigs.kHE
         PlatformConfig.name = androidPlatformName
     elseif __IOS then
-        PlatformConfig = IOSPlatformConfigs.kHE
+        PlatformConfig = IOSPlatformConfigs.kIOS
     elseif __WP8 then
-        PlatformConfig = WP8PlatformConfigs.kHE
+        PlatformConfig = WP8PlatformConfigs.kWP8
     else
         PlatformConfig = WIN32PlatformConfigs.kHE
     end
 end
 
 initPlatformConfig()
+
+-- 添加手机登录配置
+function PlatformConfig:setPhonePlatformAuth( ... )
+    if type(self.authConfig) == "table" then
+        table.insertIfNotExist(self.authConfig,PlatformAuthEnum.kPhone)
+    elseif self.authConfig == PlatformAuthEnum.kGuest then
+        self.authConfig = { PlatformAuthEnum.kPhone }
+        _G.kDeviceID = UdidUtil:getUdid() --这种情况默认会是游客,的重新获取下
+    elseif self.authConfig ~= PlatformAuthEnum.kPhone then
+        self.authConfig = { self.authConfig,PlatformAuthEnum.kPhone }
+    end
+end
+
+if __ANDROID and table.includes(AndroidHasPhonePlatformNames,PlatformConfig.name) then
+    PlatformConfig:setPhonePlatformAuth()
+end
+
+-- if __WIN32 then
+--     PlatformConfig:setPhonePlatformAuth()
+-- end
 
 function PlatformConfig:isPlatform(platformName)
     assert(platformName)
@@ -644,13 +831,30 @@ function PlatformConfig:isAuthConfig(authConfig)
     return self.authConfig == authConfig
 end
 
-function PlatformConfig:isMergeToAuthConfig( authConfig )
-    assert(authConfig)
-    return self.mergeToAuthConfig == authConfig
+function PlatformConfig:hasAuthConfig(authConfig)
+    assert(authConfig) 
+    if type(self.authConfig) == "table" then
+        for _,v in pairs(self.authConfig) do
+            if v == authConfig then 
+                return true
+            end
+        end
+        return false
+    else
+       return self.authConfig == authConfig
+    end
 end
 
-function PlatformConfig:isWeiboMergeToQQAccount( ... )
-    return PlatformConfig:isAuthConfig(PlatformAuthEnum.kWeibo) and PlatformConfig:isMergeToAuthConfig(PlatformAuthEnum.kQQ)
+function PlatformConfig:isMultipleAuthConfig( ... )
+    return type(self.authConfig) == "table" and #self.authConfig > 1
+end
+
+function PlatformConfig:getAuthConfigs( ... )
+    if type(self.authConfig) == "table" then 
+        return self.authConfig
+    else
+        return { self.authConfig }
+    end
 end
 
 function PlatformConfig:isBaiduPlatform()
@@ -667,6 +871,18 @@ function PlatformConfig:isQQPlatform()
         or self:isPlatform(PlatformNameEnum.kYYB_VIDEO) 
         or self:isPlatform(PlatformNameEnum.kYYB_NEWS)
         or self:isPlatform(PlatformNameEnum.kYYB_QQ)
+        or self:isPlatform(PlatformNameEnum.kYYB_PC)
+        or self:isPlatform(PlatformNameEnum.kYYB_CORE)
+        or self:isPlatform(PlatformNameEnum.kYYB_SHOP)
+        or self:isPlatform(PlatformNameEnum.kYYB_TMS_CENTER)
+        or self:isPlatform(PlatformNameEnum.kYYB_TMS_SHOP)
+
+end
+
+function PlatformConfig:isJJPlatform( )
+    -- body
+    return self:isPlatform(PlatformNameEnum.kJJ)
+    -- return true
 end
 
 function PlatformConfig:isCMPaymentSwitchable()
@@ -716,11 +932,11 @@ end
 
 --是否支持大额支付
 function PlatformConfig:isBigPayPlatform()
-    if (PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) 
-        or PlatformConfig:isQQPlatform()
-        or PlatformConfig:isPlatform(PlatformNameEnum.k360) 
-        or PlatformConfig:isPlatform(PlatformNameEnum.kMiPad)
-        or PlatformConfig:isBaiduPlatform()
+    if (PlatformConfig:isPlatform(PlatformNameEnum.kMiPad)
+        -- or PlatformConfig:isPlatform(PlatformNameEnum.kWDJ)    
+        -- or PlatformConfig:isPlatform(PlatformNameEnum.k360) 
+        -- or PlatformConfig:isQQPlatform()
+        -- or PlatformConfig:isBaiduPlatform()
         or PlatformConfig:isPlatform(PlatformNameEnum.kVivo)
         ) then
         return true
@@ -728,48 +944,116 @@ function PlatformConfig:isBigPayPlatform()
     return false
 end
 
+--已弃用
+function PlatformConfig:getNeedForceThirdPartPayment()
+    local operator = AndroidPayment.getInstance():getOperator()
+    local forceThirdPartPayment = false
+    if operator == TelecomOperators.CHINA_MOBILE then
+        if AndroidPayment.getInstance():filterCMPayment() == PlatformPaymentChinaMobileEnum.kUnsupport then 
+            forceThirdPartPayment = true
+        end
+    elseif operator == TelecomOperators.CHINA_UNICOM then
+        if AndroidPayment.getInstance():filterCUPayment() == PlatformPaymentChinaUnicomEnum.kUnsupport then 
+            forceThirdPartPayment = true
+        end
+    elseif operator == TelecomOperators.CHINA_TELECOM then
+        if AndroidPayment.getInstance():filterCTPayment() == PlatformPaymentChinaTelecomEnum.kUnsupport then 
+            forceThirdPartPayment = true
+        end
+    end
+    return forceThirdPartPayment
+end
+
+--已弃用
 function PlatformConfig:isWechatPaySupport()
-    if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchWechat") then
+    local forceThirdPartPayment = self:getNeedForceThirdPartPayment()
+
+    if forceThirdPartPayment then 
         if type(self.paymentConfig.thirdPartyPayment) == "table" then 
             if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWECHAT) then 
                 return true
             end
         end
+    else
+        if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchWechat") then
+            if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+                if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWECHAT) then 
+                    return true
+                end
+            end
+        end
     end
-    return false
+
+    return false 
 end
 
+--已弃用
 function PlatformConfig:isAliPaySupport()
-    if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchAli") then 
+    local forceThirdPartPayment = self:getNeedForceThirdPartPayment()
+
+    if forceThirdPartPayment then 
         if type(self.paymentConfig.thirdPartyPayment) == "table" then 
             if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then 
                 return true
             end
         end
+    else
+        if MaintenanceManager:getInstance():isEnabled("ConsumeSwitchAli") then
+            if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+                if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then 
+                    return true
+                end
+            end
+        end
     end
-    return false
+
+    return false 
 end
 
+--已弃用
 function PlatformConfig:isMarketWechatPaySupport()
-    if MaintenanceManager:getInstance():isEnabled("NewGamePaymentWechat") then
+    local forceThirdPartPayment = self:getNeedForceThirdPartPayment()
+
+    if forceThirdPartPayment then 
         if type(self.paymentConfig.thirdPartyPayment) == "table" then 
             if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWECHAT) then 
                 return true
             end
         end
+    else
+        if MaintenanceManager:getInstance():isEnabled("NewGamePaymentWechat") then
+            if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+                if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kWECHAT) then 
+                    return true
+                end
+            end
+        end
     end
-    return false
+
+    return false 
 end
 
+--已弃用
 function PlatformConfig:isMarketAliPaySupport()
-    if MaintenanceManager:getInstance():isEnabled("NewGamePaymentAli") then 
+    local forceThirdPartPayment = self:getNeedForceThirdPartPayment()
+
+    if forceThirdPartPayment then 
         if type(self.paymentConfig.thirdPartyPayment) == "table" then 
             if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then 
                 return true
             end
         end
+    else
+        if MaintenanceManager:getInstance():isEnabled("NewGamePaymentAli") then
+            if type(self.paymentConfig.thirdPartyPayment) == "table" then 
+                if table.includes(self.paymentConfig.thirdPartyPayment, PlatformPaymentThirdPartyEnum.kALIPAY) then 
+                    return true
+                end
+            end
+        end
     end
-    return false
+
+    return false 
 end
 
 function PlatformConfig:isVivoPaySupport()
@@ -788,4 +1072,32 @@ function PlatformConfig:isNeedOrderSuccessCheck(paymentsType)
         return true
     end
     return false
+end
+
+function PlatformConfig:getLastPlatformAuthName()
+    local lastLoginUserData = Localhost:readLastLoginUserData()
+    local name = nil
+    if lastLoginUserData and lastLoginUserData.authorType then
+        local authDetail = PlatformAuthDetail[lastLoginUserData.authorType]
+        if authDetail then name = authDetail.name end
+    end
+    return name
+end
+
+function PlatformConfig:getLastPlatformAuthType( ... )
+    local lastLoginUserData = Localhost:readLastLoginUserData()
+    if lastLoginUserData and lastLoginUserData.authorType then
+        return lastLoginUserData.authorType
+    end
+    return nil
+end
+
+function PlatformConfig:getLoginTypeName()
+    local lastLoginUserData = Localhost:readLastLoginUserData()
+    local name = "guest"
+    if lastLoginUserData and lastLoginUserData.authorType then
+        local authDetail = PlatformAuthDetail[lastLoginUserData.authorType]
+        if authDetail then name = authDetail.name end
+    end
+    return name
 end

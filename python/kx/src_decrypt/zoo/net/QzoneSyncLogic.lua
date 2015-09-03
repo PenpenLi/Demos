@@ -1,3 +1,4 @@
+require "zoo.panel.QQSyncPanel"
 
 local kUserConnectMapping = {}
 kUserConnectMapping["0000"] = 1 -- 全新账号
@@ -24,11 +25,14 @@ kUserConnectMapping["0110"] = 9
 
 QzoneSyncLogic = class()
 
-function QzoneSyncLogic:ctor( openId, accessToken )
+function QzoneSyncLogic:ctor( openId, accessToken, snsPlatform,snsName)
 	self.openId = openId
 	self.accessToken = accessToken
+	self.snsPlatform = snsPlatform
+	-- self.oldSnsPlatform = oldSnsPlatform
+	self.snsName = snsName
 	self.timeout = 10
-	self.connectStatus = 0
+	-- self.connectStatus = 0
 	if NetworkConfig.mockQzoneSk ~= nil then
 		self.accessToken = NetworkConfig.mockQzoneSk
 	end
@@ -52,8 +56,8 @@ function QzoneSyncLogic:getMappingUserConnectStatus( connectData )
 end
 
 --static
-function QzoneSyncLogic:preconnect( openId, accessToken, onFinish,isV1Http)
-	if openId == nil or accessToken == nil then return onFinish(nil) end
+function QzoneSyncLogic:preconnect(onFinish,isV1Http)
+	-- if openId == nil or accessToken == nil then return onFinish(nil) end
 
 	local isNotTimeout = true
 	local timeoutID = nil
@@ -84,7 +88,7 @@ function QzoneSyncLogic:preconnect( openId, accessToken, onFinish,isV1Http)
 
 	http:addEventListener(Events.kComplete, onPreQzoneFinish)
 	http:addEventListener(Events.kError, onPreQzoneError)
-	http:load(openId, accessToken, self:haveUserSyncData())
+	http:load(self.openId,self.accessToken,self:haveUserSyncData(),self.snsPlatform,self.snsName)
 
 	local function onPreQzoneTimeout()
 		print("timeout @ onPreQzoneTimeout" .. " time: (s)")
@@ -116,7 +120,18 @@ function QzoneSyncLogic:formatLevelInfoMessage( topLevelId, updateTime )
 	return Localization:getInstance():getText("exception.panel.top.level", dataInfoLabel)
 end
 
+QzoneSyncLogic.AlertCode = table.const{
+	DIFF_PLATFORM = 210,
+	NEED_SYNC = 211,
+	MERGE = 213
+}
+QzoneSyncLogic.ErrorCode = table.const{
+	OLD_SNS_ERROR = 212
+}
 function QzoneSyncLogic:sync(onFinish,onSyncCancel,onSyncError)
+	local AlertCode = QzoneSyncLogic.AlertCode
+	local ErrorCode = QzoneSyncLogic.ErrorCode
+
 	local function onTouchPositiveButton()
 		self:connect(onFinish,onSyncError)
 	end
@@ -124,65 +139,104 @@ function QzoneSyncLogic:sync(onFinish,onSyncCancel,onSyncError)
 		if onSyncCancel ~= nil then onSyncCancel() end
 	end
 	local function onGetPreConnect( result )
-		local platform = PlatformConfig:getPlatformNameLocalization()
-		local status = QzoneSyncLogic:getMappingUserConnectStatus( result ) 
-		if result and result.refuse then
-			local p = QQLoginSuccessPanel:create( 
-				Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
-				Localization:getInstance():getText("loading.tips.weibo.account.cant.move", {platform=platform}))
-	   		p:setCloseButtonCallback(onTouchNegativeButton)
-	   		p:popout()
+		if not result then 
+			onSyncError()
 			return
 		end
 
-		if status > 0 then
-			local ignoreGuestData = false
-			local message = nil
-			if status >= 1 and status <= 5 then
-				print("preconnect v2: preconnect with connect")
-			elseif status == 6 then 
-				if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then -- 米聊版没有游客账号
-					ignoreGuestData = true
-				else
-					local formated = QzoneSyncLogic:formatLevelInfoMessage(result.pcLevel or 1, tonumber(result.pcAccessTime))
-					local accMode = Localization:getInstance():getText("loading.tips.preloading.warnning.mode1")
-					message = Localization:getInstance():getText("loading.tips.preloading.warnning.3", {user=formated,platform=platform,mode=accMode}) 
-				end
-			elseif status == 7 or status == 8 or status == 9 then 
-				if self:haveUserSyncData() then
-					message = Localization:getInstance():getText("loading.tips.preloading.warnning.4", {platform=platform}) 
-				else
-					print("preconnect v2: preconnect with connect")
-				end
+		local errorCode = result.errorCode or 0
+		local alertCode = result.alertCode or 0
+
+		-- alertCode = AlertCode.DIFF_PLATFORM
+		if errorCode > 0 then --拒绝登录
+			if errorCode == ErrorCode.OLD_SNS_ERROR then 
+				-- local p = QQLoginSuccessPanel:create( 
+				-- 	Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
+				-- 	"账号错误，请重试"
+				-- )
+		  --  		p:setCloseButtonCallback(onSyncError)
+		  --  		p:popout()
+		  		onSyncError()
+			else
+				local p = QQLoginSuccessPanel:create( 
+					Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
+					tostring(result.message)
+				)
+		   		p:setCloseButtonCallback(onTouchNegativeButton)
+		   		p:popout()
 			end
-			
-			if message then
-				local qqSyncPanel = QQSyncPanel:create( 
-					Localization:getInstance():getText("loading.tips.start.btn.qq", 
-					{platform=platform}),
-					message, 
+			return
+		end
+
+		if alertCode > 0 then --弹板警告
+			local platform = PlatformConfig:getPlatformNameLocalization()
+			if alertCode == AlertCode.DIFF_PLATFORM then
+				require "zoo.panel.phone.CrossDeviceDescPanel"
+
+				local function onTouchOK()
+					self:connect(onFinish,onSyncError)
+
+					if __ANDROID then 
+						DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=2 })
+					else
+						DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=1 })
+					end
+				end
+
+				local function onTouchCancel()
+					if onSyncCancel ~= nil then onSyncCancel() end
+				end
+
+				local panel = CrossDeviceDescPanel:create()
+				panel:setOkCallback(onTouchOK)
+				panel:setCancelCallback(onTouchCancel)
+				panel:popout()
+				
+			elseif alertCode == AlertCode.NEED_SYNC then 
+				local syncPanel = QQSyncPanel:create( 
+					Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
+					Localization:getInstance():getText("loading.tips.preloading.warnning.4", {platform=platform}), 
 					onTouchPositiveButton, 
 					onTouchNegativeButton
 				)
-				qqSyncPanel:popout()
-			elseif ignoreGuestData then
-				onTouchPositiveButton() 
+				syncPanel:popout()
+			elseif alertCode == AlertCode.MERGE then
+				local formated = QzoneSyncLogic:formatLevelInfoMessage(result.mergeLevelInfo or 1, tonumber(result.mergeUpdateTimeInfo))
+				local accMode = Localization:getInstance():getText("loading.tips.preloading.warnning.mode1")
+
+				local mergePanel = QQSyncPanel:create( 
+					Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
+					Localization:getInstance():getText("loading.tips.preloading.warnning.3",{user=formated,platform=platform,mode=accMode}),
+					onTouchPositiveButton, 
+					onTouchNegativeButton
+				)
+				mergePanel:popout()
 			else
-				self:onSyncQzone(result, onFinish, onSyncError)
+				local alertPanel = QQSyncPanel:create( 
+					Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
+					tostring(result.message), 
+					onTouchPositiveButton, 
+					onTouchNegativeButton
+				)
+				alertPanel:popout()
 			end
-		else 
-			onTouchPositiveButton() 
+			return
 		end
+
+		-- print("preconnect v2: preconnect with connect")
+		self:onSyncQzone(result, onFinish, onSyncError)
+
 	end
-	QzoneSyncLogic:preconnect( self.openId, self.accessToken, onGetPreConnect )
+	self:preconnect( onGetPreConnect )
 end
 
 
 function QzoneSyncLogic:connect(onFinish,onSyncError)
-	self.connectStatus = 0
+	-- self.connectStatus = 0
 	local context = self
 	local isNotTimeout = true
 	local timeoutID = nil
+
 	local function stopTimeout()
 		if timeoutID ~= nil then CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(timeoutID) end
 		print("stop timeout check")
@@ -205,7 +259,7 @@ function QzoneSyncLogic:connect(onFinish,onSyncError)
 	local http = QQConnectHttp.new()
 	http:addEventListener(Events.kComplete, onSyncQzoneFinish)
 	http:addEventListener(Events.kError, onSyncQzoneError)
-	http:load(self.openId, self.accessToken)
+	http:load(self.openId, self.accessToken,self.snsPlatform,self.snsName)
 
 	local function onSyncQzoneTimeout()
 		print("timeout @ LoginLogic:login " .. " time: (s)" .. self.timeout)
@@ -217,20 +271,37 @@ function QzoneSyncLogic:connect(onFinish,onSyncError)
 	timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onSyncQzoneTimeout,self.timeout,false)
 end
 
-function QzoneSyncLogic:alertByStatus( )
-	local status = self.connectStatus or 0
+function QzoneSyncLogic:alertByStatus(successTipCode)
+	-- local status = self.connectStatus or 0
 	print("alertByStatus status:" .. tostring(status))
 	local platform = PlatformConfig:getPlatformNameLocalization()
 	local message = nil
-	if status == 3 or status == 4 or status == 8 then 
+
+	local SuccessTipCode = table.const{
+		MERGE = 210,
+		MERGE_TO_PC = 211,
+		SNS_LOGIN_SUCCESS = 212,
+	}
+
+	if successTipCode == SuccessTipCode.MERGE_TO_PC then 
 		message = Localization:getInstance():getText("loading.tips.login.success.1", {platform=platform})
-	elseif status == 6 then 
-		if not PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then -- 米聊版没有游客账号
-			message = Localization:getInstance():getText("loading.tips.login.success.3", {platform=platform}) 
+	elseif successTipCode == SuccessTipCode.MERGE then 
+		if not PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+			message = Localization:getInstance():getText("loading.tips.login.success.3", {platform=platform})
 		end
-	elseif status == 5 or status == 9 then 
-		message = Localization:getInstance():getText("loading.tips.login.success.2", {platform=platform}) 
+	elseif successTipCode == SuccessTipCode.SNS_LOGIN_SUCCESS then
+		message = Localization:getInstance():getText("loading.tips.login.success.2", {platform=platform})
 	end
+
+	-- if status == 3 or status == 4 or status == 8 then  
+	-- 	message = Localization:getInstance():getText("loading.tips.login.success.1", {platform=platform})
+	-- elseif status == 6 then 
+	-- 	if not PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then -- 米聊版没有游客账号
+	-- 		message = Localization:getInstance():getText("loading.tips.login.success.3", {platform=platform}) 
+	-- 	end
+	-- elseif status == 5 or status == 9 then 
+	-- 	message = Localization:getInstance():getText("loading.tips.login.success.2", {platform=platform}) 
+	-- end
 
 	local function popoutAlert()
 		if message then 
@@ -239,12 +310,13 @@ function QzoneSyncLogic:alertByStatus( )
 	   		qqLoginPanel:popout()
 		end
 	end
+
 	setTimeOut(popoutAlert, 5)
 end
 
 function QzoneSyncLogic:onSyncQzone(result, onFinish, onSyncError)
 	if result and result.uid and result.uuid then
-		self.connectStatus = QzoneSyncLogic:getMappingUserConnectStatus( result ) 
+		-- self.connectStatus = QzoneSyncLogic:getMappingUserConnectStatus( result ) 
 
 		local serverNewUid = result.uid
 		local serverNewUDID = result.uuid
@@ -259,8 +331,8 @@ function QzoneSyncLogic:onSyncQzone(result, onFinish, onSyncError)
 		if tostring(serverNewUid) ~= tostring(localOldUid) then
 			--require loginout and login again ingame.
 			-- 当前账号是老账号且平台账号没有游戏数据，则后台绑定了一个新账号
-			local isNewUser = result.connected and not result.qqConnected
-      		self:changeUserID(isNewUser, serverNewUid, localOldUid, onFinish, onSyncError)
+			local isNewUser = result.newUser --result.connected and not result.qqConnected
+      		self:changeUserID(isNewUser, serverNewUid, localOldUid, onFinish, onSyncError,result.successTipCode)
 		else
 			UserManager.getInstance().uid = serverNewUid
 			UserManager.getInstance().sessionKey = kDeviceID
@@ -268,7 +340,7 @@ function QzoneSyncLogic:onSyncQzone(result, onFinish, onSyncError)
 			--require load user data again.
 			--ConnectionManager:reset( serverNewUid, kDeviceID )
 			ConnectionManager:invalidateSessionKey()
-			self:refreshUserData(onFinish)
+			self:refreshUserData(onFinish,result.successTipCode)
 		end
 		--update local last login data.
 		Localhost.getInstance():setLastLoginUserConfig(UserManager.getInstance().uid, UserManager.getInstance().sessionKey, UserManager.getInstance().platform)
@@ -278,11 +350,11 @@ function QzoneSyncLogic:onSyncQzone(result, onFinish, onSyncError)
 	end
 end
 
-function QzoneSyncLogic:changeUserID(isNewUser, newUserID, localOldUid, onFinish, onSyncError)
+function QzoneSyncLogic:changeUserID(isNewUser, newUserID, localOldUid, onFinish, onSyncError,successTipCode)
 	local function onLoginFinish( evt )
 		evt.target:removeAllEventListeners()
 		if onFinish ~= nil then onFinish() end
-		self:alertByStatus()
+		self:alertByStatus(successTipCode)
 
       	if localOldUid then Localhost.getInstance():deleteUserDataByUserID(localOldUid) end
       	-- DNU打点
@@ -303,7 +375,7 @@ function QzoneSyncLogic:changeUserID(isNewUser, newUserID, localOldUid, onFinish
 	logic:execute(newUserID, kDeviceID, kDefaultSocialPlatform, 10)
 end
 
-function QzoneSyncLogic:refreshUserData( onFinish )
+function QzoneSyncLogic:refreshUserData( onFinish,successTipCode )
 	local context = self
 	local isNotTimeout = true
 	local timeoutID = nil
@@ -334,7 +406,7 @@ function QzoneSyncLogic:refreshUserData( onFinish )
 				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kUserLogin))
 				
 				if onFinish ~= nil then onFinish() end
-				self:alertByStatus()
+				self:alertByStatus(successTipCode)
 			end
 		end	
 	end
@@ -366,6 +438,8 @@ function QzoneSyncLogic:refreshUserData( onFinish )
 
 	--推送召回 前端向后端发送流失状态
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
+	-- 
+	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
 
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()

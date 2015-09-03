@@ -66,8 +66,6 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemLogicActionForceMoveItem( mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_TileBlocker_Update then 
 		GameBoardActionRunner:runningGameItemActionTileBlockerUpdate(mainLogic, theAction, actid, actByView)
-	elseif theAction.actionType == GameItemActionType.kItem_Monster_Jump then
-		GameBoardActionRunner:runningGameItemActionMonsterJump(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Monster_Destroy_Item then
 		GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_PM25_Update then
@@ -98,6 +96,8 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionDestroyArea(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Casting then
 		GameBoardActionRunner:runningGameItemActionMagicLampCasting(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Gold_ZongZi_Explode then
+		GameBoardActionRunner:runningGameItemActionGoldZongZiCasting(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Reinit then
 		GameBoardActionRunner:runningGameItemActionMagicLampReinit(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Honey_Bottle_Broken then
@@ -135,7 +135,6 @@ function GameBoardActionRunner:runningGameItemActionHalloweenBossCasting(mainLog
 				item.ItemType = GameItemType.kDigJewel 
 				item.isBlock = true 
 				item.isEmpty = false 
-				item.digJewelType = 3
 			else 
 				-- 单纯的云块
 				item:cleanAnimalLikeData()
@@ -214,7 +213,11 @@ function GameBoardActionRunner:runningGameItemActionHalloweenBossDie(mainLogic, 
 		end
 		mainLogic.gameActionList[actid] = nil
 	elseif theAction.addInfo == 'died' then
-		mainLogic:halloweenBossDie(theAction.diePosition)
+		local bells = {}
+		if theAction.dropsAnim and theAction.dropsAnim.bells then
+			bells = theAction.dropsAnim.bells
+		end
+		mainLogic:dragonBoatBossDie(theAction.diePosition, bells)
 		theAction.addInfo = "died_action"
 
 	end
@@ -316,6 +319,63 @@ function GameBoardActionRunner:runningGameItemActionMagicLampCasting(mainLogic, 
 		setTimeOut(bombAll, 0.3)
 		-- bombAll()
 		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionGoldZongZiCasting(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == 'over' then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local zongzi = mainLogic.gameItemMap[r][c]
+
+		local toItemPos = theAction.speicalItemPos
+
+		local function bombAll()
+
+			GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
+			zongzi:cleanAnimalLikeData()
+			mainLogic:checkItemBlock(r, c)
+			mainLogic:setNeedCheckFalling()
+
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+		end
+
+		if theAction.isWaitingForBomb then
+			theAction.jsq2 = theAction.jsq2 + 1
+
+			if theAction.jsq2 == 20 then
+				bombAll()
+				mainLogic.gameActionList[actid] = nil
+			end
+		else
+			for k, v in pairs(toItemPos) do
+				local item = mainLogic.gameItemMap[v.r][v.c]
+				if item.ItemType == GameItemType.kAddMove then
+	    			item:initAddMoveConfig(mainLogic.addMoveBase)
+
+	    			mainLogic.theCurMoves = mainLogic.theCurMoves + item.numAddMove
+					if mainLogic.PlayUIDelegate then
+						local function callback( ... )
+							mainLogic.PlayUIDelegate:setMoveOrTimeCountCallback(mainLogic.theCurMoves, false)
+						end
+						local pos = mainLogic:getGameItemPosInView_ForPreProp(v.r, v.c)
+						local icon = TileAddMove:createAddStepIcon(item.numAddMove)
+						local scene = Director:sharedDirector():getRunningScene()
+						local animation = PrefixPropAnimation:createAddMoveAnimation(icon, 0, callback, nil, ccp(pos.x, pos.y + 90))
+						scene:addChild(animation)
+					end
+	    		end
+				item.ItemType = GameItemType.kAnimal
+				item.ItemSpecialType = AnimalTypeConfig.kWrap
+				item.isNeedUpdate = true
+			end
+		end
+
+		if not theAction.jsq2 then
+			theAction.jsq2 = 0
+			theAction.isWaitingForBomb = true
+		end
 	end
 end
 
@@ -659,48 +719,66 @@ end
 
 function GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic, theAction, actid, actByView)
 	-- body
-	if theAction.addInfo == "over" then
+	local function overAction( ... )
+		-- body
 		theAction.addInfo = ""
 		mainLogic.gameActionList[actid] = nil
-		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		if theAction.completeCallback then 
+			theAction.completeCallback()
+		end
+		mainLogic:setNeedCheckFalling()
+	end
+
+	local function bombItem( r,c  )
+		-- body
 		local item = mainLogic.gameItemMap[r][c]
 		local boardData = mainLogic.boardmap[r][c]
-		local times = theAction.times
-		for k = 1, times do 
-			if boardData.iceLevel > 0 and (item.ItemType == GameItemType.kAnimal 
-				or item.ItemType == GameItemType.kCrystal
-				or item.ItemType == GameItemType.kCoin)  then 
-			else
-				BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
-				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
-			end
-			SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, 1)
-		end
-		if theAction.completeCallback then 
-			theAction.completeCallback()
+		BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
+		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
+		if (boardData.iceLevel > 0 or boardData.sandLevel > 0 )  and 
+		   (item.ItemType == GameItemType.kAnimal or item.ItemType == GameItemType.kCrystal) and
+		   not item:hasFurball() and 
+		   not item:hasLock() and 
+		  item:isAvailable() then 
+			SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1)
 		end
 	end
-end
 
-function GameBoardActionRunner:runningGameItemActionMonsterJump( mainLogic, theAction, actid, actByView )
-	-- body
 	if theAction.addInfo == "over" then
-		theAction.addInfo = ""
-		mainLogic.gameActionList[actid] = nil
-		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
-		local gameItemMap = mainLogic.gameItemMap
-		local itemList = {gameItemMap[r][c], gameItemMap[r][c+1], gameItemMap[r+1][c], gameItemMap[r+1][c+1]}
-		for k, v in pairs(itemList) do 
-			v:cleanAnimalLikeData()
-			mainLogic:checkItemBlock(v.y,v.x)
-		end
-		FallingItemLogic:preUpdateHelpMap(mainLogic)
+		local r_min = theAction.ItemPos1.x
+		local r_max = theAction.ItemPos2.x
+		local c_min = theAction.ItemPos1.y
+		local c_max = theAction.ItemPos2.y
 
-		if theAction.completeCallback then 
-			theAction.completeCallback()
+		if r_max - r_min > 3 and c_max - c_min > 3 then        ---脚踩全屏
+			theAction.time_count = theAction.time_count or 0
+			if theAction.time_count >= 5 then
+				overAction()
+			else
+				for r = 5 - theAction.time_count, 5 + theAction.time_count do 
+					for c = 5 - theAction.time_count, 5 + theAction.time_count do
+						if r >= 5 - theAction.time_count + 1 and 
+						   r <= 5 + theAction.time_count - 1 and 
+						   c >= 5 - theAction.time_count + 1 and 
+						   c <= 5 + theAction.time_count - 1 then
+						else
+							bombItem(r, c)
+						end
+					end
+				end
+				theAction.time_count = theAction.time_count + 1
+			end
+
+		else                                                   ---3*2格子
+			for r = r_min , r_max do 
+				for c = c_min, c_max do 
+					bombItem(r, c)
+				end
+			end
+
+			overAction()
 		end
 	end
-
 end
 
 function GameBoardActionRunner:runningGameItemActionTileBlockerUpdate( mainLogic, theAction, actid, actByView)
@@ -712,7 +790,7 @@ function GameBoardActionRunner:runningGameItemActionTileBlockerUpdate( mainLogic
 		if theAction.coutDown == 0 then
 			mainLogic.boardmap[r][c].isReverseSide = not mainLogic.boardmap[r][c].isReverseSide
 			mainLogic.gameItemMap[r][c].isReverseSide = not mainLogic.gameItemMap[r][c].isReverseSide
-			mainLogic.gameItemMap[r][c].isBlock = mainLogic.gameItemMap[r][c]:checkBlock() --mainLogic.boardmap[r][c].isReverseSide
+			-- mainLogic.gameItemMap[r][c].isBlock = mainLogic.gameItemMap[r][c]:checkBlock() --mainLogic.boardmap[r][c].isReverseSide
 			mainLogic:checkItemBlock(r,c)
 			FallingItemLogic:preUpdateHelpMap(mainLogic)
 			mainLogic:addNeedCheckMatchPoint(r, c)

@@ -52,6 +52,10 @@ function PropsView:playForceSwapDisableAnimation(boardView, position)
 	PropsView:playPropDisableAnimation(boardView, position, 10003)
 end
 
+function PropsView:playBroomDisableAnimation(boardView, position)
+	PropsView:playPropDisableAnimation(boardView, position, GamePropsType.kBroom)
+end
+
 function PropsView:playPropDisableAnimation(boardView, position, itemId)
 	if disablePropAnimPlayingPosition[position.x .. "_" .. position.y] then
 		return

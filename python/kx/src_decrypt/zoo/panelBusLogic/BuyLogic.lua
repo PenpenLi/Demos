@@ -175,7 +175,7 @@ function BuyLogic:start(num, successCallback, failCallback, load, price)
 	http:ad(Events.kComplete, onSuccess)
 	http:ad(Events.kCancel, onCancel)
 	http:ad(Events.kError, onFail)
-	http:syncLoad(self.goodsId, self.num, self.moneyType, self.targetId)
+	http:load(self.goodsId, self.num, self.moneyType, self.targetId)
 	if __WP8 then
 		ConnectionManager:flush()
 	end

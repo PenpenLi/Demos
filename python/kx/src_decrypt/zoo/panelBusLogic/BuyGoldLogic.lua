@@ -49,7 +49,7 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 		if cancelCallback then cancelCallback() end
 	end
 	animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
-	scene:addChild(animation)
+	-- scene:addChild(animation)
 	for __, v in ipairs(self.meta) do
 		if v.show then
 			if __IOS and v.id == 8 then
@@ -65,6 +65,8 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 			elseif __IOS and v.id == 10 then
 			elseif __IOS and v.id == 11 then
 			elseif __IOS and v.id == 12 then
+			elseif __IOS and v.id == 13 then
+			elseif __IOS and v.id == 14 then
 			else
 				counter = counter + 1
 				goldList[tostring(counter)] = v.productId
@@ -96,7 +98,7 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 	elseif __ANDROID then -- ANDROID
 		local res = {}
 		for k, v in ipairs(self.meta) do
-			if v.id ~= 16 and v.id ~= 17 then -- hide two gold payment
+			if v.id ~= 16 and v.id ~= 17 and v.id ~= 18 and v.id ~= 29 then -- hide gold payments
 				res[tostring(k - 1)] = v
 				res[tostring(k - 1)].iapPrice = v.rmb / 100
 
@@ -161,6 +163,10 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 	end
 end
 
+function BuyGoldLogic:setIsThirdPayPromotion()
+	self.isThirdPayPromotion = true
+end
+
 function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCallback)
 	local function onSuccess()
 		local user = UserManager:getInstance().user
@@ -205,11 +211,26 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 		end
 	end
 	if __IOS then -- IOS
-		IosPayment:buy(data.productIdentifier, data.iapPrice, data.priceLocale, "", onSuccess, onFail)
+		local payId = PaymentIosDCUtil.getInstance():getNewIosPayID()
+		PaymentIosDCUtil.getInstance():sendPayStart(Payments.IOS_RMB, 0, payId, data.productIdentifier, 2, 1, 0)
+		local peDispatcher = PaymentEventDispatcher.new()
+		local function successDcFunc(evt)
+			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, payId, data.productIdentifier, 2, 1, 0, data.iapPrice, 0, 0)
+		end
+		local function failedDcFunc(evt)
+			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, payId, data.productIdentifier, 2, 1, 0, data.iapPrice, 0, 1)
+		end
+		peDispatcher:addEventListener(PaymentEvents.kIosBuySuccess, successDcFunc)
+		peDispatcher:addEventListener(PaymentEvents.kIosBuyFailed, failedDcFunc)
+		IosPayment:buy(data.productIdentifier, data.iapPrice, data.priceLocale, "", onSuccess, onFail, peDispatcher)
 	elseif __ANDROID then -- ANDROID
 		local logic = IngamePaymentLogic:create(index, 2)
 		logic:ignoreSecondConfirm(true)
-		logic:buy(onSuccess, onFail, onCancel)
+		if not self.isThirdPayPromotion then
+			logic:buy(onSuccess, onFail, onCancel)
+		else
+			logic:buyWithThirdPartPayment(onSuccess, onFail, onCancel, nil, true)
+		end
 	elseif __WP8 then
 		local logic = Wp8Payment:create(index)
 		logic:buy(onSuccess, onFail, onCancel)

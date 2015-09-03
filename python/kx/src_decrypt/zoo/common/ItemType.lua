@@ -57,6 +57,8 @@ ItemType = {
 	ADD_TIME			= 16, -- 最终加15秒
 
 	KEY_GOLD            = 17,  ---解锁钥匙，临时展示用
+	KWATER_MELON        =18,
+	KELEPHANT           = 19
 
 }
 

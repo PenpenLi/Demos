@@ -20,6 +20,7 @@ GameBoardActionType = table.const	--关卡正常操作动画细节
 	kStartTrySwapItem_fun = 3,		--搞笑式交换（被墙挡住了）
 	kStartBonusTime = 4,			--开始奖励时间
 	kStartBonusTime_ItemFlying = 5,	--奖励时间的飞行特效
+	kTileMove = 6,					--移动地块移动
 }
 
 GameItemActionType = table.const	--Item自动播放动画细节
@@ -119,6 +120,12 @@ GameItemActionType = table.const	--Item自动播放动画细节
 	kItem_mayday_boss_casting = 118,    -- 活动boss发大招
 	kItem_QuestionMark_Protect = 119,   -- 问号障碍变成其他障碍时保护
 	kItem_Magic_Stone_Active = 120, 	-- 魔法石被激活
+
+	kItem_Gold_ZongZi_Active = 121, 	-- 金粽子被挖出
+	kItem_Gold_ZongZi_Explode = 122, 	-- 金粽子生成特效
+
+	kItem_Bottle_Blocker_Explode = 123, 	-- 妖精瓶子被消除一层
+	kItem_Bottle_Destroy_Around = 124, 	-- 妖精瓶子释放特效炸掉周围四格
 }
 
 GamePropsActionType = table.const 	--游戏道具播放动画细节

@@ -6,6 +6,36 @@ require "zoo.net.Http"
 require "zoo.panel.CommonTip"
 require "zoo.panel.RequireNetworkAlert"
 require "zoo.util.ClipBoardUtil"
+require "zoo.panel.QRCodePanel"
+require "zoo.qr.qrmanager"
+
+AddFriendPanelTab = class(EventDispatcher)
+
+function AddFriendPanelTab:create(ui, text)
+	local obj = AddFriendPanelTab.new()
+	obj:init(ui, text)
+	return obj
+end
+function AddFriendPanelTab:init(ui, text)
+	self.ui = ui
+	local txt = self.ui:getChildByName("text")
+	txt:setString(text)
+
+	local function onClicked(evt)
+		self:dispatchEvent(Event.new(DisplayEvents.kTouchTap, evt, self))
+	end
+	self.ui:addEventListener(DisplayEvents.kTouchTap, onClicked)
+end
+function AddFriendPanelTab:setEnabled(enabled)
+	self.ui:getChildByName("arr1"):setVisible(not enabled)
+	self.ui:getChildByName("arr2"):setVisible(enabled)
+	self.ui:getChildByName("light"):setVisible(enabled)
+	self.ui:getChildByName("dark"):setVisible(not enabled)
+	self.ui:setTouchEnabled(not enabled)
+end
+function AddFriendPanelTab:setPositionY(value)
+	if self.ui then self.ui:setPositionY(value) end
+end
 
 AddFriendPanel = class(BasePanel)
 
@@ -21,7 +51,7 @@ function AddFriendPanel:create(scaleOriginPosInWorldPos, popCallback)
 			end
 			panel:popout()
 			return nil
-		else 
+		else
 			panel = nil 
 			return nil 
 		end
@@ -46,28 +76,24 @@ function AddFriendPanel:_init(scaleOriginPosInWorldPos, ...)
 	-- init ui
 	self.ui = self:buildInterfaceGroup("AddFriendPanel")
 	BasePanel.init(self, self.ui)
-	self:scaleAccordingToResolutionConfig()
-	self:setPositionForPopoutManager()
-	if scaleOriginPosInWorldPos then
-		self.showHideAnim = IconPanelShowHideAnim:create(self, scaleOriginPosInWorldPos)
-	end
 
 	-- getcontrols
 	self.background = self.ui:getChildByName("_bg")
 	self.closeBtn = self.ui:getChildByName("closeBtn")
 	self.captain = self.ui:getChildByName("captain")
-	self.tabSearche = self.ui:getChildByName("btn_tabSearchex")
-	self.tabRecommende = self.ui:getChildByName("btn_tabRecommendex")
-	self.tabShakee = self.ui:getChildByName("btn_tabShakeex")
-	self.tabSearchh = self.ui:getChildByName("btn_tabSearchhd")
-	self.tabRecommendh1 = self.ui:getChildByName("btn_tabRecommendhd1")
-	self.tabRecommendh2 = self.ui:getChildByName("btn_tabRecommendhd2")
-	self.tabShakeh = self.ui:getChildByName("btn_tabShakehd")
-	self.tabSearchl = self.ui:getChildByName("lbl_tabSearch")
-	self.tabRecommendle = self.ui:getChildByName("lbl_tabRecommendex")
-	self.tabShakele = self.ui:getChildByName("lbl_tabShakeex")
-	self.tabRecommendlh = self.ui:getChildByName("lbl_tabRecommendhd")
-	self.tabShakelh = self.ui:getChildByName("lbl_tabShakehd")
+	self.btnSearch = AddFriendPanelTab:create(self.ui:getChildByName("tab_Search"),
+		Localization:getInstance():getText("add.friend.panel.tag.search"))
+	self.btnCode = AddFriendPanelTab:create(self.ui:getChildByName("tab_Code"),
+		Localization:getInstance():getText("add.friend.panel.tag.qrcode"))
+	self.btnRecommend = AddFriendPanelTab:create(self.ui:getChildByName("tab_Recommend"),
+		Localization:getInstance():getText("add.friend.panel.tag.recommend"))
+	self.btnShake = AddFriendPanelTab:create(self.ui:getChildByName("tab_Shake"),
+		Localization:getInstance():getText("add.friend.panel.tag.shake"))
+	local topPosition = self.ui:getChildByName("tab_Search"):getPositionY()
+	local margin = self.ui:getChildByName("tab_Code"):getPositionY() - topPosition
+	local tabShake = self.ui:getChildByName("tabShake")
+	local bottomPosition = tabShake:getPositionY() - tabShake:getGroupBounds().size.height /
+		self:getScaleY()
 
 	local bgSize = self.background:getGroupBounds().size
 	self.captain:setText(Localization:getInstance():getText("add.friend.panel.title"))
@@ -75,29 +101,6 @@ function AddFriendPanel:_init(scaleOriginPosInWorldPos, ...)
 	local capScale = 65 / capSize.height
 	self.captain:setScale(capScale)
 	self.captain:setPositionX((bgSize.width / self:getScale() - capSize.width * capScale) / 2)
-
-	-- set button status & set strings
-	local function setTagButtonLabel(control, name)
-		if name ~= "recommend" then control:getChildByName("icn_recommend"):removeFromParentAndCleanup(true) end
-		if name ~= "shake" then control:getChildByName("icn_shake"):removeFromParentAndCleanup(true) end
-		if name ~= "search" then control:getChildByName("icn_search"):removeFromParentAndCleanup(true) end
-		local label = control:getChildByName("lbl_text")
-		local fontSize = control:getChildByName("img_fontSize")
-		label:setString(Localization:getInstance():getText("add.friend.panel.tag."..tostring(name)))
-		control.expand = function()
-			control:getChildByName("img_tagEx"):setVisible(true)
-			control:getChildByName("img_tagHd"):setVisible(false)
-		end
-		control.hide = function()
-			control:getChildByName("img_tagHd"):setVisible(true)
-			control:getChildByName("img_tagEx"):setVisible(false)
-		end
-	end
-	setTagButtonLabel(self.tabSearchl, "search")
-	setTagButtonLabel(self.tabRecommendle, "recommend")
-	setTagButtonLabel(self.tabRecommendlh, "recommend")
-	setTagButtonLabel(self.tabShakele, "shake")
-	setTagButtonLabel(self.tabShakelh, "shake")
 
 	-- add event listeners
 	local function onCloseTapped()
@@ -108,109 +111,72 @@ function AddFriendPanel:_init(scaleOriginPosInWorldPos, ...)
 	self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseTapped)
 
 	local function onBtnSearchTapped()
-		self.tabStatus = self.tabStatus + 1
-		self.tabSearche:setVisible(true)
-		self.tabRecommende:setVisible(false)
-		self.tabShakee:setVisible(false)
-		self.tabSearchh:setVisible(false)
-		self.tabRecommendh1:setVisible(false)
-		self.tabRecommendh2:setVisible(true)
-		self.tabShakeh:setVisible(true)
-		self.tabSearchl:setVisible(true)
-		self.tabRecommendle:setVisible(false)
-		self.tabShakele:setVisible(false)
-		self.tabRecommendlh:setVisible(true)
-		self.tabShakelh:setVisible(true)
-		self.tabSearchl.expand()
-		self.tabRecommendle.hide()
-		self.tabShakele.hide()
-		self.tabRecommendlh.hide()
-		self.tabShakelh.hide()
-		self.tabRecommend.hide()
-		self.tabRecommend.ui:setVisible(false)
-		self.tabShake.hide()
-		self.tabShake.ui:setVisible(false)
-		self.tabSearch.ui:setVisible(true)
-		self.tabSearch.expand()
+		self.btnSearch:setEnabled(true)
+		self.btnCode:setEnabled(false)
+		self.btnCode:setPositionY(bottomPosition - 3 * margin)
+		self.btnRecommend:setEnabled(false)
+		self.btnRecommend:setPositionY(bottomPosition - 2 * margin)
+		self.btnShake:setEnabled(false)
+		self.btnShake:setPositionY(bottomPosition - margin)
+		self.tabSearch:expand()
+		self.tabCode:hide()
+		self.tabRecommend:hide()
+		self.tabShake:hide()
 	end
-	self.tabSearchh:setTouchEnabled(true)
-	self.tabSearchh:addEventListener(DisplayEvents.kTouchTap, onBtnSearchTapped)
-	self.tabSearchh.click = function() onBtnSearchTapped() end
-
+	self.btnSearch:addEventListener(DisplayEvents.kTouchTap, onBtnSearchTapped)
+	local function onBtnCodeTapped()
+		if not RequireNetworkAlert:popout() then return end
+		self.btnSearch:setEnabled(false)
+		self.btnCode:setEnabled(true)
+		self.btnCode:setPositionY(topPosition + margin)
+		self.btnRecommend:setEnabled(false)
+		self.btnRecommend:setPositionY(bottomPosition - 2 * margin)
+		self.btnShake:setEnabled(false)
+		self.btnShake:setPositionY(bottomPosition - margin)
+		self.tabSearch:hide()
+		self.tabCode:expand()
+		self.tabRecommend:hide()
+		self.tabShake:hide()
+	end
+	self.btnCode:addEventListener(DisplayEvents.kTouchTap, onBtnCodeTapped)
 	local function onBtnRecommendTapped()
 		if not RequireNetworkAlert:popout() then return end
-		-- local onButton1Click = function()
-			self.tabStatus = self.tabStatus + 1
-			self.tabSearche:setVisible(false)
-			self.tabRecommende:setVisible(true)
-			self.tabShakee:setVisible(false)
-			self.tabSearchh:setVisible(true)
-			self.tabRecommendh1:setVisible(false)
-			self.tabRecommendh2:setVisible(false)
-			self.tabShakeh:setVisible(true)
-			self.tabSearchl:setVisible(true)
-			self.tabRecommendle:setVisible(true)
-			self.tabShakele:setVisible(false)
-			self.tabRecommendlh:setVisible(false)
-			self.tabShakelh:setVisible(true)
-			self.tabSearchl.hide()
-			self.tabRecommendle.expand()
-			self.tabShakele.hide()
-			self.tabRecommendlh.hide()
-			self.tabShakelh.hide()
-			self.tabSearch.hide()
-			self.tabSearch.ui:setVisible(false)
-			self.tabShake.hide()
-			self.tabShake.ui:setVisible(false)
-			self.tabRecommend.ui:setVisible(true)
-			self.tabRecommend.expand()
-		-- end
-		--CommonAlertUtil:showPrePkgAlertPanel(onButton1Click,NotRemindFlag.GPS_ALLOW,Localization:getInstance():getText("pre.tips.locate"));
+		self.btnSearch:setEnabled(false)
+		self.btnCode:setEnabled(false)
+		self.btnCode:setPositionY(topPosition + margin)
+		self.btnRecommend:setEnabled(true)
+		self.btnRecommend:setPositionY(topPosition + 2 * margin)
+		self.btnShake:setEnabled(false)
+		self.btnShake:setPositionY(bottomPosition - margin)
+		self.tabSearch:hide()
+		self.tabCode:hide()
+		self.tabRecommend:expand()
+		self.tabShake:hide()
 	end
-	self.tabRecommendh1:setTouchEnabled(true)
-	self.tabRecommendh1:addEventListener(DisplayEvents.kTouchTap, onBtnRecommendTapped)
-	self.tabRecommendh1.click = function() onBtnRecommendTapped() end
-	self.tabRecommendh2:setTouchEnabled(true)
-	self.tabRecommendh2:addEventListener(DisplayEvents.kTouchTap, onBtnRecommendTapped)
-	self.tabRecommendh2.click = function() onBtnRecommendTapped() end
-
+	self.btnRecommend:addEventListener(DisplayEvents.kTouchTap, onBtnRecommendTapped)
 	local function onBtnShakeTapped()
 		if not RequireNetworkAlert:popout() then return end
-		self.tabStatus = self.tabStatus + 1
-		self.tabSearche:setVisible(false)
-		self.tabRecommende:setVisible(false)
-		self.tabShakee:setVisible(true)
-		self.tabSearchh:setVisible(true)
-		self.tabRecommendh1:setVisible(true)
-		self.tabRecommendh2:setVisible(false)
-		self.tabShakeh:setVisible(false)
-		self.tabSearchl:setVisible(true)
-		self.tabRecommendle:setVisible(true)
-		self.tabShakele:setVisible(true)
-		self.tabRecommendlh:setVisible(false)
-		self.tabShakelh:setVisible(false)
-		self.tabSearchl.hide()
-		self.tabRecommendle.hide()
-		self.tabShakele.expand()
-		self.tabRecommendlh.hide()
-		self.tabShakelh.hide()
-		self.tabSearch.hide()
-		self.tabSearch.ui:setVisible(false)
-		self.tabRecommend.hide()
-		self.tabRecommend.ui:setVisible(false)
-		self.tabShake.ui:setVisible(true)
-		self.tabShake.expand()
+		self.btnSearch:setEnabled(false)
+		self.btnCode:setEnabled(false)
+		self.btnCode:setPositionY(topPosition + margin)
+		self.btnRecommend:setEnabled(false)
+		self.btnRecommend:setPositionY(topPosition + 2 * margin)
+		self.btnShake:setEnabled(true)
+		self.btnShake:setPositionY(topPosition + 3 * margin)
+		self.tabSearch:hide()
+		self.tabCode:hide()
+		self.tabRecommend:hide()
+		self.tabShake:expand()
 	end
-	self.tabShakeh:setTouchEnabled(true)
-	self.tabShakeh:addEventListener(DisplayEvents.kTouchTap, onBtnShakeTapped)
-	self.tabShakeh.click = function() onBtnShakeTapped() end
+	self.btnShake:addEventListener(DisplayEvents.kTouchTap, onBtnShakeTapped)
 
 	-- build logic
 	self.addFriendPanelLogic = AddFriendPanelLogic:create()
 
+	self:_tabSearch_init(self.ui:getChildByName("tabSearch"))
+	self:_tabCode_init(self.ui:getChildByName("tabCode"))
 	self:_tabRecommend_init(self.ui:getChildByName("tabRecommend"))
 	self:_tabShake_init(self.ui:getChildByName("tabShake"))
-	self:_tabSearch_init(self.ui:getChildByName("tabSearch"))
 
 	-- set data
 	self.tabStatus = 0
@@ -221,6 +187,11 @@ function AddFriendPanel:_init(scaleOriginPosInWorldPos, ...)
 	-- block click
 	-- self.background:setTouchEnabled(true, 0, true)
 
+	self:scaleAccordingToResolutionConfig()
+	self:setPositionForPopoutManager()
+	if scaleOriginPosInWorldPos then
+		self.showHideAnim = IconPanelShowHideAnim:create(self, scaleOriginPosInWorldPos)
+	end
 
 	return true
 end
@@ -326,7 +297,10 @@ function AddFriendPanel:_tabSearch_init(ui)
 	self.tabSearch.userImg:setVisible(false)
 	icon:removeFromParentAndCleanup(false)
 	self.tabSearch.inviteBtn:setIcon(icon, false)
-	if PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) or PlatformConfig:isPlatform(PlatformNameEnum.k360) then
+	if PlatformConfig:isJJPlatform() then
+		self.tabSearch.inviteBtn:setVisible(false) 
+		self.tabSearch.wdjBtn:removeFromParentAndCleanup(true)
+	elseif PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) or PlatformConfig:isPlatform(PlatformNameEnum.k360) then
 		self.tabSearch.wdjBtn:setPosition(ccp(wdjLocator:getPositionX(), wdjLocator:getPositionY()))
 		self.tabSearch.inviteBtn:setPosition(ccp(wechatLocator:getPositionX(), wechatLocator:getPositionY()))
 	else self.tabSearch.wdjBtn:removeFromParentAndCleanup(true) end
@@ -398,13 +372,27 @@ function AddFriendPanel:_tabSearch_init(ui)
 	self.tabSearch.btnAdd:addEventListener(DisplayEvents.kTouchTap, onBtnAddTapped)
 
 	local function shareInviteCode()
+		local function restoreBtn()
+			if self.tabSearch.ui.isDisposed then return end
+			if not self.tabSearch.ui:isVisible() then return end
+			if self.tabSearch.inviteBtn.isDisposed then return end
+			self.tabSearch.inviteBtn:setEnabled(true)
+		end
+
 		if __IOS_FB then
 			SnsProxy:inviteFriends(nil)
 		else
+			local ipt = {
+				onSuccess = restoreBtn,
+				onError = restoreBtn,
+				onCancel = restoreBtn,
+			}
+			self.tabSearch.inviteBtn:setEnabled(false)
+			setTimeOut(restoreBtn, 2)
 			if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
-				SnsUtil.sendInviteMessage( PlatformShareEnum.kMiTalk )
+				SnsUtil.sendInviteMessage( PlatformShareEnum.kMiTalk, ipt )
 			else
-				SnsUtil.sendInviteMessage( PlatformShareEnum.kWechat )
+				SnsUtil.sendInviteMessage( PlatformShareEnum.kWechat, ipt )
 			end
 		end
 	end
@@ -431,6 +419,7 @@ function AddFriendPanel:_tabSearch_init(ui)
 
 	-- block click while not in front
 	self.tabSearch.hide = function()
+		self.tabSearch.ui:setVisible(false)
 		self.tabSearch.input:setTouchEnabled(false)
 		self.tabSearch.input.btnCancel:setTouchEnabled(false)
 		self.tabSearch.btnAdd:setEnabled(false)
@@ -445,6 +434,7 @@ function AddFriendPanel:_tabSearch_init(ui)
 		self.tabSearch.inviteBtn:setEnabled(true)
 		self.tabSearch.wdjBtn:setEnabled(true)
 		if self.tabSearch.copyCodeLayer then self.tabSearch.copyCodeLayer:setTouchEnabled(true) end
+		self.tabSearch.ui:setVisible(true)
 	end
 end
 
@@ -569,7 +559,167 @@ function AddFriendPanel:_tabSearch_addFriend()
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err)), "negative")
 	end
 	self.tabStatus = self.tabStatus + 1
-	self.addFriendPanelLogic:sendAddMessage(nil, onSuccess, onFail, self.tabStatus)
+	self.addFriendPanelLogic:sendAddMessage(nil, onSuccess, onFail, nil, self.tabStatus)
+end
+
+------------------------------------------
+-- TabCode
+------------------------------------------
+function AddFriendPanel:_tabCode_init(ui)
+	self.tabCode = {}
+	self.tabCode.ui = ui
+	local text1 = self.tabCode.ui:getChildByName("text1")
+	text1:setString(Localization:getInstance():getText("add.friend.panel.qrcode.desc.mine"))
+	local text2 = self.tabCode.ui:getChildByName("text2")
+	text2:setString(Localization:getInstance():getText("add.friend.panel.qrcode.desc.friend"))
+	local code = self.tabCode.ui:getChildByName("code")
+	code:setVisible(false)
+	local size = code:getGroupBounds().size
+	local sprite = CocosObject.new(QRManager:generatorQRNode(QRCodePostPanel:getQRCodeURL(), size.width))
+	local sSize = sprite:getContentSize()
+	local layer = Layer:create()
+	sprite:setScaleX(size.width / sSize.width)
+	sprite:setScaleY(-size.height / sSize.height) -- original and correct scaleY of image is smaller than zero.
+	sprite:setPositionXY(-sSize.width / 2 * sprite:getScaleX(), -sSize.height / 4 * sprite:getScaleY())
+	layer:setPositionX(code:getPositionX() + size.width / 2)
+	layer:setPositionY(code:getPositionY() - size.height / 2 + sSize.height / 4)
+	layer:addChild(sprite)
+	layer.extended = false
+	local touchLayer = nil
+	local originX, originY = layer:getPositionX(), layer:getPositionY()
+	local destX, destY = layer:getPositionX(), layer:getPositionY()
+	local originScale, destScale = 1, 2.1
+	local function resizeQRCode()
+		extended = not extended
+		if extended then
+			layer:setScale(destScale)
+			layer:setPositionXY(destX, destY)
+			if not touchLayer then
+				touchLayer = Layer:create()
+				local size = Director:sharedDirector():getWinSize()
+				touchLayer:setContentSize(CCSizeMake(size.width / self:getScale(), size.height / self:getScale()))
+				touchLayer:setAnchorPoint(ccp(0, 1))
+				touchLayer:ignoreAnchorPointForPosition(false)
+				touchLayer:setPositionXY(-self:getPositionX(), -self:getPositionY())
+				touchLayer:setTouchEnabled(true, 0, true)
+				touchLayer:addEventListener(DisplayEvents.kTouchTap, resizeQRCode)
+				self.ui:addChild(touchLayer)
+			end
+		else
+			layer:setScale(originScale)
+			layer:setPositionXY(originX, originY)
+			if touchLayer then
+				touchLayer:removeFromParentAndCleanup(true)
+				touchLayer = nil
+			end
+		end
+	end
+	layer:addEventListener(DisplayEvents.kTouchTap, resizeQRCode)
+	ui:addChild(layer)
+	local btn1 = ButtonIconsetBase:create(self.tabCode.ui:getChildByName("btn1"))
+	local function onBtn1()
+		local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/wechat_icon.png")
+		local title = Localization:getInstance():getText("invite.friend.panel.share.title")
+		local text = Localization:getInstance():getText("add.friend.panel.qrcode.share.desc")
+		local uid = UserManager:getInstance().uid
+		local inviteCode = UserManager:getInstance().inviteCode
+		local platformName = StartupConfig:getInstance():getPlatformName()
+		local link = QRCodePostPanel:getQRCodeURL()
+		local function restoreBtn()
+			if self.tabCode.ui.isDisposed then return end
+			if not self.tabCode.ui:isVisible() then return end
+			if btn1.isDisposed then return end
+			btn1:setEnabled(true)
+		end
+		local shareCallback = {
+	        onSuccess=function(result)
+	        	CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.success.tips"), "positive")
+	        	restoreBtn()
+	        	DcUtil:qrCodeSendToWechatTapped()
+	        end,
+	        onError=function(errCode, msg)
+	        	CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.code.faild.tips"), "positive")
+	        	restoreBtn()
+	        end,
+	        onCancel=function()
+	        	CommonTip:showTip(Localization:getInstance():getText("share.feed.cancel.tips"), "positive")
+	        	restoreBtn()
+	    	end
+	    }
+	    btn1:setEnabled(false)
+	    setTimeOut(restoreBtn, 2)
+	    if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+	    	SnsProxy:shareLink(PlatformShareEnum.kMiTalk, title, text, link, thumb, shareCallback)
+	    else
+			WeChatSDK.new():sendLinkMessage(title, text, thumb, link, false, shareCallback)
+		end
+	end
+	local icon
+	if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+		icon = SpriteColorAdjust:createWithSpriteFrameName("miTalkIconaaa0000")
+	else
+		icon = SpriteColorAdjust:createWithSpriteFrameName("wechaticondsfa0000")
+	end
+	icon:setAnchorPoint(ccp(0, 1))
+	btn1:setIcon(icon)
+	if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+		btn1:setVisible(false)
+		originScale = 1.3
+		layer:setScale(originScale)
+		originY = originY - 35
+		layer:setPositionY(originY)
+	else
+		btn1:setString(Localization:getInstance():getText("add.friend.panel.qrcode.send.wechat"))
+		btn1:addEventListener(DisplayEvents.kTouchTap, onBtn1)
+	end
+	
+	local btn2 = GroupButtonBase:create(self.tabCode.ui:getChildByName("btn2"))
+	btn2:setString(Localization:getInstance():getText("add.friend.panel.qrcode.scan.button"))
+	local function onBtn2()
+		local function onButton1Click()
+			local function onSuccess(panel)
+				local function onClose()
+					btn2:setEnabled(true)
+				end
+				panel:addEventListener(kPanelEvents.kClose, onClose)
+				panel:popout()
+			end
+			local function onFail()
+				btn2:setEnabled(true)
+			end
+			btn2:setEnabled(false)
+			DcUtil:qrCodeClickScan()
+			local panel = QRCodeReceivePanel:create(self.addFriendPanelLogic, onSuccess, onFail)
+		end
+		CommonAlertUtil:showPrePkgAlertPanel(onButton1Click,NotRemindFlag.CAMERA_ALLOW,Localization:getInstance():getText("pre.tips.camera"));
+	end
+	btn2:addEventListener(DisplayEvents.kTouchTap, onBtn2)
+
+	if PlatformConfig:isJJPlatform( ) then
+		btn1:setVisible(false)
+		local btn_1_pos = btn1:getPosition()
+		local btn_2_pos = btn2:getPosition()
+		local distance_y = (btn_2_pos.y - btn_1_pos.y)/2
+		btn2:setPosition(ccp(btn_2_pos.x, btn_2_pos.y - distance_y))
+
+		local text_2_pos = text2:getPosition()
+		text2:setPosition(ccp(text_2_pos.x, text_2_pos.y - distance_y))
+	end
+
+	layer:setTouchEnabled(true, 0, true)
+
+	self.tabCode.hide = function()
+		self.tabCode.ui:setVisible(false)
+		btn1:setEnabled(false)
+		btn2:setEnabled(false)
+		layer:setTouchEnabled(false)
+	end
+	self.tabCode.expand = function()
+		layer:setTouchEnabled(true, 0, true)
+		btn1:setEnabled(true)
+		btn2:setEnabled(true)
+		self.tabCode.ui:setVisible(true)
+	end
 end
 
 ------------------------------------------
@@ -619,6 +769,7 @@ function AddFriendPanel:_tabRecommend_init(ui)
 	self.tabRecommend.refresh:addEventListener(DisplayEvents.kTouchTap, onRefreshTapped)
 
 	self.tabRecommend.hide = function()
+		self.tabRecommend.ui:setVisible(false)
 		for i = 1, #self.tabRecommend.listContent do
 			self.tabRecommend.listContent[1]:removeFromParentAndCleanup(true)
 			table.remove(self.tabRecommend.listContent, 1)
@@ -627,6 +778,7 @@ function AddFriendPanel:_tabRecommend_init(ui)
 	end
 	self.tabRecommend.expand = function()
 		self:_tabRecommend_loadList()
+		self.tabRecommend.ui:setVisible(true)
 	end
 end
 
@@ -792,7 +944,7 @@ function AddFriendPanel:_tabShake_init(ui)
 	local pos = self.tabShake.phUnit:getPosition()
 	self.tabShake.phPosition = {x = pos.x, y = pos.y}
 	local size = self.tabShake.phUnit:getGroupBounds().size
-	self.tabShake.phSize = {width = size.width, height = size.height + 15}
+	self.tabShake.phSize = {width = size.width / self:getScaleX(), height = size.height / self:getScaleY() + 15}
 	self.tabShake.phUnit:removeFromParentAndCleanup(true)
 
 	-- add event listeners
@@ -810,6 +962,7 @@ function AddFriendPanel:_tabShake_init(ui)
 	end
 	self.tabShake.retry:addEventListener(DisplayEvents.kTouchTap, onRetryTapped)
 	self.tabShake.hide = function()
+		self.tabShake.ui:setVisible(false)
 		self.tabShake.retry:setEnabled(false)
 		if not self.tabShake.friendSearchComplete then
 			self.tabShake.contentList = self.tabShake.contentList or {}
@@ -826,6 +979,7 @@ function AddFriendPanel:_tabShake_init(ui)
 			end
 		end
 		self.tabShake.retry:setEnabled(true)
+		self.tabShake.ui:setVisible(true)
 	end
 end
 

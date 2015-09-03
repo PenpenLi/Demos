@@ -29,6 +29,8 @@ kGlobalEvents = table.const{
 	kGamecenterLogin = "global.event.gc.login",
 	kMaintenanceChange = "global.event.maintenance",
 	kConsumeComplete = "global.event.consume.complete",
+	kThirdPaySuccess = "global.event.thirdpay.success",
+	kEnterForeground = "global.event.enter.foreground",
 }
 
 local function scheduleLocalNotification()
@@ -58,6 +60,8 @@ local function scheduleLocalNotification()
 	LocalNotificationManager.getInstance():pushAllNotifications()
 end
 
+_G.inBackgroundElapsedSeconds = 0
+local enterBackgruondStartTime = 0
 local function onApplicationDidEnterBackground()
 	print("onApplicationDidEnterBackground")
 	local scene = Director:sharedDirector():getRunningScene()
@@ -69,8 +73,14 @@ local function onApplicationDidEnterBackground()
 		GamePlayMusicPlayer:getInstance():enterBackground()
 	end
 
+	--微信sdk没登录的情况下返回没回调
+	if _G.WeChatSDK then
+		WeChatSDK:removeLoading()
+	end
+	enterBackgruondStartTime = os.time()
 	pcall(scheduleLocalNotification)
 end
+
 
 local function onApplicationWillEnterForeground()
 	print("onApplicationWillEnterForeground")
@@ -99,6 +109,11 @@ local function onApplicationWillEnterForeground()
 
 	LocalNotificationManager.getInstance():cancelAllAndroidNotification()
 	LocalNotificationManager.getInstance():validateNotificationTime()
+	_G.inBackgroundElapsedSeconds = os.time() - enterBackgruondStartTime
+
+	GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kEnterForeground))
+
+	print("onApplicationWillEnterForeground: "..tostring(inBackgroundElapsedSeconds))
 end
 
 _G.launchURL = UrlSchemeSDK.new():getCurrentURL()
@@ -129,7 +144,22 @@ local function onUserLogin( event )
 	if profile and displayName and displayName ~= "" and not profile:haveName() then
 		local http = UpdateProfileHttp.new()
 		profile:setDisplayName(displayName)
-		http:load(profile.name, profile.headUrl)
+
+        local snsPlatform = nil
+        local snsName = nil
+        local authorizeType = SnsProxy:getAuthorizeType()
+        if _G.sns_token then
+            snsPlatform = PlatformConfig:getPlatformAuthName(authorizeType)
+            if authorizeType ~= PlatformAuthEnum.kPhone then
+                snsName = profile:getDisplayName()
+            else
+                snsName = Localhost:getLastLoginPhoneNumber()
+            end
+
+           	profile:setSnsInfo(authorizeType,snsName,profile:getDisplayName(),profile.headUrl)
+        end
+
+		http:load(profile.name, profile.headUrl,snsPlatform,HeDisplayUtil:urlEncode(snsName))
 	end
 end
 

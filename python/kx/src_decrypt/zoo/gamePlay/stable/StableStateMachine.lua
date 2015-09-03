@@ -33,6 +33,10 @@ require "zoo.gamePlay.stable.MagicTileResetState"
 require "zoo.gamePlay.stable.SandTransferState"
 require "zoo.gamePlay.stable.MaydayBossCastingState"
 require "zoo.gamePlay.stable.EndCycleStateEnter"
+require "zoo.gamePlay.stable.TileMoveState"
+require "zoo.gamePlay.stable.ElephantBossState"
+require "zoo.gamePlay.stable.GoldZongZiState"
+
 
 StableStateMachine = class()
 
@@ -59,6 +63,7 @@ function StableStateMachine:initStates()
 	self.maydayBossCastingState = MaydayBossCastingState:create(self)
 
 	self.halloweenBossStateInBonus = HalloweenBossStateInBonus:create(self)
+	self.elephantBossState = ElephantBossState:create(self)
 
 	-- 产生新的蜗牛
 	self.productSnailState = ProductSnailState:create(self)
@@ -118,6 +123,8 @@ function StableStateMachine:initStates()
 	self.inactiveBlockerState = InactiveBlockerState:create(self)
 	-- 流沙移动逻辑
 	self.sandTransferState = SandTransferState:create(self)	
+	-- 移动地块
+	self.tileMoveState = TileMoveState:create(self)
 	-- 神灯障碍
 	self.magicLampCastingStateInSwapFirst = MagicLampCastingStateInSwapFirst:create(self)
 	-- 褐色毛球分裂
@@ -135,6 +142,8 @@ function StableStateMachine:initStates()
 	-- PM2.5 在挖地关中产生云块
 	self.updatePM25State = UpdatePM25State:create(self)
 	-- 进入loop循环前的处理，主要对loop中的一些state进行重置数据操作
+
+	self.goldZongZiState = GoldZongZiState:create(self)
 	self.endCycleStateEnter = EndCycleStateEnter:create(self)
 end
 

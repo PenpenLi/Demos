@@ -122,5 +122,5 @@ function FurballSplitStateInLoop:getClassName()
 end
 
 function FurballSplitStateInLoop:getNextState()
-	return self.context.halloweenBossStateInLoop
+	return self.context.goldZongZiState
 end

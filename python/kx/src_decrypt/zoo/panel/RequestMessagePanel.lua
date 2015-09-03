@@ -56,6 +56,12 @@ function RequestMessageItemBase:init()
 
     self.selected:setVisible(false)
 
+    self.itemPh = self.ui:getChildByName("itemPh")
+    self.itemPhPos  = self.itemPh:getPosition()
+    self.itemPhSize = self.itemPh:getGroupBounds().size
+    self.itemPh:setVisible(false)
+
+    self.numberLabel = self.ui:getChildByName("numberLabel")
     -- self:addChild(ui)
     local size = self.ui:getGroupBounds().size
     self:setHeight(size.height) 
@@ -353,7 +359,7 @@ function EnergyRequestItem:confirmForAcceptRequest(isBatch)
         self:showSyncAnimation(true)
         self:showButtons(false)
         local mgr = FreegiftManager:sharedInstance()
-        mgr:sendGift(self.requestInfo.id, _onSuccess, _onFail)
+        mgr:sendGift(self.requestInfo.id, _onSuccess, _onFail, isBatch)
         self:onRequestSent(isBatch)
     end
 end
@@ -389,7 +395,7 @@ function EnergyRequestItem:confirmForSendBack(isBatch)
         self._isInRequest = true
         self:showSyncAnimation(true)
         self:showButtons(false)
-        mgr:sendGift(self.requestInfo.id, _onSuccess, _onFail)
+        mgr:sendBackGift(self.requestInfo.id, _onSuccess, _onFail)
         self:onRequestSent(isBatch)
     end
 end
@@ -917,7 +923,7 @@ local pageTable = {
     {msgType = {RequestType.kUnlockLevelArea}, tabId = 2, pageIndex = 3,
         acceptAll = function() return true end, rejectAll = function() return true end,
         class = function() return UnlockCloudRequestItem end, zero = function() return RequestMessageZeroUnlock end},
-    {msgType = {RequestType.kActivity}, tabId = 3, pageIndex = 4,
+    {msgType = {RequestType.kActivity}, tabId = 3, pageIndex = 4, showTip = true,
         acceptAll = function() return false end, rejectAll = function() return true end,
         class = function() return ActivityRequestItem end, zero = function() return RequestMessageZeroActivity end},
     {msgType = {RequestType.kNeedUpdate}, tabId = 4, pageIndex = 5,
@@ -959,6 +965,10 @@ function RequestMessagePanel:buildUI()
     local size = addBg:getPreferredSize()
     addBg:setPreferredSize(CCSizeMake(size.width, winSize.height - bottomHeight - topHeight + 20))
     addBg:setPositionY(addBg:getPositionY() + winSize.height)
+
+    self.requestTip = bottom:getChildByName("requestTip")
+    self.requestTip:setString(FreegiftManager:sharedInstance():getHelpRequestTip())
+    self.requestTip:setVisible(false)
 
     self:addChild(ui)
     
@@ -1105,6 +1115,7 @@ end
 function RequestMessagePanel:switchPage()
     self.rejectAllButton:setVisible(false)
     self.acceptAllButton:setVisible(false)
+    self.requestTip:setVisible(false)
     local index = self.pagedView:getPageIndex()
     for k, v in ipairs(self.layers) do
         if k ~= index then
@@ -1162,10 +1173,10 @@ function RequestMessagePanel:tryRunGuide()
     local visibleOrigin = CCDirector:sharedDirector():getVisibleOrigin()
     local panelY =  visibleOrigin.y + visibleSize.height / 2
 
-    local panel = GameGuideRunner:createPanelSU('tutorial.panel.request.message.text001', true, nil)
+    local panel = GameGuideUI:panelSU('tutorial.panel.request.message.text001', true, nil)
     panel:setPositionY(panelY)
     local pos = ccp(0, 0)
-    local trueMask = GameGuideRunner:createMask(204, 1, pos, 0, false, nil, nil, false)
+    local trueMask = GameGuideUI:mask(204, 1, pos, 0, false, nil, nil, false)
     trueMask:removeEventListenerByName(DisplayEvents.kTouchTap)
     trueMask:ad(DisplayEvents.kTouchTap, function () self:tryRemoveGuide() end)
     trueMask:setFadeIn(0.5, 0.3)
@@ -1190,6 +1201,7 @@ end
 function RequestMessagePanel:setButtonsVisibleEnable(index)
     self.rejectAllButton:setVisible(pageTable[index].rejectAll())
     self.acceptAllButton:setVisible(pageTable[index].acceptAll())
+    self.requestTip:setVisible(pageTable[index].showTip)
     self.rejectAllButton:setEnabled(true)
     self.acceptAllButton:setEnabled(true)
     local typeUpdate = false
@@ -1679,117 +1691,237 @@ end
 
 function ActivityRequestItem:onSendAcceptSuccess(event, isBatch)
     if self.isDisposed then return end
+    local itemsData = event.data.rewards
+
     self._isInRequest = false
     self._hasCompleted = true
     self:showSyncAnimation(false)
     self:showButtons(false)
 
-    if self.selected and not self.selected.isDisposed then self.selected:setVisible(true) end -- show selected
-    GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMessageCenterUpdate))
-    self:onRequestCompleted(isBatch)
+    local function flyEndCallback()
+        if self.selected and not self.selected.isDisposed then self.selected:setVisible(true) end -- show selected
+        GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMessageCenterUpdate))
+        self:onRequestCompleted(isBatch)
+    end  
 
-    print(table.tostring(event.data))
-    local itemsData = event.data.rewards
-    local isError = false
-    if itemsData == nil then
-        itemsData = {}
-        isError = true
+    local respState = event.data.helpResult
+    if respState == 1 then              --1 帮助成功并可领奖
+        self:showRewardIcon(itemsData, flyEndCallback)
+    elseif respState == 2 then          --2 帮助成功没有奖
+        flyEndCallback()
+        if not isBatch then
+            self:showFadeOutTip(event.data.message)
+        end
+    elseif respState == 3 then          --3 帮助自己
+        flyEndCallback() 
+        CommonTip:showTip(Localization:getInstance():getText(event.data.message), "negative")
+    elseif respState == 4 then          --4 活动结束
+        flyEndCallback() 
+        CommonTip:showTip(Localization:getInstance():getText(event.data.message), "negative")
+    elseif respState == 5 then          --5 重复帮助一个人无奖励
+        flyEndCallback() 
+        CommonTip:showTip(Localization:getInstance():getText(event.data.message), "negative")
+    else
+        flyEndCallback()
     end
+end
+
+function ActivityRequestItem:showFadeOutTip(tipText)
+    if self.descTxt then 
+        self.descTxt:setString(tipText)
+        self.descTxt:setVisible(true)
+        self.descTxt:setOpacity(255)
+        self.descTxt:stopAllActions()
+        self.descTxt:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(2), CCFadeOut:create(0.5)))
+    end
+end
+
+function ActivityRequestItem:showRewardIcon(itemsData, flyEndCallback)
+    if not itemsData then return end 
+    local itemId = itemsData[1].itemId
+    local itemNum = itemsData[1].num 
+    if not itemId or not itemNum then return end
+
+    if ItemType:isTimeProp(itemId) then itemId = ItemType:getRealIdByTimePropId(itemId) end
+    local itemRes   = ResourceManager:sharedInstance():buildItemGroup(itemId)
+    self.itemRes    = itemRes
+    self.ui:addChild(itemRes)
+
+    local itemResSize   = itemRes:getGroupBounds().size
+    local neededScaleX  = self.itemPhSize.width / itemResSize.width
+    local neededScaleY  = self.itemPhSize.height / itemResSize.height
+
+    local smallestScale = neededScaleX
+    if neededScaleX > neededScaleY then
+        smallestScale = neededScaleY
+    end
+
+    itemRes:setScaleX(smallestScale)
+    itemRes:setScaleY(smallestScale)
+
+    local itemResSize   = itemRes:getGroupBounds().size
+    local deltaWidth    = self.itemPhSize.width - itemResSize.width
+    local deltaHeight   = self.itemPhSize.height - itemResSize.height
+    
+    itemRes:setPosition(ccp( self.itemPhPos.x + deltaWidth/2, 
+                self.itemPhPos.y - deltaHeight/2))
+    self.numberLabel:setString("x" .. itemNum)
+
+    self.numberLabel:stopAllActions()
+    self.numberLabel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.5), CCCallFunc:create(function ()
+        self:flyRewardIcon(itemsData, flyEndCallback)
+    end)))
+end
+
+function ActivityRequestItem:flyRewardIcon(itemsData, endCallback)
+    if self.itemRes then self.itemRes:setVisible(false) end 
+    if self.numberLabel then self.numberLabel:setVisible(false) end
+
+    local rewardIds = {}
+    local rewardAmounts = {}
+
+    for k1,v1 in pairs(itemsData) do
+        local itemId        = v1.itemId
+        local itemNumber    = v1.num
+        table.insert(rewardIds, itemId)
+        table.insert(rewardAmounts, itemNumber)
+    end
+
+    local anims = HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
+    local itemResPosInWorld = self.itemRes:getPositionInWorldSpace()
+    anims[1]:setPosition(ccp(itemResPosInWorld.x, itemResPosInWorld.y))
+    local itemResScale = self.itemRes:getScale()
+    anims[1]:setScale(itemResScale)
 
     addReward(itemsData)
-
-    local message = event.data.message or ""
-    local message2 = event.data.rewardlimitDesc or ""
-    self:showRewardPanel(itemsData, message, message2, isError)
+    local function onAnimFinished()
+        if self.isDisposed then return end
+        local delay = CCDelayTime:create(0.3)
+        local function removeSelf()
+            if endCallback then
+                endCallback() 
+            end             
+        end
+        local callAction = CCCallFunc:create(removeSelf)
+        local seq = CCSequence:createWithTwoActions(delay, callAction)
+        self:runAction(seq)
+    end
+    anims[1]:playFlyToAnim(onAnimFinished)
 end
 
-function ActivityRequestItem:showRewardPanel(itemsData, message, message2, isError)
-    local scene = Director:sharedDirector():getRunningScene()
-    if not scene then return end
+-- function ActivityRequestItem:onSendAcceptSuccess(event, isBatch)
+--     if self.isDisposed then return end
+--     self._isInRequest = false
+--     self._hasCompleted = true
+--     self:showSyncAnimation(false)
+--     self:showButtons(false)
 
-    local function getItem(itemId, num)
-        if ItemType:isTimeProp(itemId) then itemId = ItemType:getRealIdByTimePropId(itemId) end
-        local item = self.builder:buildGroup('message_item')
-        local icon = self.iconBuilder:buildGroup('Prop_'..itemId)
-        item.iconPh = item:getChildByName('icon')
-        item.text = item:getChildByName('text')
-        item.iconPh:setVisible(false)
-        item.iconPh:getParent():addChild(icon)
-        icon:setScale(item.iconPh:getGroupBounds().size.width / icon:getGroupBounds().size.width)
-        if itemId == ItemType.COIN then
-            icon:setScale(icon:getScale() * 1.2)
-        end
-        icon:setPositionX(item.iconPh:getPositionX())
-        icon:setPositionY(item.iconPh:getPositionY())
-        item.text:setText('x'..tostring(num))
-        return item
-    end
+--     if self.selected and not self.selected.isDisposed then self.selected:setVisible(true) end -- show selected
+--     GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kMessageCenterUpdate))
+--     self:onRequestCompleted(isBatch)
 
-    local items = {}
+--     print(table.tostring(event.data))
+--     local itemsData = event.data.rewards
+--     local isError = false
+--     if itemsData == nil then
+--         itemsData = {}
+--         isError = true
+--     end
 
-    for k, v in pairs(itemsData) do
-        local item = getItem(v.itemId, v.num)
-        table.insert(items, item)
-    end
+--     addReward(itemsData)
 
-    local panel = self.builder:buildGroup('message_activity')
-    panel:ignoreAnchorPointForPosition(false)
-    panel:setAnchorPoint(ccp(0.5, 0.5))
-    local explain = panel:getChildByName('explain')
-    explain:setString(message2)
+--     local message = event.data.message or ""
+--     local message2 = event.data.rewardlimitDesc or ""
+--     self:showRewardPanel(itemsData, message, message2, isError)
+-- end
 
-    local text = nil 
-    if not isError then
-        text = panel:getChildByName('text')
-        panel:getChildByName('animError'):setVisible(false)
-    else
-        text = panel:getChildByName('errorText')
-        panel:getChildByName('anim'):setVisible(false)
-    end
-    text:setString(message)
+-- function ActivityRequestItem:showRewardPanel(itemsData, message, message2, isError)
+--     local scene = Director:sharedDirector():getRunningScene()
+--     if not scene then return end
+
+--     local function getItem(itemId, num)
+--         if ItemType:isTimeProp(itemId) then itemId = ItemType:getRealIdByTimePropId(itemId) end
+--         local item = self.builder:buildGroup('message_item')
+--         local icon = self.iconBuilder:buildGroup('Prop_'..itemId)
+--         item.iconPh = item:getChildByName('icon')
+--         item.text = item:getChildByName('text')
+--         item.iconPh:setVisible(false)
+--         item.iconPh:getParent():addChild(icon)
+--         icon:setScale(item.iconPh:getGroupBounds().size.width / icon:getGroupBounds().size.width)
+--         if itemId == ItemType.COIN then
+--             icon:setScale(icon:getScale() * 1.2)
+--         end
+--         icon:setPositionX(item.iconPh:getPositionX())
+--         icon:setPositionY(item.iconPh:getPositionY())
+--         item.text:setText('x'..tostring(num))
+--         return item
+--     end
+
+--     local items = {}
+
+--     for k, v in pairs(itemsData) do
+--         local item = getItem(v.itemId, v.num)
+--         table.insert(items, item)
+--     end
+
+--     local panel = self.builder:buildGroup('message_activity')
+--     panel:ignoreAnchorPointForPosition(false)
+--     panel:setAnchorPoint(ccp(0.5, 0.5))
+--     local explain = panel:getChildByName('explain')
+--     explain:setString(message2)
+
+--     local text = nil 
+--     if not isError then
+--         text = panel:getChildByName('text')
+--         panel:getChildByName('animError'):setVisible(false)
+--     else
+--         text = panel:getChildByName('errorText')
+--         panel:getChildByName('anim'):setVisible(false)
+--     end
+--     text:setString(message)
 
 
-    local ph = panel:getChildByName('items')
-    ph:setVisible(false)
-    local width = ph:getGroupBounds().size.width
-    local totalWidth = 0
-    for k, v in pairs(items) do
-        totalWidth = totalWidth + v:getGroupBounds().size.width
-    end
-    local offset = ph:getPositionX() + (width - totalWidth) / 2
-    local Y = ph:getPositionY()
-    for k, v in pairs(items) do
-        v:setPositionY(Y)
-        v:setPositionX(offset)
-        offset = offset + v:getGroupBounds().size.width
-        ph:getParent():addChild(v)
-    end
+--     local ph = panel:getChildByName('items')
+--     ph:setVisible(false)
+--     local width = ph:getGroupBounds().size.width
+--     local totalWidth = 0
+--     for k, v in pairs(items) do
+--         totalWidth = totalWidth + v:getGroupBounds().size.width
+--     end
+--     local offset = ph:getPositionX() + (width - totalWidth) / 2
+--     local Y = ph:getPositionY()
+--     for k, v in pairs(items) do
+--         v:setPositionY(Y)
+--         v:setPositionX(offset)
+--         offset = offset + v:getGroupBounds().size.width
+--         ph:getParent():addChild(v)
+--     end
 
 
-    local function onTimeout()
-        if not self.schedule or panel.isDisposed then return end
-        Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedule)
-        self.schedule = nil
-        local function remove()
-            if not panel or panel.isDisposed then return end
-            panel:removeFromParentAndCleanup(true)
-        end
-        panel:runAction(CCSequence:createWithTwoActions(CCEaseBackIn:create(CCScaleTo:create(0.2, 0)), CCCallFunc:create(remove)))
+--     local function onTimeout()
+--         if not self.schedule or panel.isDisposed then return end
+--         Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedule)
+--         self.schedule = nil
+--         local function remove()
+--             if not panel or panel.isDisposed then return end
+--             panel:removeFromParentAndCleanup(true)
+--         end
+--         panel:runAction(CCSequence:createWithTwoActions(CCEaseBackIn:create(CCScaleTo:create(0.2, 0)), CCCallFunc:create(remove)))
         
-    end
-    local function onScaled()
-        self.schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout, 2, false)
-    end
-    panel:setScale(0)
-    panel:runAction(CCSequence:createWithTwoActions(CCEaseBackOut:create(CCScaleTo:create(0.2, 1)), CCCallFunc:create(onScaled)))
-    local scene = Director:sharedDirector():getRunningScene()
-    local wSize = Director:sharedDirector():getWinSize()
-    local vSize = Director:sharedDirector():getVisibleSize()
-    local vOrigin = Director:sharedDirector():getVisibleOrigin()
-    panel:setPosition(ccp(vOrigin.x + vSize.width / 2, vSize.height / 2 + vOrigin.y))
-    scene:addChild(panel)
+--     end
+--     local function onScaled()
+--         self.schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout, 2, false)
+--     end
+--     panel:setScale(0)
+--     panel:runAction(CCSequence:createWithTwoActions(CCEaseBackOut:create(CCScaleTo:create(0.2, 1)), CCCallFunc:create(onScaled)))
+--     local scene = Director:sharedDirector():getRunningScene()
+--     local wSize = Director:sharedDirector():getWinSize()
+--     local vSize = Director:sharedDirector():getVisibleSize()
+--     local vOrigin = Director:sharedDirector():getVisibleOrigin()
+--     panel:setPosition(ccp(vOrigin.x + vSize.width / 2, vSize.height / 2 + vOrigin.y))
+--     scene:addChild(panel)
 
-end
+-- end
 
 function RequestMessageZeroActivity:create(width, height)
     local ret = RequestMessageZeroActivity.new()

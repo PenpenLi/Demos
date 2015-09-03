@@ -141,6 +141,9 @@ end
 
 function PropListItem:updateItemNumber()
   local prop = self.prop
+  if self.item.isDisposed then
+      return
+  end
   local itemNum = self.prop:getTotalItemNumber()
   self.item_number.offsetX = self.labelOffsetX
   local displayNum = self.prop:getDisplayItemNumber()
@@ -373,6 +376,9 @@ function PropListItem:use()
       self:playMaxUsedAnimation(tip)
     elseif self.reasonType == 3 then
       local tip = Localization:getInstance():getText("prop.disabled.tip6")
+      self:playMaxUsedAnimation(tip)
+    elseif self.reasonType == 4 then
+      local tip = Localization:getInstance():getText("prop.disabled.tip7")
       self:playMaxUsedAnimation(tip)
     end 
     return false

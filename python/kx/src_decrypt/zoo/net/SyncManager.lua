@@ -70,9 +70,7 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 	end
 	if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 	else print("Did not write user data to the device.") end
-	local ingameList
-	if __WP8 then ingameList = UserService.getInstance():getCachedIngameHttpData() end
-	if list and #list > 0 or ingameList and #ingameList > 0 then
+	if list and #list > 0 then
 		--animation
 		local beginTime = os.clock()
 		local container
@@ -84,11 +82,6 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 		--print(table.tostring(list))
 		--http 
 		ConnectionManager:block()
-		if __WP8 then
-			for i,element in ipairs(ingameList) do
-				ConnectionManager:sendRequest( element.endpoint, element.body, onCachedHttpDataResponse )
-			end
-		end
 		for i,element in ipairs(list) do
 			ConnectionManager:sendRequest( element.endpoint, element.body, onCachedHttpDataResponse )
 		end
@@ -112,7 +105,6 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 				end
 				local function onUseServerFunc()
 					print("player clear local data")
-					-- UserService.getInstance():clearUsedHttpCache(list)
 					UserService:getInstance():clearCachedHttp()
 					Localhost.getInstance():flushCurrentUserData()
 					self:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
@@ -172,35 +164,7 @@ function SyncManager:flushCachedHttp()
 	end
 	if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 	else print("Did not write user data to the device.") end
-	local ingameList
-	if __WP8 then ingameList = UserService.getInstance():getCachedIngameHttpData() end
-	if list and #list > 0 or ingameList and #ingameList > 0 then
-		if __WP8 then
-			for i,element in ipairs(ingameList) do
-				local function ingameSyncCallback( endpoint, resp, err )
-					if err then 
-						he_log_warning("sync data fail, err: " .. err)
-						local errorCode = tonumber(err) or -1
-						local function onUseLocalFunc() end
-						local function onUseServerFunc()
-							UserService:getInstance():clearCachedHttp()
-							Localhost.getInstance():flushCurrentUserData()
-							self:syncAgain()
-						end
-						if errorCode > kErrorCodeRange then
-							ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
-						else he_log_warning("onCachedHttpDataResponse data fail, err: " .. err) end
-				    else 
-				    	he_log_info("onCachedHttpDataResponse data success")
-						UserService.getInstance():clearUsedHttpCache({element})
-						if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-						else print("Did not write user data to the device.") end
-						if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
-					end
-				end
-				ConnectionManager:sendRequest( element.endpoint, element.body, syncCallback )
-			end
-		end
+	if list and #list > 0 then
 		for i,element in ipairs(list) do
 			local function syncCallback( endpoint, resp, err )
 				if err then 

@@ -14,12 +14,6 @@ function TileSquirrel:create( ... )
 
 	FrameLoader:loadArmature( "skeleton/squirrel_animation" )
 	local node = ArmatureNode:create("squirrel/before_get_key")
-	local animation = node:getAnimation()
-	local function onAnimationEvent( eventType )
-		if node:hn(eventType) then node:dp(Event.new(eventType, nil, ret)) end
-	end 
-	if animation then animation:registerScriptHandler(onAnimationEvent) end
-
 	container.mainAnimation = node
 	container:addChild(node)
 	-- CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename("skeleton/squirrel_animation/texture.png"))
@@ -34,9 +28,9 @@ function TileSquirrel:playNormalAnimation( ... )
 
 	if self.animationType == animationList.kNormal then return end
 	self.animationType = animationList.kNormal
-	self.mainAnimation:setAnimationScale(0.3)
+	self.mainAnimation:setAnimationScale(0.75)
 	self.mainAnimation:removeAllEventListeners()
-	self.mainAnimation:playByIndex(animationList.kNormal, nil, nil,1)
+	self.mainAnimation:playByIndex(animationList.kNormal, 0)
 end
 
 function TileSquirrel:playMoveAnimation( callback )
@@ -45,9 +39,9 @@ function TileSquirrel:playMoveAnimation( callback )
 		or self.animationType == animationList.kExciting then return end
 		
 	self.animationType = animationList.kMove
-	self.mainAnimation:setAnimationScale(0.7)
+	self.mainAnimation:setAnimationScale(1.75)
 	self.mainAnimation:removeAllEventListeners()
-	self.mainAnimation:playByIndex(animationList.kMove, nil, nil, 1)
+	self.mainAnimation:playByIndex(animationList.kMove, 0)
 	
 end
 
@@ -58,7 +52,7 @@ function TileSquirrel:playGetAnimation( callback )
 	end
 
 	self.animationType = animationList.kHappy
-	self.mainAnimation:setAnimationScale(0.5)
+	self.mainAnimation:setAnimationScale(1.25)
 	self.mainAnimation:removeAllEventListeners()
 	self.mainAnimation:playByIndex(animationList.kHappy)
 	local function animationCallback( ... )
@@ -66,7 +60,7 @@ function TileSquirrel:playGetAnimation( callback )
 		self:playNormalAnimation()
 		if callback then callback() end
 	end
-	self.mainAnimation:addEventListener(kAnimationEvents.kComplete, animationCallback)
+	self.mainAnimation:addEventListener(ArmatureEvents.COMPLETE, animationCallback)
 	
 end
 
@@ -75,16 +69,16 @@ function TileSquirrel:playExcitingAnimation( isLoop )
 	self.animationType = animationList.kExciting
 	self.mainAnimation:removeAllEventListeners()
 	if isLoop then 
-		self.mainAnimation:setAnimationScale(0.4)
-		self.mainAnimation:playByIndex(animationList.kHappy, nil, nil, 1)
+		self.mainAnimation:setAnimationScale(1.0)
+		self.mainAnimation:playByIndex(animationList.kHappy, 0)
 	else
-		self.mainAnimation:setAnimationScale(0.5)
+		self.mainAnimation:setAnimationScale(1.25)
 		self.mainAnimation:playByIndex(animationList.kExciting)
 		local function animationCallback( ... )
 			-- body
 			self:playNormalAnimation()
 		end
-		self.mainAnimation:addEventListener(kAnimationEvents.kComplete, animationCallback)
+		self.mainAnimation:addEventListener(ArmatureEvents.COMPLETE, animationCallback)
 	end
 end
 
@@ -92,13 +86,13 @@ function TileSquirrel:playDozeAnimation( ... )
 	-- body
 	self.animationType = animationList.kDoze
 	self.mainAnimation:removeAllEventListeners()
-	self.mainAnimation:setAnimationScale(0.5)
+	self.mainAnimation:setAnimationScale(1.25)
 	self.mainAnimation:playByIndex(animationList.kDoze)
 	local function animationCallback( ... )
 		-- body
 		self:playNormalAnimation()
 	end
-	self.mainAnimation:addEventListener(kAnimationEvents.kComplete, animationCallback)
+	self.mainAnimation:addEventListener(ArmatureEvents.COMPLETE, animationCallback)
 end
 
 
@@ -110,12 +104,6 @@ function TileSquirrelAndKey:create( ... )
 	container.name = "Squirrel"
 
 	local node = ArmatureNode:create("squirrel/get_key")
-	local animation = node:getAnimation()
-	local function onAnimationEvent( eventType )
-		if node:hn(eventType) then node:dp(Event.new(eventType, nil, ret)) end
-	end 
-	if animation then animation:registerScriptHandler(onAnimationEvent) end
-
 	container.mainAnimation = node
 	container:addChild(node)
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename("skeleton/squirrel_animation/texture.png"))
@@ -130,7 +118,7 @@ function TileSquirrelAndKey:play( callback )
 		if callback then callback() end
 	end
 
-	self.mainAnimation:setAnimationScale(0.4)
+	self.mainAnimation:setAnimationScale(1.0)
 	self.mainAnimation:playByIndex(0)
-	self.mainAnimation:addEventListener(kAnimationEvents.kComplete, completeCallback)
+	self.mainAnimation:addEventListener(ArmatureEvents.COMPLETE, completeCallback)
 end

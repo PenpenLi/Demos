@@ -2,6 +2,12 @@
 IconButtonManager = class()
 
 local instance = nil
+local function getDayStartTimeByTS(ts)
+	local utc8TimeOffset = 57600 -- (24 - 8) * 3600
+	local oneDaySeconds = 86400 -- 24 * 3600
+	return ts - ((ts - utc8TimeOffset) % oneDaySeconds)
+end
+
 function IconButtonManager:getInstance( ... )
 	if not instance then 
 		instance = IconButtonManager.new()
@@ -89,7 +95,9 @@ function IconButtonManager:todayIsShow( icon )
 		end
 	end
 
-	return (config[icon.id].time or 0) + 24 * 3600 > now()
+	local lastShowTime = getDayStartTimeByTS(config[icon.id].time or 0)
+	local todayTime = getDayStartTimeByTS(now())
+	return lastShowTime >= todayTime
 end
 
 function IconButtonManager:clearShowTime( icon )
@@ -122,7 +130,6 @@ function IconButtonManager:writeShowTime( icon )
 	end
 
 	config[icon.id].time = now()
-
 	writeConfig(config)
 end
 
@@ -189,4 +196,22 @@ function IconButtonManager:writeShowTimeInQueue( icon )
 		return
 	end
 	self:writeShowTime(icon)
+end
+
+function IconButtonManager:getButtonTodayShowById(buttonId)
+	local config = readConfig()
+
+	if not config[buttonId] then 
+		return false
+	end
+	
+	if not config[buttonId].time or config[buttonId].time == 0 then 
+		config[buttonId].time = now()
+		writeConfig(config)
+	end
+	
+	local lastShowTime = getDayStartTimeByTS(config[buttonId].time)
+	local todayTime = getDayStartTimeByTS(now())
+
+	return lastShowTime >= todayTime
 end

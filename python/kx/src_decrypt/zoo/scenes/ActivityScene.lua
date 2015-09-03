@@ -37,7 +37,7 @@ function ActivityData:getNoticeImage( cb )
 	local function onError()
 		cb(nil)
 	end
-	if ActivityUtil:isResourceLoaded(config.notice,self.version) then 
+	if ActivityUtil:isResourceLoaded(config.notice,self.version) and not ActivityUtil:needUpdate(self.source) then 
 		onSuccess()
 	else
 		ActivityUtil:loadNoticeImage(self.source,self.version,onSuccess,onError)
@@ -84,6 +84,12 @@ function ActivityData:needManualDownload( ... )
 	end
 end
 
+function ActivityData:isLoaded( ... )
+	local config = require("activity/" .. self.source)
+
+	return package.loaded["activity/" .. config.startLua] ~= nil
+end
+
 function ActivityData:start(hasLoadAnimation)
 
 	local scene = nil
@@ -98,7 +104,19 @@ function ActivityData:start(hasLoadAnimation)
 	local config = require("activity/" .. self.source)
 
 	local function onSuccess()
+
 		local function popout()
+
+			if not hasLoadAnimation then
+				local home = HomeScene:sharedInstance()
+				if home.updateVersionButton and not home.updateVersionButton.isDisposed then 
+					if not home.updateVersionButton.wrapper:isTouchEnabled() then 
+						return
+				 	end
+				end
+			end
+
+			ActivityUtil:unLoadResIfNecessary(self.source)
 			require("activity/" .. config.startLua)()
 			
 			-- 有曝光
@@ -106,6 +124,7 @@ function ActivityData:start(hasLoadAnimation)
 				local http = ClickActivityHttp.new()
 				http:load(config.actId)
 			end
+
 		end
 		if scene then
 			scene:runAction(CCCallFunc:create(popout))
@@ -130,9 +149,9 @@ function ActivityData:start(hasLoadAnimation)
 		-- body
 	end
 
-	if ActivityUtil:isSrcLoaded(config.src,self.version) and ActivityUtil:isResourceLoaded(config.resource,self.version) then 
+	if self:isLoaded() and not ActivityUtil:needUpdate(self.source) then 
 		onSuccess()
-	else
+	else		
 		if hasLoadAnimation then
 			ActivityUtil:loadRes(self.source,self.version,onSuccess,onError)
 		else
@@ -633,11 +652,15 @@ function ActivityScene:downLoad( idx )
 	local source = self.activityList[idx + 1].source
 	local version = self.activityList[idx + 1].version
 
-	local config = require("activity/" .. source)
-
-	if ActivityUtil:isSrcLoaded(config.src,version) and ActivityUtil:isResourceLoaded(config.resource,version) then 
+	if self.activityList[idx + 1]:isLoaded() and not ActivityUtil:needUpdate(source) then 
 		return
 	end
+
+
+	-- local config = require("activity/" .. source)
+	-- if ActivityUtil:isSrcLoaded(config.src,version) and ActivityUtil:isResourceLoaded(config.resource,version) then 
+	-- 	return
+	-- end
 
 	self.activityList[idx + 1].loading = true
 	self.activityList[idx + 1].isLoadError = false

@@ -93,7 +93,57 @@ function CountDownAnimation:createLoadingAnimation(labelText)
 	return container
 end
 
-function CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
+function CountDownAnimation:_createNetworkAnimationLayer(scene, onCloseButtonTap, labelText)
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
+	local origin = Director:sharedDirector():getVisibleOrigin()
+
+	local layer = LayerColor:create()
+	layer:changeWidthAndHeight(winSize.width, winSize.height)
+	layer:setColor(ccc3(0, 0, 0))
+	layer:setPosition(ccp(origin.x, origin.y))
+	layer:setTouchEnabled(true, 0, true)
+	layer:setOpacity(255*0.35)
+	layer.hitTestPoint = function(self, worldPosition, useGroupTest)
+		return true
+	end
+
+	local loadingAnimation = CountDownAnimation:createLoadingAnimation(labelText)
+	local size = loadingAnimation:getGroupBounds().size
+	loadingAnimation:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
+	layer:addChild(loadingAnimation)
+
+	local closeButtonSprite = Sprite:createWithSpriteFrameName("commonloadingclose instance 10000")
+	local closeButton = Layer:create()
+	closeButton:addChild(closeButtonSprite)
+	closeButton:setPosition(ccp(size.width / 2 - 20, size.height / 2 - 20))
+	closeButton:setTouchEnabled(true)
+	closeButton:setButtonMode(true)
+	closeButton:addEventListener(DisplayEvents.kTouchTap, onCloseButtonTap)
+	closeButton.name = "close"
+	loadingAnimation:addChild(closeButton)
+
+	return layer
+end
+
+function CountDownAnimation:createNetworkAnimationInHttp(scene, onCloseButtonTap)
+	local layer = CountDownAnimation:_createNetworkAnimationLayer(scene, onCloseButtonTap)
+	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
+	local origin = Director:sharedDirector():getVisibleOrigin()
+	layer:setPositionY(layer:getPositionY() - visibleSize.height - origin.y)
+	PopoutManager:sharedInstance():add(layer, false, false)
+
+	return layer
+end
+
+function CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap, labelText)
+	local layer = CountDownAnimation:_createNetworkAnimationLayer(scene, onCloseButtonTap, labelText)
+	scene:addChild(layer)
+
+	return layer
+end
+
+function CountDownAnimation:createBindAnimation(scene, onCloseButtonTap)
 	local winSize = CCDirector:sharedDirector():getWinSize()
 	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
 	local origin = Director:sharedDirector():getVisibleOrigin()
@@ -109,7 +159,7 @@ function CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
 	end
 	scene:addChild(layer)
 
-	local loadingAnimation = CountDownAnimation:createLoadingAnimation()
+	local loadingAnimation = CountDownAnimation:createLoadingAnimation(Localization:getInstance():getText("loading.tips.binding.account"))
 	local size = loadingAnimation:getGroupBounds().size
 	loadingAnimation:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
 	layer:addChild(loadingAnimation)

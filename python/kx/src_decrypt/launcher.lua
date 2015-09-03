@@ -1,5 +1,9 @@
 if jit and jit.off then print("jit.off") jit.off() end
 
+if __WP8 then
+  require "hecore.wp8.TableFunc"
+end
+
 if __WP8 or __IOS then require "bit" end
 
 require "zoo.util.PublishActUtil"
@@ -56,18 +60,24 @@ function he_log_info(str)
 end
 ---------------------------------------------------------------------------------  Resource Initialize
 if __WP8 then
-    _G.__use_low_effect = true
-    _G.kDefaultSocialPlatform = "windowsphone"
-    _G.kUserLogin = false
-    _G.enableSilentDynamicUpdate = true
-    _G.requireConnectSDK = false
-    _G.useSmallResConfig = false
-    _G.kUserSNSLogin = false
-    _G.disableActivity = true
-    HeDCLog:getInstance():setDcUniqueKey("animal_wpcn_prod")
-    HeDCLog:getInstance():setStore(_G.kDefaultSocialPlatform)
-    HeDCLog:getInstance():setPlatform(_G.kDefaultSocialPlatform)
-    if not __DEBUG then print = function() end end
+  local frameSize = CCDirector:sharedDirector():getOpenGLView():getFrameSize()
+  isLowDevice = frameSize.width < 500 and Wp8Utils:isLowMemoryDevice()
+  _G.kUseSmallResource = isLowDevice
+  _G.__use_small_res = isLowDevice
+  _G.__use_low_effect = true
+  _G.kDefaultSocialPlatform = "windowsphone"
+  _G.kUserLogin = false
+  _G.enableSilentDynamicUpdate = true
+  _G.requireConnectSDK = false
+  _G.useSmallResConfig = false
+  _G.enableWeiboLogin = false
+  _G.enableMdoPayement = false
+  _G.kUserSNSLogin = false
+  _G.disableActivity = true
+  HeDCLog:getInstance():setDcUniqueKey("animal_wpcn_prod")
+  HeDCLog:getInstance():setStore(_G.kDefaultSocialPlatform)
+  HeDCLog:getInstance():setPlatform(_G.kDefaultSocialPlatform)
+  if not __DEBUG then print = function() end end
 elseif __ANDROID then
     local notificationUtil = luajava.bindClass("com.happyelements.hellolua.share.NotificationUtil")
     notificationUtil:onLuaStartup()

@@ -38,24 +38,45 @@ local serialNumber = metaInfo:getDeviceSerialNumber()
 local androidId = metaInfo:getUdid()
 local platformName = StartupConfig:getInstance():getPlatformName()
 local googleAid = ""
-local server = "0"
+local subPlatform = nil;
+
 local function getServer()
-	server = StartupConfig:getInstance():getServer()
+	if StartupConfig:getInstance():getServer() ~= "0" then
+		subPlatform = StartupConfig:getInstance():getServer()
+	end
 end
 pcall(getServer)
 
-local mobileChannelId = nil
+local function getApkSource()
+	if __ANDROID then
+		local MainActivityHolder = luajava.bindClass("com.happyelements.android.MainActivityHolder")
+		local ApplicationHelper = luajava.bindClass("com.happyelements.android.ApplicationHelper")
+		local context = MainActivityHolder.ACTIVITY:getContext()
+		if ApplicationHelper.getApkSource then
+  			local comment = ApplicationHelper:getApkSource(context)
+  			if comment then
+  				subPlatform = HeDisplayUtil:urlEncode(comment)
+			end
+		end
+	end
+end
+if not subPlatform then
+	pcall(getApkSource)
+end
+
 local function getChinaMobileChannelId()
 	if __ANDROID then
 		local MainActivityHolder = luajava.bindClass("com.happyelements.android.MainActivityHolder")
 		local IAPPayment = luajava.bindClass("com.happyelements.android.operatorpayment.iap.IAPPayment")
 		local context = MainActivityHolder.ACTIVITY:getContext()
 		if IAPPayment.loadChannelID then
-			mobileChannelId = IAPPayment:loadChannelID(context)
+			subPlatform = IAPPayment:loadChannelID(context)
 		end
 	end
 end
-pcall(getChinaMobileChannelId)
+if not subPlatform  and platformName == "cmccmm" then
+	pcall(getChinaMobileChannelId)
+end
 
 if __IOS then 
 	idfa = AppController:getAdvertisingIdentifier() or "" 
@@ -76,12 +97,20 @@ local function send(acType, data)
 		data.star = UserManager:getInstance().user:getStar()
 	end
 
+	if subPlatform then
+		data.sub_platform = subPlatform
+	end
+
 	table.each(data, function (v, k)
 	if (type(v) ~= "string") then
 		data[k] = tostring(v)
 	end
 	end)
 	HeDCLog:getInstance():send(acType, data)
+end
+
+function DcUtil:getSubPlatform()
+	return subPlatform
 end
 
 --激活打点
@@ -96,10 +125,8 @@ function DcUtil:install()
 			android_id  = androidId,
 			google_aid = googleAid,
 			})
-		if server ~= "0" then
-			DcUtil:active(server)
-		elseif platformName == "cmccmm" and mobileChannelId then
-			DcUtil:active(mobileChannelId)
+		if subPlatform then
+			DcUtil:active(subPlatform)
 		end
 	end
 end
@@ -142,10 +169,8 @@ function DcUtil:newUser()
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
 		})
-	if server ~= "0" then
-		DcUtil:reg(server)
-	elseif platformName == "cmccmm" and mobileChannelId then
-		DcUtil:reg(mobileChannelId)
+	if subPlatform then
+		DcUtil:reg(subPlatform)
 	end
 end
 
@@ -162,6 +187,7 @@ function DcUtil:dailyUser()
 		google_aid = googleAid,
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
+		version = 3,
 	}
 
 	if _G.sns_token and _G.sns_token.openId then 
@@ -631,6 +657,31 @@ function DcUtil:addFriendShakeCancel()
 		})
 end
 
+-- 二维码加好友
+function DcUtil:addFriendQRCode(type)
+	send(AcType.kUserTrack, {
+		category = "add_friend",
+		sub_category = "add_friend_qrcode",
+		type= type,
+		})
+end
+
+-- 二维码发送到微信（Mitalk）成功
+function DcUtil:qrCodeSendToWechatTapped()
+	send(AcType.kUserTrack, {
+		category = "add_friend",
+		sub_category = "add_friend_qrcode_click_send",
+		})
+end
+
+-- 点击扫码按钮
+function DcUtil:qrCodeClickScan()
+	send(AcType.kUserTrack, {
+		category = "add_friend",
+		sub_category = "add_friend_qrcode_click_scan",
+		})
+end
+
 -- 活动打点
 function DcUtil:UserTrack(data)
 	send(AcType.kUserTrack,data)
@@ -974,37 +1025,42 @@ function DcUtil:requestFailAdVideo( videoId )
 end
 
 --推送召回的87号点在玩家退出时打不上 导致数据不准 所以typeId为11 12 13不打87号点
+--前端87号点BI无法精确统计 不打了
 function DcUtil:sendLocalNotify(typeId, timeStamp, numOfTimes)
-	if typeId == 11 or typeId == 12 or typeId == 13 then 
-		return
-	end
-	local userId = UserManager:getInstance().user.uid
-	if not userId then
-		userId = "12345" 
-	end
-	local finalId = userId.."-"..timeStamp.."-"..typeId
-	send(AcType.kViralSend, {
-		category = 'noti',
-		sub_category = 'noti_send_local',
-		type = "notification",
-		viral_id = finalId,
-		src = "local",
-		num_of_times = numOfTimes,
-		})
+	-- if typeId == 11 or typeId == 12 or typeId == 13 then 
+	-- 	return
+	-- end
+	-- local userId = UserManager:getInstance().user.uid
+	-- if not userId then
+	-- 	userId = "12345" 
+	-- end
+	-- local finalId = userId.."-"..timeStamp.."-"..typeId
+	-- send(AcType.kViralSend, {
+	-- 	category = 'noti',
+	-- 	sub_category = 'noti_send_local',
+	-- 	type = "notification",
+	-- 	viral_id = finalId,
+	-- 	src = "local",
+	-- 	num_of_times = numOfTimes,
+	-- 	})
 end
 
-function DcUtil:payStart(payType,tradeId,goodsId,goodsType)
+--此方法弃用 安卓走PaymentDCUtil IOS走PaymentIosDCUtil
+function DcUtil:payStart(payType,tradeId,goodsId,goodsType,group)
 	send(AcType.kUserTrack,{
 		category = 'pay',
 		sub_category = 'pay_start',
 		pay_type = payType,
 		trade_id = tradeId,
 		goods_id = goodsId,
-		goods_type = goodsType
+		goods_type = goodsType,
+		version = 1,
+		group = group,
 	})
 end
 
-function DcUtil:payEnd(payType,tradeId,goodsId,goodsType,result,errorCode)
+--此方法弃用 安卓走PaymentDCUtil IOS走PaymentIosDCUtil
+function DcUtil:payEnd(payType,tradeId,goodsId,goodsType,result,group,errorCode)
 	send(AcType.kUserTrack,{
 		category = 'pay',
 		sub_category = 'pay_end',
@@ -1013,7 +1069,36 @@ function DcUtil:payEnd(payType,tradeId,goodsId,goodsType,result,errorCode)
 		goods_id = goodsId,
 		goods_type = goodsType,
 		result = result,
-		error_code = errorCode
+		error_code = errorCode,
+		version = 1,
+		group = group,
 	})
 
+end
+
+function DcUtil:logAddFiveSteps(actType , currentStage , buttonType , popType , userType , propId , lastFuuuLogID)
+	send(AcType.kUserTrack,{
+		category = 'add_5_steps',
+		sub_category = actType,
+		current_stage  = currentStage,
+		button_type = buttonType,
+		pop_type = popType,
+		user_type = userType,
+		prop_id = propId,
+		fuuu_id = lastFuuuLogID,
+	})
+
+end
+
+function DcUtil:gameFailedFuuu(fuuuLogID , levelId , gameModeType , result , progress , score)
+	send(AcType.kUserTrack,{
+		category = "stage",
+		sub_category = "game_failed_fuuu",
+		id  = fuuuLogID,
+		level = levelId,
+		game_mode = gameModeType,
+		result = result,
+		progress = progress,
+		score = score,
+	})
 end

@@ -190,7 +190,7 @@ function RabbitWeeklyManager:showRabbitTimeTutor()
     if topLevelNode and leftPlayTime then 
         local pos = topLevelNode:getPosition()
         local worldPos = topLevelNode:getParent():convertToWorldSpace(ccp(pos.x, pos.y))
-        local trueMask = GameGuideRunner:createMask(180, 1, ccp(worldPos.x, worldPos.y-70), 1.2, false, false, false, false, true)
+        local trueMask = GameGuideUI:mask(180, 1, ccp(worldPos.x, worldPos.y-70), 1.2, false, false, false, false, true)
         trueMask.setFadeIn(0.3, 0.3)
 
         --关卡花代理
@@ -228,9 +228,9 @@ function RabbitWeeklyManager:showRabbitTimeTutor()
 
         local panel = nil
         -- if worldPos.x > 360 then 
-        --     panel = GameGuideRunner:createPanelSDR(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
+        --     panel = GameGuideUI:panelSDR(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
         -- else
-            panel = GameGuideRunner:createPanelSD(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
+            panel = GameGuideUI:panelSD(Localization:getInstance():getText("weekly.race.panel.rabbit.tutorial", {num = leftPlayTime, n = '\n'}), false, 0)
         -- end
         panel:setScale(0.8)
         local panelPos = panel:getPosition()
@@ -240,7 +240,7 @@ function RabbitWeeklyManager:showRabbitTimeTutor()
         end
         trueMask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(addTipPanel)))
 
-        local hand = GameGuideRunner:createHandClickAnim(0.5, 0.3)
+        local hand = GameGuideAnims:handclickAnim(0.5, 0.3)
         hand:setAnchorPoint(ccp(0, 1))
         hand:setPosition(ccp(worldPos.x , worldPos.y - 70))
         trueMask:addChild(hand)
@@ -298,7 +298,7 @@ function RabbitWeeklyManager:loadDataWithAnim(successCallback)
 
     local scene = Director:sharedDirector():getRunningScene()
     animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
-    scene:addChild(animation)
+    -- scene:addChild(animation)
 
     http:ad(Events.kComplete, onSuccess)
     http:ad(Events.kError, onFail)
@@ -709,12 +709,13 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish,
     local function onBuyFail( evt )
         -- print("onBuyFail")
         if type(evt) == "table" and evt.data == 730330 then -- not enough gold
-            local text = {
-                tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-                yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-                no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-            }
-            CommonTipWithBtn:showTip(text, "negative", onCreateGoldPanel, onCancel)
+            -- local text = {
+            --     tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+            --     yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+            --     no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+            -- }
+            -- CommonTipWithBtn:showTip(text, "negative", onCreateGoldPanel, onCancel)
+            GoldlNotEnoughPanel:create(onCreateGoldPanel, onCancel, nil):popout()
         else
             if __ANDROID then -- ANDROID
                 CommonTip:showTip(_text("add.step.panel.buy.fail.android"), "negative", onFail)
@@ -729,18 +730,42 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish,
         if onCancel then onCancel() end
     end
     if __ANDROID then -- ANDROID
-        local logic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
-        if ignoreSecondConfirm then
-            logic:ignoreSecondConfirm(true)
+        if PaymentManager.getInstance():checkCanWindMillPay(RabbitWeeklyManager.playCardGoodsId) then
+            local uniquePayId = PaymentDCUtil.getInstance():getNewPayID() 
+            PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, RabbitWeeklyManager.playCardGoodsId, 1, 1, 0, 1)
+            local function successCallback()
+                self:addLeftPlayCount(1)
+                if onSuccess then onSuccess() end
+            end
+            local function failCallback()
+                if onFail then onFail() end
+            end
+            local function cancelCallback()
+                if onCancel then onCancel() end
+            end
+            local function updateFunc()
+                if onFinish then onFinish() end
+            end
+
+            local logic = WMBBuyItemLogic:create()
+            local buyLogic = BuyLogic:create(RabbitWeeklyManager.playCardGoodsId, 2)
+            buyLogic:getPrice()
+            logic:buy(RabbitWeeklyManager.playCardGoodsId, 1, uniquePayId, buyLogic, successCallback, failCallback, cancelCallback, updateFunc)
+        else 
+            local logic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
+            if ignoreSecondConfirm then
+                logic:ignoreSecondConfirm(true)
+            end
+            logic:buy(onBuySuccess, onBuyFail, onBuyCancel)
         end
-        logic:buy(onBuySuccess, onBuyFail, onBuyCancel)
     else -- else, on IOS and PC we use gold!
     	local function onUserHasLogin()
     		local logic = BuyLogic:create(RabbitWeeklyManager.playCardGoodsId, 2)
             logic:getPrice()
             logic:start(1, onBuySuccess, onBuyFail)
     	end
-    	RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
+        onUserHasLogin()
+    	-- RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
     end
 end
 

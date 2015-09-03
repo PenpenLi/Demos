@@ -261,6 +261,9 @@ function MarkPanel:onCloseBtnTapped()
 	local function onHideAnimFinished()
 		--PopoutManager:sharedInstance():remove(self)
 		PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+		if self.closeCallback then
+			self.closeCallback()
+		end
 	end
 	-- fix
 	if GameGuide then
@@ -333,6 +336,10 @@ end
 
 function MarkPanel:setMarkCallback(callback)
 	self.markCallback = callback
+end
+
+function MarkPanel:setCloseCallback(callback)
+	self.closeCallback = callback
 end
 
 function MarkPanel:btnSignToExit()
@@ -593,13 +600,14 @@ function MarkPanel:goldNotEnough()
 	end
 	local function askForGoldPanel()
 		print("ask for gold panel")
-		local text = {
-			tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		}
-		CommonTipWithBtn:setShowFreeFCash(true)
-		CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+		-- local text = {
+		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+		-- }
+		-- CommonTipWithBtn:setShowFreeFCash(true)
+		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
 	end
 	askForGoldPanel()
 end

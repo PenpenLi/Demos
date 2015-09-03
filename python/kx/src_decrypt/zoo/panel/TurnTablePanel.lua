@@ -138,9 +138,6 @@ function TurnTablePanel:_init(items, result, turnTable, turnType)
 	local number = panelContent:getChildByName("number")
 	button = GroupButtonBase:create(button)
 
-	panelContent.userGuideLayer = Layer:create()
-	panelContent:addChild(panelContent.userGuideLayer)
-
 	for i = 1, 8 do
 		local width, height = 125, 125
 		local item = disk:getChildByName("item"..tostring(i))

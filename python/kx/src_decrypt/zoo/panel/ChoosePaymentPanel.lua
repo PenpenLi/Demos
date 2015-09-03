@@ -9,9 +9,11 @@ ChoosePaymentPanelButton = class(ItemInLayout)
 
 ChoosePaymentPanel = class(BasePanel)
 
-function ChoosePaymentPanel:create(paymentsToShow, title)
+function ChoosePaymentPanel:create(paymentsToShow, title, specialDiscount, goodsId)
     print('ChoosePaymentPanel:create')
     local panel = ChoosePaymentPanel.new()
+    panel.specialDiscount = specialDiscount
+    panel.goodsId = goodsId
     panel:loadRequiredResource(PanelConfigFiles.choose_payment_panel)
     panel:init(paymentsToShow, title)
     return panel
@@ -52,9 +54,19 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
 
     -- sort
     local sortedPayments = {}
-    for i, v in ipairs(paymentsSequence) do
-        if paymentsToShow[v] == true then
-            table.insert(sortedPayments, v)
+    
+    local sortedPayments = {}
+    if __WP8 then
+        for k,v in pairs(Payments) do
+            if paymentsToShow[v] == true then
+                table.insert(sortedPayments, v)
+            end
+        end
+    else
+        for i, v in ipairs(paymentsSequence) do
+            if paymentsToShow[v] == true then
+                table.insert(sortedPayments, v)
+            end
         end
     end
 
@@ -87,18 +99,23 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
 				btn:setContent(self.builder:buildGroup('ChinaTelecom'))
 			elseif k == Payments.WDJ then
 				btn:setContent(self.builder:buildGroup('WDJ'))
+                btn.discount = true
 			elseif k == Payments.QIHOO then
 				btn:setContent(self.builder:buildGroup('Qihoo'))
+                btn.discount = true
 			elseif k == Payments.MDO then
 				btn:setContent(self.builder:buildGroup('MDO'))
 			elseif k == Payments.QQ then
 				btn:setContent(self.builder:buildGroup('QQ'))
+                btn.discount = true
             elseif k == Payments.CHINA_MOBILE_GAME then -- cmgame uses ChinaMobile icon
                 btn:setContent(self.builder:buildGroup('ChinaMobile'))
             elseif k == Payments.WECHAT then 
                 btn:setContent(self.builder:buildGroup("choosePayment/wechat"))
+                btn.discount = true
             elseif k == Payments.ALIPAY then 
                 btn:setContent(self.builder:buildGroup("choosePayment/alipay"))
+                btn.discount = true
             elseif k == Payments.DUOKU then 
                 btn:setContent(self.builder:buildGroup("choosePayment/duoku"))
 			else
@@ -137,6 +154,31 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
         self.container:addItem(self.buttons[i])
     end
 
+    local noDiscount = false
+    if self.goodsId then 
+        local goodsName = Localization:getInstance():getText("goods.name.text"..tostring(self.goodsId))
+        if goodsName then
+            if string.find(goodsName, "新区域解锁") or string.find(goodsName, "签到礼包") then
+                noDiscount = true
+            end
+        end
+    end
+
+    if not noDiscount then 
+        for i,v in ipairs(self.buttons) do
+            if v.discount then 
+                local discountSign = self.builder:buildGroup("discount")
+                local sign1 = discountSign:getChildByName("bg")
+                local sign2 = discountSign:getChildByName("bg1")
+                if self.specialDiscount then
+                     sign1:setVisible(false)
+                end
+                v:addChild(discountSign)
+                discountSign:setPosition(ccp(105, 14))
+            end
+        end
+    end
+    
     local size = self.bg:getGroupBounds().size
     local size2 = self.bg2:getGroupBounds().size
     self.bg:setPreferredSize(CCSizeMake(size.width, self.container:getHeight() + 200 + diffTitleHeight))

@@ -544,11 +544,35 @@ function QueryQihooOrderHttp:load(orderId)
 	self.transponder:call(kHttpEndPoints.queryQihooOrder, {orderId = orderId}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
+ExtraConnectHttp = class(HttpBase)
+function ExtraConnectHttp:load(openId,accessToken,snsPlatform,snsName)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("QQConnectHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("QQConnectHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	local connectProtocol = "extraConnect"
+	local params = {
+		openId=openId,
+		accessToken=accessToken,
+		snsPlatform=snsPlatform,
+		snsName = snsName,
+	}
+
+	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
 -- 
 -- QQConnect ---------------------------------------------------------
 -- 
 QQConnectHttp = class(HttpBase)
-function QQConnectHttp:load(openId, accessToken)
+function QQConnectHttp:load(openId, accessToken,snsPlatform,snsName)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -560,21 +584,45 @@ function QQConnectHttp:load(openId, accessToken)
 			context:onLoadingComplete(data)
 		end
 	end
-	local connectProtocol = "otherConnect"
+	local connectProtocol = "otherConnectV3"
 	if PlatformConfig:isQQPlatform() then
-		connectProtocol = "qqConnect"
+		if snsPlatform == PlatformAuthDetail[PlatformAuthEnum.kQQ].name then
+			connectProtocol = "qqConnectV3"
+		end
 	end
-	local params = {openId=openId,accessToken=accessToken}
-	if __ANDROID then
-		params.snsPlatform = PlatformConfig:getPlatformAuthName()
-	end
+
+	local params = {
+		openId=openId,
+		accessToken=accessToken,
+		snsPlatform=snsPlatform,
+		-- oldSnsPlatform=oldSnsPlatform,
+		snsName = snsName,
+	}
+
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
+
+--rebinding
+RebindingHttp = class(HttpBase)
+function RebindingHttp:load(snsName, openId)
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("RebindingHttp error: " .. err)
+			self:onLoadingError(err)
+		else
+			he_log_info("RebindingHttp success !")
+			self:onLoadingComplete(data)
+		end
+	end
+	local connectProtocol = "reBinding"
+	self.transponder:call(connectProtocol, {snsName = snsName, openId = openId}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
 -- 
 -- PreQQConnectHttp ---------------------------------------------------------
 -- 
 PreQQConnectHttp = class(HttpBase)
-function PreQQConnectHttp:load(openId, accessToken, haveSyncCache)
+function PreQQConnectHttp:load(openId,accessToken,haveSyncCache,snsPlatform,snsName)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -586,15 +634,24 @@ function PreQQConnectHttp:load(openId, accessToken, haveSyncCache)
 			context:onLoadingComplete(data)
 		end
 	end
-	local connectProtocol = "preOtherConnectV2"
+
+	local connectProtocol = "preOtherConnectV3"
 	if PlatformConfig:isQQPlatform() then
-		connectProtocol = "preQqConnectV2"
+		if snsPlatform == PlatformAuthDetail[PlatformAuthEnum.kQQ].name then
+			connectProtocol = "preQqConnectV3"
+		end
 	end
+
 	-- print("openId="..openId..",accessToken="..accessToken)
-	local params = {openId=openId,accessToken=accessToken,hasCache=haveSyncCache}
-	if __ANDROID then
-		params.snsPlatform = PlatformConfig:getPlatformAuthName()
-	end
+	local params = {
+		openId=openId,
+		accessToken=accessToken,
+		snsPlatform=snsPlatform,
+		-- oldSnsPlatform=oldSnsPlatform,
+		hasCache=haveSyncCache,
+		snsName = snsName,
+	}
+
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
@@ -618,7 +675,7 @@ function PreQQConnectV1Http:load(openId, accessToken, haveSyncCache)
 	end
 	-- print("openId="..openId..",accessToken="..accessToken)
 	local params = {openId=openId,accessToken=accessToken,hasCache=haveSyncCache}
-	if __ANDROID then
+	if __ANDROID and _G.sns_token then
 		params.snsPlatform = PlatformConfig:getPlatformAuthName()
 	end
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
@@ -647,7 +704,7 @@ function SyncSnsFriendHttp:load(friendOpenIds, openId, accessToken)
 	    end
 	end
 	local params = {friendOpenIds=friendOpenIds, openId=openId, openKey=accessToken}
-	if __ANDROID then
+	if __ANDROID and _G.sns_token then
 		params.snsPlatform = PlatformConfig:getPlatformAuthName()
 	end
 	self.transponder:call(kHttpEndPoints.syncSnsFriend, params, loadCallback, rpc.SendingPriority.kHigh, false)
@@ -997,6 +1054,13 @@ function GetWeekMatchDataHttp:load(levelId)
 	self.transponder:call(kHttpEndPoints.getWeekMatchData, {levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
+CommonRankType = table.const {
+	kWeeklyRace = 1,
+	kRabbitWeeklyMatch = 5,
+	kLaborDay = 6,
+	kDragonBoat = 7,
+	kSummerWeeklyMatch = 8,
+}
 GetCommonRankListHttp = class(HttpBase)
 function GetCommonRankListHttp:load(rankType, subType, levelId)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
@@ -1124,7 +1188,7 @@ function GetCashLogsHttp:load(start,_end)
 	local d = {}
 	d["start"] = start
 	d["end"] = _end
-	self.transponder:call(kHttpEndPoints.getCashLogs, d, loadCallback, rpc.SendingPriority.kHigh, false)	
+	self.transponder:call(kHttpEndPoints.getCashLogs, d, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 GetRabbitMatchDatasHttp = class(HttpBase)
@@ -1166,7 +1230,10 @@ OpNotifyType = {
 	kXuanYao = 3,
 	kSpringVideo = 4,--新春点击视频统计
 	kVideoAdPlay = 6, --观看视频广告
-	kAnniversaryShare = 7 --周年纪念分享得100银币 活动里用 
+	kAnniversaryShare = 7, --周年纪念分享得100银币 活动里用 
+	kWeeklyMatchShare = 10, -- 周赛分享
+	kSummerShare = 11, --夏日分享活动分享
+	kOppoSummerLottery = 12,
 }
 OpNotifyHttp = class(HttpBase)
 function OpNotifyHttp:load(opType, param)
@@ -1198,4 +1265,43 @@ function LevelConfigUpdateHttp:load(os, version)
 		end
 	end
 	self.transponder:call(kHttpEndPoints.levelConfigUpdate, {platform = os, version = version}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetSummerWeekMatchInfoHttp = class(HttpBase)
+function GetSummerWeekMatchInfoHttp:load( levelId )
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetSummerWeekMatchInfoHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetSummerWeekMatchInfoHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getSummerWeekMatchInfo, {levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetSummerWeekMatchRewardType = table.const {
+	kDailyReward = 0,
+	kWeeklyReward = 1,
+	kLastWeekRewards = 2,
+	kLastWeekRankRewards = 3,
+}
+GetSummerWeekMatchRewardHttp = class(HttpBase)
+function GetSummerWeekMatchRewardHttp:load(levelId, type, index, day)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	day = day or 0
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetSummerWeekMatchRewardHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetSummerWeekMatchRewardHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getSummerWeekMatchReward, {levelId = levelId, type = type, index = index, day = day}, loadCallback, rpc.SendingPriority.kHigh, false)
 end

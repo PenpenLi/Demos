@@ -48,16 +48,16 @@ local function getAnimation(item, itemId, itemNum, globalPosition, rotation)
 	else 
 		return 
 	end
+	local csize = node:getGroupBounds().size
+	node:setContentSize(CCSizeMake(csize.width, csize.height))
 	if rotation ~= 0 then
 		node:setRotation(-rotation)
 	end
 	node:setScale(scale)
-	-- node:setPosition(panel:convertToNodeSpace(globalPosition))
-    node:setPosition(globalPosition)
 	node:playByIndex(0)
-	node:setAnimationScale(0.35)
+	node:setAnimationScale(0.875)
 	node:setAnchorPoint(anchorPoint)
-	-- panel:addChild(node)
+    node:setPosition(globalPosition)
     scene:addChild(node)
 
 	local scale = 30 / math.max(node:getGroupBounds().size.width, node:getGroupBounds().size.height)

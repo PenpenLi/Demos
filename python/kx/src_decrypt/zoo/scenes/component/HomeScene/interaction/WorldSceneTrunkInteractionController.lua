@@ -46,6 +46,7 @@ function WorldSceneTrunkInteractionController.onSceneTouchBegan(event, ...)
 	elseif touchedBranch then
 		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
 		self.touchedBranch = touchedBranch
+		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED))
 	else
 		self.touchState = WorldSceneScrollerTouchState.VERTICAL_SCROLLER_TOUCHED
 		local displayEvent = DisplayEvent.new(DisplayEvents.kTouchBegin, nil, globalPos)

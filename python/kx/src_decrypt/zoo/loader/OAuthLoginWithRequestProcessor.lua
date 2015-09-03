@@ -2,9 +2,13 @@
 local Processor = class(EventDispatcher)
 
 function Processor:start(context)
+
+    local authorType = SnsProxy:getAuthorizeType()
+
     local function onSNSLoginResult( status, result )
         if status == SnsCallbackEvent.onSuccess then
             _G.sns_token = result
+            _G.sns_token.authorType = authorType
             self:dispatchEvent(Event.new(Events.kComplete, nil, self))
         else 
             self:dispatchEvent(Event.new(Events.kError, nil, self))
@@ -13,13 +17,38 @@ function Processor:start(context)
 
     if __IOS then
         if ReachabilityUtil:isNetworkReachable() then 
-            SnsProxy:login(onSNSLoginResult)
+            local logoutCallback = {
+                onSuccess = function(result)
+                    SnsProxy:login(onSNSLoginResult)
+                end,
+                onError = function(errCode, msg) 
+                    SnsProxy:login(onSNSLoginResult)
+                end,
+                onCancel = function()
+                    SnsProxy:login(onSNSLoginResult)
+                end
+            }
+            SnsProxy:logout(logoutCallback)
         else 
             CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"), "negative",nil, 1)
             self:dispatchEvent(Event.new(Events.kCancel, nil, self))
         end
     else
-        SnsProxy:login(onSNSLoginResult)
+
+        local logoutCallback = {
+            onSuccess = function(result)
+                SnsProxy:login(onSNSLoginResult)
+            end,
+            onError = function(errCode, msg) 
+                SnsProxy:login(onSNSLoginResult)
+            end,
+            onCancel = function()
+                SnsProxy:login(onSNSLoginResult)
+            end
+        }
+        SnsProxy:logout(logoutCallback)
+
+
         -- if PlatformConfig:isPlatform(PlatformNameEnum.kMI) then
         --     require "zoo.panel.MiLoginSelectPanel"
         --     local function onSelect(authorType)

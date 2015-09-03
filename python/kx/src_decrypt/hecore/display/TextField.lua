@@ -40,7 +40,7 @@ end
 -- public props ---------------------------------------------------------
 --
 function TextField:getString() return self.refCocosObj:getString() end
-function TextField:setString(v) self.refCocosObj:setString(v) end	
+function TextField:setString(v) self.refCocosObj:setString(v) return self end	
 
 --ccColor3B
 function TextField:getColor() return self.refCocosObj:getColor() end
@@ -484,6 +484,10 @@ function TextInput:setInputFlag(v) self.refCocosObj:setInputFlag(v) end
 --KeyboardReturnType
 function TextInput:setReturnType(v) self.refCocosObj:setReturnType(v) end
 
+function TextInput:openKeyBoard() self.refCocosObj:openKeyBoard() end
+
+function TextInput:closeKeyBoard() self.refCocosObj:closeKeyBoard() end
+
 function TextInput:setAnchorPoint(v)
   --setAnchorPoint is not supported. by default, anchor point is set to the center.
 end
@@ -531,7 +535,157 @@ function TextInput:create(size, pNormal9SpriteBg, pPressed9SpriteBg, pDisabled9S
   return textInput
 end
 
+---------------------------------------------------
+--              TextInputIm
+---------------------------------------------------
+-- fix TextInput display error on iOS
+---------------------------------------------------
+TextInputIm = class(Layer)
+function TextInputIm:create(size, pNormal9SpriteBg, pPressed9SpriteBg, pDisabled9SpriteBg, releaseScale9Sprite)
+  if not __IOS then
+    local textInput = TextInput:create(size, pNormal9SpriteBg, pPressed9SpriteBg, pDisabled9SpriteBg, releaseScale9Sprite)
+    return textInput
+  else
+    local textInput = TextInputIm.new()
+    textInput:init(size, pNormal9SpriteBg)
+    return textInput
+  end
+end
 
+function TextInputIm:init(size, pNormal9SpriteBg)
+  self:initLayer()
+  pNormal9SpriteBg:setPreferredSize(CCSizeMake(size.width, size.height))
+  self:addChild(pNormal9SpriteBg)
+  local groupBounds = CCLayerColor:create(ccc4(255,255,255,255), size.width, size.height)
+  groupBounds:setTag(kHitAreaObjectTag)
+  groupBounds:setOpacity(0)
+  self.refCocosObj:addChild(groupBounds)
+  InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.common_ui)
+  local inputBg1 = Scale9Sprite:createWithSpriteFrameName("ui_commons/ui_fontsize_rect0000")
+  inputBg1:setOpacity(0)
+  local inputBg2 = Scale9Sprite:createWithSpriteFrameName("ui_commons/ui_fontsize_rect0000")
+  inputBg2:setOpacity(0)
+  self.textInput = TextInput:create(CCSizeMake(size.width - 10, size.height), inputBg1, inputBg2)
+  self.textInput:setPositionY(Director:sharedDirector():getWinSize().height * 2)
+  self:addChild(self.textInput)
+  self.label = TextField:create()
+  self.label:setFontSize(size.height * 61 / 100)
+  self.label:setDimensions(CCSizeMake(size.width - 10, size.height * 61 / 100))
+  self.label:setString("")
+  self.label:setColor(ccc3(255, 255, 255))
+  self.label:setPositionY(-size.height / 7)
+  self.label:setVisible(false)
+  self:addChild(self.label)
+  self.placeHolder = TextField:create()
+  self.placeHolder:setFontSize(size.height * 61 / 100)
+  self.placeHolder:setDimensions(CCSizeMake(size.width - 10, size.height * 61 / 100))
+  self.placeHolder:setString("")
+  self.placeHolder:setColor(ccc3(156, 164, 160))
+  self.placeHolder:setPositionY(-size.height / 7)
+  self:addChild(self.placeHolder)
+  local touchLayer = LayerColor:create()
+  touchLayer:setContentSize(CCSizeMake(size.width, size.height))
+  touchLayer:setOpacity(0)
+  touchLayer:setPositionXY(-size.width / 2, -size.height / 2)
+  self:addChild(touchLayer)
+  touchLayer:setTouchEnabled(true)
+  local function onTap() self:openKeyBoard() end
+  touchLayer:addEventListener(DisplayEvents.kTouchTap, onTap)
+  local function onEnd() self:cancelKeyboard() end
+  self.textInput:addEventListener(kTextInputEvents.kEnded, onEnd)
+
+  for k,v in pairs({
+    "hasEventListener",
+    "hasEventListenerByName",
+    "addEventListener",
+    "removeEventListener",
+    "removeEventListenerByName",
+    "removeAllEventListeners",
+    "dp", 
+    "he", 
+    "hn", 
+    "ad", 
+    "rm", 
+    "rma",
+  }) do
+    self[v] = function ( ... )
+      local params = { ... } 
+      params[1] = self.textInput
+      return self.textInput[v](unpack(params))
+    end
+  end
+
+  
+end
+
+function TextInputIm:getText() return self.textInput:getText() end
+function TextInputIm:setText(v)
+  if type(v) ~= "string" then return end
+  self.textInput:setText(v)
+  self.label:setString(v)
+  if string.len(v) > 0 then
+    self.label:setVisible(true)
+    self.placeHolder:setVisible(false)
+  else
+    self.label:setVisible(false)
+    self.placeHolder:setVisible(true)
+  end
+end
+
+--ccColor3B
+function TextInputIm:setFontColor(v)
+  self.textInput:setFontColor(v)
+  self.label:setColor(v)
+end
+function TextInputIm:setPlaceholderFontColor(v)
+  self.textInput:setPlaceholderFontColor(v)
+  self.placeHolder:setColor(v)
+end
+
+function TextInputIm:getPlaceHolder() return self.textInput:getPlaceHolder() end
+function TextInputIm:setPlaceHolder(v)
+  self.textInput:setPlaceHolder(v)
+  self.placeHolder:setString(v)
+end
+
+function TextInputIm:getMaxLength() return self.textInput:getMaxLength() end
+function TextInputIm:setMaxLength(v) self.textInput:setMaxLength(v) end
+
+--EditBoxInputMode
+function TextInputIm:setInputMode(v) self.textInput:setInputMode(v) end
+--EditBoxInputFlag
+function TextInputIm:setInputFlag(v) self.textInput:setInputFlag(v) end
+--KeyboardReturnType
+function TextInputIm:setReturnType(v) self.textInput:setReturnType(v) end
+
+function TextInputIm:openKeyBoard()
+  self.label:setVisible(false)
+  self.placeHolder:setVisible(false)
+  self.textInput:setPositionY(0)
+  self.textInput:openKeyBoard()
+end
+
+function TextInputIm:closeKeyBoard()
+  self.textInput:closeKeyBoard()
+  self:cancelKeyboard()
+end
+
+function TextInputIm:cancelKeyboard()
+  self.textInput:setPositionY(Director:sharedDirector():getWinSize().height * 2)
+  local text = self.textInput:getText()
+  if string.len(text) > 0 then
+    self.label:setString(text)
+    self.label:setVisible(true)
+    self.placeHolder:setVisible(false)
+  else
+    self.label:setVisible(false)
+    self.placeHolder:setVisible(true)
+  end
+end
+
+function TextInputIm:setAnchorPoint(v)
+  -- setAnchorPoint is not supported. by default, anchor point is set to the center.
+end
 
 ---------------------------------------------------
 -------------- LabelBMFontBatch

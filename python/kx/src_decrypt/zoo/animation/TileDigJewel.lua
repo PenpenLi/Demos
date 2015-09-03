@@ -9,14 +9,24 @@ local JewelType =
 	kBell = 3,
 	kRedbag = 4,
 	kBlueJewel = 5,
+	kGoldZongZi = 6,
 }
 
-function TileDigJewel:create(level, texture, jewelType)
+TileDigJewel.JewelTypeConfig = JewelType
+
+function TileDigJewel:create(level, texture, levelType)
 	local sprite = CCSprite:create()
 	sprite:setTexture(texture)
 	local node = TileDigJewel.new(sprite)
 	node.parentTexture = texture
-	node.jewelType = jewelType or 0
+
+	if levelType == GameLevelType.kSummerWeekly then
+		node.jewelType = JewelType.kBlueJewel
+	elseif levelType == GameLevelType.kMayDay then
+		node.jewelType = JewelType.kBell
+	else
+		node.jewelType = JewelType.kJewel
+	end
 	node.name = "digJewelTile"
 	node:createSprite(level)
 	node:initLevel(level)
@@ -81,9 +91,14 @@ function TileDigJewel:createSprite( level )
 	self.bgCloud = Sprite:createWithSpriteFrameName("dig_cloud_b_0000")
 	self:addChild(self.bgCloud)
 	
-	self.light_cirlce = Sprite:createWithSpriteFrameName("dig_light_cirlce")
+	if self.jewelType == JewelType.kBell then
+		self.light_cirlce = Sprite:createWithSpriteFrameName("dig_light_cirlce_zongzi_0000")
+		self.light_cirlce:setPosition(ccp(0 + lightCircleOffsetX, GamePlayConfig_Tile_Width/6 - 7))
+	else
+		self.light_cirlce = Sprite:createWithSpriteFrameName("dig_light_cirlce")
+		self.light_cirlce:setPosition(ccp(0 + lightCircleOffsetX, GamePlayConfig_Tile_Width/6 + lightCircleOffsetY))
+	end
 	self:addChild(self.light_cirlce)
-	self.light_cirlce:setPosition(ccp(0 + lightCircleOffsetX, GamePlayConfig_Tile_Width/6 + lightCircleOffsetY))
 	self.light_cirlce:setVisible(false)
 
 	if _isQixiLevel then 
@@ -101,14 +116,17 @@ function TileDigJewel:createSprite( level )
 			self.jewel = Sprite:createWithSpriteFrameName("dig_holycup_0000")
 			self.jewel:setPosition(ccp(0, 5))    
 		elseif self.jewelType == JewelType.kBell then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_bell_0000")
-			self.jewel:setPosition(ccp(0, 5))    
+			self.jewel = Sprite:createWithSpriteFrameName("dig_zongzi")
+			self.jewel:setPosition(ccp(0, 2))    
 		elseif self.jewelType == JewelType.kRedbag then
 			self.jewel = Sprite:createWithSpriteFrameName("dig_redbag_0000")
 			self.jewel:setPosition(ccp(0, 5))   
 		elseif self.jewelType == JewelType.kBlueJewel then
 			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_blue_0000")
-			self.jewel:setPosition(ccp(-2, 4))   
+			self.jewel:setPosition(ccp(-2, 4)) 
+		elseif self.jewelType == JewelType.kGoldZongZi then  
+			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_blue_0000")
+			self.jewel:setPosition(ccp(-2, 4))
 		end
 	end
 	self:addChild(self.jewel)
@@ -135,10 +153,19 @@ function TileDigJewel:initLevel( level )
 			nameStr = "dig_jewel_front_0002"
 		end
 		self.frontCloud = Sprite:createWithSpriteFrameName(nameStr)
+		if self.jewelType == JewelType.kBell and level > 1 then
+			if leve == 2 then
+				self.frontCloud:setScaleY(0.9)
+				self.frontCloud:setPosition(ccp(0, -5))
+			else
+				self.frontCloud:setScaleY(0.8)
+				self.frontCloud:setPosition(ccp(0, -10))
+			end
+		end
 		self:addChild(self.frontCloud)
 	end
-
 end
+
 function TileDigJewel:changeLevel( level, callback )
 	-- body
 	local index = 0
@@ -156,6 +183,15 @@ function TileDigJewel:changeLevel( level, callback )
 			nameStr = "dig_jewel_front_0002"
 		end
 		self.frontCloud = Sprite:createWithSpriteFrameName(nameStr)
+		if self.jewelType == JewelType.kBell and level > 1 then
+			if leve == 2 then
+				self.frontCloud:setScaleY(0.9)
+				self.frontCloud:setPosition(ccp(0, -5))
+			else
+				self.frontCloud:setScaleY(0.8)
+				self.frontCloud:setPosition(ccp(0, -10))
+			end
+		end
 		if index > 0 then
 			self:addChildAt(self.frontCloud, index)
 		else
@@ -243,7 +279,6 @@ function TileDigJewel:playLevel1ExplorAnimation( callback )
 	local function localCallback( ... )
 		-- body
 		if jewel then jewel:removeFromParentAndCleanup(true) end
-		
 	end 
 	local action_jump = CCJumpBy:create(time / 2, ccp(0, 0), GamePlayConfig_Tile_Width/5, 1)
 	local action_callback = CCCallFunc:create(localCallback)

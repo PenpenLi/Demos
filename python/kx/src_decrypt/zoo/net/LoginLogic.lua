@@ -236,9 +236,12 @@ function LoginLogic:sync()
 	if __IOS then
 		userbody.deviceToken = CCUserDefault:sharedUserDefault():getStringForKey("animal_ios_deviceToken") or ""
 	end
-	
+
 	--推送召回 前端向后端发送流失状态
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
+	-- 
+	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
+
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()
 	--as user data may changed, flush cached data

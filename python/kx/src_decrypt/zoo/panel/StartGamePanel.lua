@@ -2,8 +2,8 @@ require "zoo.panel.PanelWithRankList"
 require "zoo.config.ui.StartGamePanelConfig"
 require "zoo.panel.basePanel.panelAnim.PanelWithRankExchangeAnim"
 require "zoo.panel.component.startGamePanel.LevelInfoPanel"
-require "zoo.panel.rabbitWeekly.RabbitWeeklyLevelInfoPanel"
-require "zoo.panel.weeklyRace.WeeklyRaceLevelInfoPanel"
+-- require "zoo.panel.rabbitWeekly.RabbitWeeklyLevelInfoPanel"
+-- require "zoo.panel.weeklyRace.WeeklyRaceLevelInfoPanel"
 
 ---------------------------------------------------
 -------------- StartGamePanel
@@ -112,8 +112,8 @@ function StartGamePanel:createLevelInfoPanel(levelId, levelType)
 	local infoPanel = nil
 	if levelType == GameLevelType.kDigWeekly then
 		infoPanel = WeeklyRaceLevelInfoPanel:create(self, levelId)
-	elseif levelType == GameLevelType.kRabbitWeekly then
-		infoPanel = RabbitWeeklyLevelInfoPanel:create(self, levelId)
+	-- elseif levelType == GameLevelType.kRabbitWeekly then
+	-- 	infoPanel = RabbitWeeklyLevelInfoPanel:create(self, levelId)
 	else 
 		infoPanel = LevelInfoPanel:create(self, levelId, levelType)
 	end

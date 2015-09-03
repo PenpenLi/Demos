@@ -110,7 +110,7 @@ function DevTestGamePlayScene:passLevel(levelId, score, star, stageTime, coin, t
 			rewardItems = tmp
 		elseif levelType == GameLevelType.kMayDay then
 			local tmp = {}
-			-- table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
+			table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
 			table.insert(tmp, {itemId = ItemType.XMAS_BELL, num = targetCount})
 			table.insert(tmp, rewardItems[1])
 			rewardItems = tmp
@@ -119,6 +119,13 @@ function DevTestGamePlayScene:passLevel(levelId, score, star, stageTime, coin, t
 			table.insert(tmp, {itemId = ItemType.WEEKLY_RABBIT, num = targetCount})
 			table.insert(tmp, rewardItems[1])
 			table.insert(tmp, rewardItems[2])
+			rewardItems = tmp
+		elseif levelType == GameLevelType.kSummerWeekly then
+			local tmp = {}
+			table.insert(tmp, {itemId = ItemType.KWATER_MELON, num = targetCount})
+			for _, v in pairs(rewardItems) do
+				table.insert(tmp, v)
+			end
 			rewardItems = tmp
 		elseif levelType == GameLevelType.kTaskForRecall then
 			rewardItems = {}

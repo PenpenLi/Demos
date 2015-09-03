@@ -12,7 +12,7 @@ require 'zoo.panel.MoreStarPanel'
 ---------------------------------------------------
 -------------- StarRewardItem
 ---------------------------------------------------
-
+testTipInfo = ""
 assert(not StarRewardItem)
 assert(BaseUI)
 StarRewardItem = class(BaseUI)
@@ -113,6 +113,59 @@ function StarRewardItem:create(ui, itemId, itemNumber, ...)
 	return newStarRewardItem
 end
 
+function StarRewardItem:rebuild(itemId, itemNumber, ...)
+	self.itemId	= itemId
+	self.itemNumber	= itemNumber
+
+	if self.itemId > 0 then
+		if self.itemRes then self.itemRes:removeFromParentAndCleanup(true) end
+
+		local itemRes	= ResourceManager:sharedInstance():buildItemGroup(self.itemId)
+		self.itemRes	= itemRes
+		self.ui:addChild(itemRes)
+
+		--------------------------------
+		-- Resize And Position Item Res
+		-- ---------------------------
+		-- Resize
+		local itemResSize	= itemRes:getGroupBounds().size
+		local neededScaleX	= self.itemPhSize.width / itemResSize.width
+		local neededScaleY	= self.itemPhSize.height / itemResSize.height
+		--[[
+		local smallestScale = neededScaleX
+		if neededScaleX > neededScaleY then
+			smallestScale = neededScaleY
+		end
+
+		itemRes:setScaleX(smallestScale)
+		itemRes:setScaleY(smallestScale)]]
+		itemRes:setScaleX(1.2)
+		itemRes:setScaleY(1.2)
+
+		-- Reposition
+		local itemResSize	= itemRes:getGroupBounds().size
+		local deltaWidth	= self.itemPhSize.width - itemResSize.width
+		local deltaHeight	= self.itemPhSize.height - itemResSize.height
+		
+		itemRes:setPosition(ccp( self.itemPhPos.x + deltaWidth/2, 
+					self.itemPhPos.y - deltaHeight/2))
+
+		----------------
+		-- Update View
+		-- --------------
+		local itemNameKey	= "prop.name." .. self.itemId
+		local itemNameValue	= Localization:getInstance():getText(itemNameKey, {})
+		self.itemNameLabel:setString(itemNameValue)
+
+		self.numberLabel:removeFromParentAndCleanup(false)
+		self.ui:addChild(self.numberLabel)
+
+		self.numberLabel:setString("x" .. self.itemNumber)
+	end
+end
+
+
+
 ---------------------------------------------------
 -------------- StarRewardPanel
 ---------------------------------------------------
@@ -121,11 +174,14 @@ assert(not StarRewardPanel)
 assert(BasePanel)
 StarRewardPanel = class(BasePanel)
 
-function StarRewardPanel:init(starRewardBtnPosInWorldSpace, ...)
+function StarRewardPanel:init(starRewardBtnPosInWorldSpace, interfaceGroup , ...)
 	assert(starRewardBtnPosInWorldSpace)
 	assert(#{...} == 0)
 
-	self.ui		= self:buildInterfaceGroup("starRewardPanel")
+	if not interfaceGroup or interfaceGroup == "" then
+		interfaceGroup = "starRewardPanel"
+	end
+	self.ui		= self:buildInterfaceGroup(interfaceGroup)
 
 	-----------
 	-- init Base Class
@@ -229,12 +285,6 @@ function StarRewardPanel:init(starRewardBtnPosInWorldSpace, ...)
 	local size = self.title:getContentSize()
 	self.title:setPositionX((self.bg:getGroupBounds().size.width - size.width) / 2)
 	
-	if rewardLevelToPushMeta then
-		local rewardDesLabelKey		= "star.reward.panel.reward.des"
-		local rewardDesLabelValue	= Localization:getInstance():getText(rewardDesLabelKey, {star_number = rewardLevelToPushMeta.starNum})
-		self.rewardDesLabel:setString(rewardDesLabelValue)
-	end
-	
 	local getBtnLabelKey	= "star.reward.panel.get.btn.label"
 	local getBtnLabelValue	= Localization:getInstance():getText(getBtnLabelKey, {})
 	self.getBtn:setString(getBtnLabelValue)
@@ -269,6 +319,10 @@ function StarRewardPanel:init(starRewardBtnPosInWorldSpace, ...)
 		self.getBtn:setEnabled(false)
 	end
 	
+	if rewardLevelToPushMeta then
+		self.rewardDesLabel:setString( self:getRewardDesLabelString(rewardLevelToPushMeta) )
+	end
+
 	-------------------------
 	-- Add Event Listener
 	-- -------------------
@@ -284,6 +338,13 @@ function StarRewardPanel:init(starRewardBtnPosInWorldSpace, ...)
 		self:onGetBtnTapped()
 	end
 	self.getBtn:addEventListener(DisplayEvents.kTouchTap, onGetBtnTapped)
+end
+
+function StarRewardPanel:getRewardDesLabelString(rewardLevelToPushMeta)
+	local rewardDesLabelKey		= "star.reward.panel.reward.des"
+	local rewardDesLabelValue	= Localization:getInstance():getText(rewardDesLabelKey, {star_number = rewardLevelToPushMeta.starNum})
+
+	return rewardDesLabelValue
 end
 
 function StarRewardPanel:registerCloseCallback(closeCallback, ...)
@@ -326,7 +387,7 @@ function StarRewardPanel:getReward(...)
 	print("StarRewardPanel:getReward")
 
 	local function onSendGetRewardMsgSuccess(event)
-
+		testTipInfo = "onNet \n"
 		print("StarRewardPanel:onGetBtnTapped Called ! onSendGetRewardMsgSuccess ")
 		if self.isDisposed then
 			return
@@ -361,14 +422,20 @@ function StarRewardPanel:getReward(...)
 
 		local function onAnimFinished()
 
+			testTipInfo = testTipInfo .. "onAnim \n"
+			
+
 			if self.isDisposed then
 				return
 			end
 
-			local delay = CCDelayTime:create(0.3)
+			local delay = CCDelayTime:create(0.5)
 
 			local function removeSelf()
+				testTipInfo = testTipInfo .. "removeSelf \n"
+				self.getBtn:setEnabled(true)
 				self:remove()
+				--CommonTip:showTip(testTipInfo , nil , nil , 8)
 			end
 			local callAction = CCCallFunc:create(removeSelf)
 
@@ -399,7 +466,7 @@ function StarRewardPanel:getReward(...)
 	end
 
 	local function onSendGetRewardMsgFail(evt)
-		print("onSendGetRewardMsgFail")
+		print("RRR  AAAAAAAAAAAAAAAAAAAAA  onSendGetRewardMsgFail 12312312312312")
 
 		if self.isDisposed then
 			return
@@ -420,6 +487,8 @@ function StarRewardPanel:getReward(...)
 			end
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 		end
+		print("RRR  AAAAAAAAAAAAAAAAAAAAA  onSendGetRewardMsgFail 12312312312312   111111111111  " , code)
+		self:onSendGetRewardMsgFail(code)
 	end
 
 	local function onSendGetRewardMsgCancel()
@@ -439,6 +508,10 @@ function StarRewardPanel:getReward(...)
 	logic:setFailCallback(onSendGetRewardMsgFail)
 	logic:setCancelCallback(onSendGetRewardMsgCancel)
 	logic:start()	-- Default Show The Communicating Tip, And Block The Touch
+end
+
+function StarRewardPanel:onSendGetRewardMsgFail(code)
+	--to be override
 end
 
 function StarRewardPanel:onEnterHandler(event, ...)
@@ -462,6 +535,9 @@ function StarRewardPanel:popout(...)
 end
 
 function StarRewardPanel:remove(...)
+
+	testTipInfo = testTipInfo .. "SP.remove \n"
+
 	assert(#{...} == 0)
 	print("StarRewardPanel:remove Called !")
 
@@ -498,6 +574,6 @@ function StarRewardPanel:create(starRewardBtnPosInWorldSpace, ...)
 
 	local newStarRewardPanel = StarRewardPanel.new()
 	newStarRewardPanel:loadRequiredResource(PanelConfigFiles.star_reward_panel)
-	newStarRewardPanel:init(starRewardBtnPosInWorldSpace)
+	newStarRewardPanel:init(starRewardBtnPosInWorldSpace , "starRewardPanel")
 	return newStarRewardPanel
 end

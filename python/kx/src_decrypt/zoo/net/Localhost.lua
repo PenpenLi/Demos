@@ -17,6 +17,8 @@ local kUpdatedConfigName = "updatedConfig" .. kLocalDataExt
 local kFriendsCacheDataName = "friendsCache" .. kLocalDataExt
 local kLocalExtraDataName = "localExtraData" .. kLocalDataExt
 local fullPathOfLocalData = HeResPathUtils:getUserDataPath()
+local kPhoneListName = "phoneList" .. kLocalDataExt
+local kSummerWeeklyMatchDataName = "summerWeekly"..kLocalDataExt
 
 local instance = nil
 Localhost = {}
@@ -78,7 +80,7 @@ function Localhost:saveGmeCenterEnable( v )
 end
 
 -- open Id
-function Localhost:setCurrentUserOpenId( openId , accessToken)
+function Localhost:setCurrentUserOpenId( openId,accessToken,authorType )
 	local uid = UserManager.getInstance().uid
 	if uid then
 		print("setCurrentUserOpenId:uid="..tostring(uid)..",openId="..tostring(openId) .. ",accessToken="..tostring(accessToken))
@@ -86,7 +88,7 @@ function Localhost:setCurrentUserOpenId( openId , accessToken)
 		local userData = self:readFromStorage(fileName) or {}
 		userData.openId = openId
 		userData.accessToken = accessToken
-		userData.authorType = SnsProxy:getAuthorizeType()
+		userData.authorType = authorType --SnsProxy:getAuthorizeType()
 		--print(table.tostring(userData))
 		self:writeToStorage(userData, fileName)
 	else print("setCurrentUserOpenId fail, userid is nil") end
@@ -154,7 +156,7 @@ function Localhost:readUserDataByUserID( uid )
 	local fileName = self:getUserLocalKeyByUserID(uid)
 	local readData = self:readFromStorage(fileName)
 	if readData then
-		print("flushCurrentUserData:"..table.tostring(readData.openId))
+		--print("flushCurrentUserData:"..table.tostring(readData.openId))
 		local readUuid = readData.uuid
 		if currUuid == readUuid then return readData		
 		else
@@ -209,6 +211,47 @@ function Localhost:flushCurrentFriendsData()
 
 	userData.friends = FriendManager.getInstance():encode()
 	self:writeToStorage(userData, fileName)
+end
+
+-- 
+function Localhost:getLastLoginPhoneNumber( ... )
+	local phoneList = self:readCachePhoneListData()
+	if #phoneList > 0 then 
+		return phoneList[1]
+	else
+		return ""
+	end
+end
+function Localhost:readCachePhoneListData()
+	return self:readFromStorage(kPhoneListName) or {}
+end
+function Localhost:writeCachePhoneListData(newPhoneNumber)
+	local phoneList = self:readCachePhoneListData()
+	if #phoneList > 0 and phoneList[1] == newPhoneNumber then 
+		return
+	end
+	table.removeValue(phoneList,newPhoneNumber)
+	table.insert(phoneList,1,newPhoneNumber)
+
+	while #phoneList > 5 do
+		table.remove(phoneList,#phoneList)
+	end
+
+	self:writeToStorage(phoneList,kPhoneListName)
+end
+
+-- 周赛数据
+function Localhost:writeWeeklyMatchData(data)
+	self:writeToStorage(data,kSummerWeeklyMatchDataName)
+end
+
+function Localhost:readWeeklyMatchData()
+	return self:readFromStorage(kSummerWeeklyMatchDataName)
+end
+
+function Localhost:deleteWeeklyMatchData()
+	local filePath = fullPathOfLocalData.."/"..kSummerWeeklyMatchDataName
+   	os.remove(filePath)
 end
 
 --将string中的内容以二进制的方式写入文件,
@@ -390,6 +433,8 @@ function Localhost:passLevel(levelId, score, flashStar, stageTime, coinAmount, t
 		rewardItems, success, err = UserLocalLogic:updateRecallTaskLevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
 	elseif gameLevelType == GameLevelType.kTaskForUnlockArea then 
 		rewardItems, success, err = UserLocalLogic:updateTaskForUnlockArealevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
+	elseif gameLevelType == GameLevelType.kSummerWeekly then
+		rewardItems, success, err = UserLocalLogic:updateRabbitWeeklyLevelScore(levelId, score, flashStar, stageTime, coinAmount, targetCount, opLog, gameLevelType, requestTime)
 	else
 		assert(false, 'level type not supported')
 	end
@@ -486,8 +531,12 @@ function Localhost:getPropsInGame(actId, levelId, itemIds)
 			UserManager.getInstance():addTimeProp(propId, 1)
 			UserService.getInstance():addTimeProp(propId, 1)
 		end
-		local evtData = {actId=actId, levelId=levelId, itemIds=itemIds}
-		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new("activity.incDropPropCount", evtData))
+		if LevelType:isSummerMatchLevel( levelId ) then
+			SummerWeeklyMatchManager:getInstance():onDropPropInGame()
+		else
+			local evtData = {actId=actId, levelId=levelId, itemIds=itemIds}
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new("activity.incDropPropCount", evtData))
+		end
 		return true
 	end
 	return false
@@ -608,6 +657,8 @@ function Localhost:clearLastLoginUserData()
     Localhost.getInstance():deleteGuideRecord()
     Localhost.getInstance():deleteMarkPriseRecord()
     Localhost.getInstance():deletePushRecord()
+    Localhost.getInstance():deleteWeeklyMatchData()
+    Localhost.getInstance():deleteLocalExtraData()
     LocalNotificationManager.getInstance():cancelAllAndroidNotification()
 
     CCUserDefault:sharedUserDefault():setStringForKey("game.devicename.userinput", "")

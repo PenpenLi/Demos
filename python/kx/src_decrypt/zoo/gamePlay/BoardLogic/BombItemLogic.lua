@@ -456,11 +456,8 @@ function BombItemLogic:setSignOfBombResWithBirdFlying(mainLogic, r1, c1, theColo
 		local c = v.y;
 		local item = mainLogic.gameItemMap[r][c]
 
-		if item:isAvailable() and (item.ItemColorType == theColor 
-			and item.ItemSpecialType ~= AnimalTypeConfig.kColor
-			and BombItemLogic:isItemTypeCanBeEliminateByBird(mainLogic, r, c) 
-				or item:hasLock() 
-				or item:hasFurball() )
+		if item.ItemSpecialType ~= AnimalTypeConfig.kColor
+			and item:canBecomeSpecialBySwapColorSpecial()
 			then
 
 			if item:hasFurball() then

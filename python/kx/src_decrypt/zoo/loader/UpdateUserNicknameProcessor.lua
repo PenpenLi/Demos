@@ -15,9 +15,25 @@ local function updateUserName( userInput )
     if kUserLogin and profile then                          
         local http = UpdateProfileHttp.new()
         profile:setDisplayName(userInput)
-        http:load(profile.name, profile.headUrl)
+
+        local snsPlatform = nil
+        local snsName = nil
+        local authorizeType = SnsProxy:getAuthorizeType()
+        if _G.sns_token then
+            snsPlatform = PlatformConfig:getPlatformAuthName(authorizeType)
+            if authorizeType ~= PlatformAuthEnum.kPhone then
+                snsName = profile:getDisplayName()
+            else
+                snsName = Localhost:getLastLoginPhoneNumber()
+            end
+
+            profile:setSnsInfo(authorizeType,snsName,profile:getDisplayName(),profile.headUrl)
+        end
+
+        http:load(profile.name, profile.headUrl,snsPlatform,HeDisplayUtil:urlEncode(snsName))
         print("updateUserName:" .. profile.name .. " " .. tostring(profile.headUrl))
     end
+
 end
 
 local function updateUserDisplayNameBySNS()
@@ -77,7 +93,7 @@ local function requestUserDisplayName()
         end
     end
 
-    if __ANDROID then
+    if __ANDROID or __WIN32 then
         local nickname = SnsProxy.profile.nick or "";
         if nickname and nickname ~= "" then
             updateUserDisplayNameBySNS()
@@ -136,7 +152,7 @@ local function requestUserDisplayName()
 end
 
 function Processor:start()
-    if _G.kUserSNSLogin then
+    if _G.kUserSNSLogin and SnsProxy:getAuthorizeType() ~= PlatformAuthEnum.kPhone then
         updateUserDisplayNameBySNS()
     else
         requestUserDisplayName()

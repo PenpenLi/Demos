@@ -29,7 +29,8 @@ if not __WP8 then
             assertFalseNumber = assertFalseNumber + 1
             local breakLine = "\n========== index: " .. assertFalseNumber .. " =============\n"
             if msg then print("assert false message: " .. msg) end
-            he_log_error(breakLine .. tostring(debug.traceback()))
+            local log = breakLine .. "msg:" .. tostring(msg) .. "\n" .. tostring(debug.traceback())
+            he_log_error(log)
         end
 
         return cond

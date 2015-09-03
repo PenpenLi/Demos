@@ -76,7 +76,45 @@ function PropListController:callCancelPropUseCallback(itemId, ...)
 end
 
 function PropListController:registerSpringItemCallback(callback)
-  self.springItemCallback = callback
+  	self.springItemCallback = callback
+end
+
+function PropListController:findSpringItem()
+	for i=1, 18 do
+		local item = self.propList["item"..i]
+		if item and item:is(SpringPropListItem) then
+			return item
+		end
+	end
+
+	return nil
+end
+
+function PropListController:findSpringItemIcon()
+	for i=1, 18 do
+		local item = self.propList["item"..i]
+		if item and item:is(SpringPropListItem) then
+			if item.icon then 
+				return item.icon
+			end
+		end
+	end
+
+	return nil
+end
+
+function PropListController:forceUseSpringItem(forceUsedCallback)
+
+	for i=1, 18 do
+		local item = self.propList["item"..i]
+		if item and item:is(SpringPropListItem) then
+			if item.use then 
+				item:use(forceUsedCallback, true)
+			else
+				print("@!@@@@@@@@@@@@@@@@@item don't have a use method!!!!!!!!!!!!!!")
+			end
+		end
+	end
 end
 
 function PropListController:onTouchBegin( evt )

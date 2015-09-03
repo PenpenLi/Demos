@@ -40,6 +40,7 @@ end
 function FreegiftManager:update(load, callback)
 
 	local function onSuccess(evt)
+		self:setHelpRequestTip(evt.data.rewardLimitDesc)
 		if evt.data.requestInfos then
 			self.requestInfos = evt.data.requestInfos
 			UserManager:getInstance().requestNum = #self.requestInfos
@@ -110,6 +111,7 @@ function FreegiftManager:update(load, callback)
 	end
 
 	local function onFail(evt)
+		self:setHelpRequestTip(nil)
 		if callback then callback("fail", evt) end
 	end
 
@@ -218,83 +220,85 @@ function FreegiftManager:requestGift(uids, itemId, successCallback, failCallback
 	local http = SendFreegiftHttp.new(false)
 	http:ad(Events.kComplete, onSuccess)
 	http:ad(Events.kError, onFail)
-	http:load(2, uids, itemId)
+	http:load(2, nil, uids, itemId)
 end
 
 -- local ___i = 1
 function FreegiftManager:sendGiftTo(receiverUid, successCallback, failCallback)
-	
-	local function onFail(err)
-
-		UserManager:getInstance():removeSendId(receiverUid)
-		if failCallback then failCallback(err) end
-	end
-
-	local function onSuccess(data)
-		-- if ___i == 4 or ___i == 5 then 
-		-- 	onFail()
-		-- end
-		-- ___i = ___i+1
-		if successCallback then successCallback(data) end
-	end
-	UserManager:getInstance():addSendId(receiverUid)
-
-	-- HomeScene:sharedInstance():runAction(CCSequence:createWithTwoActions(CCDelayTime:create(4), CCCallFunc:create(onSuccess)))
-
-	local http = SendFreegiftHttp.new(false)
-	http:ad(Events.kComplete, onSuccess)
-	http:ad(Events.kError, onFail)
-	http:load(1, {receiverUid}, 10012)
+	-- 好友排行中的给好友送东西，这个功能已经不存在了。
+	-- 还有调用，所以不删除接口，然而调了也不会有什么卵用。
 end
 
-function FreegiftManager:sendGift(id, successCallback, failCallback)
+function FreegiftManager:sendGift(id, successCallback, failCallback, isBatch)
+	self:doSendGift(id, successCallback, failCallback, isBatch, false)
+end
+
+function FreegiftManager:sendBackGift(id, successCallback, failCallback, isBatch)
+	self:doSendGift(id, successCallback, failCallback, isBatch, true)
+end
+
+function FreegiftManager:doSendGift(id, successCallback, failCallback, isBatch, isSendBack)
 	local message = self:getMessageById(id)
 	if not message then
 		if failCallback then failCallback() end
 		return
 	end
 
-	local function onSuccess(data)
-		local function onIgnoreSuccess(data)
-			UserManager:getInstance():addSendId(message.senderUid)
-			for k, v in ipairs(self.lockedSendIds) do
-				if v == message.senderUid then
-					table.remove(self.lockedSendIds, k)
-					break
-				end
-			end
-			if successCallback then successCallback(data) end
-		end
-		local function onIgnoreFail(err)
-			for k, v in ipairs(self.lockedSendIds) do
-				if v == message.senderUid then
-					table.remove(self.lockedSendIds, k)
-					break
-				end
-			end
-			if failCallback then failCallback(err) end
-		end
-		self:ignoreFreegift(id, onIgnoreSuccess, onIgnoreFail)
-	end
-
-	local function onFail(err)
-
-		-- UserManager:getInstance():removeSendId(message.senderUid)
+	local funcCalled = false
+	local function sendFail(data)
 		for k, v in ipairs(self.lockedSendIds) do
 			if v == message.senderUid then
 				table.remove(self.lockedSendIds, k)
 				break
 			end
 		end
-		if failCallback then failCallback(err) end
+		if failCallback and not funcCalled then
+			failCallback(data)
+			funcCalled = true
+		end
+	end
+	local function ignoreFail(err)
+		for k, v in ipairs(self.lockedSendIds) do
+			if v == message.senderUid then
+				table.remove(self.lockedSendIds, k)
+				break
+			end
+		end
+		if failCallback and not funcCalled then
+			failCallback(err)
+			funcCalled = true
+		end
+	end
+	local function ignoreSuccess(data)
+		UserManager:getInstance():addSendId(message.senderUid)
+		for k, v in ipairs(self.lockedSendIds) do
+			if v == message.senderUid then
+				table.remove(self.lockedSendIds, k)
+				break
+			end
+		end
+		self:removeMessageById(id)
+		UserManager:getInstance().requestNum = UserManager:getInstance().requestNum - 1
+		if successCallback and not funcCalled then
+			successCallback(data)
+			funcCalled = true
+		end
 	end
 
-	-- UserManager:getInstance():addSendId(message.senderUid)
 	table.insert(self.lockedSendIds, message.senderUid)
-	local http = SendFreegiftHttp.new(false)
-	http:ad(Events.kComplete, onSuccess)
-	http:ad(Events.kError, onFail)
-	http:load(1, {message.senderUid}, message.itemId)
+	if not isBatch then ConnectionManager:block() end
+	local sendHttp = SendFreegiftHttp.new()
+	sendHttp:addEventListener(Events.kError, sendFail)
+	if isSendBack then
+		sendHttp:load(1, nil, {message.senderUid}, message.itemId)
+	else
+		sendHttp:load(1, id, {message.senderUid}, message.itemId)
+	end
+	local http = IgnoreFreegiftHttp.new(false)
+	http:ad(Events.kComplete, ignoreSuccess)
+	http:ad(Events.kError, ignoreFail)
+	http:load(id)
+	if not isBatch then ConnectionManager:flush() end
 end
 
 function FreegiftManager:ignoreFreegift(id, successCallback, failCallback)
@@ -420,6 +424,20 @@ end
 
 function FreegiftManager:canReceiveFrom(senderUid)
 	self:canReceiveMore()
+end
+
+function FreegiftManager:setHelpRequestTip(requestTip)
+	if requestTip then 
+		local len = string.len(requestTip)
+		if len>2 then 
+			requestTip = string.sub(requestTip, 2, len-1)
+		end
+	end
+	self.requestTip = requestTip or ""
+end
+
+function FreegiftManager:getHelpRequestTip()
+	return self.requestTip or ""
 end
 
 function FreegiftManager:dispose()

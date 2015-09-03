@@ -123,7 +123,7 @@ function Processor:weiboMergeToQQAccount( weiboOpenId,qqOpenId,qqAccessToken )
 
   		self:doLogin(loginInfo,function( ... )
 
-  			Localhost.getInstance():setCurrentUserOpenId(qqOpenId,qqAccessToken)
+  			Localhost.getInstance():setCurrentUserOpenId(qqOpenId,qqAccessToken,PlatformAuthEnum.kQQ)
 
 	    	local panel = WeiboMergeToQQSuccessPanel:create()
 	    	panel:popout()

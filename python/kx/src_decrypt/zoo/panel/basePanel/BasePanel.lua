@@ -119,3 +119,16 @@ end
 
 function BasePanel:popoutShowTransition()
 end
+
+function BasePanel:child(name)
+	return self.ui:getChildByName(name)
+end
+
+function BasePanel:createTouchButton(name, onTapped)
+	local btn = self.ui:getChildByName(name)
+	btn:setTouchEnabled(true)
+	btn:setButtonMode(true)
+	btn:ad(DisplayEvents.kTouchTap, onTapped)
+
+	return btn
+end

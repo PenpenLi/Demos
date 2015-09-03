@@ -56,9 +56,10 @@ function AnimationScene:onInit()
 	self:addChild(colorLayer)
 
 	local function onTouchBackLabel(evt)
-		Director:sharedDirector():popScene()
+		--Director:sharedDirector():popScene()
+		--self:testAnimation()
+		self:testJuice()
 	end
-
 
 	local function buildLabelButton( label, x, y, func )
 		local width = 250
@@ -85,7 +86,7 @@ function AnimationScene:onInit()
 
   	--self:testShaderSprite9()
   	--self:testGroup()
-  	self:testShader()
+  	--self:testShader()
   	--self:testScale9Sprite()
   	--self:testScale9Sprite2()
   	--self:testChoosePanel()
@@ -110,7 +111,328 @@ function AnimationScene:onInit()
 	--self:testCharacters()
 	--self:testBird()
 
+	--self:testAnimation()
+
 	self.backButton = buildLabelButton("Back", 0, winSize.height-100, onTouchBackLabel)
+end
+
+local function createJuiceBottleByStep2(step)
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	local builder = InterfaceBuilder:createWithContentsOfFile("flash/animation/juice/juice_bottle.json")
+	local bottle0 = builder:buildGroup("bottle"..step)
+
+	return bottle0
+end
+
+local PositionYOffsetAndScaleX = {{-32, 0.833}, {-22, 1.0},{-32, 1.0},{-32, 1.0} } 
+
+local function createJuiceBottleByStep(step)
+	local bottle_glow = Sprite:createWithSpriteFrameName("BottleGlow instance 10000")
+	local bottle = Layer:create()
+	bottle:changeWidthAndHeight(bottle_glow:getGroupBounds().size.width, bottle_glow:getGroupBounds().size.height)
+
+	local juice_shake = Sprite:createWithSpriteFrameName("juice_shake_0000.png")
+	if step == 0 then
+		bottle_empty = Sprite:createWithSpriteFrameName("bottle instance 10000")
+		bottle:addChild(bottle_empty)
+		
+		bottle_glow:setPositionXY(0, 4)
+		bottle:addChild(bottle_glow)
+	else
+		local bottle_front = Sprite:createWithSpriteFrameName("bottle_front instance 10000")
+		local bottle_back = Sprite:createWithSpriteFrameName("bottle_back"..step.." instance 10000")
+		bottle:addChild(bottle_back)
+
+		juice_shake:setPosition(ccp(8, PositionYOffsetAndScaleX[step][1]))
+		juice_shake:setScaleX(PositionYOffsetAndScaleX[step][2])
+		bottle:addChild(juice_shake)
+
+		bottle_front:setPositionXY(0,8)
+		bottle:addChild(bottle_front)
+
+		bottle_glow:setPositionXY(0, 4)
+		--bottle:addChild(bottle_glow)
+	end
+
+	return bottle, bottle_glow, juice_shake
+end
+
+function AnimationScene:juiceChangeAnimation(from, to)
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	
+	local bottleStart = createJuiceBottleByStep2(from)
+	bottleStart:setPosition(ccp(winSize.width/2, bottleStart:getGroupBounds().size.height))
+	self.layer:addChild(bottleStart)
+
+	local juice_shake_start = bottleStart:getChildByName("juice_shake")
+	if juice_shake_start then
+		juice_shake_start:setVisible(false)
+	end
+
+	local glow_start = bottleStart:getChildByName("glow")
+	glow_start:setAlpha(0.2)
+	glow_start:runAction(CCFadeTo:create(8/30, 255))
+
+	local bottleEnd = createJuiceBottleByStep2(to)
+	local glow_end = bottleEnd:getChildByName("glow")
+
+	local actions = CCArray:create()
+	actions:addObject(CCScaleTo:create(4/30, 1.13, 0.84))
+	if juice_shake_start then
+		actions:addObject(CCCallFunc:create(function() 
+				local juice_surface_start = bottleStart:getChildByName("surface")
+				if juice_surface_start then
+					juice_surface_start:setVisible(false)
+					juice_shake_start:setVisible(true)
+
+					local juice_frames = SpriteUtil:buildFrames("juice_shake_%04d.png", 0, 27)
+					local juice_animate = SpriteUtil:buildAnimate(juice_frames, 1/25)
+					juice_shake_start:play(juice_animate, 0, 1, nil, false)
+				end
+			end))
+	end
+	actions:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(4/30, 1, 1.10), CCMoveBy:create(4/30, ccp(0,8))))
+	actions:addObject(CCCallFunc:create(function() 
+
+		bottleEnd:setPositionXY(bottleStart:getPositionX(), bottleStart:getPositionY())
+		bottleEnd:setScaleX(bottleStart:getScaleX())
+		bottleEnd:setScaleY(1.2)
+		self.layer:addChild(bottleEnd)
+		bottleStart:setVisible(false)
+
+		local juice_surface = bottleEnd:getChildByName("surface")
+		juice_surface:setVisible(false)
+
+		local newJuice_shake = bottleEnd:getChildByName("juice_shake")
+		newJuice_shake:setVisible(true)
+
+		local juice_frames = SpriteUtil:buildFrames("juice_shake_%04d.png", 0, 27)
+		local juice_animate = SpriteUtil:buildAnimate(juice_frames, 1/25)
+		newJuice_shake:play(juice_animate, 0, 1, function()
+				juice_surface:setVisible(true)
+			end, true)
+
+		local juice_splash = Sprite:createWithSpriteFrameName("juice_splash_0000.png")
+		juice_splash:setPositionXY(bottleEnd:getPositionX(), bottleEnd:getPositionY() + juice_splash:getContentSize().height/2)
+		self.layer:addChild(juice_splash)
+
+		local splash_frames = SpriteUtil:buildFrames("juice_splash_%04d.png", 0, 8)
+		local splash_animate = SpriteUtil:buildAnimate(splash_frames, 1/30)
+		juice_splash:play(splash_animate, 0, 1, nil, true)
+
+		local bubble =  Sprite:createWithSpriteFrameName("juice_bubble_0000.png")
+		bubble:setPositionXY(bottleEnd:getPositionX(), bottleEnd:getPositionY() + bubble:getContentSize().height/2)
+
+		local bubble_frames = SpriteUtil:buildFrames("juice_bubble_%04d.png", 0, 10)
+		local bubble_animate = SpriteUtil:buildAnimate(bubble_frames, 1/20)
+		bubble:play(bubble_animate, 0, 2, nil, true)
+		self.layer:addChild(bubble)
+
+		local actions2 = CCArray:create()
+		actions2:addObject(CCScaleTo:create(3/30, 1,1))
+		actions2:addObject(CCMoveBy:create(5/30, ccp(0, -8)))
+		actions2:addObject(
+			CCCallFunc:create(function()
+					bottleEnd:removeFromParentAndCleanup(false)
+					
+					local bottle_wrapper = Layer:create()
+	 				bottle_wrapper:changeWidthAndHeight(bottleEnd:getGroupBounds().size.width, bottleEnd:getGroupBounds().size.height)
+	 				bottle_wrapper:addChild(bottleEnd)
+	 				bottle_wrapper:setAnchorPoint(ccp(0, 0.3))
+	 				bottle_wrapper:setPositionXY(bottleEnd:getPositionX(), bottleEnd:getPositionY())
+	 				bottleEnd:setPositionXY(0, 0)
+
+	 				local rotate =  CCRepeat:create(CCSequence:createWithTwoActions(CCRotateTo:create(8/15, 30), CCRotateTo:create(8/15, -30)), 6)
+					bottle_wrapper:runAction(CCSequence:createWithTwoActions(rotate, CCRotateTo:create(4/15, 0)))
+					self.layer:addChild(bottle_wrapper)
+				end))
+		bottleEnd:runAction(CCSequence:create(actions2))
+
+		if to == 5 then
+			glow_end:runAction(CCRepeat:create(
+				 CCSequence:createWithTwoActions(CCFadeTo:create(8/15, 255), CCFadeTo:create(8/15, 255 * 0.2)),
+				 6))
+		else
+			glow_end:runAction(  CCFadeTo:create(8/30, 255 * 0.2))
+		end
+	end))
+
+	bottleStart:runAction(CCSequence:create(actions))
+
+	return bottleStart, bottleEnd
+end
+
+
+local bottleStart, bottleEnd
+
+local function clearBottle()
+
+	if bottleStart then
+		bottleStart:removeFromParentAndCleanup(true)
+	end
+
+	if bottleEnd then
+		bottleEnd:removeFromParentAndCleanup(true)
+	end
+end
+
+function AnimationScene:testJuice()
+	local winSize = CCDirector:sharedDirector():getVisibleSize()
+
+	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile("flash/animation/juice/juice_animation.plist")
+	--CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile("flash/animation/juice/juice_bottle.plist")
+
+	clearBottle()
+	bottleStart, bottleEnd = self:juiceChangeAnimation(4, 5)
+
+	 local bottle0 = createJuiceBottleByStep2(0)
+	 print("bounds height: ", bottle0:getGroupBounds().size.height)
+	 --bottle0:setPosition(ccp(winSize.width/2 - bottle0:getGroupBounds().size.width, bottle0:getGroupBounds().size.height))
+
+	 --[[local bottle1 = createJuiceBottleByStep2(1)
+	 bottle1:setScaleY(2)
+	 bottle1:setPosition(ccp(winSize.width/2, bottle0:getGroupBounds().size.height))
+
+	 local bottle_wrapper = Layer:create()
+	 bottle_wrapper:changeWidthAndHeight(bottle0:getGroupBounds().size.width, bottle0:getGroupBounds().size.height)
+	 bottle_wrapper:addChild(bottle0)
+	 bottle_wrapper:setAnchorPoint(ccp(0, 0.3))
+	 bottle_wrapper:setPositionXY(winSize.width/2, bottle0:getGroupBounds().size.height)
+
+	 local action =  CCSequence:createWithTwoActions(
+	 		CCRepeat:create(CCSequence:createWithTwoActions(CCRotateTo:create(8/15, 30), CCRotateTo:create(8/15, -30)), 6),
+	 		CCRotateTo:create(4/15, 0))
+	 bottle_wrapper:runAction(action)]]--
+
+	-- local bottle2 = createJuiceBottleByStep2(2)
+	-- bottle2:setPosition(ccp(winSize.width/2, bottle0:getGroupBounds().size.height*3))
+
+	-- local bottle3 = createJuiceBottleByStep2(3)
+	-- bottle3:setPosition(ccp(winSize.width/2, bottle0:getGroupBounds().size.height*4))
+
+	-- local bottle4 = createJuiceBottleByStep2(4)
+	-- bottle4:setPosition(ccp(winSize.width/2, bottle0:getGroupBounds().size.height*5))
+
+	 --self.layer:addChild(bottle_wrapper)
+	 --self.layer:addChild(bottle1)
+	--self.layer:addChild(bottle2)
+	--self.layer:addChild(bottle3)
+	--self.layer:addChild(bottle4)
+end
+
+
+function AnimationScene:testAnimation()
+
+
+	local winSize = CCDirector:sharedDirector():getWinSize()
+
+	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile("flash/animation/elephant/boss_elephant_use.plist")
+	CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile("flash/animation/water_splash.plist")
+
+	print("added!!!!!!!!!!!!!!!!")
+	local boss = Sprite:createWithSpriteFrameName("boss_elephant_use_0000.png")
+	boss:setScale(0.1)
+	boss:setPosition(ccp(winSize.width/2, winSize.height /2 - boss:getContentSize().height/2))
+	self.layer:addChild(boss)
+
+	local function playCloudAnimation()
+		local cloud = Sprite:createWithSpriteFrameName("boss_elephant_cloud_0000.png")
+		cloud:setScale(10/7)
+		cloud:setPositionXY(boss:getPositionX(), boss:getPositionY())
+		self.layer:addChild(cloud)
+
+		local cloud_frames = SpriteUtil:buildFrames("boss_elephant_cloud_%04d.png", 0, 13)
+		local cloud_animate = SpriteUtil:buildAnimate(cloud_frames, 1/30)
+		cloud:play(cloud_animate, 0, 1, nil, true)
+	end
+
+	-- local juice = Sprite:createWithSpriteFrameName("juice.png")
+	-- juice:setScale(10/7)
+	-- juice:setPosition(ccp(winSize.width/2-5, juice:getContentSize().height + 10))
+	-- self.layer:addChild(juice)
+
+	local function createWaterSplash()
+			local water_splash = Sprite:createWithSpriteFrameName("water_splash_0000.png")
+			water_splash:setScale(3.2)
+			water_splash:setPosition(ccp(winSize.width/2, (winSize.height) /2))
+			self.layer:addChild(water_splash)
+
+			local water_frames = SpriteUtil:buildFrames("water_splash_%04d.png", 0, 7)
+			local water_animate = SpriteUtil:buildAnimate(water_frames, 1/30)
+			water_splash:play(water_animate, 0, 1, function() 
+					water_splash:removeFromParentAndCleanup(true)
+				end)
+	end
+
+	local function playWaterAnimation()
+		local water = Sprite:createWithSpriteFrameName("waterSplash.png")
+		water:setPosition(ccp(winSize.width/2, winSize.height/2))
+		water:setScale(0.1 * 1.25)
+		self.layer:addChild(water)
+
+		local scale = CCScaleTo:create(3/30, 1.25, 1.25)
+		local complete = CCCallFunc:create(function()
+				createWaterSplash()
+
+				water:setScale(2*1.25)
+				water:runAction(CCCallFunc:create(
+					function()
+						water:setScale(1.6 * 1.25)
+						water:runAction(CCSequence:createWithTwoActions(
+							CCFadeOut:create(12/30),
+							CCCallFunc:create(function() water:removeFromParentAndCleanup(true) end)
+						))
+					end
+					))
+			end)
+
+		water:runAction(CCSequence:createWithTwoActions(scale, complete))
+	end
+
+	local function animateComplete()
+		--boss:removeFromParentAndCleanup(true)
+	end
+
+	local delay = CCDelayTime:create(60/30)
+	boss:setAnchorPoint(ccp(0.5, 0.1))
+	
+	local actions = CCArray:create()
+	actions:addObject(CCScaleTo:create(5/30, 10/6, 10/6))
+	actions:addObject(	
+		CCCallFunc:create(
+			function()
+				local frames = SpriteUtil:buildFrames("boss_elephant_use_%04d.png", 0, 76)
+				local animate = SpriteUtil:buildAnimate(frames, 1/30)
+				boss:play(animate, 0, 1, animateComplete, true)
+			end
+		))
+	actions:addObject(delay)
+	actions:addObject(CCCallFunc:create(function() playWaterAnimation() end ))
+	boss:runAction(CCSequence:create(actions))
+	playCloudAnimation()
+
+	self.layer:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(78/30), CCCallFunc:create(
+			function()
+				playCloudAnimation()
+			end
+		)))
+
+	--playWaterAnimation()
+
+	-- local action_delay = CCDelayTime:create(10/30)
+	-- local height = boss:getPositionY() - juice:getPositionY() - juice:getContentSize().height - 37
+	-- local action_move = CCMoveBy:create(7/30, ccp(0, height))
+
+	-- local callbackAction = CCCallFunc:create(function() 
+	-- 		juice:removeFromParentAndCleanup(true)
+	-- end)
+
+	-- local arrAction = CCArray:create()
+	-- arrAction:addObject(action_delay)
+	-- arrAction:addObject(action_move)
+	-- arrAction:addObject(callbackAction)
+
+	--juice:runAction(CCSequence:create(arrAction))
 end
 
 function AnimationScene:testShaderSprite9()
@@ -347,7 +669,10 @@ function AnimationScene:testShader()
 	colorLayer:setPosition(ccp(0, 800))
 	self.layer:addChild(colorLayer)
 
-	local sp = CocosObject.new(HESpriteColorAdjust:createWithSpriteFrameName("ui_scale9/ui_button_green_scale90000")) 
+	self.builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_register)
+
+	--local sp = CocosObject.new(HESpriteColorAdjust:createWithSpriteFrameName("ui_scale9/ui_button_green_scale90000"))
+	local sp = CocosObject.new(HESpriteColorAdjust:createWithSpriteFrameName("phone/ButtonBg0000")) 
 	sp:setPosition(ccp(winSize.width/2, origin.y + winSize.height - sp:getContentSize().height - 150))
 	self.layer:addChild(sp)
 

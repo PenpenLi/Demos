@@ -40,6 +40,24 @@ function UrlSchemeSDK_Android:getCurrentURL()
 end
 
 --
+-- UrlSchemeSDK_Wp8 ---------------------------------------------------------
+--
+-- initialize
+local instanceWp8 = nil
+UrlSchemeSDK_Wp8 = {}
+
+function UrlSchemeSDK_Wp8.getInstance()
+	if not instanceWp8 then
+		instanceWp8 = UrlSchemeSDK_Wp8
+	end
+	return instanceWp8
+end
+
+function UrlSchemeSDK_Wp8:getCurrentURL()
+	return Wp8Utils:getOpenUrl()
+end
+
+--
 -- UrlSchemeSDK ---------------------------------------------------------
 --
 UrlSchemeSDK = class()
@@ -50,6 +68,10 @@ function UrlSchemeSDK:ctor()
 
 	if __ANDROID then
 		self.sdk = UrlSchemeSDK_Android:getInstance()
+	end
+
+	if __WP8 then
+		self.sdk = UrlSchemeSDK_Wp8.getInstance()
 	end
 end
 

@@ -510,7 +510,7 @@ end
 function LadyBugPanel:showRemindGuide()
 	local showed = CCUserDefault:sharedUserDefault():getBoolForKey("LadybugMissionSecondRemindGuide")
 	if showed then return end
-	local panel = GameGuideRunner:createPanelSUR("")
+	local panel = GameGuideUI:panelSUR("")
 	local text = panel.ui:getChildByName("text")
 	local dimension = text:getPreferredSize()
 	local text2 = TextField:create(Localization:getInstance():getText("lady.bug.panel.remind.guide"),

@@ -11,6 +11,7 @@ require "zoo.animation.TileCoin"
 require "zoo.animation.TileRoost"
 require "zoo.animation.TileBalloon"
 require "zoo.animation.TileDigJewel"
+require "zoo.animation.TileGoldZongZi"
 require "zoo.animation.TileDigGround"
 require "zoo.animation.TileAddMove"
 require "zoo.animation.TilePoisonBottle"
@@ -34,50 +35,104 @@ require "zoo.animation.TileSand"
 require "zoo.animation.TileQuestionMark"
 require "zoo.animation.TileChain"
 require "zoo.animation.TileMagicStone"
+require "zoo.animation.TileMove"
+require "zoo.animation.TileBottleBlocker"
 
 ItemView = class{}
 
 --用来显示地图上物品的基础
 --包括地格--包括动物
 
-ItemSpriteType = table.const
+ItemSpriteTypeNames = table.const
 {
-	kNone = 0,
-	kBackground = 1,		-- 地格--------添加层次时请保持这个在最后
-	kTileBlocker = 2,       -- 翻转地格, 传送带, 海洋生物
-	kSnailRoad = 3,         --蜗牛轨迹
-	kRabbitCaveDown = 4,    --兔子洞穴, 问号爆炸背景光
-	kSand = 5,			    -- 流沙动画
-	kSandMove = 6,			-- 流沙动画
-	kLight = 7,				-- 冰层, 流沙
-	kQuestionMarkDestoryBg = 8, --问号消除背景光 
-	kItemBack = 9,			-- 鸟的特效
-	kItem = 10,				-- 物品--动物
-	kItemShow = 11,			-- 物品特效--某个动物的动画，或者是消除特效qq
-	kDigBlocker = 12,		-- 地块和宝石
-	kItemDestroy = 13,		-- 物品消除特效层---一个雪花	
-	kClipping = 14,			-- 生成口、传送门出口遮罩
-	kEnterClipping = 15,	    -- 传送门入口遮罩
-	kRabbitCaveUp = 16,    --兔子洞穴上层
-	kRope = 17,				-- 绳子
-	kChain = 18,			-- 冰柱
-	kLock = 19,				-- 笼子
-	kFurBall = 20,			-- 毛球, 蜂蜜
-	kBigMonster = 21,       -- 雪怪
-	kLockShow = 22,			-- 笼子消除
-	kSnowShow = 23,			-- 雪花消除
-	kNormalEffect = 24,     -- 毛球消除，毒液扩散, 雪怪的冰层等
-	kTransClipping = 25,    -- 传送带遮罩
-	kPass = 26,	            -- 通道
-	kTransmissionDoor = 27,  -- 传送带出入口
-	kSpecial = 28,			-- 鸟飞行,刷新飞行
-	kRoostFly = 29,			-- 鸡窝飞行,与刷新飞行冲突
-	kSnailMove = 30,       	-- 蜗牛移动，问号爆炸前景光
-	kQuestionMarkDestoryFg = 31, --问号消除前景光 
-	kMagicStoneFire = 32, --魔法石发动动画
-	kDigBlockerBomb = 33,
-	kLast = 34,			-- 最上层--------添加层次时请保持这个在最前
+	"kNone",
+	"kBackground",		-- 地格--------添加层次时请保持这个在最后
+	"kMoveTileBackground", -- 移动地格背景
+	"kTileBlocker",       -- 翻转地格, 传送带, 海洋生物
+	"kSnailRoad",         --蜗牛轨迹
+	"kRabbitCaveDown",    --兔子洞穴, 问号爆炸背景光
+	"kSand",			    -- 流沙动画
+	"kSandMove",			-- 流沙动画
+	"kLight",				-- 冰层, 流沙
+	"kQuestionMarkDestoryBg", --问号消除背景光 
+	"kItemBack",			-- 鸟的特效
+	"kItem",				-- 物品--动物
+	"kItemShow",			-- 物品特效--某个动物的动画，或者是消除特效qq
+	"kMagicTileWater",
+	"kDigBlocker",		-- 地块和宝石
+	"kItemDestroy",		-- 物品消除特效层---一个雪花	
+	"kClipping",			-- 生成口、传送门出口遮罩
+	"kEnterClipping",	    -- 传送门入口遮罩
+	"kRabbitCaveUp",    --兔子洞穴上层
+	"kRope",				-- 绳子
+	"kChain",			-- 冰柱
+	"kLock",				-- 笼子
+	"kFurBall",			-- 毛球, 蜂蜜
+	"kBigMonster",       -- 雪怪
+	"kLockShow",			-- 笼子消除
+	"kSnowShow",			-- 雪花消除
+	"kNormalEffect",     -- 毛球消除，毒液扩散, 雪怪的冰层等
+	"kTransClipping",    -- 传送带遮罩
+	"kPass",	            -- 通道
+	"kTransmissionDoor",  -- 传送带出入口
+	"kSpecial",			-- 鸟飞行,刷新飞行
+	"kRoostFly",			-- 鸡窝飞行,与刷新飞行冲突
+	"kSnailMove",       	-- 蜗牛移动，问号爆炸前景光
+	"kQuestionMarkDestoryFg", --问号消除前景光 
+	"kMagicStoneFire", --魔法石发动动画
+	"kDigBlockerBomb",
+	"kTileMoveEffect",
+	"kBigMonsterFoot",  --雪怪作用时的脚印
+	"kLast",			-- 最上层--------添加层次时请保持这个在最前
 }
+
+ItemSpriteType = {}
+local itemSpriteIndex = 0
+for _,v in ipairs(ItemSpriteTypeNames) do
+	ItemSpriteType[v] = itemSpriteIndex
+	itemSpriteIndex = itemSpriteIndex + 1
+end
+
+-- ItemSpriteType = table.const
+-- {
+-- 	kNone = 0,
+-- 	kBackground = 1,		-- 地格--------添加层次时请保持这个在最后
+-- 	kMoveTileBackground = 2, -- 移动地格背景
+-- 	kTileBlocker = 3,       -- 翻转地格, 传送带, 海洋生物
+-- 	kSnailRoad = 4,         --蜗牛轨迹
+-- 	kRabbitCaveDown = 5,    --兔子洞穴, 问号爆炸背景光
+-- 	kSand = 6,			    -- 流沙动画
+-- 	kSandMove = 7,			-- 流沙动画
+-- 	kLight = 8,				-- 冰层, 流沙
+-- 	kQuestionMarkDestoryBg = 9, --问号消除背景光 
+-- 	kItemBack = 10,			-- 鸟的特效
+-- 	kItem = 11,				-- 物品--动物
+-- 	kItemShow = 12,			-- 物品特效--某个动物的动画，或者是消除特效qq
+-- 	kDigBlocker = 13,		-- 地块和宝石
+-- 	kItemDestroy = 14,		-- 物品消除特效层---一个雪花	
+-- 	kClipping = 15,			-- 生成口、传送门出口遮罩
+-- 	kEnterClipping = 16,	    -- 传送门入口遮罩
+-- 	kRabbitCaveUp = 17,    --兔子洞穴上层
+-- 	kRope = 18,				-- 绳子
+-- 	kChain = 19,			-- 冰柱
+-- 	kLock = 20,				-- 笼子
+-- 	kFurBall = 21,			-- 毛球, 蜂蜜
+-- 	kBigMonster = 22,       -- 雪怪
+-- 	kLockShow = 23,			-- 笼子消除
+-- 	kSnowShow = 24,			-- 雪花消除
+-- 	kNormalEffect = 25,     -- 毛球消除，毒液扩散, 雪怪的冰层等
+-- 	kTransClipping = 26,    -- 传送带遮罩
+-- 	kPass = 27,	            -- 通道
+-- 	kTransmissionDoor = 28,  -- 传送带出入口
+-- 	kSpecial = 29,			-- 鸟飞行,刷新飞行
+-- 	kRoostFly = 30,			-- 鸡窝飞行,与刷新飞行冲突
+-- 	kSnailMove = 31,       	-- 蜗牛移动，问号爆炸前景光
+-- 	kQuestionMarkDestoryFg = 32, --问号消除前景光 
+-- 	kMagicStoneFire = 33, --魔法石发动动画
+-- 	kDigBlockerBomb = 34,
+-- 	kTileMoveEffect	= 35,
+-- 	kLast = 36,			-- 最上层--------添加层次时请保持这个在最前
+-- }
 
 local Max_Item_Y = GamePlayConfig_Max_Item_Y
 
@@ -88,6 +143,28 @@ ItemSpriteItemShowType = table.const
 	kBird = 2,				-- 魔力鸟
 	kCoin = 3,				-- 银币
 	kRabbit = 4,            -- 兔子
+}
+
+local boardViewLayers = {
+	ItemSpriteType.kMoveTileBackground, 
+	ItemSpriteType.kTileBlocker, 
+	ItemSpriteType.kMagicTileWater,
+	ItemSpriteType.kSnailRoad, 
+	ItemSpriteType.kRabbitCaveDown, 
+	ItemSpriteType.kClipping, 
+	ItemSpriteType.kEnterClipping, 
+	ItemSpriteType.kRope, 
+	ItemSpriteType.kChain, 
+	ItemSpriteType.kBigMonster, 
+	ItemSpriteType.kSand,
+	ItemSpriteType.kLight,
+	ItemSpriteType.kItem, 
+	ItemSpriteType.kItemShow,
+	ItemSpriteType.kDigBlocker,
+	ItemSpriteType.kLock,
+	ItemSpriteType.kFurBall,
+	ItemSpriteType.kPass,
+	-- ItemSpriteType.kNormalEffect,
 }
 
 local itemsName = { "horse", "frog", "bear", "cat", "fox", "chicken"}
@@ -118,6 +195,45 @@ function ItemView:ctor()
 	self.flyingfromtype = ItemSpriteType.kNone;
 end
 
+function ItemView:cleanAllViews( ... )
+	self.RopePosAdd = nil		-- 绳子的偏移量存储
+
+	self.clippingnode = nil						-- 
+	self.enterClippingNode = nil
+	self.cl_hoff = 0;
+	self.cl_h = 0;
+
+	self.oldData = nil;
+	self.oldBoard = nil;
+	self.itemShowType = 0;
+	self.isNeedUpdate = false;
+
+	self.flyingfromtype = ItemSpriteType.kNone;
+
+	for k, v in pairs(self.itemSprite) do
+		if k ~= ItemSpriteType.kMoveTile and v and v:getParent() then
+			v:removeFromParentAndCleanup(true)
+		end
+	end
+	self.itemSprite = {}
+	self.itemPosAdd = {}		-- 普通物品的偏移量存储
+end
+
+function ItemView.copyDatasFrom(toData, fromData)
+	if type(fromData) ~= "table" then return end
+	
+	toData.itemShowType = fromData.itemShowType
+	toData.cl_hoff = fromData.cl_hoff
+	toData.cl_h = fromData.cl_h
+	toData.flyingfromtype = fromData.flyingfromtype
+	toData.itemPosAdd = {}
+	for k, v in pairs(fromData.itemPosAdd) do
+		toData.itemPosAdd[k] = ccp(v.x, v.y)
+	end
+	if fromData.oldData then toData.oldData = fromData.oldData:copy() end
+	if fromData.oldBoard then toData.oldBoard = fromData.oldBoard:copy() end
+end
+
 function ItemView:dispose()
 	self.itemSprite = nil
 	self.itemPosAdd = nil
@@ -129,15 +245,16 @@ function ItemView:dispose()
 	self.oldBoard = nil;
 end
 
-function ItemView:create()
+function ItemView:create(context)
 	local s = ItemView.new()
-	s:initView()
+	s:initView(context)
 	return s
 end
 
-function ItemView:initView()
+function ItemView:initView(context)
 	self.itemSprite = {}
 	self.itemPosAdd = {}
+	self.context = context
 end
 
 function ItemView:initByBoardData(data)
@@ -235,6 +352,14 @@ function ItemView:initByBoardData(data)
 		if st_sprite then self.itemSprite[ItemSpriteType.kRope] = st_sprite end
 	end
 
+	if data.isMoveTile then
+		local bgTexture = nil
+		if self.getContainer(ItemSpriteType.kMoveTileBackground) then 
+			bgTexture = self.getContainer(ItemSpriteType.kMoveTileBackground).refCocosObj:getTexture()
+		end
+		self.itemSprite[ItemSpriteType.kMoveTileBackground] =TileMove:createTile(bgTexture, data.isCollector)
+	end
+
 	-- chain todo
 	self:addChainsView(data)
 
@@ -268,6 +393,61 @@ local needUpdateLayers = {
 	ItemSpriteType.kTransClipping,
 	ItemSpriteType.kBigMonster,
 }
+
+function ItemView:getBoardViewTransContainer()
+	if not self.boardViewTransContainer then
+		self.boardViewTransContainer = self:copyBoardTransData()
+	end
+	return self.boardViewTransContainer
+end
+
+function ItemView:removeBoardViewTranscontainer()
+	if self.boardViewTransContainer and not self.boardViewTransContainer.isDisposed then
+		self.boardViewTransContainer:removeFromParentAndCleanup(true)
+	end
+	self.boardViewTransContainer = nil
+end
+
+function ItemView:copyBoardTransData()
+	local container = Sprite:createEmpty()
+	container.items = {}
+	container.datas = {}
+	ItemView.copyDatasFrom(container.datas, self)
+	for v = ItemSpriteType.kNone, ItemSpriteType.kLast do
+		if table.exist(boardViewLayers, v) then
+			local item = self.itemSprite[v]
+			if item then
+				container.items[v] = item
+				item:removeFromParentAndCleanup(false)
+				self.itemSprite[v] = nil
+				container:addChild(item)
+			end 
+		end
+	end
+
+	for index, i in ipairs(needUpdateLayers) do
+		if container.items[i] ~= nil then
+			if self.itemPosAdd[i] ~= nil then	--itemPosAdd，是某些特殊原件的显示偏移量
+				if i == ItemSpriteType.kClipping 
+					or i == ItemSpriteType.kEnterClipping 
+					then
+					container.items[i]:setPositionXY(self.itemPosAdd[i].x + self.w / 2, self.h / 2 + self.itemPosAdd[i].y)
+				else
+					container.items[i]:setPositionXY(self.itemPosAdd[i].x, self.itemPosAdd[i].y)
+				end
+			else
+				if i == ItemSpriteType.kClipping 
+					or i == ItemSpriteType.kEnterClipping 
+					then
+					container.items[i]:setPositionXY(self.w / 2, self.h / 2)
+				elseif i == ItemSpriteType.kBigMonster then
+					container.items[i]:setPositionXY(0.5 * self.w, - 0.5 * self.h)
+				end
+			end
+		end
+	end
+	return container
+end
 
 --通过面板数据更新Item的位置信息
 --forcePos 强制刷新
@@ -391,7 +571,9 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 	elseif data.ItemType == GameItemType.kDigGround then        ----------挖地障碍 地块 宝石块
 		self:buildDigGround(data.digGroundLevel)
 	elseif data.ItemType == GameItemType.kDigJewel then 
-		self:buildDigJewel(data.digJewelLevel, data.digJewelType)
+		self:buildDigJewel(data.digJewelLevel, self.context.levelType)
+	elseif data.ItemType == GameItemType.kGoldZongZi then
+		self:buildGoldZongZi(data.digGoldZongZiLevel)
 	elseif data.ItemType == GameItemType.kAddMove then
 		self:buildAddMove(data.ItemColorType, data.numAddMove)
 	elseif data.ItemType == GameItemType.kPoisonBottle then 
@@ -420,10 +602,16 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildQuestionMark(data.ItemColorType)
 	elseif data.ItemType == GameItemType.kMagicStone then
 		self:buildMagicStone(data.magicStoneDir, data.magicStoneLevel)
+	elseif data.ItemType == GameItemType.kBottleBlocker then
+		self:buildBottleBlocker(data.bottleLevel , data.ItemColorType)
 	end
 
 	if data.isHalloweenBottle then
 		self:buildHalloweenBoss()
+	end
+
+	if self.oldBoard and self.oldBoard.magicTileId ~= nil then
+		self:addMagicTileWater(data)
 	end
 
 	--附加属性
@@ -454,12 +642,20 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 	if data.beEffectByMimosa then
 		self:addMimosaEffect(data.mimosaDirection)
 	end
+end
 
+function ItemView:buildBottleBlocker( bottleLevel , itemColorType , texture , isOnlyGetSprite )
+	local sprite = TileBottleBlocker:create(bottleLevel, itemColorType)
+	if not isOnlyGetSprite then
+		self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	end
+	return sprite
 end
 
 function ItemView:buildMagicStone(magicStoneDir, magicStoneLevel)
 	local sprite = TileMagicStone:create(magicStoneLevel, magicStoneDir)
 	self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	return sprite
 end
 
 function ItemView:buildDigGround( digLevel, isOnlyGetSprite )
@@ -477,13 +673,31 @@ function ItemView:buildDigGround( digLevel, isOnlyGetSprite )
 	end
 end
 
-function ItemView:buildDigJewel( digLevel ,digJewelType, isOnlyGetSprite)
+function ItemView:buildDigJewel( digLevel, levelType, isOnlyGetSprite)
 	-- body
 	local texture
 	if self.getContainer(ItemSpriteType.kDigBlocker) then 
 		texture = self.getContainer(ItemSpriteType.kDigBlocker).refCocosObj:getTexture()
 	end
-	local view =  TileDigJewel:create(digLevel, texture, digJewelType)
+	local view = nil
+
+	view = TileDigJewel:create(digLevel, texture, levelType)
+
+	if isOnlyGetSprite then
+		return view
+	else
+		self.itemSprite[ItemSpriteType.kDigBlocker] = view
+	end
+end
+
+function ItemView:buildGoldZongZi( digLevel , isOnlyGetSprite)
+	local texture = nil
+	if self.getContainer(ItemSpriteType.kDigBlocker) then 
+		texture = self.getContainer(ItemSpriteType.kDigBlocker).refCocosObj:getTexture()
+	end
+	local view = nil
+
+	view = TileGoldZongZi:create(digLevel, texture)
 
 	if isOnlyGetSprite then
 		return view
@@ -1252,7 +1466,38 @@ function ItemView:updateByNewItemData(data)
 	if self.oldData then 
 		if self.oldData.digJewelLevel ~= data.digJewelLevel and data.digJewelLevel > 0 then
 			self:removeItemSpriteGameItem()
-			self:buildDigJewel(data.digJewelLevel, data.digJewelType)
+			self:buildDigJewel(data.digJewelLevel, self.context.levelType)
+		end
+	end
+
+	if self.oldData then 
+		if self.oldData.ItemType == GameItemType.kGoldZongZi then
+			if data.ItemType == GameItemType.kGoldZongZi then
+				if self.oldData.digGoldZongZiLevel ~= data.digGoldZongZiLevel then
+					self:removeItemSpriteGameItem()
+					self:buildGoldZongZi(data.digGoldZongZiLevel)
+				end
+			elseif data.ItemType == GameItemType.kDigGround then
+				self:removeItemSpriteGameItem()
+				self:buildDigGround(data.digGroundLevel)
+			end
+			
+		end
+	end
+
+	-------------------------妖精瓶子-------------------------
+
+	if self.oldData then 
+		if self.oldData.ItemType == GameItemType.kBottleBlocker then
+			if data.ItemType == GameItemType.kBottleBlocker then
+				if data.bottleState == BottleBlockerState.Waiting 
+					and (self.oldData.bottleLevel ~= data.bottleLevel or self.oldData.ItemColorType ~= data.ItemColorType)
+					then
+					self:removeItemSpriteGameItem()
+					self:buildBottleBlocker(data.bottleLevel , data.ItemColorType)
+				end
+			end
+			
 		end
 	end
 
@@ -1562,6 +1807,7 @@ function ItemView:playDigJewelDecAnimation( boardView )
 		-- body
 		sprite:removeFromParentAndCleanup(true)
 		self.itemSprite[ItemSpriteType.kDigBlockerBomb] = nil
+		
 	end
 
 	if sprite then 
@@ -1579,6 +1825,45 @@ function ItemView:playDigJewelDecAnimation( boardView )
 	end
 end
 
+function ItemView:playDigGoldZongZiDecAnimation( boardView )
+	-- body
+	local sprite = self.itemSprite[ItemSpriteType.kDigBlocker]
+	local function callback( ... )
+		-- body
+		--sprite:removeFromParentAndCleanup(true)
+		--self.itemSprite[ItemSpriteType.kDigBlockerBomb] = nil
+		
+	end
+
+	if sprite then 
+		if sprite.level == 1 then
+			sprite:changeLevel(sprite.level - 1, true)
+		else
+			sprite:changeLevel(sprite.level - 1, true)
+		end
+		
+	end
+end
+
+function ItemView:playBottleBlockerHitAnimation(boardView , newLevel , newColor)
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite then
+
+		local onAnimationDone = function()
+
+		end
+
+		sprite:playBottleHitAnimation(newLevel + 1 , newColor , onAnimationDone)
+		if newLevel == 0 then
+			local anime = sprite:buildTotalBreakEffect(nil , nil)
+			local pos = sprite:getPosition()
+			anime:setPosition(ccp(pos.x , pos.y))
+			self.itemSprite[ItemSpriteType.kTileMoveEffect] = anime
+			self.isNeedUpdate = true
+		end
+	end
+end
+
 function ItemView:buildMonster()
 	-- body
 	local monster = TileMonster:create()
@@ -1587,7 +1872,7 @@ function ItemView:buildMonster()
 end
 
 function ItemView:buildBoss(data)
-	local boss = TileBoss:create(BossType.kCat)
+	local boss = TileBoss:create(BossType.kElephant)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -1830,7 +2115,7 @@ function ItemView:CreateFallingClippingSprite(data, autotype)
 	elseif data.ItemType == GameItemType.kAddMove then
 		tempsprite = self:buildAddMove(data.ItemColorType, data.numAddMove, true)
 	else
-		he_log_error("unexcepted item type:"..tostring(data.itemType))
+		he_log_error("unexcepted item type:"..tostring(data.ItemType))
 	end 
 
 	local container = Sprite:createEmpty()
@@ -2180,6 +2465,21 @@ function ItemView:stopShakeBySpecialColorEffect()
 	end
 end
 
+function ItemView:showMoveTileEffect(dir)
+	local effect = TileMove:createArrowAnimation(dir)
+	effect:setPosition(self:getBasePosition(self.x, self.y))
+	self.itemSprite[ItemSpriteType.kTileMoveEffect] = effect
+	self.isNeedUpdate = true
+end
+
+function ItemView:hideMoveTileEffect()
+	local effect = self.itemSprite[ItemSpriteType.kTileMoveEffect]
+	if effect and not effect.isDisposed then
+		effect:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kTileMoveEffect] = nil
+	end
+end
+
 function ItemView:showAdviseEffect(dir)
 	local itemView, itemBackView, itemShowView = self.itemSprite[ItemSpriteType.kItem], self.itemSprite[ItemSpriteType.kItemBack], self.itemSprite[ItemSpriteType.kItemShow]
 	local toX = 0
@@ -2454,7 +2754,7 @@ function ItemView:playMonsterEncourageAnimation( ... )
 	if monster then monster:playEncourageAnimation() end
 end
 
-function ItemView:playMonsterJumpAnimation( callback )
+function ItemView:playMonsterJumpAnimation( jumpCallback, finishCallback )
 	-- body
 	local monster = self.itemSprite[ItemSpriteType.kBigMonster]
 	local function animationCallback( ... )
@@ -2462,13 +2762,13 @@ function ItemView:playMonsterJumpAnimation( callback )
 		if monster then monster:removeFromParentAndCleanup(true) end
 		self.itemSprite[ItemSpriteType.kBigMonster] = nil
 		self.isNeedUpdate = true
-		if callback then callback() end
+		if finishCallback then finishCallback() end
 	end
 	
 	if monster then 
-		monster:playJumpAnimation(animationCallback)
+		monster:playJumpAnimation(jumpCallback, animationCallback)
 	else
-		if callback then callback() end
+		if finishCallback then finishCallback() end
 	end
 end
 
@@ -2545,7 +2845,7 @@ function ItemView:playMaydayBossCast(boardView, callback)
 end
 
 function ItemView:buildBossAnim(data)
-	local boss = TileBoss:create(BossType.kCat)
+	local boss = TileBoss:create(BossType.kElephant)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -2575,20 +2875,38 @@ function ItemView:playBossHit(boardView, callback)
 	boss:hit(animationCallback)
 end
 
-function ItemView:playMonsterDestroyItem(boardView, callback )
+function ItemView:playMonsterDestroyItem(r_min, r_max, c_min, c_max, delayIndex, animationCallback )
 	-- body
 	local sprite
-	local function animationCallback( ... )
+	local function localCallback( ... )
 		-- body
-		if callback then callback() end
+
 		if sprite then sprite:removeFromParentAndCleanup(true) end
-		self.itemSprite[ItemSpriteType.kNormalEffect] = nil
-		
+		self.itemSprite[ItemSpriteType.kBigMonsterFoot] = nil
+
 	end
-	sprite = ItemViewUtils:buildMonsterFootAnimation( boardView, animationCallback )
-	sprite:setPosition(self:getBasePosition(self.x, self.y))
-	self.itemSprite[ItemSpriteType.kNormalEffect] = sprite
+
+	local function getItemPosition( x,y )
+		-- body
+		local tempX = (x - 0.5 ) * GamePlayConfig_Tile_Width
+		local tempY = (Max_Item_Y - y - 0.5 ) * GamePlayConfig_Tile_Width
+		return ccp(tempX, tempY)
+
+	end
+
+	if r_max - r_min > 5 then 
+		sprite = BigMonsterFoot:create( localCallback, animationCallback )
+		local basePos = getItemPosition(5, 5)
+		sprite:setPosition(ccp(basePos.x, basePos.y))
+		sprite:setScale(1.2)
+	else
+		sprite = MonsterFoot:create( localCallback,animationCallback, delayIndex )
+		local basePos = getItemPosition(c_min, r_min)
+		sprite:setPosition(ccp(basePos.x + GamePlayConfig_Tile_Width, basePos.y - GamePlayConfig_Tile_Height/2))
+	end
+	self.itemSprite[ItemSpriteType.kBigMonsterFoot] = sprite
 	self.isNeedUpdate = true
+	
 end
 
 function ItemView:playSnailRoadChangeState( changeToBright )
@@ -2724,6 +3042,8 @@ end
 
 local needTransLayer = table.const{
 	-- ItemSpriteType.kTileBlocker,
+	ItemSpriteType.kMoveTileBackground,
+
 	ItemSpriteType.kSand,
 	ItemSpriteType.kLight,
 	ItemSpriteType.kItem, 
@@ -2777,6 +3097,92 @@ function ItemView:reinitTransHeadByLogic(gameItemData, boardData)
 	self.transClippingContainer = nil
 
 	self:initPosBoardDataPos(gameItemData, true)
+	self.isNeedUpdate = true
+end
+
+-- function ItemView:addTileMoveAnimation(animation)
+-- 	self.getContainer(ItemSpriteType.kTileMove):addChild(animation)
+-- end
+
+function ItemView:playTileMoveAnimation(transContainer, moveDataList, onMoveFinishCallback)
+	if not self.boardViewTransContainer then
+		-- 保存已有的视图
+		self.boardViewTransContainer = self:copyBoardTransData()
+	end
+
+	if transContainer then
+		if transContainer and transContainer.datas then
+			self:copyDatasFrom(transContainer.datas)
+		end
+		if moveDataList and #moveDataList > 0 then
+			local startPos = moveDataList[1].pos
+
+			local actionsCount = 0
+			for k, v in pairs(transContainer.items) do
+				v:removeFromParentAndCleanup(false)
+				local container = self.getContainer(k)
+				if container then
+					local offsetX, offsetY = 0, 0
+					if k == ItemSpriteType.kPass or table.exist(needUpdateLayers, k) then
+						local itemPosOffset = self.itemPosAdd[k]
+						if itemPosOffset then
+							offsetX = itemPosOffset.x
+							offsetY = itemPosOffset.y
+						else
+							if k == ItemSpriteType.kBigMonster then
+								offsetX = 0.5 * self.w
+								offsetY = -0.5 * self.h
+							end
+						end
+					end
+					v:setPosition(ccp(startPos.x + offsetX, startPos.y + offsetY))
+					container:addChild(v)
+				end
+				self.itemSprite[k] = v
+				-- 移动
+				local seq = CCArray:create()
+				local prePos = nil
+				for _, move in ipairs(moveDataList) do
+					if prePos then 
+						seq:addObject(CCMoveBy:create(move.time, ccp(move.pos.x - prePos.x, move.pos.y - prePos.y)))
+					end
+					prePos = move.pos
+				end
+				local function onMoveEnd()
+					actionsCount = actionsCount - 1
+					if actionsCount == 0 then
+						if onMoveFinishCallback then onMoveFinishCallback() end
+					end
+				end
+				seq:addObject(CCCallFunc:create(onMoveEnd))
+
+				actionsCount = actionsCount + 1
+				v:runAction(CCSequence:create(seq))
+			end
+		end
+	else
+		if onMoveFinishCallback then onMoveFinishCallback() end
+	end
+end
+
+function ItemView:reinitBoardViews(gameItemData, boardData, transContainer)
+	if not self.boardViewTransContainer then
+		-- 保存已有的视图
+		self.boardViewTransContainer = self:copyBoardTransData()
+	end
+
+	for k, v in pairs(transContainer.items) do
+		v:removeFromParentAndCleanup(false)
+		local container = self.getContainer(k)
+		if container then
+			v:setPosition(self:getBasePosition(self.x, self.y))
+			container:addChild(v)
+		end
+		self.itemSprite[k] = v
+	end
+
+	self:initPosBoardDataPos(gameItemData, true)
+
 	self.isNeedUpdate = true
 end
 
@@ -2913,8 +3319,14 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		itemSprite = self:buildDigGround(itemData.digGroundLevel, isOnlyGetSprite)
 		layer = ItemSpriteType.kDigBlocker
 	elseif itemData.ItemType == GameItemType.kDigJewel then 
-		itemSprite = self:buildDigJewel(itemData.digJewelLevel, itemData.digJewelType, isOnlyGetSprite)
+		itemSprite = self:buildDigJewel(itemData.digJewelLevel, self.context.levelType, isOnlyGetSprite)
 		layer = ItemSpriteType.kDigBlocker
+	elseif itemData.ItemType == GameItemType.kGoldZongZi then 
+		itemSprite = self:buildGoldZongZi(itemData.digGoldZongZiLevel,isOnlyGetSprite)
+		layer = ItemSpriteType.kDigBlocker
+	elseif itemData.ItemType == GameItemType.kBottleBlocker then
+		itemSprite = self:buildBottleBlocker(itemData.bottleLevel , itemData.ItemColorType , nil , true)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kAddMove then
 		itemSprite = self:buildAddMove(itemData.ItemColorType, itemData.numAddMove, isOnlyGetSprite)
 		layer = ItemSpriteType.kItemShow
@@ -3069,7 +3481,9 @@ function ItemView:headTransToIn(itemData, boardData, dp, callback)
 	self.transClippingContainer = tempSprite
 	self:addSpriteToTransClippingNode(tempSprite)
 	local pos = tempSprite:getPosition()
+
 	tempSprite:setPosition(ccp(pos.x - dp.x, pos.y - dp.y))
+
 	tempSprite:runAction(CCSequence:createWithTwoActions(CCMoveBy:create(GamePlayConfig_Transmission_Time,dp), CCCallFunc:create(moveCallback)))
 	self.isNeedUpdate = true
 end
@@ -3154,6 +3568,14 @@ function ItemView:setMagicLampLevel(level, color, callback)
 		sprite:playCasting()
 	end
 end
+
+function ItemView:explodeGoldZongZi(callback)
+	local sprite = self.itemSprite[ItemSpriteType.kDigBlocker]
+	if sprite then
+		sprite:explodeGoldZongZi(callback)
+	end
+end
+
 
 function ItemView:buildSuperBlocker()
 	local sprite = TileSuperBlocker:create()
@@ -3261,6 +3683,21 @@ function ItemView:deleteMagicTile()
 	end
 end
 
+function ItemView:addMagicTileWater(data)
+	if self.itemSprite[ItemSpriteType.kMagicTileWater] == nil then
+		local waterLayer = TileMagicTile:createWaterAnim()
+		self.itemSprite[ItemSpriteType.kMagicTileWater] = waterLayer
+		self.itemPosAdd[ItemSpriteType.kMagicTileWater] = ccp(0, -24)
+	end
+end
+
+function ItemView:removeMagicTileWater()
+	if self.itemSprite[ItemSpriteType.kMagicTileWater] and self.itemSprite[ItemSpriteType.kMagicTileWater]:getParent() then
+		self.itemSprite[ItemSpriteType.kMagicTileWater]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kMagicTileWater] = nil
+	end
+end
+
 function ItemView:changeMagicTileColor(color)
 	if color == 'red' then
 		local sprite = self.itemSprite[ItemSpriteType.kTileBlocker]
@@ -3272,13 +3709,15 @@ end
 
 function ItemView:buildHalloweenBoss()
 	-- debug.debug()
-	local bossIcon = Sprite:createWithSpriteFrameName('xmas_boss_icon_0000')
-	self.itemSprite[ItemSpriteType.kNormalEffect] = bossIcon
+	-- local bossIcon = Sprite:createWithSpriteFrameName('xmas_boss_icon_0000')
+	self.itemSprite[ItemSpriteType.kNormalEffect] = TileDragonBoss:buildHalloweenBoss()
 end
 
 function ItemView:clearHalloweenBoss()
-	self.itemSprite[ItemSpriteType.kNormalEffect]:removeFromParentAndCleanup(true)
-	self.itemSprite[ItemSpriteType.kNormalEffect] = nil
+	if self.itemSprite[ItemSpriteType.kNormalEffect] and self.itemSprite[ItemSpriteType.kNormalEffect]:getParent() then
+		self.itemSprite[ItemSpriteType.kNormalEffect]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kNormalEffect] = nil
+	end
 end
 
 function ItemView:addSandView(sandLevel)
@@ -3438,6 +3877,14 @@ function ItemView:playStoneActiveAnim(stoneLevel, targetPos, callback)
 	local stoneSprite = self.itemSprite[ItemSpriteType.kItemShow]
 	if stoneSprite then
 		-- stoneSprite:active(stoneLevel, targetPos)
+		-- remove old anim
+		local fireSprite = self.itemSprite[ItemSpriteType.kMagicStoneFire]
+		if fireSprite and not fireSprite.isDisposed then
+			fireSprite:removeFromParentAndCleanup(true)
+			if fireSprite.onAnimFinish then fireSprite.onAnimFinish() end
+			self.itemSprite[ItemSpriteType.kMagicStoneFire] = nil
+		end
+		-- add new anim
 		local function onAnimFinish()
 			if stoneSprite and not stoneSprite.isDisposed then
 				stoneSprite:updateStoneSprite()
@@ -3453,6 +3900,7 @@ function ItemView:playStoneActiveAnim(stoneLevel, targetPos, callback)
 
 		local anim = TileMagicStone:createActiveAnim(texture, stoneLevel, stoneSprite.direction, onAnimFinish, targetPos)
 		anim:setPosition(self:getBasePosition(self.x, self.y))
+		anim.onAnimFinish = callback
 		self.itemSprite[ItemSpriteType.kMagicStoneFire] = anim
 
 		stoneSprite:removeStoneSprite()

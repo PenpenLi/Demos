@@ -1,5 +1,5 @@
 Wp8Payments = {
-    CHINA_MOBILE = 1,
+--    CHINA_MOBILE = 1,
     IAPPPAY = 4,
     MSPAY = 5,
 }
@@ -7,7 +7,7 @@ Wp8Payments = {
 Payments = Wp8Payments
 
 Wp8SupportedPayments = {
-	[Wp8Payments.CHINA_MOBILE] = {1,2,3},
+--	[Wp8Payments.CHINA_MOBILE] = {1,2,3},
 	[Wp8Payments.IAPPPAY] = {1,2,3,4,5},
 	[Wp8Payments.MSPAY] = {},
 }

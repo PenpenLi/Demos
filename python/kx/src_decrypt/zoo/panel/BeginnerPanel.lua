@@ -42,7 +42,10 @@ function BeginnerPanel:init()
 	end
 	self.btnGet = GroupButtonBase:create(self.btnGet)
 
-	if self:isBaiduPlatform() then
+	if PlatformConfig:isPlatform(PlatformNameEnum.kCMGame) and DcUtil.getSubPlatform and DcUtil.getSubPlatform() == "he201507211442349840" then --江西移动活动
+		self.captain:setText(Localization:getInstance():getText("beginner.panel.title"))
+		self.cmtText:setString(Localization:getInstance():getText("enter.invite.code.panel.des.jxyd"))
+	elseif self:isBaiduPlatform() then
 		self.captain:setText(Localization:getInstance():getText("beginner.panel.title.baidu"))
 		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text.baidu"))
 	elseif PlatformConfig:isQQPlatform() then
@@ -126,6 +129,7 @@ function BeginnerPanel:getPresents()
 	local context = self 
 
 	local function onGetRewardComplete(evt)
+		UserManager:getInstance().userExtend:setNewUserReward(1)
 		local rewards = evt.data
 		if rewards and #rewards > 0 then
 			self:openPackage()

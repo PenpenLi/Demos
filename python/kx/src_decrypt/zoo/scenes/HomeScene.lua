@@ -1,4 +1,3 @@
-
 -- Copyright C2009-2013 www.happyelements.com, all rights reserved.
 -- Create Date:	2013年08月27日 15:32:36
 -- Author:	ZhangWan(diff)
@@ -28,6 +27,7 @@ require "zoo.scenes.component.HomeScene.item.CoinButton"
 require "zoo.scenes.component.HomeScene.item.GoldButton"
 require "zoo.scenes.component.HomeScene.item.EnergyButton"
 require "zoo.scenes.component.HomeScene.item.StarButton"
+require "zoo.scenes.component.HomeScene.item.QQStarRewardButton"
 require "zoo.scenes.component.HomeScene.GiftButton"
 require "zoo.scenes.component.HomeScene.StarRewardButton"
 require "zoo.scenes.component.HomeScene.LadybugButton"
@@ -56,6 +56,7 @@ require "zoo.common.CommonAction"
 require "zoo.scenes.component.HomeScene.FriendPicture"
 
 require "zoo.panel.starRewardPanel"
+require "zoo.panel.QQStarRewardPanel"
 
 require "zoo.net.Http"
 require "zoo.gameGuide.GameGuide"
@@ -74,7 +75,6 @@ require 'zoo.scenes.component.HomeScene.FriendButton'
 require 'zoo.scenes.component.HomeScene.MarketButton'
 require 'zoo.scenes.component.HomeScene.UpdateButton'
 require "zoo.scenes.component.HomeScene.FruitTreeButton"
-require "zoo.scenes.component.HomeScene.YingyongBarButton"
 
 require 'zoo.panel.component.friendRankingPanel.FriendRankingPanel'
 require "zoo.data.FreegiftManager"
@@ -100,7 +100,7 @@ require "zoo.panel.GiveBackPanel"
 require "zoo.data.WeeklyRaceManager"
 require 'zoo.scenes.component.HomeScene.WeeklyRaceButton'
 require "zoo.util.PushActivity"
-
+require 'zoo.scenes.component.HomeScene.HomeSceneSettingButton'
 
 require "zoo.scenes.component.HomeScene.TimeLimitButton"
 require "zoo.panel.TimeLimitPanel"
@@ -112,11 +112,17 @@ _G.__ChristmasUpdate = true
 _G.__SpringFes2015Update = true
 _G.__AnniversaryTaskUpdated = true
 _G.__LaborDay2015Update = true
+_G.__DragonBoatFestival2015Update = true
 require 'zoo.common.LeaderBoardSubmitUtil'
 
 
-require "zoo.data.RabbitWeeklyManager"
-require "zoo.scenes.component.HomeScene.RabbitWeeklyButton"
+
+-- require "zoo.data.RabbitWeeklyManager"
+-- require "zoo.scenes.component.HomeScene.RabbitWeeklyButton"
+
+require "zoo.panel.summerWeekly.SummerWeeklyMatchManager"
+require "zoo.panel.summerWeekly.SummerWeeklyPanel"
+require "zoo.scenes.component.HomeScene.iconButtons.SummerWeeklyButton"
 
 require "zoo.panel.ConsumeHistoryPanel"
 require "zoo.panel.ConsumeTipPanel"
@@ -126,8 +132,11 @@ require "zoo.panel.InnerNotiPanel"
 require "zoo.panel.recall.RecallFriendUnlockPanel"
 require "zoo.panel.recall.RecallLevelUnlockPanel"
 require "zoo.panel.recall.RecallItemPanel"
-require "zoo.data.AdVideoManager"
-require "zoo.scenes.component.HomeScene.AdVideoButton"
+require "zoo.scenes.component.HomeScene.QQStarRewardLogic"
+require 'zoo.scenes.component.HomeScene.buttonLayout.ButtonsBarEventDispatcher'
+require 'zoo.scenes.component.HomeScene.buttonLayout.HomeSceneButtonsManager'
+require 'zoo.scenes.component.HomeScene.buttonLayout.HideAndShowButton'
+require 'zoo.scenes.component.HomeScene.buttonLayout.HomeSceneButtonsBar'
 ---------------------------------------------------
 -------------- HomeScene
 ---------------------------------------------------
@@ -140,6 +149,8 @@ function HomeScene:onInit(Scene, ...)
 	
 	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
 	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
+	local topScreenPosY 	= visibleOrigin.y + visibleSize.height
+	local rightScreenPosX	= visibleOrigin.x + visibleSize.width
 
 	-- Data Model
 	self.metaModel			= MetaModel:sharedInstance()
@@ -149,6 +160,12 @@ function HomeScene:onInit(Scene, ...)
 	-- -------------------
 	self.worldScene = WorldScene:create(self)
 	self:addChild(self.worldScene)
+ 	if not (PrepackageUtil:isPreNoNetWork() or StarRewardModel:getInstance():update().allMissionComplete) then
+ 		if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+			QQStarRewardLogic:getInstance():init(self)
+		end
+ 	end
+	
 
 	------------------------------------
 	---- Buttons With Cloud Background
@@ -164,8 +181,7 @@ function HomeScene:onInit(Scene, ...)
 	self:addChild(self.starButton)
 	self:addChild(self.goldButton)
 
-	local topScreenPosY 	= visibleOrigin.y + visibleSize.height
-	local rightScreenPosX	= visibleOrigin.x + visibleSize.width
+	
 
 	self.energyButton:setPositionX(visibleOrigin.x + 10)
 	self.energyButton:setPositionY(topScreenPosY - 15)
@@ -179,6 +195,8 @@ function HomeScene:onInit(Scene, ...)
 
 	self.goldButton:setPositionX(rightScreenPosX - coinButtonSizeWidth)
 	self.goldButton:setPositionY(topScreenPosY - 140)
+
+
 
 	--------------------------
 	-- Left Screen Bar
@@ -203,52 +221,26 @@ function HomeScene:onInit(Scene, ...)
 	self:addChild(rightRegionLayoutBar)
 
 	-------------------------
-	-- Stare Reward Button
+	-- Star Reward Button
 	-- ------------------------
 	if not (PrepackageUtil:isPreNoNetWork() or StarRewardModel:getInstance():update().allMissionComplete) then
-		local starRewardButton = StarRewardButton:create()
-		leftRegionLayoutBar:addItem(starRewardButton)
 
-		local function onStarRewardPanelClose()
-			starRewardButton:update()
-			if StarRewardModel:getInstance():update().allMissionComplete then
-				leftRegionLayoutBar:removeItem(starRewardButton)
-				starRewardButton:removeAllEventListeners()
-				starRewardButton:dispose()
+		if PlatformConfig:isPlatform(PlatformNameEnum.kQQ) then
+			if QQStarRewardLogic:getInstance():isOldUser() then
+				QQStarRewardLogic:getInstance():createFalseButton()
 			end
-		end
-
-		local function onStarRewardButtonTapped()
-
-			-- Pass In Position
-			local starRewardBtnPos 			= starRewardButton:getPosition()
-			local starRewardBtnParent		= starRewardButton:getParent()
-			local starRewardBtnPosInWorldSpace	=starRewardBtnParent:convertToWorldSpace(ccp(starRewardBtnPos.x, starRewardBtnPos.y))
-
-			local starRewardBtnSize	= starRewardButton.wrapper:getGroupBounds().size
-
-			starRewardBtnPosInWorldSpace.x = starRewardBtnPosInWorldSpace.x + starRewardBtnSize.width / 2
-			starRewardBtnPosInWorldSpace.y = starRewardBtnPosInWorldSpace.y - starRewardBtnSize.height / 2
-
-			local starRewardPanel	= StarRewardPanel:create(starRewardBtnPosInWorldSpace)
-			if starRewardPanel then
-				starRewardPanel:registerCloseCallback(onStarRewardPanelClose)
-				starRewardPanel:popout()
+		else
+			self:createStarRewardButton(leftRegionLayoutBar)
+			local function onTotalStarNumberChange()
+				self:createStarRewardButton(leftRegionLayoutBar)
 			end
+			self:addEventListener(HomeSceneEvents.USERMANAGER_TOTAL_STAR_NUMBER_CHANGE, onTotalStarNumberChange)
 		end
-
-		local function onTotalStarNumberChange()
-			starRewardButton:update()
-		end
-
-		starRewardButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onStarRewardButtonTapped)
-		self:addEventListener(HomeSceneEvents.USERMANAGER_TOTAL_STAR_NUMBER_CHANGE, onTotalStarNumberChange)
 	end
-
 	-------------------------------------
 	-- Invite Friend Button
 	-- -------------------------------
-	if MaintenanceManager:getInstance():isEnabled("InviteCode") then
+	if MaintenanceManager:getInstance():isEnabled("InviteCode") and not PlatformConfig:isJJPlatform() then
 		local inviteFriendBtn	= InviteFriendButton:create()
 		local function onInviteFriendBtnTapped(event)
 
@@ -273,7 +265,6 @@ function HomeScene:onInit(Scene, ...)
 	-- -------------------------
 	local function buildMessageButton()
 		if self.messageButton then return end
-
 		local function onMessageBtnTapped()
 			local function callback(result, evt)
 				if result == "success" then
@@ -298,16 +289,30 @@ function HomeScene:onInit(Scene, ...)
 
 	if (not PrepackageUtil:isPreNoNetWork() ) and UserManager:getInstance().requestNum > 0 then
 		buildMessageButton()
+	else
+		HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMail, true)
 	end
 
 	local function onMessageCountUpdate()
 		local count = UserManager:getInstance().requestNum
 		if count <= 0 then
+			HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMail, true)
 			if self.messageButton and self.leftRegionLayoutBar:containsItem(self.messageButton) then
-				self.leftRegionLayoutBar:removeItem(self.messageButton, false)
-				self.messageButton = nil
+				HomeSceneButtonsManager.getInstance():flyToBtnGroupBar(HomeSceneButtonType.kMail, self.messageButton, function ()
+					self.messageButton:setVisible(false)
+					self.messageButton.wrapper:setTouchEnabled(false)
+					self.hideAndShowBtn:setEnable(false)
+				end,function ()
+					self.hideAndShowBtn:playAni(function ()
+						self.hideAndShowBtn:setEnable(true)
+						HomeSceneButtonsManager.getInstance():showButtonHideTutor()
+					end)
+					self.leftRegionLayoutBar:removeItem(self.messageButton, false)
+					self.messageButton = nil
+				end)
 			end
 		else
+			HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMail, false)
 			if self.messageButton and self.leftRegionLayoutBar:containsItem(self.messageButton) then
 				self.messageButton:updateView()
 			else
@@ -345,35 +350,28 @@ function HomeScene:onInit(Scene, ...)
 	-- end
 	-- self.addEventListener(HomeSceneEvents.USERMANAGER_LEVEL_AREA_OPENED_ID_CHANGE, onLevalAreaUnlocked)
 
+	--HideAndShowButton
+	local function onHideAndShowBtnTapped()
+		self:showButtonGroup()
+	end
+	self.hideAndShowBtn = HideAndShowButton:create(ResourceManager:sharedInstance():buildGroup("buttonGroupBtn"))
+	local btnSize = self.hideAndShowBtn:getGroupBounds().size
+	local _x = visibleOrigin.x + visibleSize.width - btnSize.width + 40
+	local _y = visibleOrigin.y + btnSize.height - 35
+	self.hideAndShowBtn:setPosition(ccp(_x, _y))
+	self:addChild(self.hideAndShowBtn.ui)
+	self.hideAndShowBtn:ad(DisplayEvents.kTouchTap, onHideAndShowBtnTapped)
+
 	--------------------
 	---- Bag Button
 	--------------------
-	local function onBagButtonTapped(event)
-		self:popoutBagPanel()
-	end
-	self.bagButton = BagButton:create()
-	local btnSize = self.bagButton:getGroupBounds().size
-	local _x = visibleOrigin.x + visibleSize.width - btnSize.width + 30
-	local _y = visibleOrigin.y + btnSize.height - 45
-	self.bagButton:setPosition(ccp(_x, _y))
-	self:addChild(self.bagButton)
-	self.bagButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onBagButtonTapped)
-
+	HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kBag, true)
 
 	--------------------
 	---- Friend Ranking Button
 	--------------------
 	if not (PrepackageUtil:isPreNoNetWork() or __IOS_FB )then
-		local function onFriendButtonTapped(event)
-			self:popoutFriendRankingPanel()
-		end
-		self.friendButton = FriendButton:create()
-		local friendBtnSize = self.friendButton:getGroupBounds().size
-		local friend_x = visibleOrigin.x + visibleSize.width - friendBtnSize.width - 75
-		local friend_y = visibleOrigin.y + btnSize.height - 46
-		self.friendButton:setPosition(ccp(friend_x, friend_y))
-		self:addChild(self.friendButton)
-		self.friendButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onFriendButtonTapped)
+		HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kFriends, true)
 	end
 
 	-- --------------------
@@ -388,8 +386,8 @@ function HomeScene:onInit(Scene, ...)
 	end
 	self.marketButton = MarketButton:create()
 	local btnSize = self.marketButton:getGroupBounds().size
-	local x = visibleOrigin.x + visibleSize.width - btnSize.width - 185
-	local y = visibleOrigin.y + btnSize.height - 44
+	local x = visibleOrigin.x + visibleSize.width - btnSize.width - 95
+	local y = visibleOrigin.y + btnSize.height - 38
 	local marketButtonPosition = nil
 	if __IOS_FB then
 		marketButtonPosition = ccp(x + 120, y)
@@ -402,12 +400,7 @@ function HomeScene:onInit(Scene, ...)
 	self.marketButton:showDiscount(MarketManager:sharedInstance():shouldShowMarketButtonDiscount())
 	self.marketButton:showNew(MarketManager:sharedInstance():shouldShowMarketButtonNew())
 
-	-- --------------------
-	-- ---- Fruit Tree Panel Button
-	-- --------------------
-	if not PrepackageUtil:isPreNoNetWork() then
-		self:createAndShowFruitTreeButton()
-	end
+	
 
 	-- -------------------------
 	-- Add Event Listener
@@ -440,26 +433,22 @@ function HomeScene:onInit(Scene, ...)
 		self.goldButton:playOnlyTipAnim();
 		CCUserDefault:sharedUserDefault():setBoolForKey("gold.button.tip.showed", true);
 	end
+
 	--------------------
 	---- Pause Button
 	----------------------
-	self.pauseBtnRes	= ResourceManager:sharedInstance():buildGroup("pauseBtn")
-
-	local pauseBtnBubbleBg	= self.pauseBtnRes:getChildByName("bubbleBg")
-	assert(pauseBtnBubbleBg)
-
-	local wrapLayer	= Layer:create()
-	wrapLayer:addChild(self.pauseBtnRes)
-	self.pauseBtnRes = wrapLayer
+	self.pauseBtn = ResourceManager:sharedInstance():buildGroup("homeSceneSettingBtn")
+	self.pauseBtn = HomeSceneSettingButton:create(self.pauseBtn)
+	self.pauseBtnRes = self.pauseBtn.ui
 
 	-- Scale Small
 	local config 	= UIConfigManager:sharedInstance():getConfig()
 	local uiScale	= config.homeScene_uiScale
-	self.pauseBtnRes:setScale(uiScale)
+	self.pauseBtnRes:setScale(self.pauseBtnRes:getScale() * uiScale)
 
 	self:addChild(self.pauseBtnRes)
 
-	local manualAdjustX	= 20
+	local manualAdjustX	= -20
 	local manualAdjustY	= 10
 
 	local visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
@@ -467,26 +456,6 @@ function HomeScene:onInit(Scene, ...)
 	local pauseBtnPosY	= visibleOrigin.y + self.pauseBtnRes:getGroupBounds().size.height + manualAdjustY
 
 	self.pauseBtnRes:setPosition(ccp(pauseBtnPosX, pauseBtnPosY))
-	self.pauseBtnRes:setTouchEnabled(true, 0, true)
-	self.pauseBtnRes:setButtonMode(true)
-	self.pauseBtnRes:setAnchorPointCenterWhileStayOrigianlPosition()
-
-	local function onPauseBtnTapped()
-		self:onPauseBtnTapped()
-	end
-	self.pauseBtnRes:addEventListener(DisplayEvents.kTouchTap, onPauseBtnTapped)
-
-	-- Play Pause Btn Bubble Normal Action
-	local bubbleNormalAction = BubbleNormalAction:create(pauseBtnBubbleBg, 116.95, 113.60, 1, 1)
-	local repeatForever = CCRepeatForever:create(bubbleNormalAction)
-	pauseBtnBubbleBg:runAction(repeatForever)
-
-	--------------------
-	---- YingyongBar Button
-	----------------------
-	if PlatformConfig:isQQPlatform() then
-		self:createYingyongBarButton()
-	end
 
 	-------------------------------------------
 	---- Register The Interest Data 
@@ -508,7 +477,7 @@ function HomeScene:onInit(Scene, ...)
 		energyButton = self.energyButton,
 		starButton = self.starButton,
 		coinButton = self.coinButton,
-		bagButton = self.bagButton,
+		bagButton = self.hideAndShowBtn,
 		goldButton = self.goldButton,
 	}
 	HomeSceneFlyToAnimation:sharedInstance():init(config)
@@ -542,8 +511,21 @@ function HomeScene:onInit(Scene, ...)
 		local newTotalStarNumber = UserManager.getInstance().user:getStar() + UserManager.getInstance().user:getHideStar()
 		LeaderBoardSubmitUtil.submitTotalStars(newTotalStarNumber)
 	end
-
 	he_log_info("auto_test_tap_login")
+
+
+	GlobalEventDispatcher:getInstance():addEventListener(kGlobalEvents.kThirdPaySuccess, function() self:onThirdPaySuccess() end)
+end
+
+function HomeScene:showButtonGroup(endCallback)
+	self.hideAndShowBtn:setVisible(false)
+	local btnBarEvt = ButtonsBarEventDispatcher.new()
+	btnBarEvt:addEventListener(ButtonsBarEvents.kClose, function ()
+		self.hideAndShowBtn:setVisible(true)
+		self.buttonGroupBar = nil
+	end)
+	self.buttonGroupBar = HomeSceneButtonsBar:create(btnBarEvt)
+	self.buttonGroupBar:popout(endCallback)
 end
 
 function HomeScene:onSyncFinished()
@@ -696,7 +678,10 @@ function HomeScene:onTopLevelChange()
 		
 	    LadyBugMissionManager:sharedInstance():onTopLevelChange() 
 	    -- WeeklyRaceManager:sharedInstance():onTopLevelChange()
-	    RabbitWeeklyManager:sharedInstance():onTopLevelChange()
+	   	-- RabbitWeeklyManager:sharedInstance():onTopLevelChange()
+		if self.summerWeeklyButton == nil and SummerWeeklyMatchManager:getInstance():isLevelReached(newTopLevelId) then
+			self:createSummerWeeklyButton()
+		end
 	end
 end
 
@@ -1020,8 +1005,8 @@ function HomeScene:createFlyToBagAnimation(propsId, numOfTimes, isGoodsId)
 		if numOfTimes > 10 then numOfTimes = 10 end -- max 10 times
 	-----------------------------------------------------------------------------
 
-		local buttonSize = HomeScene:sharedInstance().bagButton:getGroupBounds().size
-		local buttonPos = HomeScene:sharedInstance().bagButton:getPositionInWorldSpace()
+		local buttonSize = HomeScene:sharedInstance().hideAndShowBtn:getGroupBounds().size
+		local buttonPos = HomeScene:sharedInstance().hideAndShowBtn:getPositionInWorldSpace()
 
 		local button = ResourceManager:sharedInstance():buildGroup('bagButtonIcon')
 
@@ -1541,6 +1526,15 @@ function HomeScene:onEnterHandler(event, ...)
 			self:popoutWdjRewardPanelIfNecessary()
 		end
 
+		-- Beginner Panel
+		local user = UserManager:getInstance():getUserRef()
+		if user:getTopLevelId() == 1 and UserManager:getInstance().userExtend:getNewUserReward() == 0 then
+			local panel = BeginnerPanel:create()
+			if panel then
+				panel:popout()
+			end
+		end
+
 		-- check and show notification/compens first time enter the HomeScene
 		if not self.isInited then
 			for k, v in ipairs(GiveBackPanelModel:getCompenIndexes()) do
@@ -1562,6 +1556,13 @@ function HomeScene:onEnterHandler(event, ...)
 			end
 		end
 		
+		-- --------------------
+		-- ---- Fruit Tree Panel Button
+		-- --------------------
+		if not PrepackageUtil:isPreNoNetWork() then
+			self:createAndShowFruitTreeButton()
+		end
+
 		--推送召回相关
 		self:pocessRecall()
 
@@ -1573,22 +1574,28 @@ function HomeScene:onEnterHandler(event, ...)
 			self:buildActivityButton()
 		end
 
-		self:updateAdVideoBtn()
-
 		if GameGuide then
 			GameGuide:sharedInstance():onEnterWorldMap(self)
 		end
 
-		if RabbitWeeklyManager:sharedInstance():isLevelReached() then
-			if self.rabbitWeeklyButton == nil then
-		 		self:createRabbitWeeklyButton()
+		-- if RabbitWeeklyManager:sharedInstance():isLevelReached() then
+		-- 	if self.rabbitWeeklyButton == nil then
+		--  		self:createRabbitWeeklyButton()
+		-- 	else
+		-- 		self.rabbitWeeklyButton:update()
+		-- 	end
+		-- end
+
+		if SummerWeeklyMatchManager:getInstance():isLevelReached() then
+			if self.summerWeeklyButton == nil then
+ 				self:createSummerWeeklyButton()
 			else
-				self.rabbitWeeklyButton:update()
+				self.summerWeeklyButton:update()
 			end
 		end
 
-		--兔子周赛免费次数获得tips
-		RabbitWeeklyManager:sharedInstance():showGetFreeTimeTip()
+		-- --兔子周赛免费次数获得tips
+		-- RabbitWeeklyManager:sharedInstance():showGetFreeTimeTip()
 
 		self:updateFriends()
 
@@ -1629,6 +1636,11 @@ function HomeScene:onEnterHandler(event, ...)
 		if __IOS then
 			IosPayment:showOutSideComplete()
 		end
+
+		if (__IOS or __WIN32) and not self.isInited then
+			IosPayGuide:init()
+		end
+
 		self.isInited = true
 	end
 end
@@ -1814,62 +1826,96 @@ function HomeScene:onKeyBackClicked(...)
 end
 
 function HomeScene:buildMarkPanel()
-	print("*********HomeScene:buildMarkPanel")
+	if UserManager.getInstance().user:getTopLevelId() > 7 then 
+		if HomeSceneButtonsManager.getInstance():getMarkButtonShowState() then 
+			if self.markButton then 
+				if self.rightRegionLayoutBar:containsItem(self.markButton) then 
+					self.rightRegionLayoutBar:removeItem(self.markButton)
+				end
+				self.markButton:removeAllEventListeners()
+				self.markButton:dispose()
+				self.markButton = nil
+			end
+			HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMark, true)
+		else
+			HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMark, false)
+			local function popWindow(clicked)
+				local btnPos 		= self.markButton:getPosition()
+				local btnParent		= self.markButton:getParent()
+				local btnPosInWorldPos	= btnParent:convertToWorldSpace(ccp(btnPos.x, btnPos.y))
 
-	local function popWindow(clicked)
-		-- Pass In Position
-		local btnPos 		= self.markButton:getPosition()
-		local btnParent		= self.markButton:getParent()
-		local btnPosInWorldPos	= btnParent:convertToWorldSpace(ccp(btnPos.x, btnPos.y))
+				local btnSize		= self.markButton.wrapper:getGroupBounds().size
+				btnPosInWorldPos.x = btnPosInWorldPos.x + btnSize.width / 2
+				btnPosInWorldPos.y = btnPosInWorldPos.y - btnSize.height / 2
 
-		local btnSize		= self.markButton.wrapper:getGroupBounds().size
-		btnPosInWorldPos.x = btnPosInWorldPos.x + btnSize.width / 2
-		btnPosInWorldPos.y = btnPosInWorldPos.y - btnSize.height / 2
+				local function stopMarkAnim()
+					self.markButton:stopHasSignAnimation()
+				end
 
-		local function stopMarkAnim()
-			self.markButton:stopHasSignAnimation()
-		end
+				local function closeCallback()
+					if self.markButton and self.rightRegionLayoutBar:containsItem(self.markButton)
+					and HomeSceneButtonsManager.getInstance():getMarkButtonShowState() then 
+						HomeSceneButtonsManager.getInstance():flyToBtnGroupBar(HomeSceneButtonType.kMark, self.markButton, function ()
+							if not self.markButton then return end
+							self.markButton:setVisible(false)
+							self.markButton.wrapper:setTouchEnabled(false)
+							self.hideAndShowBtn:setEnable(false)
+						end,function ()
+							if not self.markButton then 
+								HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMark, true)
+								return 
+							end
+							self.hideAndShowBtn:playAni(function ()
+								self.hideAndShowBtn:setEnable(true)
+								HomeSceneButtonsManager.getInstance():showButtonHideTutor()
+							end)
+							self.rightRegionLayoutBar:removeItem(self.markButton)
+							self.markButton:removeAllEventListeners()
+							self.markButton:dispose()
+							self.markButton = nil
+							HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kMark, true)
+						end)
+					end
 
-		local dayTime = 3600 * 24 * 1000
-		local curDay = math.floor(Localhost:time() / dayTime)
-		print("*********curDay", curDay)
-		self.lastMark = self.lastMark or 0
-		if clicked or self.lastMark < curDay then
-			local markModel = MarkModel:getInstance()
-			markModel:calculateSignInfo()
+				end
 
-			if markModel.canSign then
-				self.markButton:playHasSignAnimation()
-			else 
-				self.markButton:stopHasSignAnimation() 
+				local dayTime = 3600 * 24 * 1000
+				local curDay = math.floor(Localhost:time() / dayTime)
+				self.lastMark = self.lastMark or 0
+				if clicked or self.lastMark < curDay then
+					local markModel = MarkModel:getInstance()
+					markModel:calculateSignInfo()
+
+					if markModel.canSign then
+						self.markButton:playHasSignAnimation()
+					else 
+						self.markButton:stopHasSignAnimation() 
+					end
+
+					if clicked or markModel.canSign then
+						local panel = MarkPanel:create(btnPosInWorldPos)
+						panel:setMarkCallback(stopMarkAnim)
+						panel:setCloseCallback(closeCallback)
+						panel:popout()
+						self.lastMark = curDay
+					end
+				end
 			end
 
-			if clicked or markModel.canSign then
-				local panel = MarkPanel:create(btnPosInWorldPos)
-				panel:setMarkCallback(stopMarkAnim)
-				panel:popout()
-				self.lastMark = curDay
+			local function onMarkButtonTapped(evt)
+				popWindow(evt ~= nil)
+			end
+
+			if not self.markButton then 
+				local markButton = MarkButton:create()
+				if not markButton then print("error building mark button!") return end
+				markButton:setTipPosition(IconButtonBasePos.LEFT)
+				self.rightRegionLayoutBar:addItem(markButton)
+				markButton.wrapper:ad(DisplayEvents.kTouchTap, onMarkButtonTapped)
+				markButton.click = onMarkButtonTapped
+				self.markButton = markButton
 			end
 		end
-	end
-
-	local function onMarkButtonTapped(evt)
-		popWindow(evt ~= nil)
-	end
-
-	if UserManager.getInstance().user:getTopLevelId() > 7 then
-		--local markButton = ResourceManager:sharedInstance():buildGroup("MarkButton")
-		local markButton = MarkButton:create()
-		if not markButton then print("error building mark button!") return end
-		--self.leftRegionLayoutBar:addItem(markButton)
-
-		markButton:setTipPosition(IconButtonBasePos.LEFT)
-		self.rightRegionLayoutBar:addItem(markButton)
-		--markButton:playHasNotificationAnim()
-		--markButton:setTouchEnabled(true)
-		markButton.wrapper:ad(DisplayEvents.kTouchTap, onMarkButtonTapped)
-		markButton.click = onMarkButtonTapped
-		self.markButton = markButton
 	end
 end
 
@@ -2071,8 +2117,8 @@ function HomeScene:buildActivityButton()
 
 		for _,v in pairs(activitys) do
 			local config = require("activity/" .. v.source)
-			if not ActivityUtil:isSrcLoaded(config.src or {},v.version) or 
-			   not ActivityUtil:isResourceLoaded(config.resource or {},v.version) then  
+			
+			if not ActivityData.new(v):isLoaded() then  
 				if v.version == ActivityUtil:getCacheVersion(v.source) then 
 					ActivityUtil:executeAutoLua(v.source,v.version)
 				end
@@ -2333,10 +2379,11 @@ function HomeScene:onEnterForeGround()
 				data:start(false)
 			end
 		end
-		if PopoutManager:sharedInstance():haveWindowOnScreen() then --防止主界面弹活动面板,重新加载有问题
-			PushActivity:sharedInstance():onComeToFront(onGetList)
-			return
-		end
+		
+		-- if PopoutManager:sharedInstance():haveWindowOnScreen() then --防止主界面弹活动面板,重新加载有问题
+		-- 	PushActivity:sharedInstance():onComeToFront(onGetList)
+		-- 	return
+		-- end
 		
 		if UserManager.getInstance().user:getTopLevelId() < 15 then
 			PushActivity:sharedInstance():onComeToFront(onGetList)
@@ -2396,18 +2443,33 @@ function HomeScene:onApplicationHandleOpenURL(launchURL)
 		if not res.method then return end
 		if string.lower(res.method) == "addfriend" and res.para and
 			res.para.invitecode and res.para.uid then
-			local function onSuccess()
-				self:checkDataChange()
-				if self.coinButton and not self.coinButton.isDisposed then
-					self.coinButton:updateView()
+			if res.para.isyyb then
+				local function onSuccess()
+					CommonTip:showTip(Localization:getInstance():getText("add.friend.success.tips"), "positive", nil, 3)
+					DcUtil:addFriendQRCode(2)
 				end
-				CommonTip:showTip(Localization:getInstance():getText("url.scheme.add.friend"), "positive")
+				local function onFail(err)
+					CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err)), "negative", nil, 3)
+				end
+				local function startInvitedAndRewardLogic()
+					local logic = InvitedAndRewardLogic:create(false)
+					logic:start(res.para.invitecode, res.para.uid, onSuccess, onFail)
+				end
+				RequireNetworkAlert:callFuncWithLogged(startInvitedAndRewardLogic, nil, kRequireNetworkAlertAnimation.kNoAnimation)
+			else
+				local function onSuccess()
+					self:checkDataChange()
+					if self.coinButton and not self.coinButton.isDisposed then
+						self.coinButton:updateView()
+					end
+					CommonTip:showTip(Localization:getInstance():getText("url.scheme.add.friend"), "positive", nil, 3)
+				end
+				local function startInvitedAndRewardLogic()
+					local logic = InvitedAndRewardLogic:create(false)
+					logic:start(res.para.invitecode, res.para.uid, onSuccess)
+				end
+				RequireNetworkAlert:callFuncWithLogged(startInvitedAndRewardLogic, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 			end
-			local function startInvitedAndRewardLogic()
-				local logic = InvitedAndRewardLogic:create(false)
-				logic:start(res.para.invitecode, res.para.uid, onSuccess)
-			end
-			RequireNetworkAlert:callFuncWithLogged(startInvitedAndRewardLogic, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 		elseif string.lower(res.method) == "wxshare" and res.para and res.para.uid then
 			if MaintenanceManager:getInstance():isEnabled("wxsharetime") then
 				DcUtil:UserTrack({category = "wx_share", sub_category = "push_message_weixin",
@@ -2435,7 +2497,9 @@ function HomeScene:onApplicationHandleOpenURL(launchURL)
 end
 
 function HomeScene:setEnterFromGamePlay(levelId)
-	if not self.worldScene.isDisposed then self.worldScene:setEnterFromGamePlay(levelId) end
+	if not self.worldScene.isDisposed then 
+		self.worldScene:setEnterFromGamePlay(levelId) 
+	end
 end
 
 function HomeScene:hideFishButton()
@@ -2447,24 +2511,120 @@ function HomeScene:hideFishButton()
 	end
 end
 
-function HomeScene:createAndShowFruitTreeButton()
-	local function onFruitTreeButtonTapped(evt)
-		local function success()
-			self.fruitTreeButton.wrapper:setTouchEnabled(false)
-			self:runAction(CCCallFunc:create(function()
-				local scene = FruitTreeScene:create()
-				Director:sharedDirector():pushScene(scene)
-				self.fruitTreeButton.wrapper:setTouchEnabled(true)
-				self.fruitTreeButton:hideNewTag()
-			end))
+function HomeScene:createStarRewardButton(leftRegionLayoutBar)
+	if HomeSceneButtonsManager.getInstance():getStarRewardButtonShowState() then 
+		if self.starRewardButton then 
+			if leftRegionLayoutBar:containsItem(self.starRewardButton) then 
+				leftRegionLayoutBar:removeItem(self.starRewardButton)
+			end
+			self.starRewardButton:removeAllEventListeners()
+			self.starRewardButton:dispose()
+			self.starRewardButton = nil
 		end
-		local function fail(err, skipTip)
-			if not skipTip then CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err))) end
-			if GameGuide and not NewVersionUtil:hasUpdateReward() then
-				GameGuide:sharedInstance():onResult("fruitTreeButton", false)
+		if not StarRewardModel:getInstance():update().allMissionComplete then
+			HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kStarReward, true)
+		end
+	else
+		HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kStarReward, false)
+		local function onStarRewardPanelClose()
+			if self.starRewardButton and leftRegionLayoutBar:containsItem(self.starRewardButton) 
+				and HomeSceneButtonsManager.getInstance():getStarRewardButtonShowState() then
+				HomeSceneButtonsManager.getInstance():flyToBtnGroupBar(HomeSceneButtonType.kStarReward, self.starRewardButton, function ()
+					self.starRewardButton:setVisible(false)
+					self.starRewardButton.wrapper:setTouchEnabled(false)
+					self.hideAndShowBtn:setEnable(false)
+				end,function ()
+					self.hideAndShowBtn:playAni(function ()
+						self.hideAndShowBtn:setEnable(true)
+						HomeSceneButtonsManager.getInstance():showButtonHideTutor()
+					end)
+					leftRegionLayoutBar:removeItem(self.starRewardButton)
+					self.starRewardButton:removeAllEventListeners()
+					self.starRewardButton:dispose()
+					self.starRewardButton = nil
+					if not StarRewardModel:getInstance():update().allMissionComplete then
+						HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kStarReward, true)
+					end
+				end)
+			elseif self.starRewardButton then
+				self.starRewardButton:update()
 			end
 		end
 
+		local function onStarRewardButtonTapped()
+			local starRewardBtnPos = self.starRewardButton:getPosition()
+			local starRewardBtnParent = self.starRewardButton:getParent()
+			local starRewardBtnPosInWorldSpace =starRewardBtnParent:convertToWorldSpace(ccp(starRewardBtnPos.x, starRewardBtnPos.y))
+
+			local starRewardBtnSize	= self.starRewardButton.wrapper:getGroupBounds().size
+
+			starRewardBtnPosInWorldSpace.x = starRewardBtnPosInWorldSpace.x + starRewardBtnSize.width / 2
+			starRewardBtnPosInWorldSpace.y = starRewardBtnPosInWorldSpace.y - starRewardBtnSize.height / 2
+
+			local starRewardPanel	= StarRewardPanel:create(starRewardBtnPosInWorldSpace)
+			if starRewardPanel then
+				starRewardPanel:registerCloseCallback(onStarRewardPanelClose)
+				starRewardPanel:popout()
+			end
+		end
+
+		if not self.starRewardButton then 
+			local starRewardButton = StarRewardButton:create()
+			leftRegionLayoutBar:addItem(starRewardButton)
+			starRewardButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onStarRewardButtonTapped)
+			self.starRewardButton = starRewardButton
+		end
+	end
+end
+
+function HomeScene:createFruiteTreeButtonInHomeScene( ... )
+	-- body
+	HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kTree, false)
+	if self.fruitTreeBtn then return end
+
+	local btn = FruitTreeButton:create()
+	self.fruitTreeBtn = btn
+
+	local marketButton = self.marketButton
+	if not marketButton then return end
+	local pos_m = marketButton:getPosition()
+	local z_order = marketButton:getParent():getChildIndex(marketButton)
+	local function onFruitTreeBtnTap( ... )
+		-- body
+		local function fruiteSceneClose( evt )
+			-- body
+			if HomeSceneButtonsManager.getInstance():getFruitTreeButtonShowState() then
+				HomeSceneButtonsManager.getInstance():flyToBtnGroupBar(HomeSceneButtonType.kTree, self.fruitTreeBtn, function ()
+					self.fruitTreeBtn:setVisible(false)
+					self.fruitTreeBtn.wrapper:setTouchEnabled(false)
+					self.hideAndShowBtn:setEnable(false)
+				end,function ()
+					self.hideAndShowBtn:playAni(function ()
+						self.hideAndShowBtn:setEnable(true)
+						HomeSceneButtonsManager.getInstance():showButtonHideTutor()
+					end)
+					self.fruitTreeBtn:removeFromParentAndCleanup(true)
+					self.fruitTreeBtn = nil
+					HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kTree, true)
+				end)
+			end
+		end
+
+		local function success()
+			if self.isDisposed then return end
+			self.fruitTreeBtn.wrapper:setTouchEnabled(false)
+			self:runAction(CCCallFunc:create(function()
+				local scene = FruitTreeScene:create()
+				scene:addEventListener(kFruitTreeEvents.kExit, fruiteSceneClose)
+				Director:sharedDirector():pushScene(scene)
+				self.fruitTreeBtn.wrapper:setTouchEnabled(true, 0, true)
+				self.fruitTreeBtn:hideNewTag()
+			end))
+		end
+		local function fail(err, skipTip)
+			if self.isDisposed then return end
+			if not skipTip then CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err))) end
+		end
 		local function updateInfo()
 			FruitTreeSceneLogic:sharedInstance():updateInfo(success, fail)
 		end
@@ -2473,75 +2633,43 @@ function HomeScene:createAndShowFruitTreeButton()
 		end
 		RequireNetworkAlert:callFuncWithLogged(updateInfo, onLoginFail)
 	end
-	self.fruitTreeButton = FruitTreeButton:create()
-	self.fruitTreeButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onFruitTreeButtonTapped)
-	local function showFruitTreeButton()
+
+	btn.wrapper:addEventListener(DisplayEvents.kTouchTap, onFruitTreeBtnTap)
+	btn.onClick = onFruitTreeBtnTap
+	self:addChildAt(btn, z_order)
+	btn:setPosition(ccp(pos_m.x - 120, pos_m.y))
+end
+
+function HomeScene:createAndShowFruitTreeButton()
+	local function showFruitTreeButton(evt, noTutor)
 		local user = UserManager:getInstance():getUserRef()
 		if user and user:getTopLevelId() >= 16 then
 			self:removeEventListener(HomeSceneEvents.USERMANAGER_TOP_LEVEL_ID_CHANGE, showFruitTreeButton)
-			local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
-			local visibleSize = Director:sharedDirector():getVisibleSize()
-			local btnSize = self.fruitTreeButton:getGroupBounds().size
-			local x = visibleOrigin.x + visibleSize.width - btnSize.width - 300
-			local y = visibleOrigin.y + btnSize.height - 49
-			FruitTreeButtonPosition = ccp(x, y)
-			self.fruitTreeButton:setPosition(FruitTreeButtonPosition)
-			local index
-			if self.marketButton and not self.marketButton.isDisposed then index = self:getChildIndex(self.marketButton)
-			elseif self.friendButton and not self.friendButton.isDisposed then index = self:getChildIndex(self.friendButton)
-			elseif self.bagButton and not self.bagButton.isDisposed then index = self:getChildIndex(self.bagButton) end
-			if index then self:addChildAt(self.fruitTreeButton, index)
-			else self:addChild(self.fruitTreeButton) end
 
-			self.fruitTreeButtonShown = true
-			if PlatformConfig:isQQPlatform() and self.yingyongbarButton and not self.yingyongbarButton.isDisposed then -- 调整应用吧按钮位置
-				local oldPos = self.yingyongbarButton:getPosition()
-				self.yingyongbarButton:setPosition(ccp(oldPos.x - btnSize.width, oldPos.y))
-			end
-
-			if GameGuide and not NewVersionUtil:hasUpdateReward() then
-				GameGuide:sharedInstance():onShowButton("fruitTree")
+			if HomeSceneButtonsManager.getInstance():getFruitTreeButtonShowState() then
+				HomeSceneButtonsManager.getInstance():setButtonShowPosState(HomeSceneButtonType.kTree, true)
+				if not noTutor then 
+					HomeSceneButtonsManager.getInstance():showFruitTreeAppearTutor()
+				end
+			else
+				self:createFruiteTreeButtonInHomeScene()
+				if not noTutor then
+					HomeSceneButtonsManager.getInstance():showFruitTreeAppearTutor(true)
+				end
 			end
 		end
 	end
 	local user = UserManager:getInstance():getUserRef()
 	if user and user:getTopLevelId() >= 16 then
-		showFruitTreeButton()
+		showFruitTreeButton(nil, true)
 	else
 		self:addEventListener(HomeSceneEvents.USERMANAGER_TOP_LEVEL_ID_CHANGE, showFruitTreeButton)
 	end
 end
 
-function HomeScene:createYingyongBarButton()
-	local function startAppBar(sub)
-		ShareManager:openAppBar( sub )
-	end
-	
-	local function onYybButtonTapped(evt)
-		pcall(startAppBar)
-	end
-	self.yingyongbarButton = YingyongBarButton:create()
-	self.yingyongbarButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onYybButtonTapped)
-
-	local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
-	local visibleSize = Director:sharedDirector():getVisibleSize()
-	local btnSize = self.yingyongbarButton:getGroupBounds().size
-
-	local xOffset = 300
-	if self.fruitTreeButtonShown then xOffset = 405 end
-	local x = visibleOrigin.x + visibleSize.width - btnSize.width - xOffset
-	local y = visibleOrigin.y + btnSize.height - 49
-	local yybButtonPosition = ccp(x, y)
-
-	self.yingyongbarButton:setPosition(yybButtonPosition)
-
-	self:addChild(self.yingyongbarButton)
-end
-
 function HomeScene:popoutWeeklyRacePanel()
 
 	local levelId = WeeklyRaceManager:sharedInstance():getLevelIdForToday()
-	print('popoutWeeklyRacePanel', levelId)
 
 	if not PopoutManager:sharedInstance():haveWindowOnScreen() and not HomeScene:sharedInstance().ladyBugOnScreen then
 		local startGamePanel = StartGamePanel:create(levelId, GameLevelType.kDigWeekly)
@@ -2567,8 +2695,9 @@ function HomeScene:createWeeklyRaceButton()
 	self.leftRegionLayoutBar:addItem(self.weeklyRaceBtn)
 	self.weeklyRaceBtn.wrapper:addEventListener(DisplayEvents.kTouchTap, onWeeklyRaceBtnTapped)
 
-	if GameGuide and not NewVersionUtil:hasUpdateReward() then
-		GameGuide:sharedInstance():onShowButton("weeklyRace")
+	local tutored = CCUserDefault:sharedUserDefault():getBoolForKey("weeklyRaceBtn.tutored")
+	if not tutored then
+		self.weeklyRaceBtn:showWeeklyBtnTutor("weeklyRaceBtn.tutored")
 	end
 end
 
@@ -2578,80 +2707,49 @@ function HomeScene:updateCoin()
 		self.coinButton:updateView()
 	end
 end
-function HomeScene:popoutRabbitWeeklyPanel()
-	RabbitWeeklyManager:sharedInstance():updateDataIfWeekChange()
-	local levelId = RabbitWeeklyManager:sharedInstance().levelId
 
-	if not PopoutManager:sharedInstance():haveWindowOnScreen() and not HomeScene:sharedInstance().ladyBugOnScreen then
-		local startGamePanel = StartGamePanel:create(levelId, GameLevelType.kRabbitWeekly)
-		startGamePanel:popout(false)
-	end
-end
+function HomeScene:createSummerWeeklyButton()
+	if self.summerWeeklyButton then return end
 
-function HomeScene:createRabbitWeeklyButton()
-	if self.rabbitWeeklyButton then return end
-
-	local function onRabbitWeeklyButtonTapped(event)
-		local function popout()
-			if self.rabbitWeeklyButton and not self.rabbitWeeklyButton.isDisposed then
-				self.rabbitWeeklyButton:update()
+	local function onBtnTapped()
+		DcUtil:UserTrack({category = 'weeklyrace', sub_category = 'weeklyrace_summer_click_icon'})
+		local function onSuccess(evt)
+			if self.summerWeeklyButton and not self.summerWeeklyButton.isDisposed then
+				self.summerWeeklyButton:update()
 			end
-			self:popoutRabbitWeeklyPanel()
+			if not PopoutManager:sharedInstance():haveWindowOnScreen() 
+					and not HomeScene:sharedInstance().ladyBugOnScreen then
+				SummerWeeklyPanel:create():popout()
+			end
 		end
-		RabbitWeeklyManager:sharedInstance():loadDataWithAnim(popout)
-		if RabbitWeeklyManager:sharedInstance():isPlayDay() then
-			DcUtil:clickRabbitIcon(1)
-		else
-			DcUtil:clickRabbitIcon(2)
-		end
+
+		SummerWeeklyMatchManager:getInstance():loadData( onSuccess, true )
 	end
 
-	local function onLoaded()
-		if self.rabbitWeeklyButton then return end
-		
-		self.rabbitWeeklyButton = RabbitWeeklyButton:create()
-		self.leftRegionLayoutBar:addItem(self.rabbitWeeklyButton)
-		self.rabbitWeeklyButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onRabbitWeeklyButtonTapped)
+	local function onMatchDataLoaded()
+		if self.summerWeeklyButton then return end
+		self.summerWeeklyButton = SummerWeeklyButton:create()
+		self.leftRegionLayoutBar:addItem(self.summerWeeklyButton)
+		self.summerWeeklyButton.wrapper:addEventListener(DisplayEvents.kTouchTap, onBtnTapped)
 
-		if GameGuide and not NewVersionUtil:hasUpdateReward() then
-			GameGuide:sharedInstance():onShowButton("rabbitWeeklyRace")
+		local tutored = CCUserDefault:sharedUserDefault():getBoolForKey("summerWeeklyRaceBtn.tutored")
+		if not tutored then
+			self.summerWeeklyButton:showWeeklyBtnTutor("summerWeeklyRaceBtn.tutored", "tutorial.game.text3100")
 		end
 	end
-
-	RabbitWeeklyManager:sharedInstance():loadData(onLoaded)
+	SummerWeeklyMatchManager:getInstance():loadData(onMatchDataLoaded, false)
 end
 
-function HomeScene:buildAdVideoBtn( ... )
-	local function onAdVideoBtnTapped( ... )
-		DcUtil:clickAdVideoIcon()
-		if AdVideoManager:getInstance():canShowPanel() then
-			local position = self.adVideoBtn:getPosition()
-			local parent = self.adVideoBtn:getParent()
-			local wPos = parent:convertToWorldSpace(ccp(position.x, position.y))
-			AdVideoManager:getInstance():showAdVideoPanel(wPos)
-		else
-			CommonTip:showTip(Localization:getInstance():getText("watch_ad_time"), "negative")
-		end
-		
-	end
-	self.adVideoBtn = AdVideoButton:create()
-	self.rightRegionLayoutBar:addItem(self.adVideoBtn)
-	self.adVideoBtn.wrapper:addEventListener(DisplayEvents.kTouchTap, onAdVideoBtnTapped)
-	self.adVideoBtn:updateState()
-end
-
-function HomeScene:updateAdVideoBtn( ... )
-	-- body
-	if  AdVideoManager:getInstance():canShowBtn() then
-		if not self.adVideoBtn then
-			self:buildAdVideoBtn()
-		else
-			self.adVideoBtn:updateState()
-		end
-	else
-		if self.adVideoBtn then
-			self.rightRegionLayoutBar:removeItem(self.adVideoBtn, true)
-			self.adVideoBtn = nil
+function HomeScene:onThirdPaySuccess()
+	if __ANDROID then
+		if PaymentManager:getInstance():shouldShowDefaultPaymentPanel() then
+			local function callback()
+				require 'zoo.panel.thirdPay.PriorityPaymentGuidePanel'
+				local panel = PriorityPaymentGuidePanel:create(PaymentManager:getInstance():getDefaultPayment())
+				panel:popout()
+			end
+			PaymentManager:getInstance():onDefaultPaymentPanelPopped()
+			self:runAction(CCCallFunc:create(callback))
 		end
 	end
 end

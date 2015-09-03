@@ -35,10 +35,11 @@ function GamePlayScene:dispose()
 	Scene.dispose(self)
 end
 
-function GamePlayScene:create(level, playSceneUIType)
+function GamePlayScene:create(level, playSceneUIType, levelType)
 	local s = GamePlayScene.new()
-	s.gamelevel = level;
+	s.gamelevel = level
 	s.playSceneUIType = playSceneUIType
+	s.levelType = levelType
 	s:initScene()
 	return s
 end
@@ -79,7 +80,7 @@ function GamePlayScene:onInit()
 		levelconfig.randomSeed = GameGuide:sharedInstance():onGameInit(self.gamelevel)
 	end
 	self.mygameboardlogic = GameBoardLogic:create();
-	self.mygameboardlogic:initByConfig(self.gamelevel, levelconfig);
+	self.mygameboardlogic:initByConfig(self.gamelevel, levelconfig, self.levelType);
 	--获取处理完之后的map，进行view的初始化
 	local pos, width, height
 	self.mygameboardview, pos, width, height = GameBoardView:createByGameBoardLogic(self.mygameboardlogic)

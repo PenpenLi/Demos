@@ -61,7 +61,8 @@ end
 
 function BuyPropPanel:init(goodsId, noLimitCallback, initNum)
 	if not goodsId then return false end
-
+	self.goodsId = goodsId
+	self.failBeforePayEnd = false
 	-- 数据初始化
 	self.onBought = nil
 	self.onExit = nil
@@ -186,11 +187,23 @@ function BuyPropPanel:init(goodsId, noLimitCallback, initNum)
 
 	self:updateNumberMethod()
 	self:setPositionForPopoutManager()
+
+	--支付打点
+	self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
+	PaymentIosDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, self.goodsId, 1, self.targetNumber, 0)
+
 	print("all done")
 	return true
 end
 
 function BuyPropPanel:onCloseBtnTapped()
+	local endResult = 3
+	if self.failBeforePayEnd then 
+		endResult = 4
+	end
+	PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+							self.targetNumber, 0, 0, self.targetNumber * self.target.price, endResult)
+
 	if self.onExit then
 		self.onExit()
 	end
@@ -243,22 +256,31 @@ function BuyPropPanel:onBtnBuyTapped()
 		local button = scene.goldButton
 		if button then button:updateView() end
 		CommonTip:showTip(Localization:getInstance():getText("buy.prop.panel.success"), "positive")
+
+		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+												self.targetNumber, 0, 0, self.targetNumber * self.target.price, 0)
 		PopoutManager:sharedInstance():remove(self, true)
 	end
 	local function onFail(evt)
 		if not listening then return end
+		self.failBeforePayEnd = true
 		onAnimCloseBtn()
 		if evt.data == 730330 then
 			self:goldNotEnough()
 		else
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
+			if evt and evt.data then 
+				PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
+														self.targetNumber, 0, 0, self.targetNumber * self.target.price, 1, evt.data)
+				CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
+			end
 		end
 	end
 
 	local function onUserHasLogin()
 		self.buyLogic:start(self.targetNumber, onSuccess, onFail)
 	end
-	RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
+	onUserHasLogin()
+	-- RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
 end
 
 function BuyPropPanel:goldNotEnough()
@@ -278,14 +300,15 @@ function BuyPropPanel:goldNotEnough()
 	end
 	local function askForGoldPanel()
 		print("ask for gold panel")
-		local text = {
-			tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		}
-		CommonTipWithBtn:setShowFreeFCash(true)
-		local positionY = self:getPositionY()
-		CommonTipWithBtn:showTip(text, "negative", createGoldPanel, nil, {y = positionY})
+		-- local text = {
+		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+		-- }
+		-- CommonTipWithBtn:setShowFreeFCash(true)
+		-- local positionY = self:getPositionY()
+		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, nil, {y = positionY})
+		GoldlNotEnoughPanel:create(createGoldPanel, nil, self.uniquePayId):popout()
 	end
 	askForGoldPanel()
 end

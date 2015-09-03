@@ -3,7 +3,9 @@ local kDarkOpacity = 150
 local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
 local visibleSize =  Director:sharedDirector():getVisibleSize()
 PopoutEvents = {
-	kRemoveOnce = "removeOnce"
+	kRemoveOnce = "removeOnce",
+	kBecomeSecondPanel = "becomeSecondPanel",
+	kReBecomeTopPanel = "reBecomeTopPanel",
 }
 
 PopoutManager = {}
@@ -140,8 +142,23 @@ local function addContainerToScene( child, dark, enableTouchBehind,scene )
 end
 
 function PopoutManager:add(child, dark, enableTouchBehind,scene)
-	addContainerToScene(child, dark, enableTouchBehind,scene)
+	local container = addContainerToScene(child, dark, enableTouchBehind,scene)
+	if not container then return end
+	
+	local poplist = container:getPopoutList()
+	local popNum = #poplist
+	if popNum > 1 then 
+		local secPanelIndex = popNum-1
+		local secPanel = poplist[secPanelIndex].child
+		if secPanel and secPanel.becomeSecondPanel then 
+			secPanel:becomeSecondPanel()
+		end
+		if secPanel then 
+			secPanel:dispatchEvent(Event.new(PopoutEvents.kBecomeSecondPanel, nil, secPanel))
+		end
+	end
 end
+
 function PopoutManager:remove(child, cleanup)
 	if child.isDisposed or not child:getParent() or not child:getParent():getParent() then
 		-- warn
@@ -164,11 +181,15 @@ function PopoutManager:remove(child, cleanup)
 	if lastPopoutPanel and lastPopoutPanel.reBecomeTopPanel then
 		lastPopoutPanel:reBecomeTopPanel()
 	end
+	if lastPopoutPanel then
+		lastPopoutPanel:dispatchEvent(Event.new(PopoutEvents.kReBecomeTopPanel, nil, lastPopoutPanel))
+	end
 end
 
 function PopoutManager:addWithBgFadeIn(child, dark, enableTouchBehind, fadeInAnimFinishedCallback, duration,scene)
 	local container = addContainerToScene(child, true, enableTouchBehind,scene)
-	
+	if not container then return end
+
 	local popoutList = getPopoutList(scene)
 	local fadeOutContainer = nil
 	if popoutList then

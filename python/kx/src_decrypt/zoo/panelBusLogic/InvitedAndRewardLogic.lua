@@ -57,9 +57,14 @@ function InvitedAndRewardLogic:start(inviteCode, uid, successCallback, failCallb
 			return
 		end
 	end
-	self.http:addEventListener(Events.kComplete, onSuccess)
-	self.http:addEventListener(Events.kError, onFail)
-	self.http:load(tonumber(inviteCode))
+	if UserManager:getInstance():isSameInviteCodePlatform(inviteCode) then 
+		self.http:addEventListener(Events.kComplete, onSuccess)
+		self.http:addEventListener(Events.kError, onFail)
+		self.http:load(tonumber(inviteCode))
+	else
+		CommonTip:showTip(Localization:getInstance():getText("error.tip.add.friends"), "negative", nil, 3 )
+		if self.withFlag then UserManager:getInstance().userExtend:setFlagBit(1, false) end
+	end
 end
 
 function InvitedAndRewardLogic:_init(isShowLoad)

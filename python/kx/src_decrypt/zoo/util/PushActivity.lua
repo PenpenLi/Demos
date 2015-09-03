@@ -38,6 +38,21 @@ function PushActivity:onEnergyNotEnough(callback)
 end
 
 function PushActivity:onComeToFront(callback)
+	self.foreGroundTimeStamp = Localhost:time()
+
+	if NewVersionUtil:hasUpdateReward() then 
+		callback()
+		return
+	end
+
+	local home = HomeScene:sharedInstance()
+	if home.updateVersionButton and not home.updateVersionButton.isDisposed then 
+		if not home.updateVersionButton.wrapper:isTouchEnabled() then 
+			callback()
+			return
+	 	end
+	end
+
 	self:_verifyPushRec()
 	if type(self.enabled) == "boolean" and not self.enabled then return end
 	local function onGetList(list)
@@ -63,7 +78,6 @@ function PushActivity:onComeToFront(callback)
 		end
 
 	end
-	self.foreGroundTimeStamp = Localhost:time()
 	self:getActivityListAsync(onGetList)
 	print("123213")
 end

@@ -1,218 +1,140 @@
--------------------------------------------------------------------------
---  Class include: kAnimationEvents, ArmatureNode, ArmatureFactory
--------------------------------------------------------------------------
 
-require "hecore.display.Director"
-
-kAnimationTweenType = {
-    TWEEN_EASING_MIN,    
-    Linear,    
-    Sine_EaseIn, Sine_EaseInOut, Sine_EaseOut,
-    Quad_EaseIn, Quad_EaseOut, Quad_EaseInOut,
-    Cubic_EaseIn, Cubic_EaseOut, Cubic_EaseInOut,
-    Quart_EaseIn, Quart_EaseOut, Quart_EaseInOut,
-    Quint_EaseIn, Quint_EaseOut, Quint_EaseInOut,
-    Expo_EaseIn, Expo_EaseOut, Expo_EaseInOut,
-    Circ_EaseIn, Circ_EaseOut, Circ_EaseInOut,
-    Elastic_EaseIn, Elastic_EaseOut, Elastic_EaseInOut,    
-    Back_EaseIn, Back_EaseOut, Back_EaseInOut,
-    Bounce_EaseIn, Bounce_EaseOut, Bounce_EaseInOut,
-    TWEEN_EASING_MAX
+-- ArmatureEvents const defined in he.core/dragonbones/events/EventData.cpp file
+ArmatureEvents = {
+	START = "start",
+	COMPLETE = "complete",
+	LOOP_COMPLETE = "loopComplete",
 }
-
-kAnimationEvents = {kStart = "start", kComplete = "complete", kLoopComplete = "loopComplete"}
 
 --
 -- ArmatureNode ---------------------------------------------------------
 --
-
 ArmatureNode = class(CocosObject)
 
-function ArmatureNode:create( name )
-	local node = Armature:create(name)
-	local animation = nil
-	if node then animation = node:getAnimation() end
-
-	local ret = nil
-	local function onAnimationEvent( eventType )
-		if ret:hn(eventType) then ret:dp(Event.new(eventType, nil, ret)) end
-	end 
-	--if animation then animation:registerScriptHandler(onAnimationEvent) end
-	ret = ArmatureNode.new(node)
-	return ret
+function ArmatureNode:create( armatureName )
+	local db = DBCCFactory:getInstance():buildArmatureNode(armatureName)
+	if db then
+		local ret = ArmatureNode.new(db)
+		local function eventHandler(eventType)
+			if ret:hn(eventType) then ret:dp(Event.new(eventType, nil, ret)) end
+		end
+		db:registerArmatureEventListener(eventHandler, ArmatureEvents.START)
+		db:registerArmatureEventListener(eventHandler, ArmatureEvents.COMPLETE)
+		db:registerArmatureEventListener(eventHandler, ArmatureEvents.LOOP_COMPLETE)
+		return ret
+	end
 end
 
---
---  --------------------------------------------------------- Armature methods
+function ArmatureNode:getAnimationList()
+	if not self.animNameList then
+		local aniList = self.refCocosObj:getAnimationList()
+		local len = aniList:count()
+		local result = {}
+		for i = 0, len - 1 do
+			local animName = tolua.cast(aniList:objectAtIndex(i), "CCString"):getCString()
+			table.insert(result, animName)
+		end
+		self.animNameList = result
+	end
+	return self.animNameList
+end
 
---Animation
 function ArmatureNode:getAnimation() return self.refCocosObj:getAnimation() end
-function ArmatureNode:setAnimation(v) self.refCocosObj:setAnimation(v) end
 
---ArmatureData
-function ArmatureNode:getArmatureData() return self.refCocosObj:getArmatureData() end
-function ArmatureNode:setArmatureData(v) self.refCocosObj:setArmatureData(v) end
-
-function ArmatureNode:getName() return self.refCocosObj:getName() end
-function ArmatureNode:setName(v) self.refCocosObj:setName(v) end
---CCTextureAtlas
-function ArmatureNode:getTextureAtlas() return self.refCocosObj:getTextureAtlas() end
-function ArmatureNode:setTextureAtlas(v) self.refCocosObj:setTextureAtlas(v) end
---Bone
-function ArmatureNode:getParentBone() return self.refCocosObj:getParentBone() end
-function ArmatureNode:setParentBone(v) self.refCocosObj:setParentBone(v) end
-
-function ArmatureNode:addBone(bone, parentName) self.refCocosObj:addBone(bone, parentName) end
-function ArmatureNode:getBone(name) return self.refCocosObj:getBone(name) end
-function ArmatureNode:changeBoneParent( bone, parentName )
-	self.refCocosObj:changeBoneParent(bone, parentName)
+------------------------------------------------------------------------------------------------
+-- params:
+-- @animationName 	skeleton.xml中定义的animationName
+-- @playTimes 		0: 循环播放; 大于1的数字: 具体的播放次数; 小于1的数字: 使用skeleton.xml中定义的播放次数
+-- @duration		播放一次动画时长，单位为秒(s)，如果设置了循环播放，则每轮循环耗时均为duration
+-- 剩下的几个参数存在感太低，其实是懒得写，详情参考Animation.cpp中的定义
+------------------------------------------------------------------------------------------------
+function ArmatureNode:play( animationName, playTimes, duration, fadeInTime, layer, group, fadeOutMode, displayControl, pauseFadeOut, pauseFadeIn )
+	fadeInTime = fadeInTime or -1
+	duration = duration or -1 
+	playTimes = playTimes or -1
+	layer = layer or 0
+	group = group or ""
+	fadeOutMode = fadeOutMode or "sameLayerAndGroup"
+	displayControl = displayControl or true
+	pauseFadeOut = pauseFadeOut or true
+	pauseFadeIn = pauseFadeIn or true
+	self:getAnimation():gotoAndPlay(animationName, fadeInTime, duration, playTimes, layer, group, fadeOutMode, displayControl, pauseFadeOut, pauseFadeIn)
 end
 
-function ArmatureNode:update( dt ) self.refCocosObj:update(dt) end
-
-function ArmatureNode:removeBone( bone, recursion ) self.refCocosObj:removeBone(bone, recursion) end
-function ArmatureNode:getBoneDict( ) return self.refCocosObj:getBoneDict() end
-function ArmatureNode:boundingBox() return self.refCocosObj:boundingBox() end
-function ArmatureNode:getBoneAtPoint( x, y ) return self.refCocosObj:getBoneAtPoint(x, y) end
-
---
---  --------------------------------------------------------- Animation methods
-
-function ArmatureNode:play( animationName, durationTo, durationTween, loop, tweenEasing )
-	local animation = self:getAnimation()
-	if animation and animationName then
-		durationTo = durationTo or -1
-		durationTween = durationTween or -1
-		loop = loop or -1
-		tweenEasing = tweenEasing or TWEEN_EASING_MAX
-		animation:play(animationName, durationTo, durationTween, loop, tweenEasing)
+function ArmatureNode:playByIndex( animationIndex, playTimes, duration, fadeInTime, layer, group, fadeOutMode, displayControl, pauseFadeOut, pauseFadeIn )
+	local animNameList = self:getAnimationList()
+	local animationName = animNameList[animationIndex + 1]
+	if animationName then
+		self:play(animationName, playTimes, duration, fadeInTime, layer, group, fadeOutMode, displayControl, pauseFadeOut, pauseFadeIn)
 	end
 end
-function ArmatureNode:playByIndex( animationIndex, durationTo, durationTween, loop, tweenEasing )
-	local animation = self:getAnimation()
-	if animation then
-		durationTo = durationTo or -1
-		durationTween = durationTween or -1
-		loop = loop or -1
-		tweenEasing = tweenEasing or TWEEN_EASING_MAX
-		animation:playByIndex(animationIndex, durationTo, durationTween, loop, tweenEasing)
+
+function ArmatureNode:gotoAndStop( animationName, time, normalizedTime, fadeInTime, duration )
+	normalizedTime = normalizedTime or -1
+    fadeInTime = fadeInTime or 0
+    duration = duration or -1
+	self:getAnimation():gotoAndStop(animationName, time, normalizedTime, fadeInTime, duration)
+end
+
+function ArmatureNode:gotoAndStopByIndex( animationIndex, time, normalizedTime, fadeInTime, duration )
+	local animNameList = self:getAnimationList()
+	local animationName = animNameList[animationIndex + 1]
+	if animationName then
+		self:gotoAndStop(animationName, time, normalizedTime, fadeInTime, duration)
 	end
 end
-function ArmatureNode:getMovementCount()
-	local animation = self:getAnimation()
-	if animation then return animation:getMovementCount() end
-	return 0
-end
+
 function ArmatureNode:setAnimationScale( animationScale )
 	local animation = self:getAnimation()
-	if animation then animation:setAnimationScale(animationScale) end
+	if animation then animation:setTimeScale(animationScale) end
 end
 
 function ArmatureNode:pause()
 	local animation = self:getAnimation()
-	if animation then animation:pause() end
+	if animation then animation:stop() end
 end
+
 function ArmatureNode:resume()
 	local animation = self:getAnimation()
-	if animation then animation:resume() end
+	if animation then animation:play() end
 end
+
 function ArmatureNode:stop()
 	local animation = self:getAnimation()
 	if animation then animation:stop() end
 end
-function ArmatureNode:getCurrentFrameIndex()
-	local animation = self:getAnimation()
-	if animation then return animation:getCurrentFrameIndex() end
-	return -1
+
+function ArmatureNode:update(passTime)
+	self:getAnimation():advanceTime(passTime)
 end
 
---NOTICE: this is just a reference. C++ object not retain.
-function ArmatureNode:getChildArmature( name )
-	local bone = self:getBone(name)
-	local armature = nil
-	if bone then armature = bone:getArmature() end -- or getChildArmature?
-	if armature then
-		local animation = armature:getAnimation()
-		local ret = ArmatureNode.new(armature)
-		
-		local function onAnimationEvent( eventType )
-			if ret:hn(eventType) then ret:dp(Event.new(eventType, nil, ret)) end
-		end 
-		if animation then animation:registerScriptHandler(onAnimationEvent) end
-		--just return a reference.
-		ret.refCocosObj:release()
-		return ret
-	end
-	return nil
-end
-
---
---  --------------------------------------------------------- Bone methods
-function ArmatureNode:addChildDisplay(childBoneName, frameName, index)
-	local bone = self:getBone(childBoneName)
-	if bone then
-		local data = SpriteDisplayData:create()
-		data:setParam(frameName)
-		bone:addDisplay(data, index)
-	end
-end
-function ArmatureNode:changeChildDisplay( childBoneName, displayIndex )
-	local bone = self:getBone(childBoneName)
-	if bone then
-		bone:changeDisplayByIndex(displayIndex, true)
+function ArmatureNode:getCurrentTime()
+	if self:getAnimation():getLastAnimationState() then
+		return self:getAnimation():getLastAnimationState():getCurrentTime()
+	else
+		return 0
 	end
 end
 
---
--- ArmatureFactory ---------------------------------------------------------
---
-
---all static function
+function ArmatureNode:getTotalTime()
+	if self:getAnimation():getLastAnimationState() then
+		return self:getAnimation():getLastAnimationState():getTotalTime()
+	else
+		return 0
+	end
+end
 
 ArmatureFactory = {}
 
-function ArmatureFactory:isUseTexturePacker()
-	ArmatureDataManager:sharedArmatureDataManager():isUseTexturePacker()
-end
-function ArmatureFactory:setUseTexturePacker(useTexturePacker)
-	ArmatureDataManager:sharedArmatureDataManager():setUseTexturePacker(useTexturePacker)
-end
-
-function ArmatureFactory:add(imagePath, plistPath, configFilePath)
-	print("ArmatureFactory:", imagePath, plistPath, configFilePath)
-	ArmatureDataManager:sharedArmatureDataManager():addArmatureFileInfo(imagePath, plistPath, configFilePath)
-end
-
-function ArmatureFactory:clean()
-	ArmatureDataManager:sharedArmatureDataManager():purgeArmatureSystem()
-end
-
-function ArmatureFactory:createParticleDisplayData( plist )
-	local node = ParticleDisplayData:create()
-	node:setParam(plist)
-	return node
-end
-
-function ArmatureFactory:createSpriteDisplayData( displayName )
-	local node = ParticleDisplayData:create()
-	node:setParam(displayName)
-	return node
-end
-
-function ArmatureFactory:createShaderDisplayData( vert, frag )
-	local node = ParticleDisplayData:create()
-	node:setParam(vert, frag)
-	return node
-end
-
-function ArmatureFactory:createBone( boneName, displayData, ignoreMovementBoneData, zorder )
-	local node = Bone:create(boneName)
-	if displayData then
-		node:addDisplay(displayData, 0)
-		node:changeDisplayByIndex(0, true)
-	end
-	if ignoreMovementBoneData then node:setIgnoreMovementBoneData(true) end
-	zorder = zorder or 0
-	node:setZOrder(zorder)
-	return node
+--------------------------------------------------------------------
+-- @path			directory path of skeleton animation
+-- @skeletonName	define in skeleton.xml, such as <dragonBones name="skeletonName" frameRate="24" version="2.3">
+-- @textureName		define in texture.xml such as <TextureAtlas name="textureName" imagePath="texture.png">
+--------------------------------------------------------------------
+function ArmatureFactory:add(path, skeletonName, textureName)
+	print("ArmatureFactory load:", path)
+	local skeName = skeletonName or ""
+	local texName = textureName or skeletonName 
+	DBCCFactory:getInstance():loadDragonBonesData(path .. "/skeleton.xml", skeletonName)
+	DBCCFactory:getInstance():loadTextureAtlas(path .. "/texture.xml", texName)
 end

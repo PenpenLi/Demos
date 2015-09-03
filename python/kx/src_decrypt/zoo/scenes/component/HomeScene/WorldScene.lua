@@ -121,7 +121,7 @@ function WorldScene:init(homeScene, ...)
 	-------------------------------
 	--	Scale Small Layer 1
 	-- --------------------------
-	self.scaleTreeLayer1 = Layer:create()
+	self.scaleTreeLayer1 = Layer:create()--藤蔓树（包含树干，分支树枝，关卡点，特效等）
 	self.maskedLayer:addParallaxChild(self.scaleTreeLayer1, 5, ccp(1,1), ccp(0,0))
 
 	---------------------
@@ -158,7 +158,7 @@ function WorldScene:init(homeScene, ...)
 	---------------------------------
 	local flowerSpriteFrame = Sprite:createWithSpriteFrameName("normalFlowerAnim00000")
 	local texture = flowerSpriteFrame:getTexture()
-	self.treeNodeLayer = SpriteBatchNode:createWithTexture(texture)
+	self.treeNodeLayer = SpriteBatchNode:createWithTexture(texture)--关卡点所在的层
 	flowerSpriteFrame:dispose()
 	self.treeNodeLayer.touchEnabled = false
 	self.scaleTreeLayer1:addChild(self.treeNodeLayer)
@@ -181,7 +181,7 @@ function WorldScene:init(homeScene, ...)
 	----------------------------
 	-- Scale Small Layer 2
 	-- ------------------------
-	self.scaleTreeLayer2 = Layer:create()
+	self.scaleTreeLayer2 = Layer:create()--藤蔓树的同步上层（包含解锁云，解锁云动画，好友头像，引导等）
 	self.maskedLayer:addParallaxChild(self.scaleTreeLayer2, 10, ccp(1,1), ccp(0,0))
 
 	-- ------------------
@@ -366,6 +366,9 @@ function WorldScene:onEnterHandler(event, ...)
 				end
 				self.levelPassedInfo = nil
 			end)
+			if __IOS or __WIN32 then
+				IosPayGuide:onSuccessiveLevelFailure(self.sourceLevelId)
+			end
 		end
 		self.sourceLevelId = nil
 	end
@@ -1934,6 +1937,7 @@ function WorldScene:playOnEnterCenterUserPosAnim(...)
 			self:setScrollable(true)
 			if __WP8 and self.checkFriendVisible then self:checkFriendVisible() end
 			WorldMapOptimizer:getInstance():firstUpdate()
+			self:dispatchEvent(Event.new(WorldSceneScrollerEvents.GAME_INIT_ANIME_FIN))
 		end
 		local moveToFinishCallback = CCCallFunc:create(animFinish)
 
@@ -2005,4 +2009,36 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 		end
 	end
 	RequireNetworkAlert:callFuncWithLogged(onUserLogin, nil, kRequireNetworkAlertAnimation.kNoAnimation)
+end
+
+function WorldScene:getCurrentAreaId( ... )
+	-- body
+	local min_y = 0 
+	local max_y = self.winSize.height 
+	local levelList = {}
+	local maxCount = 0
+	local maxArea = 0
+	for k, v in pairs(self.levelToNode) do 
+		local node_pos = v:getPosition()
+		local node_y = self.treeNodeLayer:convertToWorldSpace(ccp(node_pos.x, node_pos.y)).y
+		if node_y > min_y and node_y < max_y and k < 10000 then
+			-- print(node_y, min_y, max_y, k) 
+			local areaId = math.ceil(k / 15)
+			if not levelList[areaId] then
+				levelList[areaId] = 0
+			end
+
+			levelList[areaId] = levelList[areaId] + 1
+			if maxArea == 0 then
+				maxArea = areaId
+				maxCount = levelList[areaId]
+			elseif levelList[areaId] > maxCount then 
+				maxArea = areaId
+				maxCount = levelList[areaId]
+			end
+
+		end
+	end
+
+	return maxArea
 end

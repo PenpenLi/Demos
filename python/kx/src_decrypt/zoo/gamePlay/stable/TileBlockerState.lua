@@ -86,5 +86,5 @@ end
 
 function TileBlockerStateInLoop:getNextState( ... )
 	-- body
-	return self.context.digScrollGroundStateInLoop
+	return self.context.furballSplitStateInLoop
 end

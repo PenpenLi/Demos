@@ -13,25 +13,39 @@ local origin = CCDirector:sharedDirector():getVisibleOrigin()
 ]]
 	--102:1分钱加5步
 local ignor_confirm_list = {102, 24, 33, 46, 47, 155}
-local function needConfirm(goodsId, goodsMeta)
+local function needConfirm(goodsId)
+	local goodsName = Localization:getInstance():getText("goods.name.text"..tostring(goodsId))
 	if table.indexOf(ignor_confirm_list, goodsId) then
 		print("===skip buy confirm:", goodsId)
 		return false
-	elseif string.find(goodsMeta.props, "签到礼包") then
+	elseif string.find(goodsName, "签到礼包") then
 		return false
 	end
 	return true
 end
 
+local vers = _G.bundleVersion:split(".")
+local bigV = tonumber(vers[1]) 
+local smV = tonumber(vers[2]) 
+
+
 local diff = {}
 diff[2] = 2.5
 
-local function getPrice(id, def)
-	if diff[id] ~= nil then
-		return diff[id]
-	else
+local function getPrice(logic, id, def)
+	-- local pType, smsType = logic:getSMSPaymentDecision()
+	-- --1.23mm不需要映射
+	-- if bigV == 1 and smV == 23 and smsType == Payments.CHINA_MOBILE then
+	-- 	return def
+	-- elseif (bigV > 1 or (bigV == 1 and smV > 23)) and (smsType == Payments.CHINA_MOBILE or smsType == Payments.CHINA_MOBILE_GAME) then --1.24之后mm,基地都不要映射
+	-- 	return def
+	-- end
+
+	-- if diff[id] ~= nil then
+	-- 	return diff[id]
+	-- else
 		return def
-	end
+	-- end
 end
 
 function p:showLoadingAnim()
@@ -61,9 +75,11 @@ function p:showLoadingAnim()
 	setTimeOut(onCountDownAnimationFinished, 2)
 end
 
-function p:init(goodsId, goodsType, goodsMeta, okfunc, cancelfunc, ignoreNeedConfirm)
-	print("init", goodsId, goodsType)
-	print(table.tostring(goodsMeta))
+function p:init(logic, goodsType, goodsPaycodeMeta, okfunc, cancelfunc, ignoreNeedConfirm)
+	local goodsId = logic.goodsId
+	self.goodsName = Localization:getInstance():getText("goods.name.text"..tostring(goodsId))
+	-- print("init", goodsId, goodsType)
+	-- print(table.tostring(goodsPaycodeMeta))
 	self:loadRequiredResource(PanelConfigFiles.panel_buy_confirm)
 	self.ui = self:buildInterfaceGroup("BuyPropsConfirmPanel/BuyPropsConfirm")
 	BasePanel.init(self, self.ui)
@@ -73,18 +89,18 @@ function p:init(goodsId, goodsType, goodsMeta, okfunc, cancelfunc, ignoreNeedCon
 	self.discountLabel = self.ui:getChildByName('discount')
 	self.discountLabel:setVisible(false)
 	
-	local isNeedConfirm = needConfirm(goodsId, goodsMeta) 
+	local isNeedConfirm = needConfirm(goodsId) 
 	self.isNeedConfirm = isNeedConfirm
 
 	if isNeedConfirm and ignoreNeedConfirm ~= true then
-		self:showConfirmPanel(goodsId, goodsType, goodsMeta)
+		self:showConfirmPanel(logic, goodsId, goodsType, goodsPaycodeMeta)
 		DcUtil:UserTrack({ category='buy', sub_category='item_id', act_type = 1 })
 	else
 		self:showLoadingAnim()
 	end
 end
 
-function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
+function p:showConfirmPanel(logic, goodsId, goodsType, goodsPaycodeMeta)
 	print("show confirm panel")
 	FrameLoader:loadArmature( "skeleton/tutorial_animation" )
 	self.animComplete = true
@@ -100,8 +116,8 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 		DcUtil:UserTrack({ category='buy', sub_category='item_id', act_type = 2 })
 	end
 
+	local goodsData = MarketManager:sharedInstance():getGoodsById(goodsId)
 	
-
 	local bg = self.ui:getChildByName("blackBg")
 	self.bg = bg
 
@@ -111,18 +127,21 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 	closeBtn:addEventListener(DisplayEvents.kTouchTap,  onClosePanel)
 	
 	local buyBtn = GroupButtonBase:create(self.ui:getChildByName("buyBtn"))
-	-- buyBtn:setString(string.format("￥%0.2f 购买", getPrice(goodsMeta.id, goodsMeta.price)))
 	buyBtn:setString("购买")
 	buyBtn:setColorMode(kGroupButtonColorMode.blue)
 	buyBtn:addEventListener(DisplayEvents.kTouchTap,  onBuy)
 
 	local priceLabel = self.ui:getChildByName("price")
-	priceLabel:setString(string.format("￥%0.2f", getPrice(goodsMeta.id, goodsMeta.price)))
+	local goodsPrice = goodsData.rmb / 100
+	if goodsData.discountRmb ~= 0 then 
+		goodsPrice = goodsData.discountRmb / 100
+	end
+	priceLabel:setString(string.format("￥%0.2f", getPrice(logic, goodsPaycodeMeta.id, goodsPrice)))
 
 	local msg = self.ui:getChildByName("msg")
-	-- msg:setString("购买"..goodsMeta.props)
-	msg:setString(goodsMeta.props)
-	print(goodsMeta.id, goodsMeta.props)
+
+	msg:setString(self.goodsName)
+	print(goodsPaycodeMeta.id, self.goodsName)
 
 	self.helpButton = self.ui:getChildByName('helpButton')
 	self.helpButton:setVisible(false)
@@ -136,7 +155,7 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 	local descLabel = self.ui:getChildByName('txt')
 	descLabel:setString("")
 
-	local goodsData = MarketManager:sharedInstance():getGoodsById(goodsId)
+	
 	local items = goodsData.items
 	if items and #items == 1 and goodsType == 1 then
 		local itemId = items[1].itemId
@@ -148,13 +167,13 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 		end
 
 		if goodsData.originalPrice ~= 0 then
-			local discount = math.ceil(tonumber(goodsMeta.price) / (goodsData.rmb / 100) * 10)
-			-- print('wenkan', goodsMeta.price, 'origin', goodsData.originalPrice, 'discount', discount, 'goodsId', goodsId)
-			-- print(table.tostring(goodsData))
-			if discount ~= 10 then
-				self.discountLabel:setVisible(true)
-				self.discountLabel:getChildByName('txt'):setString(discount)
-			end
+			-- local discount = math.ceil(tonumber(goodsPaycodeMeta.price) / (goodsData.rmb / 100) * 10)
+			-- -- print('wenkan', goodsPaycodeMeta.price, 'origin', goodsData.originalPrice, 'discount', discount, 'goodsId', goodsId)
+			-- -- print(table.tostring(goodsData))
+			-- if discount ~= 10 then
+			-- 	self.discountLabel:setVisible(true)
+			-- 	self.discountLabel:getChildByName('txt'):setString(discount)
+			-- end
 		end
 
 		local tutorialAnimation = CommonSkeletonAnimation:creatTutorialAnimation(itemId)
@@ -196,17 +215,17 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 	if goodsType == 2 then -- 购买金币
 		itemIcon = iconBuilder:buildGroup("Prop_14")
 	elseif goodsType == 1 then
-		if string.find(goodsMeta.props, "新区域解锁") then
+		if string.find(self.goodsName, "新区域解锁") then
 			itemIcon = Sprite:createWithSpriteFrameName("BuyPropsConfirmPanel/unlockIcon0000")
 			itemIcon:setAnchorPoint(ccp(0,1))
-		--elseif string.find(goodsMeta.props, "签到礼包") then
+		--elseif string.find(self.goodsName, "签到礼包") then
 			--itemIcon = Sprite:createWithSpriteFrameName("BuyPropsConfirmPanel/checkinIcon0000")
 			--itemIcon:setAnchorPoint(ccp(0,1))
 		else
 			local gid = goodsId
-			if string.find(goodsMeta.props, "加5步") then
+			if string.find(self.goodsName, "加5步") then
 				gid = 4
-			elseif string.find(goodsMeta.props, "追踪导弹") then
+			elseif string.find(self.goodsName, "追踪导弹") then
 				gid = 45
 			end
 			itemIcon = iconBuilder:buildGroup('Goods_'..gid)
@@ -231,7 +250,7 @@ function p:showConfirmPanel(goodsId, goodsType, goodsMeta)
 	holder:removeFromParentAndCleanup(true)
 
 
-	if GameGuide:sharedInstance():onTryBuyProps() then
+	if UserManager:getInstance():getIngameBuyGuide() then
 		local function showGuideAnim()
 			if self and not self.isDisposed then
 				local anim = CommonSkeletonAnimation:createTutorialMoveIn2()
@@ -366,10 +385,10 @@ function p:onKeyBackClicked()
 end
 
 
-function p:create(goodsId, goodsType, goodsMeta, okfunc, cancelfunc, ignoreNeedConfirm)
+function p:create(logic, goodsType, goodsPaycodeMeta, okfunc, cancelfunc, ignoreNeedConfirm)
 	print("create")
 	local t = p.new()
-	t:init(goodsId, goodsType, goodsMeta, okfunc, cancelfunc, ignoreNeedConfirm)
+	t:init(logic, goodsType, goodsPaycodeMeta, okfunc, cancelfunc, ignoreNeedConfirm)
 	return t
 end
 

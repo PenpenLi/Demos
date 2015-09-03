@@ -13,6 +13,10 @@ function UdidUtil:getUdid()
 	return result
 end
 
+function UdidUtil:clearUdid()
+	os.remove(kUdidConfig)
+end
+
 function UdidUtil:readFromStorage()
 	local filePath = kUdidConfig
 	local file = io.open(filePath, "rb")

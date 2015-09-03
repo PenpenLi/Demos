@@ -202,16 +202,7 @@ function WeeklyRaceRankAnimation:playNo1Animation(panelWithRank)
     scene:addChild(container)
     enter(container, leftLight, rightLight, crown, headImage, btnRes, txt)
 end
-local function createAnimal( name, parent )
-    local position = animal_positions[name]
-    local node = ArmatureNode:create(name)
-    node.name = name
-    node:playByIndex(0)
-    node:setPosition(ccp(position.x, -position.y))
-    node:setVisible(false)
-    parent:addChild(node)
-    return node
-end
+
 function WeeklyRaceRankAnimation:playSurpassingAnimation(surpassedFriend, panelWithRank)
     if not surpassedFriend then return end
     FrameLoader:loadImageWithPlist("ui/weekly_race_animation.plist")
@@ -259,7 +250,7 @@ function WeeklyRaceRankAnimation:playSurpassingAnimation(surpassedFriend, panelW
     txt:setAnchorPoint(ccp(0.5, 0.5))
     local chicken = ArmatureNode:create('chickenzs')
     chicken:playByIndex(0)
-    chicken:setAnimationScale(0.5)
+    chicken:setAnimationScale(1.25)
 
     local function closePanel()
         if not container.isDisposed then
@@ -315,7 +306,7 @@ function WeeklyRaceRankAnimation:playSurpassingAnimation(surpassedFriend, panelW
                                        CCEaseExponentialOut:create(CCMoveBy:create(0.5, ccp(0, greenBg2Height / 2))),
                                        CCEaseExponentialOut:create(CCMoveBy:create(0.5, ccp(0, greenBg2Height / 2)))
                                         ),                                
-                                    CCCallFunc:create(function () print('setAnimationScale') chicken:setAnimationScale(0.8) end)
+                                    CCCallFunc:create(function () print('setAnimationScale') chicken:setAnimationScale(2) end)
                                     )
                                 )
         local myHeadAction = CCTargetedAction:create(myHead.refCocosObj, 

@@ -62,6 +62,8 @@ function EnterInviteCodePanel:init(...)
 	self.receiveRewardBtnRes	= self.ui:getChildByName("receiveRewardBtn")
 	self.continueBtnRes		= self.ui:getChildByName("continueBtn")
 	self.enterLabel			= self.enterLabelWithBg:getChildByName("label")
+	self.title = 			self.ui:getChildByName('title')
+	self.title:setText(Localization:getInstance():getText('enter.invite.code.panel.title'))
 
 	assert(self.desLabel)
 	assert(self.enterLabelWithBg)
@@ -117,7 +119,7 @@ function EnterInviteCodePanel:init(...)
 	-- ---------------
 	local function onReceiveRewardBtnTapped(event)
 		-- self:onReceiveRewardBtnTapped(event)
-		self.softKeyboard:start(self, ccp(0, -480))
+		self.softKeyboard:start(self, ccp(0, -560))
 	end
 	self.receiveRewardBtn:addEventListener(DisplayEvents.kTouchTap, onReceiveRewardBtnTapped)
 
@@ -128,7 +130,7 @@ function EnterInviteCodePanel:init(...)
 
 	self:createSoftkeyboard()
 	local function onEnterLabelTapepd(event)
-		self.softKeyboard:start(self, ccp(0, -480))
+		self.softKeyboard:start(self, ccp(0, -560))
 	end
 	self.enterLabelWithBg:setTouchEnabled(true)
 	self.enterLabelWithBg:addEventListener(DisplayEvents.kTouchTap, onEnterLabelTapepd)

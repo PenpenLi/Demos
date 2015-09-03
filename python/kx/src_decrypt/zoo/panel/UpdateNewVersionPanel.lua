@@ -6,6 +6,12 @@ local kRewardQzoneItemID = 10001
 local kRewardQzoneItemNum = 2
 
 local staticUrlRoot = "http://downloadapk.manimal.happyelements.cn/"
+local isTfApk = DcUtil:getSubPlatform() and string.len(DcUtil:getSubPlatform()) == 2
+if isTfApk then
+	staticUrlRoot = "http://apk.manimal.happyelements.cn/"
+end
+
+
 --不支持更新的平台
 local noSupportPlatforms = {
 	PlatformNameEnum.kCMCCMM,
@@ -405,6 +411,9 @@ function UpdatePageagePanel:downloadApk(version,t,tryCount)
 	local lpsChannel = self:getLpsChannel()
 	local apkName = _G.packageName .. "." ..isMini.. tostring(version) .. "." .. androidPlatformName ..lpsChannel.. ".apk"
 	local apkUrl = staticUrlRoot .. "apk/" .. apkName .. "?t=" .. t --tostring(os.date("%y%m%d%H%M", os.time() or 0))
+	if isTfApk then
+		apkUrl = apkUrl .. "&source=" .. DcUtil:getSubPlatform()
+	end
 	local md5Url = apkUrl:gsub("%.apk","%.md5")
 	local apkPath = FileUtils:getApkDownloadPath(MainActivityHolder.ACTIVITY:getContext()) .. 	"/" .. apkName
 
@@ -425,7 +434,7 @@ function UpdatePageagePanel:downloadApk(version,t,tryCount)
 		-- 	loading = nil
 		-- end
 
-		if md5 == HeMathUtils:md5File(apkPath) then 
+		if isTfApk or md5 == HeMathUtils:md5File(apkPath) then 
 			-- local PackageUtils = luajava.bindClass("com.happyelements.android.utils.PackageUtils")
 			-- PackageUtils:installApk(MainActivityHolder.ACTIVITY:getContext(),apkPath)
 			if type(downloadProcess) == "table" then
@@ -560,7 +569,13 @@ function UpdatePageagePanel:requestApkMd5( md5Url,callback )
     end
 
 	local request = HttpRequest:createGet(md5Url)
-    request:setConnectionTimeoutMs(1 * 1000)
+  	local connection_timeout = 2
+
+  	if __WP8 then 
+    	connection_timeout = 5
+  	end
+
+    request:setConnectionTimeoutMs(connection_timeout * 1000)
     request:setTimeoutMs(30 * 1000)
 
     HttpClient:getInstance():sendRequest(onCallback, request)
@@ -865,7 +880,7 @@ function UpdateSuccessPanel:onOkTapped()
 		end
 
 		self:onCloseBtnTapped()
-	    UserManager.getInstance().updateReward = nil
+	    UserManager.getInstance().updateRewards = nil
 	end
 
 	local function onFail( evt ) 
@@ -873,11 +888,13 @@ function UpdateSuccessPanel:onOkTapped()
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
 		self:onCloseBtnTapped()
 
-	   	UserManager.getInstance().updateReward = nil
+	   	UserManager.getInstance().updateRewards = nil
 	end
 
 	local function onCancel(evt)
 		self.confirm:setEnabled(true)
+
+	  	UserManager.getInstance().updateRewards = nil
 	end
 
 	local http = GetUpdateRewardHttp.new(true)

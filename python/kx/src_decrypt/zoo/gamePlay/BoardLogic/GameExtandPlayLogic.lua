@@ -483,26 +483,67 @@ function GameExtandPlayLogic:checkRoostReplace(mainLogic, completeCallback)
 	return totalNum
 end
 
+function GameExtandPlayLogic:onMagicTileHit(mainLogic, r, c)
+	local gameItem = mainLogic.gameItemMap[r][c]
+	local boardItem = mainLogic.boardmap[r][c]
+
+	local action = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Magic_Tile_Hit,
+			IntCoord:create(r,c),
+			nil,
+			GamePlayConfig_MaxAction_time
+		)
+	if gameItem.ItemSpecialType >= AnimalTypeConfig.kLine and gameItem.ItemSpecialType <= AnimalTypeConfig.kColor then
+		action.count = mainLogic:getHalloweenBoss().specialHit
+	else
+		action.count = mainLogic:getHalloweenBoss().normalHit
+	end
+	action.magicTileId = boardItem.magicTileId
+	mainLogic:addGameAction(action)
+
+	-- 计算是否掉落限时道具 TODO
+	if mainLogic.theGamePlayStatus == GamePlayStatus.kNormal then
+		local boss = mainLogic:getHalloweenBoss()
+		if boss and boss.hit < boss.totalBlood then -- 亲密度满后不再掉落道具
+			local user = UserManager:getInstance().user
+			local dropPropCount = StageInfoLocalLogic:getTotalDropPropCount( user.uid )
+			local dragonBoatData = mainLogic.dragonBoatData
+			if dragonBoatData and dropPropCount < 1 and mainLogic.dragonBoatPropConfig then
+				dragonBoatData.dropPropsPercent = dragonBoatData.dropPropsPercent or 0
+				local dropWeight = dragonBoatData.dropPropsPercent * 100
+				if dropWeight > 0 and mainLogic.randFactory:rand(1, 10000) <= dropWeight then
+					local totalWeight = mainLogic.dragonBoatPropConfig:getTotalWeight()
+					local random = mainLogic.randFactory:rand(1, totalWeight)
+					local randPropId = mainLogic.dragonBoatPropConfig:getRandProp(random)
+					if randPropId then
+						local pos = mainLogic:getGameItemPosInView(r, c)
+						if mainLogic.PlayUIDelegate then
+							mainLogic.PlayUIDelegate:addTimeProp(randPropId, 1, pos, mainLogic.activityId, "哇~萌萌龙送给了您一个限时道具")
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
 function GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 	local gameItem = mainLogic.gameItemMap[r][c]
-	if gameItem.ItemType == GameItemType.kAnimal and mainLogic.gameMode:is(HalloweenMode) and mainLogic:getHalloweenBoss() then
-		local boardItem = mainLogic.boardmap[r][c]
-		if boardItem and boardItem.magicTileId ~= nil then
-			local action = GameBoardActionDataSet:createAs(
-					GameActionTargetType.kGameItemAction,
-					GameItemActionType.kItem_Magic_Tile_Hit,
-					IntCoord:create(r,c),
-					nil,
-					GamePlayConfig_MaxAction_time
-				)
-			if gameItem.ItemSpecialType >= AnimalTypeConfig.kLine and gameItem.ItemSpecialType <= AnimalTypeConfig.kColor then
-				action.count = mainLogic:getHalloweenBoss().specialHit
-			else
-				action.count = mainLogic:getHalloweenBoss().normalHit
+	if mainLogic.gameMode:is(HalloweenMode) and mainLogic:getHalloweenBoss() then
+		if gameItem.ItemType == GameItemType.kAnimal 
+				or gameItem.ItemType == GameItemType.kAddMove
+				or gameItem.ItemType == GameItemType.kAddTime
+				or gameItem.ItemType == GameItemType.kGift
+				or gameItem.ItemType == GameItemType.kCrystal
+				or gameItem.ItemType == GameItemType.kBalloon then
+			local boardItem = mainLogic.boardmap[r][c]
+			if boardItem and boardItem.magicTileId ~= nil then
+				GameExtandPlayLogic:onMagicTileHit(mainLogic, r, c)
 			end
-			action.magicTileId = boardItem.magicTileId
-			mainLogic:addGameAction(action)
 		end
+	end
+	if gameItem.ItemType == GameItemType.kAnimal then
 	elseif gameItem.ItemType == GameItemType.kGift then
 		GameExtandPlayLogic:bombGiftBlocker(mainLogic, r, c)
 		mainLogic.hasDestroyGift = true
@@ -537,8 +578,13 @@ function GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 				local position = mainLogic:getGameItemPosInView(r, c)
 				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.digJewelCount:getValue(), position)
 			end
-		elseif mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
-		or mainLogic.theGamePlayType == GamePlayType.kHalloween then
+		elseif mainLogic.theGamePlayType == GamePlayType.kMaydayEndless then
+			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + 1)
+			if mainLogic.PlayUIDelegate then
+				local position = mainLogic:getGameItemPosInView(r, c)
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.digJewelCount:getValue(), position)
+			end
+		elseif mainLogic.theGamePlayType == GamePlayType.kHalloween then
 			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + 1)
 			if mainLogic.PlayUIDelegate then
 				local position = mainLogic:getGameItemPosInView(r, c)
@@ -750,6 +796,127 @@ function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale, noSc
 	 		GamePlayConfig_GameItemDigJewelDeleteAction_CD)
 	digJewelDecAction.cleanItem = item.digJewelLevel == 0 and true or false
 	mainLogic:addDestroyAction(digJewelDecAction)
+end
+
+--------------------
+--金粽子块削减一层
+--------------------
+function GameExtandPlayLogic:decreaseDigGoldZongZi( mainLogic, r, c, scoreScale, noScore, isFromSpringBomb )
+	local item = mainLogic.gameItemMap[r][c]
+	item.digGoldZongZiLevel = item.digGoldZongZiLevel -1
+
+	if item.digGoldZongZiLevel == 0 then
+		--item:AddItemStatus(GameItemStatusType.kItemHalfStable)
+	end
+
+	local digGoldZongZiDecAction = GameBoardActionDataSet:createAs(
+	 		GameActionTargetType.kGameItemAction,
+	 		GameItemActionType.kItem_Gold_ZongZi_Active,
+	 		IntCoord:create(r,c),
+	 		nil,
+	 		GamePlayConfig_GameItemDigJewelDeleteAction_CD)
+	
+	mainLogic:addDestroyAction(digGoldZongZiDecAction)
+
+end
+
+function GameExtandPlayLogic:decreaseBottleBlocker( mainLogic, r, c , scoreScale , noScore )
+	local item = mainLogic.gameItemMap[r][c]
+
+	if item.bottleLevel == 1 then
+		item.bottleState = BottleBlockerState.ReleaseSpirit
+	else
+		item.bottleState = BottleBlockerState.HitAndChanging
+	end
+
+	item.bottleLevel = item.bottleLevel -1
+
+	if item.bottleLevel == 0 then
+		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kBottleBlocker, 1)
+	end
+
+	if not noScore then
+		scoreScale = scoreScale or 1
+		local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+		local ScoreAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemScore_Get,
+			IntCoord:create(r,c),				
+			nil,				
+			1)
+		ScoreAction.addInt = addScore
+		mainLogic:addGameAction(ScoreAction)
+	end
+
+	local bottleBlockerDecAction = GameBoardActionDataSet:createAs(
+	 		GameActionTargetType.kGameItemAction,
+	 		GameItemActionType.kItem_Bottle_Blocker_Explode,
+	 		IntCoord:create(r,c),
+	 		nil,
+	 		GamePlayConfig_MaxAction_time)
+	bottleBlockerDecAction.oldColor = item.ItemColorType
+	bottleBlockerDecAction.newBottleLevel = item.bottleLevel
+	
+	mainLogic:addDestroyAction(bottleBlockerDecAction)
+end
+
+--随机妖精瓶子的颜色。规则：关卡内有的颜色且尽量不造成三消且和当前的ItemColorType不一致
+function GameExtandPlayLogic:randomBottleBlockerColor( mainLogic, r, c )
+
+	local resultColor = AnimalTypeConfig.kBlue
+
+	local function randomizeTable(table)
+		local size = #table
+		local function swapInTable(table, i, j)
+			local t = table[i]
+			table[i] = table[j]
+			table[j] = t
+		end
+		for i = 1, size do
+			swapInTable(table, 1, mainLogic.randFactory:rand(1, size))
+		end
+	end
+
+	local item = mainLogic.gameItemMap[r][c]
+
+	if item and item.ItemType == GameItemType.kBottleBlocker then
+
+		local levelColors = {}
+		for i = 1, #mainLogic.mapColorList do 
+			table.insert( levelColors , mainLogic.mapColorList[i] )
+		end
+
+		if levelColors and #levelColors > 0 then
+			local size = #levelColors
+			local selfColorIndex = 0
+			for i = 1, size do
+				if item.ItemColorType == levelColors[i] then
+					selfColorIndex = i
+				end
+			end
+
+			if selfColorIndex > 0 then
+				table.remove( levelColors , selfColorIndex )
+			end
+
+			local possibleColors = {}
+			local k,v
+			for k, v in pairs(levelColors) do 
+				if not mainLogic:checkMatchQuick(r, c, v) then
+					table.insert(possibleColors, v)
+				end
+			end
+
+			if #possibleColors > 0 then
+				resultColor = possibleColors[ mainLogic.randFactory:rand(1, #possibleColors) ]
+			else
+				resultColor = levelColors[ mainLogic.randFactory:rand(1, #levelColors) ]
+			end
+		end
+	end
+
+	return resultColor
 end
 
 --获取ufo的位置
@@ -2064,7 +2231,12 @@ function GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
 
 	local canDropProps = false
 	if uncertainCfg:hasDropProps() then
-		if mainLogic.laborDayData then -- 强制指定道具掉落的百分比
+
+		if mainLogic.levelType == GameLevelType.kSummerWeekly then
+			if mainLogic.summerWeeklyData then
+				dropPropsPercent = mainLogic.summerWeeklyData.dropPropsPercent
+			end
+		elseif mainLogic.laborDayData then -- 强制指定道具掉落的百分比
 			dropPropsPercent = mainLogic.laborDayData.dropPropsPercent
 		end
 
@@ -2123,7 +2295,7 @@ function GameExtandPlayLogic:getChangeItemSelected( mainLogic, r, c)
 			local propTotalWeight = dropPropList[#dropPropList].limitInProps
 			local propRandValue = mainLogic.randFactory:rand(1, propTotalWeight)
 			-- print("propRandValue:", propRandValue, table.tostring(dropPropList))
-			for k = 1, #itemList do 
+			for k = 1, #dropPropList do 
 				local limit = dropPropList[k].limitInProps
 				if propRandValue <= limit then
 					return dropPropList[k]
@@ -2152,7 +2324,14 @@ function GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
 		if selected.changeType == UncertainCfgConst.kProps then
 			local pos = mainLogic:getGameItemPosInView(r, c)
 			if mainLogic.PlayUIDelegate then
-				mainLogic.PlayUIDelegate:addTimeProp(selected.changeItem, 1, pos, mainLogic.activityId)
+				local activityId = 0
+				local text = nil
+				if mainLogic.levelType == GameLevelType.kSummerWeekly then
+					text = Localization:getInstance():getText("weeklyrace.summer.prop.desc", {n="\n"})
+				else
+					activityId = mainLogic.activityId
+				end
+				mainLogic.PlayUIDelegate:addTimeProp(selected.changeItem, 1, pos, activityId, text)
 			end
 		end
 		item:changeItemFromQuestionMark(selected.changeType, selected.changeItem, mainLogic:randomColor(), mainLogic.addMoveBase)

@@ -84,8 +84,11 @@ function SpecialMatchLogic:BirdColorSwapBomb(mainLogic, r1, c1, r2, c2)
 		chargeAction.count = 4
 	    mainLogic:addDestroyAction(chargeAction)
 	end
-	local color2 = item2.ItemColorType
 	
+	-- 鸟需要在此时就进入destroy状态,以免滞后几帧destroy产生掉落,当鸟与悬空的大眼怪交换时可复现此类问题
+	item1:AddItemStatus(GameItemStatusType.kDestroy)
+	
+	local color2 = item2.ItemColorType
 	local ColorAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemSpecial_Color ,

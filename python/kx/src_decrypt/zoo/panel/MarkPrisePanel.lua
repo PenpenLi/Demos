@@ -68,6 +68,7 @@ end
 function MarkPrisePanel:_init(index)
 	-- get data
 	self.index = index
+	local goodsId = MarkPrisePanelModel:getGoodsId(index)
 	local items = MarkPrisePanelModel:getMarkPriseInfo(index)
 	local price, discount = MarkPrisePanelModel:getPriceAndDiscount(index)
 	local originPrice = MarkPrisePanelModel:getOriginalPrice(index)
@@ -89,7 +90,7 @@ function MarkPrisePanel:_init(index)
 	local buyBtn = self.ui:getChildByName("buyBtn")
 	local androidBuyBtn = self.ui:getChildByName("androidBuyBtn")
 	local closeBtn = self.ui:getChildByName("close")
-	if __ANDROID then
+	if __ANDROID  and not PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
 		self.buyBtn = AndroidButtonNumberBase:create(androidBuyBtn)
 		buyBtn:removeFromParentAndCleanup(true)
 	else
@@ -111,7 +112,7 @@ function MarkPrisePanel:_init(index)
 	self.closeBtn:setString(Localization:getInstance():getText("mark.prise.panel.close.btn"))
 	self.closeBtn:setColorMode(kGroupButtonColorMode.orange)
 
-	if __ANDROID then
+	if __ANDROID  and not PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
 		self.buyBtn:setString(Localization:getInstance():getText("mark.prise.panel.buy.btn"))
 		self.buyBtn:setOriginNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), originPrice))
 		self.buyBtn:setDiscountNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), price))
@@ -121,7 +122,7 @@ function MarkPrisePanel:_init(index)
 		self.buyBtn:setIconByFrameName("wheel0000")
 	end
 	self.buyBtn:setColorMode(kGroupButtonColorMode.blue)
-	if not __ANDROID and discount < 10 then
+	if not (__ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsId)) and discount < 10 then
 		dBg:setVisible(true)
 		dValue:setVisible(true)
 		dValue:setString(tostring(discount)..Localization:getInstance():getText("buy.gold.panel.discount"))
@@ -264,13 +265,14 @@ function MarkPrisePanel:onBuyBtnTapped(index)
 				panel:popout()
 			end
 		end
-		local text = {
-			tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		}
-		CommonTipWithBtn:setShowFreeFCash(true)
-		CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+		-- local text = {
+		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+		-- }
+		-- CommonTipWithBtn:setShowFreeFCash(true)
+		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
 		self.buyBtn:setEnabled(true)
 	end
 	local function onFail(err)
@@ -281,32 +283,62 @@ function MarkPrisePanel:onBuyBtnTapped(index)
 		else CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err)), "negative") end
 		self.buyBtn:setEnabled(true)
 	end
+	local function onCancel()
+		self.buyBtn:setEnabled(true)
+	end
 	self.buyBtn:setEnabled(false)
-	MarkPrisePanelModel:buyMarkPrise(index, onSuccess, onFail)
+
+	MarkPrisePanelModel:buyMarkPrise(index, onSuccess, onFail, onCancel, self)
 end
 
 MarkPrisePanelModel = {}
 
-function MarkPrisePanelModel:buyMarkPrise(index, successCallback, failCallback)
+function MarkPrisePanelModel:buyMarkPrise(index, successCallback, failCallback, cancelCallback, parentPanel)
 	local function onSuccess()
 		if successCallback then successCallback() end
 	end
-	local function onFail(evt)
-		if failCallback then failCallback(evt.data) end
+	local function onFailForIOS(evt)
+		local errorCode = nil
+		if evt and evt.data then 
+			errorCode = evt.data
+		end
+		if failCallback then failCallback(errorCode) end
 	end
-	local function onCancel(evt)
+	local function onFailForAndroid(evt)
+		if parentPanel and not parentPanel.isDisposed then 
+			parentPanel.buyBtn:setEnabled(true)
+		end
+	end
+	local function onFail(evt)
 		if failCallback then failCallback() end
 	end
+	local function onCancel(evt)
+		if cancelCallback then cancelCallback() end
+	end
+    local function updateFunc()
+		if parentPanel and not parentPanel.isDisposed then 
+			parentPanel.buyBtn:setEnabled(true)
+		end
+    end
 	local goodsId = MarkPrisePanelModel:getGoodsId(index)
+
 	if __ANDROID then
-		local logic = IngamePaymentLogic:create(goodsId)
-		logic:buy(onSuccess, onCancel, onCancel, true)
+		if PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
+			local uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
+			PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, goodsId, 1, 1, 0, 1)
+
+   			local logic = WMBBuyItemLogic:create()
+            local buyLogic = BuyLogic:create(goodsId, 2)
+            buyLogic:getPrice()
+            logic:buy(goodsId, 1, uniquePayId, buyLogic, onSuccess, onFailForAndroid, onFailForAndroid, updateFunc)
+		else
+			local logic = IngamePaymentLogic:create(goodsId)
+			logic:buy(onSuccess, onFail, onCancel, true)
+		end
 	else
 		local logic = BuyLogic:create(goodsId, 2)
-		if logic then
-			logic:getPrice()
-			logic:start(1, onSuccess, onFail)
-		end
+		logic:getPrice()
+		logic:start(1, onSuccess, onFailForIOS)
 	end
 end
 
@@ -328,16 +360,19 @@ function MarkPrisePanelModel:getPriceAndDiscount(index)
 	local meta = MetaManager:getInstance():getGoodMeta(goodsId)
 	if type(meta) ~= "table" then return end
 	local price, discount = meta.qCash, 10
-	if __ANDROID then
+	if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
 		price, discount = meta.rmb / 100, 10
 	end
-	if meta.discountQCash > 0 or __ANDROID and meta.discountRmb then
+	if meta.discountQCash > 0 or (__ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsId)) and meta.discountRmb then
 		local function mathRound(num)
-			if (num * 100) % 10 > 5 then return math.ceil(num * 10)
-			else return math.floor(num * 10) end
+			if (num * 100) % 10 > 5 then 
+				return math.ceil(num * 10)
+			else 
+				return math.floor(num * 10) 
+			end
 		end
 		price, discount = meta.discountQCash, mathRound(meta.discountQCash / meta.qCash)
-		if __ANDROID then
+		if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
 			price, discount = meta.discountRmb / 100, mathRound(meta.discountRmb / meta.rmb)
 		end
 	end
@@ -350,8 +385,11 @@ function MarkPrisePanelModel:getOriginalPrice(index)
 	if type(goodsId) ~= "number" then return end
 	local meta = MetaManager:getInstance():getGoodMeta(goodsId)
 	if type(meta) ~= "table" then return end
-	if __ANDROID then return meta.rmb / 100
-	else return meta.qCash end
+	if __ANDROID and not PaymentManager.getInstance():checkCanWindMillPay(goodsId) then 
+		return meta.rmb / 100
+	else 
+		return meta.qCash 
+	end
 end
 
 function MarkPrisePanelModel:getGoodsId(index)

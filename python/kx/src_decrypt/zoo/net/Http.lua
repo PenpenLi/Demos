@@ -56,6 +56,7 @@ kHttpEndPoints = table.const {
   getCompenInfo = "getCompenInfo",
   doPaymentOrder = "doPaymentOrder",
   doWXPaymentOrder = "doWXPaymentOrder",
+  doWXPaymentOrderV2 = "doWXPaymentOrderV2",
   doAliPaymentOrder = "doAlipayOrder",
   getRewards = "getRewards",
   clickActivity = "clickActivity",
@@ -98,6 +99,8 @@ kHttpEndPoints = table.const {
   receiveRabbitMatchRewards = "receiveRabbitMatchRewards",
   opNotify = "opNotify",
   levelConfigUpdate = "levelConfigUpdate",
+  getSummerWeekMatchInfo = "getSummerWeekMatchInfo",
+  getSummerWeekMatchReward = "getSummerWeekMatchReward",
 
 --offline mode
 	startLevel = "startlevel", 
@@ -107,6 +110,8 @@ kHttpEndPoints = table.const {
   ingame = "ingame",
   getNewUserRewards = "getNewUserRewards",
   oneplusReward = "oneplusReward",
+  delCashLog = "delCashLog",
+  setting = "setting",
 }
 
 kErrorCodeRange = 730000
@@ -189,15 +194,24 @@ function ConnectionManager:initialize(uid, sessionKey)
       language = "zh_TW"
   end
 
-	local config = {url = NetworkConfig.rpcURL,queueSize = 10,flushInterval = 10,timeout = 1,defaultPriority = rpc.SendingPriority.kNormal}
+  local timeout = 2
+
+  if __WP8 then timeout = 5 end
+
+	local config = {url = NetworkConfig.rpcURL,queueSize = 10,flushInterval = 10,timeout = timeout,defaultPriority = rpc.SendingPriority.kNormal}
   local sessionKeySource = function(callback) callback(UserManager.getInstance().sessionKey, os.time() + 3600)  end
   local function platformFinder() return pf end -- older value "hex"
 	local transponder = rpc.RpcTransponder.new(config, sessionKeySource)
 	loader.transponder = transponder
 
 	--AssembleConvertor:ctor(amf3Enabled, version, metaVersion, appID, language, platformFinder, clientType, uk, counter, others)
-	transponder:registryConvertor(
-    	rpc.AssembleConvertor.new(true, _G.bundleVersion, "1.0.0", appId, language, platformFinder, 0, nil, nil, {seqUDID = MetaInfo:getInstance():getUdid()}),
+  local others = {seqUDID = MetaInfo:getInstance():getUdid()}
+  local subPlatform = DcUtil:getSubPlatform()
+  if subPlatform and string.len(subPlatform) <= 30 then
+    others.subPlatform = DcUtil:getSubPlatform()
+  end
+  transponder:registryConvertor(
+    	rpc.AssembleConvertor.new(true, _G.bundleVersion, "1.0.0", appId, language, platformFinder, 0, nil, nil, others),
     	{ rpc.CompressConvertor.new(), rpc.HeaderConvertor.new() },
     	{ rpc.PackageConvertor.new() }
   )	
@@ -332,8 +346,8 @@ function HttpBase:_startTime()
   self.layer:changeWidthAndHeight(wSize.width, wSize.height)
   self.layer:setTouchEnabled(true, 0, true)
   self.layer:setOpacity(0)
-  PopoutManager:sharedInstance():add(self.layer, false, false)
-  -- scene:addChild(self.layer)
+  --PopoutManager:sharedInstance():add(self.layer, false, false)
+  scene:addChild(self.layer)
 
   local function onTimeOut()
     self:_stopTime()
@@ -344,7 +358,7 @@ function HttpBase:_startTime()
     end
     local scene = Director:sharedDirector():getRunningScene()
     if scene and self.animation == nil and self.isResponsed == false then 
-      self.animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap) 
+      self.animation = CountDownAnimation:createNetworkAnimationInHttp(scene, onCloseButtonTap) 
     end
   end
   self.timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut,self.timeout,false)
@@ -355,12 +369,13 @@ function HttpBase:_stopTime()
 end
 function HttpBase:_removeAnimation()
   if self.animation then 
-    self.animation:removeFromParentAndCleanup(true) 
+    --self.animation:removeFromParentAndCleanup(true)
+    PopoutManager:sharedInstance():remove(self.animation)
     self.animation = nil
   end
   if self.layer then
-    PopoutManager:sharedInstance():remove(self.layer)
-    -- self.layer:removeFromParentAndCleanup(true)
+    -- PopoutManager:sharedInstance():remove(self.layer)
+    self.layer:removeFromParentAndCleanup(true)
     self.layer = nil
   end
 end
@@ -506,8 +521,16 @@ function RegisterHTTP:load()
 	url = url .. params
   print("RegisterHTTP:", info.sk)
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(1 * 1000)
-    request:setTimeoutMs(5 * 1000)
+  local timeout = 5
+  local connection_timeout = 2
+
+  if __WP8 then 
+    timeout = 30
+    connection_timeout = 5
+  end
+
+    request:setConnectionTimeoutMs(connection_timeout * 1000)
+    request:setTimeoutMs(timeout * 1000)
    
     local function onRegisterFinished( response )
     	if response.httpCode ~= 200 then self:dispatchEvent(Event.new(Events.kError, err, self))

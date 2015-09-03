@@ -54,6 +54,13 @@ BossType = table.const
 		cast = {name = 'boss_cat_cast', frame = 40},
 		destroy = {name = 'boss_cat_destroy', frame = 26},
 	},
+	kElephant = {
+		name = 'elephant',
+		normal = {name = 'boss_elephant_normal', frame = 38},
+		hit = {name = 'boss_elephant_hit', frame = 41},
+		cast = {name = 'boss_elephant_cast', frame = 45},
+		destroy = {name = 'boss_elephant_destroy', frame = 27},
+	},
 }
 
 OFFSET_Y = 2 -- 10
@@ -73,8 +80,9 @@ function TileBoss:initBoss( ... )
 	-- body
 	local bg = Sprite:createWithSpriteFrameName("boss_bg_cloud")
 	self:addChild(bg)
+	bg:setScale(1.02)
 	self.bg = bg
-	self.bg:setPosition(ccp(-2, 3))
+	self.bg:setPosition(ccp(1, -1))
 
 	if self.bossType.normal then
 		local boss = Sprite:createWithSpriteFrameName(self.bossType.normal.name.."_0000")
@@ -120,6 +128,9 @@ function TileBoss:createBloodBar()
 
 	local bloodfg_mask = Sprite:createWithSpriteFrameName("boss_blood_bar_0001")
 	local bloodfg = Sprite:createWithSpriteFrameName("boss_blood_bar_0001")
+	--bloodfg_mask:setScale(1.1)
+	--bloodfg:setScale(1.1)
+
 	clipingnode = ClippingNode.new(CCClippingNode:create(bloodfg_mask.refCocosObj))
 	clipingnode:setPositionX(0)
 	clipingnode:setAlphaThreshold(0.98)
@@ -127,14 +138,12 @@ function TileBoss:createBloodBar()
 	bloodfg:setAnchorPoint(ccp(0, 0.5))
 	clipingnode:addChild(bloodfg)
 
-
-
-
 	blood:addChild(clipingnode)
 	self:addChild(blood)
 	self.bloodBar = bloodfg
 	bloodfg:setPosition(OFFSET_X, 0)
 	self.bloodBarWidth = bloodfg:getGroupBounds().size.width
+	--self.bloodBar:setPosition(ccp((0 - 1) * self.bloodBarWidth + OFFSET_X, 0))
 
 	local pos_x = -self.bloodBarWidth /2
 	local pos_y = -GamePlayConfig_Tile_Height * 3 /4
@@ -146,14 +155,15 @@ end
 --percent = [0,1]
 --------------------
 function TileBoss:setBloodPercent(percent, isPlayAnimation)
+	local percent = 1 - percent
 	if self.bloodBar and percent then
 		self.bloodBar:stopAllActions()
 		if isPlayAnimation then
-			self.bloodBar:runAction(CCMoveTo:create(0.5, ccp((percent - 1) * self.bloodBarWidth + OFFSET_X, 0)))
+			self.bloodBar:runAction(CCMoveTo:create(0.5, ccp(( percent - 1) * self.bloodBarWidth + OFFSET_X, 0)))
 		else
 			self.bloodBar:setPosition(ccp((percent - 1) * self.bloodBarWidth + OFFSET_X, 0))
 		end
-		if percent <= 0.3 then
+		if percent >= 0.7 then
 			self:playDangerEffect()
 		end
 		
@@ -173,7 +183,7 @@ function TileBoss:normal()
 			self.boss:setPositionY(OFFSET_Y)
 		end
 	end
-	self.boss:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions( CCDelayTime:create(2.5), CCCallFunc:create(action_callback))))
+	self.boss:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions( CCDelayTime:create(10), CCCallFunc:create(action_callback))))
 	action_callback()
 
 	if self.bossType.zzz and not self.zzz then

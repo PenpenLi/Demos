@@ -343,3 +343,7 @@ function BoxRewardTipPanel:create(option, bottom, ...)
 	newBoxRewardTipPanel:init(option, bottom)
 	return newBoxRewardTipPanel
 end
+
+function BoxRewardTipPanel:dispose()
+	BaseUI.dispose(self)
+end

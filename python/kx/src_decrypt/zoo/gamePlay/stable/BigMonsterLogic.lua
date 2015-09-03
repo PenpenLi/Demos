@@ -1,6 +1,10 @@
 BigMonsterLogic = class()
-
-
+local MAX_COUNT_ATTACK = 4
+local PriorityInit = 0.1;  --初始状态
+local Priority1Weight = 100; 
+local Priority2Weight = 10;
+local Priority3Weight = 1;
+local PriorityBlackPoint = 0; --被雪怪踩中的区域的左上角的点
 function BigMonsterLogic:create( context )
 	-- body
 	local v = BigMonsterLogic.new()
@@ -62,102 +66,6 @@ function BigMonsterLogic:findTheMonster( mainLogic, r, c )
 	return result_r, result_c
 end
 
---随机消除4个item, 优先级 ice >　snow > animal(kCrystal) > special animal
-function BigMonsterLogic:getMonsterEffectItems( mainLogic, monsterCount )
-	-- body
-	local randomDestoryCount = 4
-	
-	local gameItemMap = {}
-	local boardMap = {}
-	for r = 1, #mainLogic.gameItemMap do 
-		for c = 1, #mainLogic.gameItemMap[r] do 
-			if not gameItemMap[r] then gameItemMap[r] = {} end
-			gameItemMap[r][c] = mainLogic.gameItemMap[r][c]:copy()
-		end
-	end
-
-	for r =1, #mainLogic.boardmap do 
-		for c = 1, #mainLogic.boardmap[r] do
-			if not boardMap[r] then boardMap[r] = {} end
-			boardMap[r][c] = mainLogic.boardmap[r][c]:copy()
-		end
-	end
-
-
-	local items = {}
-	for k = 1, monsterCount do 
-		local iceList = {}
-		local snowList = {}
-		local animalList = {}
-		local specialAnimalList = {}
-		for r = 1, #gameItemMap do 
-			for c = 1, #gameItemMap[r] do 
-				local item = gameItemMap[r][c]
-				if item.bigMonsterFrostingType == 0 and item:isAvailable() then 
-					local board = boardMap[r][c]
-					if board.iceLevel > 0 and item.ItemType ~= GameItemType.kNone and not item.isBlock and not item:hasLock() then 
-						table.insert(iceList, {r = r, c= c})
-					elseif item.snowLevel > 0 then 
-						table.insert(snowList, {r = r, c = c})
-					elseif (item.ItemType == GameItemType.kAnimal  or item.ItemType == GameItemType.kCrystal )
-						and not item:hasLock() 
-						and not item:hasFurball()
-						and item:isAvailable()
-						and not item.isEmpty then
-						
-							if item.ItemSpecialType == 0 then 
-								table.insert(animalList, {r = r, c = c})
-							else 
-								table.insert(specialAnimalList, {r = r, c = c})
-							end
-					end
-				end
-			end
-		end
-
-		local item_select
-		for k = 1, randomDestoryCount do 
-			if #iceList > 0 then 
-				item_select = table.remove(iceList, math.random(1, #iceList))
-				boardMap[item_select.r][item_select.c].iceLevel = boardMap[item_select.r][item_select.c].iceLevel - 1
-				table.insert(items, item_select)
-			elseif #snowList > 0 then 
-				item_select = table.remove(snowList, math.random(1, #snowList))
-				gameItemMap[item_select.r][item_select.c].snowLevel = gameItemMap[item_select.r][item_select.c].snowLevel - 1
-				table.insert(items, item_select)
-			elseif #animalList > 0 then 
-				item_select = table.remove(animalList, math.random(1, #animalList))
-				gameItemMap[item_select.r][item_select.c].isEmpty = true
-				table.insert(items, item_select)
-			elseif #specialAnimalList > 0 then
-				item_select = table.remove(specialAnimalList, math.random(1, #specialAnimalList))
-				gameItemMap[item_select.r][item_select.c].isEmpty = true
-				table.insert(items, item_select)
-			end
-		end
-
-	end
-
-	local resultList = {}
-	for k, v in pairs(items) do
-		local has = false
-		for k2, v2 in pairs(resultList) do 
-			if v.r == v2.r and v.c == v2.c then
-				has = true 
-				v2.times = v2.times + 1
-			end
-		end
-		if not has then 
-			table.insert(resultList, {r = v.r, c = v.c, times = 1})
-		end
-	end
-
-	for k,v in pairs(resultList) do 
-		print(v.r, v.c, v.times, "-----------------")
-	end
-	return resultList
-end
-
 function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 	-- body
 	local count = 0
@@ -194,7 +102,7 @@ function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 					)
 
 					action.completeCallback = callback
-					mainLogic:addGameAction(action)
+					mainLogic:addDestroyAction(action)
 				end
 			end
 		end 
@@ -202,19 +110,155 @@ function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 	
 	if count == 0 then return 0 end                     ----------------------没有雪怪需要处理
 
+	mainLogic:setNeedCheckFalling()
+
 	---------------------雪怪消除，产生的地震，
-	local itemSelete = self:getMonsterEffectItems(mainLogic, count )
-	for k, v in pairs(itemSelete) do 
-		local actionDeleteByMonster = GameBoardActionDataSet:createAs(
-						GameActionTargetType.kGameItemAction,
-						GameItemActionType.kItem_Monster_Destroy_Item,
-						IntCoord:create(v.r, v.c),
-						nil,
-						GamePlayConfig_MaxAction_time
-					)
-		actionDeleteByMonster.completeCallback = callback
-		actionDeleteByMonster.times = v.times
-		mainLogic:addGameAction(actionDeleteByMonster)
+	if count > 1 then 
+		self:attackBigArea(mainLogic, callback)
+	else
+		self:attackSmallArea(mainLogic, callback)
 	end
-	return count + #itemSelete
+	return count + 1
+end
+
+function BigMonsterLogic:attackArea( mainLogic, r_min, c_min, r_max, c_max, callback, delayIndex )
+	-- body
+	delayIndex = delayIndex or 0
+	local actionDeleteByMonster = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItem_Monster_Destroy_Item,
+		IntCoord:create(r_min, c_min),
+		IntCoord:create(r_max, c_max),
+		GamePlayConfig_MaxAction_time
+		)
+	actionDeleteByMonster.completeCallback = callback
+	actionDeleteByMonster.delayIndex = delayIndex
+	mainLogic:addGameAction(actionDeleteByMonster)
+end
+
+function BigMonsterLogic:attackBigArea( mainLogic, callback )
+	-- body
+ 	self:attackArea(mainLogic, 1, 1, 9, 9, callback)
+end
+
+function BigMonsterLogic:attackSmallArea( mainLogic, callback )
+	-- body
+	local count = 0
+	local max_count = 0
+	self:resetHotMap()
+	local function local_callback( )
+		count = count + 1
+		if count >= max_count then 
+			if callback then callback() end
+		end
+	end
+
+	for k = 1, MAX_COUNT_ATTACK do 
+		local lucy_p = self:getLuckyPoint()
+		max_count = max_count + 1
+		self:attackArea(mainLogic, lucy_p.x, lucy_p.y ,lucy_p.x + 1, lucy_p.y + 2, local_callback, k -1)
+		self:adjustHotMapAfterAttack(lucy_p)
+	end
+end
+
+function BigMonsterLogic:getLuckyPoint( ... )
+	-- body
+	local max_priority = 0
+	local array_max_priority = {}
+
+	local ss = "";
+	for r = 1, #self.hotmap do 
+		for c = 1,#self.hotmap[r] do
+			ss = ss.."|"..self.hotmap[r][c]
+			if self.hotmap[r][c] > max_priority then 
+				array_max_priority = {}
+				max_priority = self.hotmap[r][c]
+				table.insert(array_max_priority, IntCoord:create(r, c))
+			elseif self.hotmap[r][c] == max_priority then 
+				table.insert(array_max_priority, IntCoord:create(r, c))
+			end
+		end
+		-- print(ss)
+		ss = ""
+
+	end
+
+	local index = self.mainLogic.randFactory:rand(1,#array_max_priority)
+	local p_r = math.min( array_max_priority[index].x, 8)
+	local p_c = math.min( array_max_priority[index].y, 7)
+	-- print(p_r, p_c) debug.debug()
+	self:caculateHotMap(p_r, p_c)
+	self:caculateHotMap(p_r, p_c + 1)
+	self:caculateHotMap(p_r, p_c + 2)
+	self:caculateHotMap(p_r + 1, p_c)
+	self:caculateHotMap(p_r + 1, p_c + 1)
+	self:caculateHotMap(p_r + 1, p_c + 2)
+	return IntCoord:create(p_r, p_c)
+end
+
+function BigMonsterLogic:caculateHotMap( r, c )
+	-- body
+	self.hotmap[r][c] = PriorityBlackPoint
+end
+
+function BigMonsterLogic:getPrior( r, c )
+	-- body
+	local itemData = self.mainLogic.gameItemMap[r][c]
+	local boradData = self.mainLogic.boardmap[r][c]
+
+	if boradData:isBigMonsterEffectPrior1() and itemData:isColorful() and (not itemData.isBlock) then
+		return Priority1Weight
+	elseif itemData:isBigMonsterEffectPrior1() then 
+		return Priority1Weight
+	elseif itemData:isBigMonsterEffectPrior2() or boradData:isBigMonsterEffectPrior2() then 
+		return Priority2Weight
+	elseif itemData:isBigMonsterEffectPrior3() or boradData:isBigMonsterEffectPrior3() then 
+		return Priority3Weight
+	else
+		return PriorityInit
+	end
+end
+
+function BigMonsterLogic:resetHotMap( ... )
+	-- body
+	self.hotmap = {}
+	local gameItemMap = self.mainLogic.gameItemMap
+	for r = 1, #gameItemMap do 
+		self.hotmap[r] = {}
+		for c = 1, #gameItemMap[r] do 
+			self.hotmap[r][c] = self:getPrior(r, c)
+		end
+	end
+end
+
+--影响区域
+--算法：当踩踏x时 标注1的位置会被影响
+-- 1 1 1 1 1 0 0 0
+-- 1 1 x 0 0 0 0 0
+-- 1 1 0 0 0 0 0 0
+-- 0 0 0 0 0 0 0 0
+local effectPList = {
+	{r = -1, c = -1}, {r = -1, c = -2}, {r = -1, c = 0}, {r = -1, c = 1}, {r = -1, c = 2},
+	{r = 0, c = -1}, {r = 0, c = -2}, 
+	{r = 1, c = -1}, {r = 1, c = -2}
+}
+function BigMonsterLogic:adjustHotMapAfterAttack( pt )
+	-- body
+	if not pt then return end
+
+	local function isValidateTile( r , c )
+		-- body
+		if r < 1 or r > 9 then return false end
+		if c < 1 or c > 9 then return false end
+
+		return true
+	end
+
+	for k, v in pairs(effectPList) do 
+		local c_r = v.r + pt.x
+		local c_c = v.c + pt.y
+		if isValidateTile(c_r,c_c) then 
+			self.hotmap[c_r][c_c] = self.hotmap[c_r][c_c] / 2
+		end
+	end
 end

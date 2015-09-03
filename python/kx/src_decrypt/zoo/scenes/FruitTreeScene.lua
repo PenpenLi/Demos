@@ -17,10 +17,9 @@ function FruitTreeScene:dispose()
 	if scene then scene:checkDataChange() end
 	if scene and scene.coinButton and not scene.coinButton.isDisposed then scene.coinButton:updateView() end
 	if scene and scene.energyButton and not scene.energyButton.isDisposed then scene.energyButton:updateView() end
-	if GameGuide then
-		if self.rulePanel then GameGuide:sharedInstance():onPopdown(self.rulePanel) end
-		if self.upgradePanel then GameGuide:sharedInstance():onPopdown(self.upgradePanel) end
-	end
+	self.tree:endFruitTreeGuide()
+	self:dispatchEvent(Event.new(kFruitTreeEvents.kExit))
+	
 	Scene.dispose(self)
 end
 
@@ -83,9 +82,6 @@ function FruitTreeScene:onInit()
 		self.rulePanel = FruitTreeRulePanel:create(self.titlePanel:getBottomY())
 		if self.rulePanel then
 			local function onClose()
-				if GameGuide then
-					GameGuide:sharedInstance():onPopdown(self.ruilePanel)
-				end
 				self.titlePanel:onRulePanelRemove()
 				self.rulePanel:removeFromParentAndCleanup(true)
 				closeBtn:setTouchEnabled(true)
@@ -99,9 +95,7 @@ function FruitTreeScene:onInit()
 			local index = self:getChildIndex(self.titlePanel)
 			self:addChildAt(self.rulePanel, index)
 			self.rulePanel:playSlideInAnim()
-			if GameGuide then
-				GameGuide:sharedInstance():onPopup(self.rulePanel)
-			end
+			self.tree:endFruitTreeGuide()
 		end
 	end
 
@@ -129,9 +123,6 @@ function FruitTreeScene:onInit()
 		self.upgradePanel = FruitTreeUpgradePanel:create()
 		if self.upgradePanel then
 			local function onClose()
-				if GameGuide then
-					GameGuide:sharedInstance():onPopdown(self.upgradePanel)
-				end
 				self.upgradePanel:removeFromParentAndCleanup(true)
 				self.upgradePanel = nil
 				if self.titlePanel and not self.titlePanel.isDisposed then self.titlePanel:disableClick(false, true) end
@@ -144,9 +135,7 @@ function FruitTreeScene:onInit()
 			self.upgradePanel:addEventListener(kPanelEvents.kClose, onClose)
 			local index = self:getChildIndex(self.guideLayer)
 			self:addChildAt(self.upgradePanel, index)
-			if GameGuide then
-				GameGuide:sharedInstance():onPopup(self.upgradePanel)
-			end
+			self.tree:endFruitTreeGuide()
 		end
 	end
 
@@ -205,14 +194,8 @@ end
 
 function FruitTreeScene:onKeyBackClicked()
 	if self.rulePanel then
-		if GameGuide then
-			GameGuide:sharedInstance():onPopdown(self.rulePanel)
-		end
 		self.rulePanel:onKeyBackClicked()
 	elseif self.upgradePanel then
-		if GameGuide then
-			GameGuide:sharedInstance():onPopdown(self.upgradePanel)
-		end
 		self.upgradePanel:onKeyBackClicked()
 	elseif self.fruitClicked then self.tree:onKeyBackClicked()
 	else Director:sharedDirector():popScene() end

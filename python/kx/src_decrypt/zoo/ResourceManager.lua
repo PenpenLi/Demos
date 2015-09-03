@@ -135,6 +135,11 @@ function ResourceManager:init(...)
 
 	filename = "fnt/update.fnt"
 	addGlobalDynamicFontMap("Myriad Pro", filename)
+	addGlobalDynamicFontMap("MyriadPro-Regular",filename)
+
+	filename = "fnt/race_rank.fnt"
+	addGlobalDynamicFontMap("Lithos Pro", filename)
+	addGlobalDynamicFontMap("Lithos Pro Regular", filename)
 end
 
 function ResourceManager:sharedInstance(...)

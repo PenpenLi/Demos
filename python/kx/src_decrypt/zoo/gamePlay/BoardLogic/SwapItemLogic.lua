@@ -10,7 +10,12 @@ function SwapItemLogic:canBeSwaped(mainLogic, r1,c1,r2,c2)
 end
 
 function SwapItemLogic:_canBeSwaped(_boardmap, _gameItemMap, r1,c1,r2,c2)
-	if (r1 == r2 and c1 == c2 + 1) or (r1 == r2 and c1 == c2 - 1) or (r1 == r2 + 1 and c1 == c2) or (r1 == r2 - 1 and c1 == c2) then
+	if (r1 == r2 and c1 == c2 + 1)
+		or (r1 == r2 and c1 == c2 - 1)
+		or (r1 == r2 + 1 and c1 == c2)
+		or (r1 == r2 - 1 and c1 == c2)
+		then
+
 		local board1 = _boardmap[r1][c1];
 		local board2 = _boardmap[r2][c2];
 		local item1 = _gameItemMap[r1][c1];
@@ -50,19 +55,21 @@ end
 function SwapItemLogic:SwapedItemAndMatch(mainLogic, r1, c1, r2, c2, doSwap)	--doSwap==true表示确实进行交换，并且引起相应效果，doSwap==false表示仅仅判断是否能够交换
 	--1.特效交换	
 	local st1 = SwapItemLogic:_trySwapedSpecialItem(mainLogic, r1,c1,r2,c2, doSwap)
-	if st1 then --能够进行特效交换
+	if st1 then--能够进行特效交换
 		local possbileMoves = {{{ r = r1, c = c1 }, { r = r2, c = c2 }, dir = { r = r2 - r1, c = c2 - c1 } }}
 		return true, possbileMoves
 	else
 		local st2, possbileMoves = SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
-		if st2 then ---能够进行普通交换
-			if doSwap then ------2.交换后的动作
+		if st2 then---能够进行普通交换
+			if doSwap then
+				------2.交换后的动作
 				mainLogic.gameMode:afterSwap(r1, c1)
 				mainLogic.gameMode:afterSwap(r2, c2)
 			end
 			return true, possbileMoves
 		end
 	end
+
 	return false
 end
 
@@ -86,6 +93,8 @@ function SwapItemLogic:_trySwapedSpecialItem(mainLogic, r1,c1,r2,c2, doSwap)--do
 			mainLogic:checkItemBlock(r2, c2)
 			FallingItemLogic:preUpdateHelpMap(mainLogic)
 		end
+		-- item1.isNeedUpdate = true
+		-- item2.isNeedUpdate = true
 	end
 	
 	if sp1 >= AnimalTypeConfig.kLine and sp1<= AnimalTypeConfig.kColor
@@ -141,13 +150,7 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local color1 = data1.ItemColorType
 	local color2 = data2.ItemColorType
 
-	if (color1 == color2) then
-        --if doSwap then
-            --SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
-            --return true
-        --end --lxb ^_^
-        return false
-    end --同样的颜色交换，没有意义
+	if (color1 == color2) then return false end --同样的颜色交换，没有意义
 	--1.临时性颜色交换
 	local item1Clone = data1:copy()
 	local item2Clone = data2:copy()
@@ -172,9 +175,13 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		table.insert(possibleMoves, possibleMove2)
 	end
 
-	if ts1 or ts2 then
-		----成功合成, 开始修改数据
+	if ts1 or ts2
+		then
+		----成功合成
+		----开始修改数据
 		if doSwap then
+			-- data1.isNeedUpdate = true
+			-- data2.isNeedUpdate = true
 			mainLogic:addNeedCheckMatchPoint(r1, c1)
 			mainLogic:addNeedCheckMatchPoint(r2, c2)
 
@@ -196,18 +203,12 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		
 		return true, possibleMoves
 	else
-		-- lxb ^_^
-        if doSwap then
-            --if r1 == r2 then SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2) end
-            --if c1 == c2 then SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r1, c1, r2, c2) end
-            --return true
-        else
-			data1:getAnimalLikeDataFrom(item1Clone)
-			data2:getAnimalLikeDataFrom(item2Clone)
-			data1.isNeedUpdate = false
-			data2.isNeedUpdate = false
-            return false
-        end
+		--回调颜色
+		data1:getAnimalLikeDataFrom(item1Clone)
+		data2:getAnimalLikeDataFrom(item2Clone)
+		data1.isNeedUpdate = false
+		data2.isNeedUpdate = false
+		return false
 	end
 end
 

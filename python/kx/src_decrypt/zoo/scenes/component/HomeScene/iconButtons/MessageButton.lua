@@ -43,6 +43,7 @@ function MessageButton:init(...)
 	-- -------------------
 	
 	-- self.wrapper Is Declared In Base Class IconButtonBase
+	self.ring = self.wrapper:getChildByName("ring")
 	self.numberLabel	= self.wrapper:getChildByName("numberLabel")
 	assert(self.numberLabel)
 	self.labelPos = self.numberLabel:getPositionY()
@@ -60,6 +61,14 @@ function MessageButton:init(...)
 		self.numberLabel:setPositionY(self.labelPos)
 		self.numberLabel:setFontSize(self.fontSize)
 		self.numberLabel:setString(requestNumber)
+	end
+		
+	if requestNumber > 0 then
+		self.ring:setVisible(true)
+		self.numberLabel:setVisible(true)
+	else
+		self.ring:setVisible(false)
+		self.numberLabel:setVisible(false)
 	end
 
 	local tipLabelTxtKey	= "message.center.coin.new.mail.tips"
@@ -94,8 +103,12 @@ function MessageButton:updateView(...)
 	end
 
 	if requestNumber > 0 then
+		self.ring:setVisible(true)
+		self.numberLabel:setVisible(true)
 		self:playHasNotificationAnim()
 	else
+		self.ring:setVisible(false)
+		self.numberLabel:setVisible(false)
 		self:stopHasNotificationAnim()
 	end
 end

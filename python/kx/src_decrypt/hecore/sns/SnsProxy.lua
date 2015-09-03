@@ -12,6 +12,73 @@ elseif __ANDROID then
     require "hecore.sns.SnsProxyAndroid"
 end
 
+if __WIN32 then 
+	SnsProxy = {}
+
+	-- SnsProxy.profile = {}
+
+	function SnsProxy:isLogin( ... )
+		return false
+	end
+
+	function SnsProxy:getAuthorizeType( ... )
+		return PlatformAuthEnum.kPhone
+	end
+
+	function SnsProxy:setAuthorizeType( ... )
+		-- body
+	end
+
+	function SnsProxy:logout( callback )
+		callback.onSuccess()
+	end
+
+	-- function SnsProxy:getUserProfile( successCallback )
+	-- 	successCallback({})
+	-- end
+end
+
+
+if not SnsProxy then
+	return
+end
+if not SnsProxy.profile then
+	SnsProxy.profile = {}
+end
+function SnsProxy:isPhoneLogin()
+	if not PlatformConfig:hasAuthConfig(PlatformAuthEnum.kPhone) then
+		return false
+	end
+
+	local lastLoginUser = Localhost.getInstance():getLastLoginUserConfig()
+	if not lastLoginUser then 
+		return false
+	end
+
+    local userData = Localhost.getInstance():readUserDataByUserID(lastLoginUser.uid)
+    --print("userData:"..table.tostring(userData))
+    if userData and userData.openId then
+
+        --print("userData.snsType:"..table.tostring(userData.authorType))
+        if not userData.authorType then return false end
+        self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
+
+        if userData.authorType ~= PlatformAuthEnum.kPhone then
+        	return false
+        end
+
+        return true
+		-- return Localhost:time() - Localhost:getLastLoginUserConfig().time < 365 * 24 * 60 * 60 * 1000
+    end
+
+    return false
+end
+
+function SnsProxy:isPhoneLoginExpire( ... )
+	return Localhost:time() - Localhost:getLastLoginUserConfig().time > 365 * 24 * 60 * 60 * 1000 
+end
+
+
 --
 -- SnsProxy_Android ---------------------------------------------------------
 --

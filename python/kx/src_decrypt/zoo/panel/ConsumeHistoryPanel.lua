@@ -28,6 +28,7 @@ function ConsumeHistoryPanel:ctor( ... )
 	self.isLoading = false
 	self.isLoadComplete = false --服务端数据是否加载完 
 	self.hasError = false
+	self.isFirstLoad = true
 
 	self.dataList = {} --tableView 显示的数据
 	self.logList = {} -- 服务端给的数据
@@ -62,6 +63,9 @@ function ConsumeHistoryPanel:init( ... )
 	local size = self.ui:getGroupBounds().size
 	title:setPositionX((size.width - titleSize.width) / 2)
 
+	self.clearBtn = self:createTouchButton("btnClearLogs", function(...) self:clearLogs() end)
+	--self.clearBtn:setPositionY(-visibleSize.height + 75)
+	self:setClearState(false)
 	-- "仅显示最近两个月消费记录"
 	-- desc:setString(Localization:getInstance():getText("consume.history.panel.desc"))	
 	
@@ -75,7 +79,6 @@ function ConsumeHistoryPanel:init( ... )
 	end	
 
 	local tableViewTitleBgBounds = tableViewTitleBg:boundingBox()
-
 
 	-- "购买项目","交易时间","价格"
 	for i=1,2 do
@@ -93,13 +96,53 @@ function ConsumeHistoryPanel:init( ... )
 
 	self.tableView = self:buildTableView(
 		visibleSize.width,
-		visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY())
+		visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY() - 150)
 	)
 	self.tableView:ignoreAnchorPointForPosition(false)
 	self.tableView:setAnchorPoint(ccp(0,1))
 	self.tableView:setPositionX(0)
 	self.tableView:setPositionY(tableViewTitleBgBounds:getMinY())
 	self.ui:addChild(CocosObject.new(self.tableView))
+
+	print("tableView height: ", self.tableView:getViewSize().height)
+	print("tableView posY: ", tableViewTitleBgBounds:getMinY())
+
+	local bottomHeight = visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY() - self.tableView:getViewSize().height)
+	print("bottom height: ", bottomHeight)
+	self.clearBtn:setPositionY(bottomHeight/2 - visibleSize.height)
+end
+
+function ConsumeHistoryPanel:setClearState(isEnabled)
+	self.clearBtn:setVisible(isEnabled)
+	self.clearBtn:setTouchEnabled(isEnabled)
+end
+
+function ConsumeHistoryPanel:clearLogs()
+
+	local function onSuccess(evt)
+		if self.isDisposed then
+			return
+		end
+
+		self.dataList = {}
+		self.logList = {}
+		self.tableView:reloadData()
+	end
+
+	local function onFailed(evt)
+		if not self.isDisposed then
+			CommonTip:showTip("请稍后再尝试~", "negative")
+			self:setClearState(true)
+			return
+		end
+	end
+
+	self:setClearState(false)
+	local http = DeleteCashLogsHttp.new(true)
+	http.timeout = 0.5
+	http:addEventListener(Events.kComplete, onSuccess)
+	http:addEventListener(Events.kError, onFailed)
+	http:syncLoad()
 end
 
 function ConsumeHistoryPanel:buildItemLoading( ... )
@@ -137,6 +180,7 @@ function ConsumeHistoryPanel:buildTableView(width,height)
 		elseif eventType == "numberOfCells" then 
 			return self:numberOfCells()
 		elseif eventType == "scroll" then 
+
 			self:onScrolled(tableView)
 		end
 	end
@@ -172,9 +216,14 @@ function ConsumeHistoryPanel:getBuyItemText( data )
 
 	-- 1短代,2应用包
 	if data.type == 1 or data.type == 2 then 
+		--wp8 只能购买风车币
+		if __WP8 then
+			return Localization:getInstance():getText("consume.history.panel.gold.text",{n = data.price})
+		end
+		
 		if data.goodsId then 
-			local goodPayCode = MetaManager.getInstance():getGoodPayCodeMeta(data.goodsId)
-			return (goodPayCode or {props=""}).props
+			local goodsName = Localization:getInstance():getText("goods.name.text"..tostring(data.goodsId))
+			return goodsName
 		else
 			-- test
 			-- return tostring(data.type)
@@ -231,10 +280,19 @@ function ConsumeHistoryPanel:cellAtIndex(idx)
 		local icon = self.itemLoading:getChildByName("icon")
 		icon:stopAllActions()
 		if self.isLoadComplete then	
-			icon:setVisible(false)	
-			self.itemLoading:getChildByName("text"):setString(
-				Localization:getInstance():getText("consume.history.panel.loading.text.1")
-			)
+			icon:setVisible(false)
+
+			--print("!!!!!!!!!!!!!!!show loading text!!!!!!!!!!!!!!!!!", self.isFirstLoad)
+			if self.isFirstLoad then
+				local text = #self.dataList>0 and "" or Localization:getInstance():getText("consume.history.panel.loading.text.1")
+				self.itemLoading:getChildByName("text"):setString(text)
+			elseif #self.dataList>0 then
+				setTimeOut(function() 
+						if not self.isDisposed then
+							self.itemLoading:getChildByName("text"):setString("")
+						end
+					end, 5)
+			end
 			-- self.itemLoading:getChildByName("text"):setString("已经没有更早的消费记录了")
 		else
 			self.itemLoading:getChildByName("text"):setString(
@@ -321,6 +379,7 @@ function ConsumeHistoryPanel:onScrolled( tableView )
 			offset2.y - contentSize2.height + contentSize1.height + self:cellSize(#self.dataList).height
 		))
 
+		self.isFirstLoad = false
 	end
 
 	print("loading")
@@ -365,14 +424,22 @@ function ConsumeHistoryPanel:loadDataAsync( successCallback,failCallback )
 		end
 
 		successCallback(evt.data.logs)
+		self:setClearState(#self.logList > 0)
 	end
 
 	local function onFail( evt )
 		if self.isDisposed then 
 			return 
 		end
-		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
-		
+		self:runAction(CCCallFunc:create(function( ... )
+			local panel = CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative", 
+				function () 
+					self:setClearState(#self.logList > 0) 
+				end)
+			local wSize = Director:sharedDirector():getWinSize()
+
+			panel:setPositionY((wSize.height - panel:getGroupBounds().size.height)/2 - wSize.height)
+		end))
 		failCallback()
 	end
 
@@ -391,7 +458,10 @@ function ConsumeHistoryPanel:loadDataAsync( successCallback,failCallback )
 	-- 	return 
 	-- end
 
+	self:setClearState(false)
+
 	local http = GetCashLogsHttp.new()
+	http.timeout = 0.5
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFail)
 	http:syncLoad(#self.logList,#self.logList + pageSize - 1)
@@ -404,12 +474,13 @@ end
 function ConsumeHistoryPanel:popout( ... )
 
 	local scene = Scene:create()
-	scene:setPosition(visibleOrigin)
+	-- scene:setPosition(visibleOrigin)
 	function scene.onKeyBackClicked( ... )
 		self:onKeyBackClicked()
 	end
 
-	self:setPositionY(visibleSize.height)
+	self:setPositionY(visibleSize.height + visibleOrigin.y)
+	self:setPositionX(visibleOrigin.x)
 	scene:addChild(self)
 	
 	Director.sharedDirector():pushScene(scene)

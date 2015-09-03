@@ -235,7 +235,7 @@ function BuyHttp:load(goodsId , num , moneyType, targetId)
 			if user:getCoin() > meta.coin then
 				UserService.getInstance():cacheHttp(kHttpEndPoints.buy, {goodsId=goodsId , num=num , moneyType=moneyType , targetId=targetId})
 				if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
-				else print("Did not write user data to the device.") end
+				else print("Did not write user data to the device.1") end
 				loadCallback(kHttpEndPoints.buy, {})
 			else
 				loadCallback(kHttpEndPoints.buy, {}, 730321)
@@ -244,10 +244,35 @@ function BuyHttp:load(goodsId , num , moneyType, targetId)
 			loadCallback(kHttpEndPoints.buy, {}, 211)
 		end
 	else
-		if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
-		self.transponder:call(kHttpEndPoints.buy, {goodsId=goodsId , num=num , moneyType=moneyType , targetId=targetId}, loadCallback, rpc.SendingPriority.kHigh, false)
+		if NetworkConfig.useLocalServer and __ANDROID then 
+			local user = UserService:getInstance().user
+			local meta = MetaManager:getInstance():getGoodMeta(goodsId)
+			if user and meta then
+				local finalCash = meta.qCash
+				if meta.discountQCash and meta.discountQCash ~=0 then 
+					finalCash = meta.discountQCash
+				end
+				if user:getCash() >= finalCash then
+					UserService.getInstance():cacheHttp(kHttpEndPoints.buy, {goodsId=goodsId, num=num, moneyType=moneyType, targetId=targetId, requestTime=Localhost:time()})
+					if NetworkConfig.writeLocalDataStorage 
+						then Localhost:getInstance():flushCurrentUserData()
+					else 
+						print("Did not write user data to the device.2") 
+					end
+					loadCallback(kHttpEndPoints.buy, {})
+				else
+					loadCallback(kHttpEndPoints.buy, {}, 730330)
+				end
+			else
+				loadCallback(kHttpEndPoints.buy, {}, 211)
+			end
+		else
+			if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+			self.transponder:call(kHttpEndPoints.buy, {goodsId=goodsId , num=num , moneyType=moneyType , targetId=targetId}, loadCallback, rpc.SendingPriority.kHigh, false)
+		end
 	end
 end
+
 --
 -- GetLadyBugRewards ---------------------------------------------------------
 --
@@ -430,7 +455,7 @@ end
 -- UpdateProfileHttp
 -- 
 UpdateProfileHttp = class(HttpBase)
-function UpdateProfileHttp:load(name, headUrl)
+function UpdateProfileHttp:load(name, headUrl, snsPlatform, snsName)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	
 	local context = self
@@ -440,17 +465,19 @@ function UpdateProfileHttp:load(name, headUrl)
 			context:onLoadingError(err)
 		else
 			he_log_info("UpdateProfileHttp ok")
+			context:onLoadingComplete(data)
 		end
 	end
 	UserService:getInstance().profile.name = UserManager:getInstance().profile.name
-	UserService:getInstance().profile.headUrl = UserManager:getInstance().profile.name
+	UserService:getInstance().profile.headUrl = UserManager:getInstance().profile.headUrl
 	print("profile change", UserService:getInstance().profile.name)
+	UserService:getInstance().profile.snsMap = UserManager:getInstance().profile.snsMap
 
 	if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 	else print("Did not write data to the device.") end
 	
 	GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kProfileUpdate))
-	self.transponder:call(kHttpEndPoints.updateProfile, {name = name, headUrl = headUrl}, loadCallback, rpc.SendingPriority.kHigh, false)
+	self.transponder:call(kHttpEndPoints.updateProfile, {name = name, headUrl = headUrl,snsPlatform = snsPlatform,snsName = snsName}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 -- 
@@ -484,7 +511,7 @@ function ConfirmInvite:load(inviteCode, ...)
 		    if NetworkConfig.writeLocalDataStorage then Localhost:getInstance():flushCurrentUserData()
 			else print("Did not write user data to the device.") end
 			
-			context:onLoadingComplete()
+			context:onLoadingComplete(data)
 	    end
 	end
 
@@ -511,7 +538,7 @@ function GetInviteeRewardHttp:load(inviters)
 		end
 	end
 	local params = {inviters = inviters}
-	if __ANDROID then
+	if __ANDROID and _G.sns_token then
 		params.snsPlatform = PlatformConfig:getPlatformAuthName()
 	end
 	self.transponder:call(kHttpEndPoints.getInviteeReward, params, loadCallback, rpc.SendingPriority.kHigh, false)
@@ -553,7 +580,7 @@ end
 -- SendFreegift ---------------------------------------------------------
 -- 
 SendFreegiftHttp = class(HttpBase)
-function SendFreegiftHttp:load(sendType, targetUids, itemId)
+function SendFreegiftHttp:load(sendType, messageId, targetUids, itemId)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -575,7 +602,7 @@ function SendFreegiftHttp:load(sendType, targetUids, itemId)
 			context:onLoadingComplete(data)
 		end
 	end
-	local sendee = {receiverUids = targetUids, itemId = itemId}
+	local sendee = {messageId = messageId, receiverUids = targetUids, itemId = itemId}
 	sendee.type = sendType
 	self.transponder:call(kHttpEndPoints.sendFreegift, sendee, loadCallback, rpc.SendingPriority.kHigh, false)
 end
@@ -619,14 +646,22 @@ function GetExchangeCodeRewardHttp:load(code)
 			local rewardItems = data.rewardItems
 			local user = UserManager:getInstance().user
 			for i,v in ipairs(rewardItems) do
-				if tonumber(v.itemId) ~= 2 then
+				if tonumber(v.itemId) == 2 then
+					local usr = UserManager:getInstance():getUserRef()
+					usr:setCoin(usr:getCoin() + v.num)
+					local srv = UserService:getInstance():getUserRef()
+					srv:setCoin(srv:getCoin() + v.num)
+					DcUtil:logCreateCoin("exchange code", v.num, usr:getCoin() - v.num, -1)
+				elseif tonumber(v.itemId) == 14 then
+					local usr = UserManager:getInstance():getUserRef()
+					usr:setCash(usr:getCash() + v.num)
+					local srv = UserService:getInstance():getUserRef()
+					srv:setCash(srv:getCash() + v.num)
+					DcUtil:logCreateCash("exchange code", v.num, usr:getCash() - v.num, -1)
+				else
 					UserManager:getInstance():addUserPropNumber(tonumber(v.itemId), tonumber(v.num))
 					UserService:getInstance():addUserPropNumber(tonumber(v.itemId), tonumber(v.num))
-
-					DcUtil:logRewardItem("exchange_code", v.itemId, v.num, -1)
-				else
-					user:setCoin(tonumber(v.num)+user:getCoin())
-					UserService:getInstance().user:setCoin(tonumber(v.num)+UserService:getInstance().user:getCoin())
+					DcUtil:logRewardItem("exchange code", v.itemId, v.num, -1)
 				end
 			end
 			
@@ -774,7 +809,7 @@ function DoOrderHttp:load(tradeId, goodsId, goodsType, num)
 end
 
 DoWXOrderHttp = class(HttpBase)
-function DoWXOrderHttp:load(platform, tradeId, goodsId, goodsType, amount, goodsName, totalFee, ip)
+function DoWXOrderHttp:load(platform, sign, tradeId, goodsId, goodsType, amount, goodsName, totalFee, ip)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -786,14 +821,33 @@ function DoWXOrderHttp:load(platform, tradeId, goodsId, goodsType, amount, goods
 			context:onLoadingComplete(data)
 		end
 	end
-	self.transponder:call(kHttpEndPoints.doWXPaymentOrder, {platform=platform, tradeId=tradeId, goodsId=goodsId, 
+	self.transponder:call(kHttpEndPoints.doWXPaymentOrder, {platform=platform, checkStr=sign, tradeId=tradeId, goodsId=goodsId, 
+															goodsType=goodsType, num=amount, goodsName=goodsName,
+															totalFee=totalFee, ip=ip}, 
+															loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+DoWXOrderV2Http = class(HttpBase)
+function DoWXOrderV2Http:load(platform, sign, tradeId, goodsId, goodsType, amount, goodsName, totalFee, ip)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("DoWXOrderV2Http error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("DoWXOrderV2Http success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.doWXPaymentOrderV2, {platform=platform, checkStr=sign, tradeId=tradeId, goodsId=goodsId, 
 															goodsType=goodsType, num=amount, goodsName=goodsName,
 															totalFee=totalFee, ip=ip}, 
 															loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 DoAliOrderHttp = class(HttpBase)
-function DoAliOrderHttp:load(platform, tradeId, goodsId, goodsType, amount, goodsName, totalFee)
+function DoAliOrderHttp:load(platform, sign, tradeId, goodsId, goodsType, amount, goodsName, totalFee)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -805,7 +859,7 @@ function DoAliOrderHttp:load(platform, tradeId, goodsId, goodsType, amount, good
 			context:onLoadingComplete(data)
 		end
 	end
-	self.transponder:call(kHttpEndPoints.doAliPaymentOrder, {platform=platform, tradeId=tradeId, goodsId=goodsId, 
+	self.transponder:call(kHttpEndPoints.doAliPaymentOrder, {platform=platform, checkStr=sign, tradeId=tradeId, goodsId=goodsId, 
 															goodsType=goodsType, num=amount, goodsName=goodsName,
 															totalFee=totalFee}, 
 															loadCallback, rpc.SendingPriority.kHigh, false)
@@ -930,4 +984,34 @@ function PushNotifyHttp:load(uidList, msg, typeId, targetTime)
 	end
 	self.transponder:call(kHttpEndPoints.pushNotify, {uids = uidList, msg = msg, typeId = typeId, targetTime = targetTime},
 		loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+DeleteCashLogsHttp = class(HttpBase)
+function DeleteCashLogsHttp:load()
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetCashLogsHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetCashLogsHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.delCashLog, {}, loadCallback, rpc.SendingPriority.kHigh, false)	
+end
+
+DisposeBindingHttp = class(HttpBase)
+function DisposeBindingHttp:load(snsPlatforms)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+			context:onLoadingComplete(data)
+	    end
+	end
+	self.transponder:call("disConnect", {snsPlatforms = snsPlatforms}, loadCallback, rpc.SendingPriority.kHigh, false)
 end

@@ -15,6 +15,8 @@ LevelConstans = table.const{
 	RECALL_TASK_LEVEL_ID_END = 179999,
 	TASK_FOR_UNLOCK_AREA_START = 200000,
 	TASK_FOR_UNLOCK_AREA_END = 209999,
+	SUMMER_MATCH_LEVEL_ID_START = 230000,
+	SUMMER_MATCH_LEVEL_ID_END = 239999,
 }
 
 StageModeConstans = table.const{
@@ -34,6 +36,7 @@ GameLevelType = {
 	kRabbitWeekly	= 6,
 	kTaskForRecall  = 8,
 	kTaskForUnlockArea = 9,
+	kSummerWeekly 	= 10,
 }
 
 LevelType = class()
@@ -77,6 +80,10 @@ function LevelType:isUnlockAreaTaskLevel( levelId )
 	end
 end
 
+function LevelType:isSummerMatchLevel( levelId )
+	return levelId > LevelConstans.SUMMER_MATCH_LEVEL_ID_START and levelId <= LevelConstans.SUMMER_MATCH_LEVEL_ID_END 
+end
+
 function LevelType:getLevelTypeByLevelId( levelId )
 	if LevelType:isMainLevel(levelId) then
 		return GameLevelType.kMainLevel
@@ -92,6 +99,8 @@ function LevelType:getLevelTypeByLevelId( levelId )
 		return GameLevelType.kTaskForRecall
 	elseif LevelType:isUnlockAreaTaskLevel(levelId) then
 		return GameLevelType.kTaskForUnlockArea
+	elseif LevelType:isSummerMatchLevel(levelId) then
+		return GameLevelType.kSummerWeekly
 	else
 		assert(false, 'unknown level type:levelId='..tostring(levelId))
 	end

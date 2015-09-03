@@ -12,6 +12,7 @@ function GameMapInitialLogic:init(mainLogic, config)
 	self:initDropBuff(mainLogic)
 	self:initDigTileMap(mainLogic, config)
 	self:initMagicLamp(mainLogic)  -- 在计算随机颜色前就初始化神灯
+	self:initBottleBlocker(mainLogic)
 	self:calculateItemColors(mainLogic, config)
 	self:initPortal(mainLogic, config.portals)
 	self:checkItemBlock(mainLogic)
@@ -31,6 +32,9 @@ function GameMapInitialLogic:initTileData(mainLogic, config)
 			mainLogic.boardmap[r][c]:initByConfig(tileDef)
 			if config.gameMode == 'seaOrder' then
 				mainLogic.boardmap[r][c]:setGameModeId(GameModeTypeId.SEA_ORDER_ID)
+			end
+			if mainLogic.boardmap[r][c].isMoveTile then
+				mainLogic.boardmap[r][c]:initTileMoveByConfig(config.tileMoveCfg)
 			end
 			mainLogic.gameItemMap[r][c]:initByConfig(tileDef)
 			mainLogic.gameItemMap[r][c]:initBalloonConfig(mainLogic.balloonFrom)
@@ -250,7 +254,9 @@ function GameMapInitialLogic:_calculateItemColors(mainLogic, animalMap, possible
 	local function resetColors()
 		for r = 1, #mainLogic.gameItemMap do
 			for c = 1, #mainLogic.gameItemMap[r] do
-				if mainLogic.gameItemMap[r][c]:isColorful() and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kMagicLamp then
+				if mainLogic.gameItemMap[r][c]:isColorful() 
+					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kMagicLamp
+					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kBottleBlocker then
 					mainLogic.gameItemMap[r][c].ItemColorType = AnimalTypeConfig.getType(animalMap[r][c])
 				end
 			end
@@ -491,6 +497,20 @@ function GameMapInitialLogic:initMagicLamp(mainLogic)
 	end
 end
 
+-------------------------------------------------
+
+function GameMapInitialLogic:initBottleBlocker(mainLogic)
+	for r = 1, #mainLogic.gameItemMap do 
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item then
+				if item.ItemType == GameItemType.kBottleBlocker then
+					item.ItemColorType = GameExtandPlayLogic:randomBottleBlockerColor(mainLogic, r, c)
+				end
+			end
+		end
+	end
+end
 
 ----------------------------------
 --初始化传送带

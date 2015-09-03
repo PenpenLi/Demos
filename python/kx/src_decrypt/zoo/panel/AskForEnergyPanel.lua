@@ -341,10 +341,26 @@ end
 
 function AskForEnergyPanel:selectAll(content, enable, ignoreDc)
 	local items = content:getItems()
-	for k, v in ipairs(items) do
-		local item = v:getContent()
-		if item then
-			item:select(enable)
+	if enable then -- 全选只选中前12个（为了减轻服务器负担）
+		local count = #items
+		local maxIndex
+		if count >= 12 then
+			maxIndex = 12
+		else
+			maxIndex = count
+		end
+		for index = 1, maxIndex do
+			local item = items[index]:getContent()
+			if item then
+				item:select(true)
+			end
+		end
+	else -- 取消全选则取消所有
+		for k, v in pairs(items) do
+			local item = v:getContent()
+			if item then
+				item:select(false)
+			end
 		end
 	end
 	self.allSelected = enable
@@ -359,7 +375,15 @@ end
 function AskForEnergyPanel:onItemSelectChange()
 	if self.content and not self.content.isDisposed then
 		local selectedFriendsID = self.content:getSelectedFriendID()
-		if #selectedFriendsID == self.numberOfFriends then
+		-- 选中>=12个条目就认为是全选
+		-- 不到12个的，选中全部就认为是全选
+		local checkCount 
+		if self.numberOfFriends >= 12 then
+			checkCount = 12
+		else
+			checkCount = self.numberOfFriends
+		end
+		if #selectedFriendsID >= checkCount then
 			self.allSelected = true
 			self.select_mark:setVisible(true)
 		else

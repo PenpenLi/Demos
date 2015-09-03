@@ -18,8 +18,8 @@ function FruitTreeButton:init()
 	self.ring = self.wrapper:getChildByName("ring")
 	self.number = self.wrapper:getChildByName("number")
 
-	self.ui:setTouchEnabled(true)
-	self.ui:setButtonMode(true)
+	self.wrapper:setTouchEnabled(true)
+	self.wrapper:setButtonMode(true)
 
 	self.newTag = ResourceManager:sharedInstance():buildGroup("homescene_newtag_sprite")
 	self.newTag:setPositionXY(self.ring:getPositionX(), self.ring:getPositionY())

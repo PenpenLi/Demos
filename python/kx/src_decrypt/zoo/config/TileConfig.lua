@@ -142,8 +142,26 @@ TileConst = table.const
 	kCannonBrownCuteBall = 129,
 	kCnanonBlackCuteBall = 130,
 
+	kMoveTile = 131, -- 移动地块
+	kGoldZongZi = 135, --金粽子
+
 	kMaxTile = 140,		--
+	
+	kBottleBlocker = 136, --妖精瓶子
+
 	kInvalid = -1,		--
+
+
+}
+
+-------------------------------
+-- 通用方向定义
+-------------------------------
+DefaultDirConfig = table.const {
+	kUp = 1,
+	kRight = 2,
+	kDown = 3,
+	kLeft = 4,
 }
 
 ------------------------------------------------------------------------------------

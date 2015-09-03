@@ -21,6 +21,7 @@ require "zoo.gamePlay.GamePlayMusicPlayer"
 require "zoo.gamePlay.SaveRevertData"
 require "zoo.gamePlay.fsm.StateMachine"
 require 'zoo.gamePlay.trigger.GamePlayEventTrigger'
+require "zoo.util.FUUUManager"
 
 GameBoardLogic = memory_class()
 
@@ -211,6 +212,9 @@ function GameBoardLogic:ctor()
 	self.allReplay = nil            ------所有replay信息
 
 	self.toBeCollected = 0         ----将要被收集的数量
+
+	self.digJewelLeftCount = 999 --步数挖地 当前还需要挖的宝石数量，为0时过关
+	self.digJewelTotalCount = 999 --步数挖地 总共需要挖的宝石数量
 end
 
 function GameBoardLogic:encryptionFunc( key, value )
@@ -247,6 +251,8 @@ function GameBoardLogic:dispose()
 		for i,v in ipairs(self.theOrderList) do v:dispose() end
 		self.theOrderList = nil
 	end
+
+	self:stopMoveTileEffect()
 
 	self.isUFOWin = nil
 	self.UFOCollection = nil
@@ -477,7 +483,7 @@ function GameBoardLogic:refreshComplete()
 	if self.PlayUIDelegate and self.gameMode:is(MaydayEndlessMode) then
 		if self.isFullFirework then
 			if self.theCurMoves == 1 then
-				self.PlayUIDelegate:onShowFullFireworkTip()
+				--self.PlayUIDelegate:onShowFullFireworkTip()
 			else
 				self.PlayUIDelegate:tryFirstFullFirework()
 			end
@@ -669,6 +675,50 @@ function GameBoardLogic:hideTargetTip()
 	self:clearTargetTip()
 end
 
+function GameBoardLogic:startMoveTileEffect()
+	local function showMoveTileEffect()
+		if self.boardmap then
+			for i = 1, #self.boardmap do
+				for j = 1, #self.boardmap[i] do
+					local board = self.boardmap[i][j]
+					if board and board.isMoveTile then
+						local roteMeta = board.tileMoveMeta:findRouteByPos(i, j, board.tileMoveReverse)
+						if roteMeta then
+							local itemView = self.boardView.baseMap[i][j]
+							itemView:showMoveTileEffect(roteMeta:getDirection(board.tileMoveReverse))
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if self.moveTileEffectScheduleId then
+		self:stopMoveTileEffect()
+	end
+
+	local moveTileEffectScheduleId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(showMoveTileEffect, 10, false)	
+	self.moveTileEffectScheduleId = moveTileEffectScheduleId
+end
+
+function GameBoardLogic:stopMoveTileEffect()
+	if self.moveTileEffectScheduleId then
+		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.moveTileEffectScheduleId)
+		self.moveTileEffectScheduleId = nil
+		if self.boardmap then
+			for i = 1, #self.boardmap do
+				for j = 1, #self.boardmap[i] do
+					local board = self.boardmap[i][j]
+					if board and board.isMoveTile then
+						local itemView = self.boardView.baseMap[i][j]
+						itemView:hideMoveTileEffect()
+					end
+				end
+			end
+		end
+	end
+end
+
 function GameBoardLogic:startEliminateAdvise()
 	print("----------start advise")
 	if self.isAdviseBannedThisRound then
@@ -790,6 +840,7 @@ function GameBoardLogic:setGamePlayStatus(state)
 			end
 
 			if self.PlayUIDelegate then
+				FUUUManager:onGameDefiniteFinish(false , self)
 				self.PlayUIDelegate:failLevel(self.level, self.totalScore, star, math.floor(self.timeTotalUsed), self.coinDestroyNum, targetCount, opLog, self.gameMode:reachTarget(), self.gameMode:getFailReason())
 			end
 		elseif state == GamePlayStatus.kBonus then
@@ -798,6 +849,7 @@ function GameBoardLogic:setGamePlayStatus(state)
 			end
 			if BombItemLogic:getNumSpecialBomb(self) > 0 
 				or (self.gameMode:canChangeMoveToStripe() and self.theCurMoves > 0)
+				or self.gameMode:is(MaydayEndlessMode)
 				then
 			 	self.comboCount = 0
 				GamePlayMusicPlayer:playEffect(GameMusicType.kBonusTime);
@@ -847,6 +899,7 @@ function GameBoardLogic:setGamePlayStatus(state)
 				ShareManager:setShareData(ShareManager.ConditionType.PASS_STEP,self.realCostMove)
 				ShareManager:shareWithID( ShareManager.PASS_STEP )
 			end
+			FUUUManager:onGameDefiniteFinish(true , self)
 		elseif state == GamePlayStatus.kAferBonus then
 			local function gameResultShow( ... )
 				-- body
@@ -871,10 +924,11 @@ function GameBoardLogic:setGamePlayStatus(state)
 	end
 end
 
-function GameBoardLogic:initByConfig(level, config)
+function GameBoardLogic:initByConfig(level, config, levelType)
 	he_log_info(string.format("GameBoardLogic:initByConfig level %d",level))
 
 	self.level = level
+	self.levelType = levelType
 	self.totalScore = 0
 	self.randomSeed = config.randomSeed
 	if self.randomSeed == nil then self.randomSeed = 0 end
@@ -936,6 +990,7 @@ function GameBoardLogic:initByConfig(level, config)
 	self.ingredientsCount = 0
 
 	self.gameMode:initModeSpecial(config)
+	FUUUManager:update(self.gameMode)
 	ProductItemLogic:init(self, config)
 
 	self.gamePlayEventTrigger = GamePlayEventTrigger:create()
@@ -1053,12 +1108,17 @@ function GameBoardLogic:setChainBreaked()
 	self.chainBreaked = true
 end
 
+function GameBoardLogic:setTileMoved()
+	self.tileMoved = true
+end
+
 ----更新Block的状态来影响下落
 function GameBoardLogic:updateFallingAndBlockStatus()
-	if self.isBlockChange or self.chainBreaked then
+	if self.isBlockChange or self.chainBreaked or self.tileMoved then
 		FallingItemLogic:updateHelpMapByDeleteBlock(self)
 		self.isBlockChange = false
 		self.chainBreaked = false
+		self.tileMoved = false
 	end
 end
 
@@ -1111,6 +1171,35 @@ function GameBoardLogic:canUseForceSwap(r1, c1, r2, c2)
 	return true
 end
 
+function GameBoardLogic:isNormal(item)
+    if item.ItemType == GameItemType.kAnimal
+	    and item.ItemSpecialType == 0 -- not special
+	    and item:isAvailable()
+	    and not item:hasLock() 
+	    and not item:hasFurball()
+	    then
+	        return true
+    end
+    return false
+end
+
+function GameBoardLogic:canUseRandomBird()
+	for r=1, #self.gameItemMap do
+		for c = 1, #self.gameItemMap[r] do
+			local item = self.gameItemMap[r][c]
+			if item and self:isNormal(item) then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function GameBoardLogic:canUseBroom(r, c)
+	local rows = self:getBroomRows(r)
+	return not (self:isRowEmpty(rows.r1) and self:isRowEmpty(rows.r2))
+end
+
 --开始尝试交换两个Item，期间不能点击其他东西，交换结束后，可以匹配消除，则消除，不能则进行物品回调
 function GameBoardLogic:startTrySwapedItem(r1,c1,r2,c2)
 	local gameBoardActionItem1 = IntCoord:create(r1,c1)
@@ -1140,9 +1229,11 @@ function GameBoardLogic:onWaitingOperationChanged()
 	if self.isWaitingOperation == true then
 		if self.boardView.isPaused == false then
 			self:startEliminateAdvise()
+			self:startMoveTileEffect()
 			self:startTargetTip()
 		else
 			self:stopEliminateAdvise()
+			self:stopMoveTileEffect()
 			self:stopTargetTip()
 		end
 
@@ -1155,9 +1246,17 @@ function GameBoardLogic:onWaitingOperationChanged()
 			else
 				self.PlayUIDelegate:setPropState(GamePropsType.kBack, nil, true)
 			end		
+			if self.PlayUIDelegate:hasInGameProp(GamePropsType.kRandomBird) then
+				if not self:canUseRandomBird() then
+					self.PlayUIDelegate:setPropState(GamePropsType.kRandomBird, 4, false)
+				else
+					self.PlayUIDelegate:setPropState(GamePropsType.kRandomBird, nil, true)
+				end
+			end
 		end
 	elseif self.isWaitingOperation == false then
 		self:stopEliminateAdvise()
+		self:stopMoveTileEffect()
 		self:stopTargetTip()
 		if self.PlayUIDelegate then
 			self.PlayUIDelegate:setItemTouchEnabled(false)
@@ -1483,24 +1582,25 @@ function GameBoardLogic:useProps(propsType, r1, c1, r2, c2)
 	return false;
 end
 
-function GameBoardLogic:getBroomRows(r)
+function GameBoardLogic:isRowEmpty(rowNum)
 	local gameItemMap = self.gameItemMap
-	local function isRowEmpty(rowNum)
-		local isEmpty = true
-		if gameItemMap[rowNum] then
-			for c = 1, #gameItemMap[rowNum] do
-				local item = gameItemMap[rowNum][c]
-				if item and item.isEmpty == false then
-					isEmpty = false
-				end
+	local isEmpty = true
+	if gameItemMap[rowNum] then
+		for c = 1, #gameItemMap[rowNum] do
+			local item = gameItemMap[rowNum][c]
+			if item and item.isEmpty == false then
+				isEmpty = false
+				break
 			end
 		end
-		return isEmpty
 	end
+	return isEmpty
+end
 
+function GameBoardLogic:getBroomRows(r)
 	local r1 = r
 	local r2 = r1 - 1
-	if r2 < 1 or isRowEmpty(r2) then
+	if r2 < 1 or (self:isRowEmpty(r2) and r1 < 9) then
 		r2 = r1 + 1
 	end
 
@@ -1532,7 +1632,31 @@ function GameBoardLogic:UseMoves()
 		self.dropBuffLogic:onUseMoves(self.realCostMove)
 	end
 
+	self:updateMoveTilesOnUseMove()
+	self:updateBossDataOnUseMove()
+
 	self:resetStepRecords()
+end
+
+function GameBoardLogic:updateBossDataOnUseMove()
+	if self.gameMode:is(HalloweenMode) then
+		local boss = self:getHalloweenBoss()
+		if boss then 
+			boss.move = boss.move + 1
+		end
+	end
+end
+
+function GameBoardLogic:updateMoveTilesOnUseMove()
+	local boardmap = self.boardmap or {}
+    for r = 1, #boardmap do 
+        for c = 1, #boardmap[r] do 
+            local board = boardmap[r][c]
+            if board and board.isMoveTile then
+            	board:onUseMoves()
+           	end
+        end
+    end
 end
 
 --开始移动回合前，重置所有步数稳定处理搜需要的标识位及数据
@@ -1831,20 +1955,37 @@ function GameBoardLogic:testEmpty()
 	for r=1,#self.gameItemMap do
 		for c=1,#self.gameItemMap[r] do
 			local itemView = self.boardView.baseMap[r][c]
-			local oldBoard = itemView.oldBoard
-			local iceLevel = oldBoard and oldBoard.iceLevel or 0
-			format = format .. string.format("%02d", iceLevel) .. " "
+			-- local oldBoard = itemView.oldBoard
+			-- local iceLevel = oldBoard and oldBoard.iceLevel or 0
+			local spriteNum = itemView.itemSprite and table.size(itemView.itemSprite) or 0
+			local boardUsed = self.boardmap[r][c].isUsed and 1 or 0
+
+			local board = self.boardmap[r][c]
+
+			format = format .. string.format("%d-%02d-%d", boardUsed, spriteNum, itemView.itemShowType) .. " "
 		end
 
 		format = format .. " | "
 
-		-- for c=1,#self.gameItemMap[r] do
-		-- 	local item = self.gameItemMap[r][c]
-		-- 	local itemView = self.boardView.baseMap[r][c]
-		-- 	format = format .. item.ItemColorType .. " "
-		-- end
+	-- 	-- for c=1,#self.gameItemMap[r] do
+	-- 	-- 	local item = self.gameItemMap[r][c]
+	-- 	-- 	local itemView = self.boardView.baseMap[r][c]
+	-- 	-- 	format = format .. item.ItemColorType .. " "
+	-- 	-- end
 		format = format .. "\n"
 	end
+	-- format = format .. "\nboard status map\n"
+	-- for r = 1, #self.boardmap do
+	-- 	for c = 1, #self.boardmap[r] do
+	-- 		local board = self.boardmap[r][c]
+	-- 		local flag = 0 
+	-- 		if board.isMoveTile then flag = 1 end
+	-- 		format = format .. string.format("%02d", flag) .. " "
+	-- 	end
+	-- 	format = format .. " | "
+	-- 	format = format .. "\n"
+	-- end
+	print(format)
 end
 
 function GameBoardLogic:testItem()
@@ -2002,12 +2143,66 @@ function GameBoardLogic:getHalloweenBoss()
 	return self.halloweenBoss
 end
 
+function GameBoardLogic:dragonBoatBossDie(diePosition, bells)
+	local boss = self.halloweenBoss
+	local boss = self.halloweenBoss
+	if not boss then return end
+	local count = boss.dropBellOnDie
+	self.digJewelCount:setValue(self.digJewelCount:getValue() + count)
+	self.maydayBossCount = self.maydayBossCount + 1
+	if self.gameMode.onBossDie then
+		self.gameMode:onBossDie()
+	end
+	if self.PlayUIDelegate then
+		local levelTargetPanel = self.PlayUIDelegate.levelTargetPanel
+		if levelTargetPanel and levelTargetPanel.c1 then
+			local c1Icon = levelTargetPanel.c1.icon
+			if c1Icon and not c1Icon.isDisposed then
+				local c1IconPos = c1Icon:getParent():convertToWorldSpace(c1Icon:getPosition())
+				local scene = Director:sharedDirector():getRunningScene()
+				local c1IconPosInScene = scene:convertToNodeSpace(c1IconPos)
+				for _, bell in pairs(bells) do
+					if bell and not bell.isDisposed then
+						local bellPosInScene = scene:convertToNodeSpace(bell:getParent():convertToWorldSpace(bell:getPosition()))
+						bell:stopAllActions()
+						bell:removeFromParentAndCleanup(false)
+
+						local bellSeq = CCArray:create()
+						bellSeq:addObject(CCMoveTo:create(0.8, ccp(c1IconPosInScene.x, c1IconPosInScene.y)))
+						local function onAnimComplete()
+							if bell then bell:removeFromParentAndCleanup(true) end
+						end
+						bellSeq:addObject(CCCallFunc:create(onAnimComplete))
+						bell:runAction(CCSequence:create(bellSeq))
+						bell:setPosition(bellPosInScene)
+						scene:addChild(bell)
+					end
+				end
+			end
+		end
+		local position = diePosition or ccp(0, 0)
+		self.PlayUIDelegate:setTargetNumber(0, 1, self.digJewelCount:getValue(), position, nil, false)
+		self.PlayUIDelegate:setTargetNumber(0, 2, self.maydayBossCount, position)
+	end
+
+	self.halloweenBoss = nil
+	if bells and #bells > 0 then
+		for _, bell in pairs(bells) do
+
+		end
+	end
+	self.halloweenBoss = nil
+end
+
 function GameBoardLogic:halloweenBossDie(diePosition)
 	local boss = self.halloweenBoss
 	if not boss then return end
 	local count = boss.dropBellOnDie
 	self.digJewelCount:setValue(self.digJewelCount:getValue() + count)
 	self.maydayBossCount = self.maydayBossCount + 1
+	if self.gameMode.onBossDie then
+		self.gameMode:onBossDie()
+	end
 	if self.PlayUIDelegate then
 		local position = diePosition or ccp(0, 0)
 		for k = 1, count do 
@@ -2096,10 +2291,11 @@ function GameBoardLogic:chargeFirework(count, r, c)
 	end
 	self.fireworkEnergy = self.fireworkEnergy + count
 	if self.PlayUIDelegate then
+		print("@@@@@@@@@@@@@@@fireworkEnergy updated: ", self.fireworkEnergy)
 		self.PlayUIDelegate:setFireworkEnergy(self.fireworkEnergy)
 		self.PlayUIDelegate:playSpringCollectEffect(self:getGameItemPosInView(r, c))
 	end
-	if self.fireworkEnergy >= SpringFireworkTotal then
+	if self.fireworkEnergy >= self.PlayUIDelegate:getFireworkEnergy() then
 		self.isFullFirework = true
 	end
 end

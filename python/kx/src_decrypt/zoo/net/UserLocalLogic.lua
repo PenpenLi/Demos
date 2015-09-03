@@ -63,6 +63,8 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 		consumeEnergy = false
 	elseif gameLevelType == GameLevelType.kTaskForRecall then
 		consumeEnergy = false
+	elseif gameLevelType == GameLevelType.kSummerWeekly then
+		consumeEnergy = false
 	end
 	self:refreshEnergy(requestTime)
 	if consumeEnergy and user:getEnergy() < user_energy_level_consume then

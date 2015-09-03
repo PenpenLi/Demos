@@ -117,7 +117,6 @@ function JumpFlyToAnimation:create(config)
 		local position = v:getPosition()
 		local parent = v:getParent()
 		local inPosition = parent:convertToNodeSpace(config.dstPosition)
-		position = parent:convertToWorldSpace(ccp(position.x, position.y))
 		spawn:addObject(CCEaseBackIn:create(CCMoveBy:create(config.duration, ccp(0, inPosition.y - position.y))))
 		spawn:addObject(CCMoveBy:create(config.duration, ccp(inPosition.x - position.x, 0)))
 		if config.dstSize then

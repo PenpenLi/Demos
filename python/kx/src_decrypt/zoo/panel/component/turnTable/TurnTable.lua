@@ -1,4 +1,5 @@
 require "hecore.EventDispatcher"
+require "zoo.gameGuide.GameGuideAnims"
 
 TurnTable = class(EventDispatcher)
 
@@ -35,12 +36,9 @@ end
 
 function TurnTable:onEnterHandler(event)
 	if event == "enter" then
-		if GameGuide then
-			GameGuide:sharedInstance():onTurnTableEnabled(self.ui:getParent(), self, self.ui:isTouchEnabled())
-		end
-	elseif event == "exit" then
-		if GameGuide then
-			GameGuide:sharedInstance():onTurnTableEnabled(self.ui:getParent(), self, false)
+		local tutored = CCUserDefault:sharedUserDefault():getBoolForKey("turntable.tutored")
+		if not tutored then
+			self:showTutor()
 		end
 	end
 end
@@ -58,9 +56,6 @@ function TurnTable:setEnabled(enabled)
 	local parent = self.ui:getParent()
 	while parent:getParent() do parent = parent:getParent() end
 	if parent ~= scene then return end
-	if GameGuide then
-		GameGuide:sharedInstance():onTurnTableEnabled(self.ui:getParent(), self, enabled)
-	end
 end
 
 function TurnTable:onTouchBegin(evt)
@@ -81,6 +76,11 @@ function TurnTable:onTouchBegin(evt)
 	self.ui:addEventListener(DisplayEvents.kTouchMove, function(evt) self:onTouchMove(evt) end)
 	self.ui:addEventListener(DisplayEvents.kTouchEnd, function(evt) self:onTouchEnd(evt) end)
 	self:dispatchEvent(Event.new(TurnTableEvents.kTouchStart, {}, self))
+	if self.tutorHand then
+		self.tutorHand:removeFromParentAndCleanup(true)
+		CCUserDefault:sharedUserDefault():setBoolForKey("turntable.tutored", true)
+		self.tutorHand = nil
+	end
 end
 
 function TurnTable:onTouchMove(evt)
@@ -206,4 +206,17 @@ end
 
 function TurnTable:getDiskRes()
 	return self.ui
+end
+
+function TurnTable:showTutor()
+	local quater = self.ui:getChildByName("quater1")
+	local size = quater:getContentSize()
+	local radius = size.height
+
+	local hand = GameGuideAnims:handcurveSlideAnim({x = 0, y = radius / 2}, {x = 0, y = -radius / 2}, radius / 2, 2)
+	local layer = Layer:create()
+	layer:addChild(hand)
+	layer:setPositionXY(self.ui:getPositionX(), self.ui:getPositionY())
+	self.ui:getParent():addChild(layer)
+	self.tutorHand = hand
 end

@@ -1,6 +1,7 @@
 require 'zoo.props.PropListItem'
 require 'zoo.animation.SpringFestivalEffect'
 require 'zoo.animation.LaborCatEffect'
+require "zoo.animation.ElephantAnimation"
 require "zoo.props.SpringPropItemAnimator"
 
 SpringPropListItem = class(PropListItem)
@@ -17,6 +18,7 @@ function SpringPropListItem:ctor()
   self.timePropNum = 0 -- 限时道具数量
   self.timePropList = nil
   self.energy = 0
+  self.step = 0
 
   self.isOnceUsed =  false
   self.animator = SpringPropItemAnimator:create(self)
@@ -228,7 +230,7 @@ function SpringPropListItem:show(delayTime, newIcon, initDisable)
     if icon then
         icon:setCascadeOpacityEnabled(true)
         icon:setCascadeColorEnabled(true)
-        icon:setPosition(ccp(self.iconSize.x + 40, self.iconSize.y - 37))
+        icon:setPosition(ccp(self.iconSize.x + 40,  5))-- self.iconSize.y))-- - 37))
         item:addChildAt(icon, 4)
       if initDisable then
         item:setOpacity(130)
@@ -243,7 +245,7 @@ function SpringPropListItem:show(delayTime, newIcon, initDisable)
       icon:stopAllActions() -- If some times icon hide, can fix by stopAllActions
       icon:setVisible(true)
       icon:setOpacity(255)
-      icon:setPosition(ccp(self.iconSize.x + self.iconSize.width/2, self.iconSize.y - self.iconSize.height/2))
+      icon:setPosition(ccp(self.iconSize.x + self.iconSize.width/2, 0))--self.iconSize.y))-- - self.iconSize.height/2))
     end    
   end
 end
@@ -253,26 +255,43 @@ end
 
 function SpringPropListItem:playMaxUsedAnimation(tipDesc)
 end
-function SpringPropListItem:use()
+function SpringPropListItem:use(forceUsedCallback, dontCallback)
 
     local function localCallback()
-        self.controller.springItemCallback()
+        if forceUsedCallback then forceUsedCallback() end
+        
+        if not dontCallback then
+            self.controller.springItemCallback()
+        end
+
+        local new_icon = self:buildItemIconByStep(0)
+        new_icon:setPositionXY(self.icon:getPositionX(), self.icon:getPositionY())
+        self.item:addChildAt(new_icon, 4)
+
+        if self.icon then 
+          self.icon:removeFromParentAndCleanup(true) 
+          self.icon = new_icon
+        end
+
+        self.usedTimes = self.usedTimes + 1
     end
 
     local function playMusic()
-      GamePlayMusicPlayer:playEffect(GameMusicType.kFirework)
+      GamePlayMusicPlayer:playEffect(GameMusicType.kElephantBoss)
     end
 
-    if self.percent >= 1 then
-        -- setTimeOut(playMusic, 0.1)
+    local percentage = self.percent or 0
+    if percentage >= 1 then
+        setTimeOut(function() playMusic() end, 0.25)
         -- （五一)使用技能
         DcUtil:UserTrack({ category='activity', sub_category='labourday_click_skill' })
         
-        LaborCatEffect:playItemUseAnimation(localCallback)
+        --LaborCatEffect:playItemUseAnimation(localCallback)
         -- SpringFestivalEffect:playFireworkAnimation(localCallback)
+        ElephantAnimation:playUseAnimation(localCallback)
         self:setEnergy(0, true)
         self:stopHint()
-        self:playGolden(false)
+        --self:playGolden(false)
         return true
     end
 
@@ -280,16 +299,24 @@ function SpringPropListItem:use()
     local desc = content:getChildByName('desc')
     local title = content:getChildByName('title')
 
-    title:setString(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.12"))
+    title:setString(Localization:getInstance():getText("weeklyrace.summer.drink.title"))
     local originSize = desc:getDimensions()
     desc:setDimensions(CCSizeMake(originSize.width, 0))
-    desc:setString(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13", {n1 = SpringFireworkTotal-self.energy, br = '\n'}))
+    desc:setString(Localization:getInstance():getText("weeklyrace.summer.drink.desc", {n1 = self:getTotalEnergy() -self.energy, br = '\n'}))
 
     local tip = BubbleTip:create(content, kSpringPropItemID, 5)
     tip:show(self.item:getGroupBounds())
 
     -- CommonTip:showTip(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13"), "negative")
     return false
+end
+
+function SpringPropListItem:getTotalEnergy()
+    if self.usedTimes + 1< #SpringFireworkTotal then
+        return SpringFireworkTotal[self.usedTimes + 1]
+    else
+        return SpringFireworkTotal[#SpringFireworkTotal]
+    end
 end
 
 function SpringPropListItem:shake()
@@ -398,6 +425,7 @@ function SpringPropListItem:pushPropAnimation(delayTime)
         arr:addObject(CCScaleTo:create(0.6, 1, 0.85))
         arr:addObject(CCScaleTo:create(0.6, 0.99, 1.1))
         arr:addObject(CCScaleTo:create(0.6, 0.98, 0.85))
+
         local action = CCRepeatForever:create(CCSequence:create(arr))
         item:setPosition(ccp(context.beginPosition.x, context.beginPosition.y))
         item:runAction(action)
@@ -456,89 +484,75 @@ function SpringPropListItem:enableUnlimited(enable)
 end
 
 function SpringPropListItem:buildItemIcon()
-    local container = LaborCatEffect:buildItemIcon()
-    self.clipping = container.clipping
-    self.item_gold = container.item_gold
-    self.item_full = container.item_full
+    local juice_bottle = ElephantAnimation:createJuiceBottle(0)
+    juice_bottle:getChildByName("glow"):setVisible(false)
     self:setEnergy(0, false)
-    return container
 
-
-    -- local container = Sprite:createEmpty()
-    -- local item_gold = Sprite:createWithSpriteFrameName('item_gold')
-    -- local item_grey = Sprite:createWithSpriteFrameName('item_empty')
-    -- local item_full = Sprite:createWithSpriteFrameName('item_anim_0000')
-    -- local rect = {size = {width = 140, height = 140}}
-    -- local clipping = ClippingNode:create(rect)
-    -- -- local clipping = Layer:create(rect)
-    -- -- clipping:setContentSize(CCSizeMake(140, 140))
-
-    -- container:addChild(item_grey)
-    -- clipping:addChild(item_full)
-    -- local layer = Layer:create()
-    -- layer:setContentSize(CCSizeMake(rect.size.width, rect.size.height))
-    -- layer:ignoreAnchorPointForPosition(false)
-    -- layer:setAnchorPoint(ccp(0.5, 0.5))
-    -- layer:addChild(clipping)
-    -- container:addChild(layer)
-    -- container:addChild(item_gold)
-    -- item_full:setAnchorPoint(ccp(0, 0))
-    -- self.clipping = clipping
-    -- self.item_gold = item_gold
-    -- self.item_full = item_full
-    -- item_gold:setOpacity(0)
-    -- container:setScale(1)
-
-    -- local anim = SpriteUtil:buildAnimate(SpriteUtil:buildFrames('item_anim_%04d', 0, 20), 1/20)
-    -- item_full:play(anim, 0, 0)
-
-    -- self:setPercent(0, false)
-    -- return container
+    return juice_bottle
 end
 
-function SpringPropListItem:setEnergy(energy, playAnim)
+function SpringPropListItem:buildItemIconByStep(step)
+    local juice_bottle = ElephantAnimation:createJuiceBottle(step)
+    juice_bottle:getChildByName("glow"):setVisible(false)
+
+    return juice_bottle
+end
+
+function SpringPropListItem:setEnergy(energy, playAnim, theCurMoves)
   self.energy = energy
-  self:setPercent(self.energy / SpringFireworkTotal, playAnim)
+  print("usedTimes: ", self.usedTimes)
+  print("total energy: ", self:getTotalEnergy())
+  self:setPercent(self.energy / self:getTotalEnergy(), playAnim, theCurMoves)
 end
 
-function SpringPropListItem:setPercent(percent, playAnim)
+local percentages = {0.2, 0.4, 0.6, 0.8, 1.0}
+local function getStepByPercentage(percentage)
+    local p = percentage or 0
+    for i,v in ipairs(percentages) do
+        if p < v then
+            return i-1
+        end
+    end
+
+    return #percentages
+end
+
+function SpringPropListItem:moveToCenter()
+        --[[local winSize = Director:sharedDirector():getWinSize()
+
+        local worldPoint = self.icon:convertToWorldSpace(ccp(self.icon:getGroupBounds().size.width, self.icon:getGroupBounds().size.height))
+
+        print("offset: ", worldPoint.x - winSize.width/2)
+        --move the icon to the center of the screen
+        local moveAct = CCMoveBy:create(0.3, ccp(winSize.width/2-worldPoint.x, 0))
+        local complete = CCCallFunc:create(function() end)]]--
+
+        self.propListAnimation.content:runAction(CCMoveTo:create(0.2, ccp(0,0)))
+end
+
+function SpringPropListItem:setPercent(percent, playAnim, theCurMoves)
     if percent > 1 then percent = 1 end
     if percent < 0 then percent = 0 end
 
-    -- 这一段是为了让percent很低和很高时不至于不明显
-    if percent == 1/SpringFireworkTotal and percent ~= 1 then
-        percent = 1.6/SpringFireworkTotal
-    elseif percent == (SpringFireworkTotal - 3)/SpringFireworkTotal then
-        percent = (SpringFireworkTotal - 3.5)/SpringFireworkTotal
-    elseif percent == (SpringFireworkTotal - 2)/SpringFireworkTotal then
-        percent = (SpringFireworkTotal - 3)/SpringFireworkTotal
-    elseif percent == (SpringFireworkTotal - 1)/SpringFireworkTotal then
-        percent = (SpringFireworkTotal - 2.5)/SpringFireworkTotal
+    print("@@@@@@@@@@@@@@@@@@@@@@percentage: ", percent)
+
+    local new_step = getStepByPercentage(percent)
+    local cur_step = getStepByPercentage(self.percent)
+    if new_step > cur_step then
+        self.icon = ElephantAnimation:juiceChangeAnimation(self.item, self.icon, new_step)
+        if percent >= 1 and theCurMoves~=5 then
+            --move to the center
+            self:moveToCenter()
+        end
     end
 
-    local length = 130
-    local y = ( 1- percent) * length
-
-    if not playAnim then
-        self.item_full:setPositionY(y)
-        self.clipping:setPositionY(-y)
-    else
-        self.item_full:stopActionByTag(123)
-        self.clipping:stopAllActions()
-        local action1 = CCMoveTo:create(0.5, ccp(0, y))
-        action1:setTag(123)
-        self.item_full:runAction(action1)
-        self.clipping:runAction(CCMoveTo:create(0.5, ccp(0, -y)))
-    end
     self.percent = percent
-    
+
     if self.percent >= 1 then
-      self:playGolden(true)
-      self:pushPropAnimation(0)
+      --self:pushPropAnimation(0)
     else
       self.animator:windover(0)
     end
-
 end
 
 function SpringPropListItem:playGolden(enable)

@@ -37,7 +37,6 @@ function Fruit:dispose()
 	if self.norm and not self.norm.isDisposed then self.norm:dispose() end
 	if self.clicked and not self.clicked.isDisposed then  self.clicked:dispose() end
 	CocosObject.dispose(self)
-	InterfaceBuilder:unloadAsset(PanelConfigFiles.fruitTreeScene)
 end
 
 function Fruit:_init(id, data)
@@ -430,6 +429,8 @@ function Fruit:_onTimer()
 end
 
 function Fruit:createClickedFruit(hasGuide, animDuration)
+	if self.norm.isDisposed then return end
+
 	-- get & create control
 	self.clicked = builder:buildGroup("clickedFruit")
 	self.clicked.fruit = self.clicked:getChildByName("fruit")

@@ -40,6 +40,12 @@ function PrepackageUtil:readFromLocal()
 	end
 	_G.noMoreTipsForPrePackageNetWork = dialogState > 0
 	_G.isPrePackageNoNetworkMode = not CCUserDefault:sharedUserDefault():getBoolForKey("isPrePackageNetworkOpen")
+	if __ANDROID then 
+		local prepackageUtil = luajava.bindClass("com.happyelements.android.utils.PrepackageUtils")
+		if prepackageUtil then
+			prepackageUtil:getInstance():setPrePackageNoNetworkMode(_G.isPrePackageNoNetworkMode)
+		end
+	end
 	print("G.noMoreTipsForPrePackageNetWork = ", _G.noMoreTipsForPrePackageNetWork)
 	print("G.isPrePackageNoNetworkMode = ", _G.isPrePackageNoNetworkMode)
 	print("----------------------------------------------------------------------------")
@@ -53,11 +59,16 @@ function PrepackageUtil:readFromLocal()
 end
 
 function PrepackageUtil:showBeforeLoadingDialog(callback)
+	local prepackageUtil
 	local onButton1Click = function(isSaveOption)
 		CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", true)
 		local value = isSaveOption and PrepackageNetWorkDialogState.NEVER_SHOW or PrepackageNetWorkDialogState.NEXT_SHOW
 		CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
 		_G.isPrePackageNoNetworkMode = false
+		if prepackageUtil then
+			prepackageUtil:getInstance():setPrePackageNoNetworkMode(false)
+		end
+
 		callback()
 
 	end
@@ -67,11 +78,15 @@ function PrepackageUtil:showBeforeLoadingDialog(callback)
 		local value = isSaveOption and PrepackageNetWorkDialogState.NEVER_SHOW or PrepackageNetWorkDialogState.NEXT_SHOW
 		CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
 		_G.isPrePackageNoNetworkMode = true
+		if prepackageUtil then
+			prepackageUtil:getInstance():setPrePackageNoNetworkMode(true)
+		end
 		callback()
 	end
 
 
 	if __ANDROID then 
+		prepackageUtil = luajava.bindClass("com.happyelements.android.utils.PrepackageUtils")
 		CommonAlertUtil:showPrePackageNetWorkAlertPanel(onButton1Click,  onButton2Click);
 	else
 		callback()

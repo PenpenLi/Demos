@@ -40,7 +40,7 @@ function MagicTileResetState:handleMagicTile()
             if item then
                 if item.isMagicTileAnchor then
                     -- 如果没有初始化
-                    if item.magicTileId ~= nil and item.isHitThisRound == true then
+                    if self.mainLogic.isInStep and item.magicTileId ~= nil and item.isHitThisRound == true then
                         -- 如果已经初始化就更新剩余
                         item.remainingHit = item.remainingHit - 1
                         item.isHitThisRound = false

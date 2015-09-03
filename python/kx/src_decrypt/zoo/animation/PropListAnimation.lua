@@ -102,9 +102,9 @@ function PropListAnimation:ctor()
   self.controller = PropListController:create(self)
 end
 
-function PropListAnimation:create(levelId, levelModeType)
+function PropListAnimation:create(levelId, levelModeType, levelType)
 	local ret = PropListAnimation.new()
-    ret:setLevelModeType(levelModeType)
+    ret:setLevelModeType(levelModeType, levelType)
 	ret:buildUI(levelId)
 	return ret
 end
@@ -167,6 +167,19 @@ function PropListAnimation:buildUI(levelId)
     self:getPropPositions()
 end
 
+function PropListAnimation:getPropUnlimitable(itemId)
+    local summerWeeklyLimitPropList = {GamePropsType.kRandomBird, GamePropsType.kBroom, GamePropsType.kBroom_l}
+    if self.isUnlimited then
+      if self.levelType == GameLevelType.kSummerWeekly and table.includes(summerWeeklyLimitPropList, itemId) then
+        return false
+      else
+        return true
+      end
+    else
+      return false
+    end
+end
+
 function PropListAnimation:createItems()
     local currItems = #PropsModel.instance().propItems
 
@@ -176,7 +189,7 @@ function PropListAnimation:createItems()
         local propItem = PropsModel:instance().propItems[i]
         local item  = self:createPropListItem(i, propItem.itemId)
 
-        item:setPropItemData(propItem, self.isUnlimited) --setup the item's data
+        item:setPropItemData(propItem, self:getPropUnlimitable(propItem.itemId)) --setup the item's data
       else
          self:createPropListItem(i, nil)
       end
@@ -187,26 +200,24 @@ function PropListAnimation:flushTemporaryProps(positionSrc, animationCallback)
   if PropsModel:instance():temporaryPopsExist() then 
     local winSize = CCDirector:sharedDirector():getVisibleSize()
     local fromGlobalPosition = ccp(positionSrc.x - 5, positionSrc.y + 4)--ccp(winSize.width/2, winSize.height/2)
-    -- local maxItemNum = 0
-    -- local item_count = 0
+    local maxItemNum = 0
+    local item_count = 0
     for i,v in ipairs(PropsModel:instance().temporaryPops) do 
       local function onAnimationFinished()
         self:addTemporaryItem(v.itemId, v.itemNum, fromGlobalPosition, false)
-        -- item_count = item_count + 1
-        -- if item_count >= maxItemNum and animationCallback then
-        --   animationCallback() 
-        -- end
-        --这个回调的屏蔽重复调用工作已经在回调内部做了 这里不要再单独做 直接调即可
-        if animationCallback then
-          animationCallback()
+        item_count = item_count + 1
+        if item_count >= maxItemNum and animationCallback then
+          animationCallback() 
         end
       end
-      -- maxItemNum = maxItemNum + 1
+      maxItemNum = maxItemNum + 1
       local icon = PropListAnimation:createIcon( v.itemId )
       local sprite = PrefixPropAnimation:createPropAnimation(icon, self.layer:convertToNodeSpace(fromGlobalPosition), onAnimationFinished)
       self.layer:addChild(sprite)
     end
     PropsModel:instance():clearTemporaryPops()
+  else
+    animationCallback()
   end
 end
 
@@ -270,6 +281,15 @@ function PropListAnimation:show( propItems, delayTime )
       else
         item:hide() 
       end
+    end
+
+    local springItem = self.controller:findSpringItem()
+    if springItem then
+        setTimeOut(function()
+             if self.content and self.content.refCocosObj then
+               self.content:runAction(CCMoveTo:create(0.2, ccp(0,0)))
+             end
+          end, 1)
     end
 end
 
@@ -353,7 +373,7 @@ function PropListAnimation:addItemWithAnimation( item, delayTime, useHint )
     local itemIndex = self:findEmptySlot()
     if itemIndex >= kCurrentMaxItemInListView then return end
     --self["item"..itemIndex]:enableUnlimited(self.isUnlimited)
-    self["item"..itemIndex]:setPropItemData(item, self.isUnlimited)
+    self["item"..itemIndex]:setPropItemData(item, self:getPropUnlimitable(item.itemId))
     self["item"..itemIndex]:show(delayTime, true) 
    if useHint then self["item"..itemIndex].animator:pushPropAnimation(2) end
     
@@ -366,7 +386,7 @@ function PropListAnimation:addItemWithAnimation( item, delayTime, useHint )
 end
 
 -- 出现的位置->飞到屏幕中心->变大+发光->变小->飞到道具栏
-function PropListAnimation:addGetPropAnimation(item, index, fromGlobalPosition, flyFinishedCallback, propID)
+function PropListAnimation:addGetPropAnimation(item, index, fromGlobalPosition, flyFinishedCallback, propID, text)
   assert(propID, "propID cannot be nil")
   if not item or not fromGlobalPosition then return end
 
@@ -374,7 +394,7 @@ function PropListAnimation:addGetPropAnimation(item, index, fromGlobalPosition, 
   local to = item:getItemCenterPosition() --itemTo:getPosition()
   local winSize = CCDirector:sharedDirector():getWinSize()
 
-  local centerPos = ccp(winSize.width / 2, winSize.height / 2)
+  local centerPos = self.layer:convertToNodeSpace(ccp(winSize.width / 2, winSize.height / 2))
 
   local timeScale = 1
 
@@ -389,13 +409,13 @@ function PropListAnimation:addGetPropAnimation(item, index, fromGlobalPosition, 
     local seq = CCArray:create()
     seq:addObject(CCMoveTo:create(0.3 * timeScale, centerPos))
     local function addBgAnimation()
-      local anim = CommonEffect:buildGetPropLightAnim()
+      local anim = CommonEffect:buildGetPropLightAnim(text)
       anim:setPosition(centerPos)
       self.layer:addChildAt(anim, -1)
     end
     seq:addObject(CCCallFunc:create(addBgAnimation))
     seq:addObject(CCScaleTo:create(0.5, 1.8))
-    seq:addObject(CCDelayTime:create(1.5))
+    seq:addObject(CCDelayTime:create(2))
     seq:addObject(CCScaleTo:create(0.3, 1))
     
     local function addFallingtar()
@@ -483,7 +503,7 @@ function PropListAnimation:addTemporaryItem( itemId, itemNum, fromGlobalPosition
   self["item"..index].onTemporaryItemUsed = onTemporaryItemUsed
 end
 
-function PropListAnimation:addTimeProp(propId, itemNum, expireTime, fromGlobalPosition, showIcon)
+function PropListAnimation:addTimeProp(propId, itemNum, expireTime, fromGlobalPosition, showIcon, text)
   itemNum = itemNum or 0
   local itemId = ItemType:getRealIdByTimePropId(propId)
   local itemFound, itemIndex = self:findItemByItemID(itemId)
@@ -496,13 +516,13 @@ function PropListAnimation:addTimeProp(propId, itemNum, expireTime, fromGlobalPo
     local function onAnimationFinishedCallback()
       itemFound:increaseTimePropNumber(propId, itemNum, expireTime)
     end    
-    self:addGetPropAnimation(itemFound, itemIndex, fromGlobalPosition, onAnimationFinishedCallback, animatedItemID)
+    self:addGetPropAnimation(itemFound, itemIndex, fromGlobalPosition, onAnimationFinishedCallback, animatedItemID, text)
   else
     PropsModel:instance():addTimeProp(propId, itemNum, expireTime)
     local itemData = PropItemData:create(itemId)
     local index = self:addItemWithAnimation(itemData, 0)
     if index < 1 then return end
-    self:addGetPropAnimation(self["item"..index], index, fromGlobalPosition, nil, animatedItemID)
+    self:addGetPropAnimation(self["item"..index], index, fromGlobalPosition, nil, animatedItemID, text)
   end
 end
 
@@ -631,8 +651,9 @@ function PropListAnimation:getPositionByIndex(index)
   return pos
 end
 
-function PropListAnimation:setLevelModeType(levelModeType)
+function PropListAnimation:setLevelModeType(levelModeType, levelType)
     self.levelModeType = levelModeType
+    self.levelType = levelType
     if self.levelModeType == 'MaydayEndless' or self.levelModeType == 'halloween' then
         self.isUnlimited = true
     end
@@ -653,10 +674,10 @@ function PropListAnimation:findSpringItem()
   return nil
 end
 
-function PropListAnimation:setSpringItemEnergy(energy)
+function PropListAnimation:setSpringItemEnergy(energy, theCurMoves)
   local item = self.item3
   if item and item:is(SpringPropListItem) then
-    item:setEnergy(energy, true)
+    item:setEnergy(energy, true, theCurMoves)
   end
 end
 

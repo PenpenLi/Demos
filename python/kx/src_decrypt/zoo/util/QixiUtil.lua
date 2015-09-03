@@ -60,7 +60,7 @@ function QixiUtil:playMagpieAnimation(startPos, endPos, itemPos)
     CCUserDefault:sharedUserDefault():setBoolForKey(dateKey, true)
 
     FrameLoader:loadArmature("skeleton/qixi_magpie_animation")
-    local magpie = ArmatureNode:create('chongzi_xique_fly')
+    local magpie = ArmatureNode:create('chongzi_xique_modify_0')
 
     local vo = Director:sharedDirector():getVisibleOrigin()
     local vs = Director:sharedDirector():getVisibleSize()
@@ -76,7 +76,7 @@ function QixiUtil:playMagpieAnimation(startPos, endPos, itemPos)
 
     magpie:setPosition(startPos)
     magpie:playByIndex(0)
-    magpie:setAnimationScale(0.5) 
+    magpie:setAnimationScale(1.25) 
 
     local function createShining(scene, pos, delayT)
         for i = 1, 8 do

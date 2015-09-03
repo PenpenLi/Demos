@@ -124,7 +124,6 @@ function VelocityMeasurer:startMeasure(...)
 
 		self.measuredVelocityX = (self.curPosX - self.prePosX) / self.measureInterval
 		self.measuredVelocityY = (self.curPosY - self.prePosY) / self.measureInterval
-
 		self.lastSpeedY = self.curSpeedY
 		self.curSpeedY = self.measuredVelocityY
 	end
@@ -139,29 +138,6 @@ function VelocityMeasurer:stopMeasure(...)
 	assert(#{...} == 0)
 
 	--assert(self.scheduledFunc)
-	local function scheduledFunc()
-
-		local curPos = self.getCurPosCallback()
-		assert(curPos.x)
-		assert(curPos.y)
-
-		self.prePosX = self.curPosX
-		self.prePosY = self.curPosY
-		self.curPosX = curPos.x
-		self.curPosY = curPos.y
-
-		self.measuredVelocityX = (self.curPosX - self.prePosX) / self.measureInterval
-		self.measuredVelocityY = (self.curPosY - self.prePosY) / self.measureInterval
-
-		self.lastSpeedY = self.curSpeedY
-		self.curSpeedY = self.measuredVelocityY
-	end
-
-	-- IOS上面防止滑动过度灵敏
-	if not __IOS then
-		scheduledFunc()
-	end
-
 	if self.scheduledFunc then
 		local scheduler = CCDirector:sharedDirector():getScheduler()
 		scheduler:unscheduleScriptEntry(self.scheduledFunc)
@@ -215,6 +191,98 @@ function VelocityMeasurer:setXY(x, y)
 	self.curSpeedX = self.measuredVelocityX
 end
 
+VelocityMeasurerWorldScene = class(VelocityMeasurer)
+
+function VelocityMeasurerWorldScene:create(measureInterval, getCurPosCallback, ...)
+	assert(type(measureInterval) == "number")
+	assert(type(getCurPosCallback) == "function")
+	assert(#{...} == 0)
+
+	local newVelocityMeasurer = VelocityMeasurerWorldScene.new()
+	newVelocityMeasurer:init(measureInterval, getCurPosCallback)
+	return newVelocityMeasurer
+end
+
+function VelocityMeasurerWorldScene:startMeasure(...)
+	assert(#{...} == 0)
+
+	local assertFalseMsg = "Call setInitialPos First !"
+	assert(self.prePosX, assertFalseMsg)
+	assert(self.prePosY, assertFalseMsg)
+	assert(self.curPosX, assertFalseMsg)
+	assert(self.curPosY, assertFalseMsg)
+
+	local scheduler = CCDirector:sharedDirector():getScheduler()
+
+	local function scheduledFunc()
+
+		local curPos = self.getCurPosCallback()
+		assert(curPos.x)
+		assert(curPos.y)
+
+		self.prePosX = self.curPosX
+		self.prePosY = self.curPosY
+		self.curPosX = curPos.x
+		self.curPosY = curPos.y
+
+		if __IOS then 
+			--渣机防抖
+			if math.abs(self.curPosY - self.prePosY) < 60 then return end
+		end
+
+		self.measuredVelocityX = (self.curPosX - self.prePosX) / self.measureInterval
+		self.measuredVelocityY = (self.curPosY - self.prePosY) / self.measureInterval
+
+		if __IOS then 
+			--渣机限速
+			if self.measuredVelocityY > 12500 then 
+				self.measuredVelocityY = 12500
+			elseif self.measuredVelocityY < -12500 then 
+				self.measuredVelocityY = -12500
+			end
+		end
+
+		self.lastSpeedY = self.curSpeedY
+		self.curSpeedY = self.measuredVelocityY
+	end
+	
+	scheduledFunc()
+	if not self.scheduledFunc then
+		self.scheduledFunc = scheduler:scheduleScriptFunc(scheduledFunc, self.measureInterval, false)
+	end
+end
+
+function VelocityMeasurerWorldScene:stopMeasure(...)
+	local function scheduledFunc()
+
+		local curPos = self.getCurPosCallback()
+		assert(curPos.x)
+		assert(curPos.y)
+
+		self.prePosX = self.curPosX
+		self.prePosY = self.curPosY
+		self.curPosX = curPos.x
+		self.curPosY = curPos.y
+
+		self.measuredVelocityX = (self.curPosX - self.prePosX) / self.measureInterval
+		self.measuredVelocityY = (self.curPosY - self.prePosY) / self.measureInterval
+
+		self.lastSpeedY = self.curSpeedY
+		self.curSpeedY = self.measuredVelocityY
+	end
+
+	-- IOS上面防止滑动过度灵敏
+	-- if not __IOS then
+		scheduledFunc()
+	-- end
+
+	if self.scheduledFunc then
+		local scheduler = CCDirector:sharedDirector():getScheduler()
+		scheduler:unscheduleScriptEntry(self.scheduledFunc)
+		self.scheduledFunc = false
+	end
+end
+
 ---------------------------------------------------
 -------------- WorldSceneScroller
 ---------------------------------------------------
@@ -228,10 +296,19 @@ WorldSceneScrollerEvents =
 	MOVING_STARTED		= "WorldSceneScrollerEvents.MOVING_STARTED",
 	MOVING_STOPPED		= "WorldSceneScrollerEvents.MOVING_STOPPED",
 
+	BRANCH_MOVING_STARTED		= "WorldSceneScrollerEvents.BRANCH_MOVING_STARTED",
+	BRANCH_MOVING_STOPPED		= "WorldSceneScrollerEvents.BRANCH_MOVING_STOPPED",
+
 	--
 	SCROLLED_TO_RIGHT	= "WorldSceneScrollerEvents.SCROLLED_TO_RIGHT",
 	SCROLLED_TO_LEFT	= "WorldSceneScrollerEvents.SCROLLED_TO_LEFT",
-	SCROLLED_TO_ORIGIN	= "WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN"
+	SCROLLED_TO_ORIGIN	= "WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN",
+
+	START_SCROLLED_TO_RIGHT	= "WorldSceneScrollerEvents.START_SCROLLED_TO_RIGHT",
+	START_SCROLLED_TO_LEFT	= "WorldSceneScrollerEvents.START_SCROLLED_TO_LEFT",
+	START_SCROLLED_TO_ORIGIN	= "WorldSceneScrollerEvents.START_SCROLLED_TO_ORIGIN",
+
+	GAME_INIT_ANIME_FIN	= "WorldSceneScrollerEvents.GAME_INIT_ANIME_FIN",
 }
 
 assert(not CheckSceneOutRangeConstant)
@@ -313,13 +390,13 @@ function WorldSceneScroller:init(...)
 	end
 
 	self.velocityMeasurerArray = {}
-	local measurer = VelocityMeasurer:create(animInterval * 1, getCurFingerPos)
+	local measurer = VelocityMeasurerWorldScene:create(animInterval * 1, getCurFingerPos)
 	table.insert(self.velocityMeasurerArray, measurer)
 
-	local measurer = VelocityMeasurer:create(animInterval * 2, getCurFingerPos)
+	local measurer = VelocityMeasurerWorldScene:create(animInterval * 2, getCurFingerPos)
 	table.insert(self.velocityMeasurerArray, measurer)
 
-	local measurer = VelocityMeasurer:create(animInterval * 4, getCurFingerPos)
+	local measurer = VelocityMeasurerWorldScene:create(animInterval * 4, getCurFingerPos)
 	table.insert(self.velocityMeasurerArray, measurer)
 
 	local config = UIConfigManager:sharedInstance():getConfig()
@@ -632,12 +709,10 @@ function WorldSceneScroller:startAutoRollTimer(...)
 	local function autoRollTimer()
 		self:autoRollTimer()
 	end
-	print("WorldSceneScroller:startAutoRollTimer   autoScrollTimerInterval = " .. tostring(self.autoScrollTimerInterval))
 	-- Initially Call autoRollTimer Manually
 	-- After self.autoScrollTimerInterval The Scheduler Then Call It
 	assert(not self.autoRollTimerId)
 	self.autoRollTimerId = scheduler:scheduleScriptFunc(autoRollTimer, self.autoScrollTimerInterval, false)
-	print("WorldSceneScroller:startAutoRollTimer   autoRollTimerId = " .. tostring(self.autoRollTimerId))
 	autoRollTimer()
 end
 
@@ -987,6 +1062,7 @@ function WorldSceneScroller:scrollToRight(...)
 	self:setTouchEnabled(false)
 
 	self.maskedLayer:runAction(sequence)
+	self:dispatchEvent(Event.new(WorldSceneScrollerEvents.START_SCROLLED_TO_RIGHT))
 end
 
 
@@ -1017,6 +1093,7 @@ function WorldSceneScroller:scrollToLeft(...)
 	local sequence	= CCSequence:createWithTwoActions(moveTo, callFunc)
 
 	self.maskedLayer:runAction(sequence)
+	self:dispatchEvent(Event.new(WorldSceneScrollerEvents.START_SCROLLED_TO_LEFT))
 	self:setTouchEnabled(false)
 end
 
@@ -1049,6 +1126,7 @@ function WorldSceneScroller:scrollToOrigin(...)
 	-- Sequence
 	local sequence	= CCSequence:createWithTwoActions(moveTo, callFunc)
 	self.maskedLayer:runAction(sequence)
+	self:dispatchEvent(Event.new(WorldSceneScrollerEvents.START_SCROLLED_TO_ORIGIN))
 	self:setTouchEnabled(false)
 end
 

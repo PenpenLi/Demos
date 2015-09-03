@@ -187,7 +187,7 @@ end
 -- CAUTION: if do add with code, the recorded code will not be changed
 -- successCallback(data, context)
 -- failCallback(err, context)
-function AddFriendPanelLogic:sendAddMessage(code, successCallback, failCallback, context)
+function AddFriendPanelLogic:sendAddMessage(code, successCallback, failCallback, cancelCallback, context)
 	if not code then code = self.code end
 	if not code then -- request fail
 		if failCallback then failCallback(206, context) end
@@ -202,11 +202,26 @@ function AddFriendPanelLogic:sendAddMessage(code, successCallback, failCallback,
 		if self.http ~= evt.target then return end
 		if failCallback then failCallback(evt.data, context) end
 	end
+	local function onCancel(evt)
+		if self.http ~= evt.target then return end
+		if cancelCallback then cancelCallback(evt.data, context) end
+	end
 
+	self.http = nil
+	if code == UserManager:getInstance().inviteCode then
+		onFail({data = 731010})
+		return
+	end
+	local ref = FriendManager:getInstance():getFriendInfo(uid)
+	if ref then
+		onFail({data = 731011}) -- error: already be friends
+		return
+	end
 	local http = RequestFriendHttp.new(true)
 	self.http = http
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFail)
+	http:addEventListener(Events.kCancel, onCancel)
 	http:load(code)
 end
 

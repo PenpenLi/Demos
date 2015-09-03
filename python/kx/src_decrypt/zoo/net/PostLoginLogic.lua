@@ -185,7 +185,9 @@ function PostLoginLogic:sync()
 
 	--推送召回 前端向后端发送流失状态
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
-
+	-- 
+	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
+	
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()
 	_G.skipHttpSpeedLitmit = nil

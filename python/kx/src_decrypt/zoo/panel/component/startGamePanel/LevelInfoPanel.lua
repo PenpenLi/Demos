@@ -889,7 +889,8 @@ function LevelInfoPanel:onStartLevelLogicSuccess()
 
 	if self.levelType == GameLevelType.kMainLevel 
 			or self.levelType == GameLevelType.kHiddenLevel then
-		RabbitWeeklyManager:sharedInstance():onStartMainLevel()
+		-- RabbitWeeklyManager:sharedInstance():onStartMainLevel()
+		SummerWeeklyMatchManager:getInstance():onPlayMainLevel()
 	end
 end
 

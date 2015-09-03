@@ -139,13 +139,14 @@ function AddMaxEnergyPanel:startBuyAndUseAddMaxEnergyLogic(...)
 						panel:popout()
 					end
 				end
-				local text = {
-					tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-					yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-					no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-				}
-				CommonTipWithBtn:setShowFreeFCash(true)
-				CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+				-- local text = {
+				-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
+				-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
+				-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
+				-- }
+				-- CommonTipWithBtn:setShowFreeFCash(true)
+				-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
+				GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
 
 			elseif event and event.data then
 				CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")

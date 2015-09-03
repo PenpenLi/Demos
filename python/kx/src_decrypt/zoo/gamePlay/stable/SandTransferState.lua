@@ -46,7 +46,7 @@ function SandTransferState:handleFurballTransferInStepComplete()
 end
 
 function SandTransferState:getNextState()
-	return self.context.magicLampCastingStateInSwapFirst
+	return self.context.tileMoveState
 end
 
 function SandTransferState:checkTransition()

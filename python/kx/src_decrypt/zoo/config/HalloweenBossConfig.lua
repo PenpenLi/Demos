@@ -1,12 +1,22 @@
 HalloweenBossConfig = class()
-
+--[[
+blood           总血量
+normalHit       消除一个普通动物减少的血量
+specialHit      消除一个特效动物减少的血量
+genBellCount    生成收集物的数量
+genCloudCount   生成云块的数量
+dropBellOnHit   收伤掉落收集物的数量
+dropBellOnDie   Boss死亡掉落收集物的数量
+dropAddMove     生成+5步的个数
+maxMove         释放技能的步数
+]]--
 local count = 0
 local boss = 
 {
-    [1] = {blood = 12, normalHit = 1, specialHit = 2, genBellCount = 1, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 8, dropAddMove = 1, maxMove = 8},
-    [2] = {blood = 19, normalHit = 1, specialHit = 2, genBellCount = 1, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 12, dropAddMove = 1, maxMove = 8},
-    [3] = {blood = 28, normalHit = 1, specialHit = 2, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 18, dropAddMove = 1, maxMove = 7},
-    [4] = {blood = 40, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 25, dropAddMove = 2, maxMove = 6},
+    [1] = {blood = 14, normalHit = 1, specialHit = 3, genBellCount = 1, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 8, dropAddMove = 1, maxMove = 0},
+    [2] = {blood = 19, normalHit = 1, specialHit = 3, genBellCount = 1, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 12, dropAddMove = 1, maxMove = 8},
+    [3] = {blood = 25, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 17, dropAddMove = 1, maxMove = 7},
+    [4] = {blood = 32, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 23, dropAddMove = 1, maxMove = 6},
 
 }
 function HalloweenBossConfig.reinit()

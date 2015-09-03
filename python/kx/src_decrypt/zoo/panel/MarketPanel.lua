@@ -4,13 +4,32 @@ require 'zoo.panel.component.pagedView.PagedView'
 require 'zoo.panel.component.common.GridLayout'
 require 'zoo.panel.component.common.LayoutItem'
 require 'zoo.panel.buygold.BuyGoldItem'
+require 'zoo.panel.IosOneYuanShopPanel'
+if __IOS or __WIN32 then
+	require 'zoo.gameGuide.IosPayGuide'
+end
 
 ----------------- GLOBAL FUNCTIONS ------------------
 local panel = nil
 function createMarketPanel(defaultIndex,tabConfig)
-	if panel and not panel.isDisposed then return panel end
+	if panel and not panel.isDisposed then 
+		if __IOS or __WIN32 then
+			if defaultIndex == 3 or IosPayGuide:isInAppleVerification() then
+				panel._triggerIapPromotion = true
+			end
+		end
+		if defaultIndex then
+			panel:slideToPage(defaultIndex)
+		end
+		return panel 
+	end
 
 	panel = MarketPanel:create(defaultIndex, tabConfig)
+	if __IOS or __WIN32 then
+		if defaultIndex == 3 or IosPayGuide:isInAppleVerification() then
+			panel._triggerIapPromotion = true
+		end
+	end
 
 	return panel
 end
@@ -44,6 +63,10 @@ function MarketPanel:init(defaultIndex, tabConfig)
 	assert(ui)
 	self.ui = ui
 	BasePanel.init(self, ui)
+
+	if __IOS or __WIN32 then
+		self.helpButton = self:buildInterfaceGroup('market_panel_questionMarkButton')
+	end
 
 	local viewBg = ui:getChildByName('viewBg')
 	viewBg:setOpacity(255*0.6)
@@ -211,6 +234,7 @@ function MarketPanel:gotoTabPage(index)
 		if self.isDisposed then return end
 		self.happyCoinNetworkTip:setVisible(false)
 		if __ANDROID then self:buildAndroidGoldPage()
+		elseif __WP8 then self:buildWP8GoldPage()
 		else self:buildIOSGoldPage() end
 	end
 
@@ -221,7 +245,7 @@ function MarketPanel:gotoTabPage(index)
 
 	PlatformConfig:setCurrentPayType()
 	if isHappyCoinsTab then
-		if (__IOS and not self.goldPageBuilt) or not MarketManager:sharedInstance().productItems or
+		if (__IOS and not self.goldPageBuilt) or __WIN32 or __WP8 or not MarketManager:sharedInstance().productItems or
 			not MarketManager:sharedInstance().gotRemoteList then
 			self.happyCoinNetworkTip:setVisible(true)
 			MarketManager:sharedInstance():getGoldProductInfo(buildProductPage);
@@ -305,13 +329,52 @@ end
 function MarketPanel:buildIOSGoldPage()
 	if self.goldPageBuilt then return end
 	self.goldPageBuilt = true
+
+	local helpButton = self.helpButton
+	helpButton:getChildByName('ph'):setVisible(false)
+	helpButton:setPositionX(self.viewRect.size.width - helpButton:getGroupBounds().size.width)
+	helpButton:setButtonMode(true)
+	helpButton:setTouchEnabled(true, 0, true)
+	helpButton:ad(DisplayEvents.kTouchTap, 
+	function () 
+		require 'zoo.panel.IosPayGuidePanels'
+		IosPayCartoonPanel:create():popout()
+	end)
+
 	local config = MarketManager:sharedInstance():getCoinsTab()
 	local scroll = VerticalScrollable:create(self.viewRect.size.width, self.viewHeight, false, false)
 	local layout = VerticalTileLayout:create(self.viewRect.size.width)
 	layout:setItemHorizontalMargin(4)
 
+	local helpButtonWrapper = ItemInLayout:create()
+	helpButtonWrapper:setContent(helpButton)
+	helpButtonWrapper:setHeight(helpButton:getGroupBounds().size.height - 15)
+	layout:addItem(helpButtonWrapper)
+
+	if IosPayGuide:isInFCashPromotion() 
+	or (IosPayGuide:shouldShowMarketOneYuanFCash() and self._triggerIapPromotion) then
+        if not layout.iosOneYuanItem then
+        	if not IosPayGuide:isInFCashPromotion() then
+	        	IosPayGuide:oneYuanFCashStart()
+	        end
+            local function buySuccessCallback()
+                if self.isDisposed then return end
+                if not layout.iosOneYuanItem or layout.iosOneYuanItem.isDisposed then return end
+                self.cashAmountTxt:setString(UserManager:getInstance().user:getCash())
+                layout:removeItemAt(layout.iosOneYuanItem:getArrayIndex(), true)
+                if IosPayGuide:isInFCashPromotion() then
+	                IosPayGuide:oneYuanFCashEnd()
+	            end
+            end
+            local iosOneYuanItem = IosOneYuanBuyGoldItem:create(IosPayGuide:getOneYuanFCashConfig(), IosPayGuide:getOneYuanFCashLeftSeconds(), buySuccessCallback)
+            iosOneYuanItem:setParentView(scroll)
+            layout:addItem(iosOneYuanItem)
+            layout.iosOneYuanItem = iosOneYuanItem
+        end
+	end
+
 	local d = 0	
-	for k, v in ipairs(config) do
+	for k, v in pairs(config.goodsIds) do
 		local function updateCashLabel()
 			if self.isDisposed then return end
 			self.cashAmountTxt:setString(UserManager:getInstance().user:getCash());
@@ -335,14 +398,118 @@ function MarketPanel:buildIOSGoldPage()
 	self.happycoinsPage:addChild(scroll)
 end
 
+function MarketPanel:buildWP8GoldPage()
+	if self.goldPageBuilt then return end
+	self.goldPageBuilt = true
+
+	local config = MarketManager:sharedInstance():getCoinsTab()
+	local scroll = VerticalScrollable:create(self.viewRect.size.width, self.viewHeight, false, false)
+	local layout = VerticalTileLayout:create(self.viewRect.size.width)
+	layout:setItemHorizontalMargin(4)
+
+	local d = 0	
+	for k, v in pairs(config.goodsIds) do
+		local function updateCashLabel()
+			if self.isDisposed then return end
+			self.cashAmountTxt:setString(UserManager:getInstance().user:getCash());
+		end
+		local item = BuyGoldItem:create(v, updateCashLabel)
+		item:setParentView(scroll)
+
+		if v.id == 8 then 
+			item:setGoldIconVisiable(-1)
+			d = d + 1
+		elseif v.id == 9 then 
+			item:setGoldIconVisiable(0)
+			d = d + 1
+		else
+			item:setGoldIconVisiable(k - d)
+		end
+		layout:addItem(item)
+	end
+	scroll:setContent(layout)
+	scroll:setIgnoreHorizontalMove(false)
+	self.happycoinsPage:addChild(scroll)
+end
+
+function MarketPanel:sortGoldBarIndex(tables)
+	local function sortFunc(item1,item2)
+		if item1 and item1[1] and item1[1].newSort and item2 and item2[1] and item2[1].newSort then 
+			return item1[1].newSort < item2[1].newSort
+		else
+			return false 
+		end
+	end
+	if tables then 
+		table.sort(tables, sortFunc)
+	end	
+	return tables
+end
+
 function MarketPanel:buildAndroidGoldPage()
 	if self.goldPageBuilt then return end
 	self.goldPageBuilt = true
 	local tables = MarketManager:sharedInstance().productItems
+	tables = self:sortGoldBarIndex(tables)
 	local num = #tables
 	for k, v in ipairs(tables) do
 		if not v.enabled then num = num - 1 end
 	end
+
+	local function getAnimAction(ui)
+		ui:setAnchorPointCenterWhileStayOrigianlPosition()
+		local deltaTime = 0.9
+		local scaleX = ui:getScaleX()
+		local scaleY = ui:getScaleY()
+		local animations = CCArray:create()
+		animations:addObject(CCScaleTo:create(deltaTime, scaleX * 0.78, scaleY * 0.93))
+		animations:addObject(CCScaleTo:create(deltaTime, scaleX * 0.91, scaleY * 0.86))
+		animations:addObject(CCScaleTo:create(deltaTime, scaleX * 0.78, scaleY * 0.93))
+		animations:addObject(CCScaleTo:create(deltaTime, scaleX * 0.91, scaleY * 0.86))
+		return CCRepeatForever:create(CCSequence:create(animations))
+	end
+
+	local function buildHelpLinkItem(payment, layout, items, scroll)
+		local function clickCallback()
+			if payment == Payments.WECHAT then
+				DcUtil:UserTrack({category = "pay", sub_category = "wechat_pay_help"})
+			elseif payment == Payments.ALIPAY then
+				DcUtil:UserTrack({category = "pay", sub_category = "alipay_pay_help"})
+			end
+		end
+		local thirdPayLinkItem = ThirdPayLinkItem:create(localize('market.panel.buy.gold.help'), ThirdPayGuideLogic:getHelpAddress(payment), clickCallback)
+		thirdPayLinkItem:setParentView(scroll)
+		layout:addItem(thirdPayLinkItem)
+		table.insert(items, thirdPayLinkItem)
+	end
+
+	-- 三方买完之后，及时删除打折item
+	local function removeDiscountItems(titles)
+		for k, v in pairs(titles) do
+			if v.discountBuyGoldItem and not v.discountBuyGoldItem.isDisposed and v.layout then
+				v.layout:removeItemAt(v.discountBuyGoldItem:getArrayIndex(), true)
+				v.discountBuyGoldItem = nil
+			end
+		end
+	end
+
+	local function buildDiscountBuyGoldItem(payment, layout, items, scroll, title, titles)
+		if _G.thirdPayConfig and _G.thirdPayConfig.isSupport() then
+			local secondsLeft = _G.thirdPayConfig:getSecondsLeft() -- test
+			local function localCB()
+				if self.isDisposed then return end
+				removeDiscountItems(titles)
+				self.cashAmountTxt:setString(UserManager:getInstance().user:getCash());
+			end
+			local _DiscountBuyGoldItem = DiscountBuyGoldItem:create(secondsLeft, 10, 90, 18, payment, localCB)
+			_DiscountBuyGoldItem:setParentView(scroll)
+			layout:addItem(_DiscountBuyGoldItem)
+			table.insert(items, _DiscountBuyGoldItem)
+			title.discountBuyGoldItem = _DiscountBuyGoldItem
+			title.layout = layout
+		end
+	end
+
 	local titles, lists, posIndex = {}, {}, 1
 	for k, v in ipairs(tables) do
 		print("got list", v.name, v.enabled, #v)
@@ -352,26 +519,50 @@ function MarketPanel:buildAndroidGoldPage()
 			local titleSize = title:getGroupBounds().size
 			local text = title:getChildByName("text")
 			text:setString(Localization:getInstance():getText("market.panel.buy.gold.title."..tostring(v.name)))
+			title.textName = v.name
 			local arrr = title:getChildByName("arrr")
 			arrr:setVisible(false)
 			title.arrr = arrr
 			local arrd = title:getChildByName("arrd")
 			arrd:setVisible(false)
 			title.arrd = arrd
-			-- local iconPH = title:getChildByName("icon")
-			-- iconPH:setVisible(false)
-			-- local newIcon
-			-- local iconSrc = self.builder:buildGroup("marketpanel_platformlogos")
-			-- local newIcon = iconSrc:getChildByName(v.name)
-			-- if newIcon then
-			-- 	local phSize, nSize = iconPH:getGroupBounds().size, newIcon:getGroupBounds().size
-			-- 	local deltaSize = {width = (phSize.width - nSize.width) / 2, height = (phSize.height / nSize.height) / 2}
-			-- 	newIcon:setPositionXY(iconPH:getPositionX() + deltaSize.width, iconPH:getPositionY() + deltaSize.height)
-			-- 	local index = iconPH:getParent():getChildIndex(iconPH)
-			-- 	newIcon:removeFromParentAndCleanup(false)
-			-- 	iconPH:getParent():addChildAt(newIcon, index)
-			-- else text:setPositionX(iconPH:getPositionX()) end
-			-- iconSrc:dispose()
+
+			local titleTip = title:getChildByName('thirdPayGiveMore')
+			local titleTipNum = titleTip:getChildByName("num")
+			if v.name == 'wechat_2' or v.name == 'alipay_2' or v.name == 'qihoo_2' or v.name == 'wandoujia_2'  then
+				if _G.thirdPayConfig and _G.thirdPayConfig.isSupport() then
+					local discountImage = title:getChildByName('thirdPayDiscount')
+					if v.name == 'wechat_2' then
+						discountImage:setPositionX(210)
+					else
+						discountImage:setPositionX(322)
+					end
+					discountImage:runAction(getAnimAction(discountImage))
+					titleTip:setVisible(false)
+				else
+					if v.name == 'wechat_2' then
+						titleTip:setPositionX(210)
+					else
+						titleTip:setPositionX(322)
+					end
+					local maxExtra = 0
+					for m,n in ipairs(v) do
+						local tempExtra = n.extraCash or 0
+						if maxExtra < tempExtra then
+							maxExtra = tempExtra
+						end
+					end
+					if titleTipNum then 
+						titleTipNum:setString(maxExtra)
+					end
+					titleTip:runAction(getAnimAction(titleTip))
+					title:getChildByName('thirdPayDiscount'):setVisible(false)
+				end
+			else
+				title.sign = "smsGoldPage"
+				titleTip:setVisible(false)
+				title:getChildByName('thirdPayDiscount'):setVisible(false)
+			end
 			title:setPositionX((self.viewRect.size.width - titleSize.width) / 2)
 			title.expandY = (posIndex - 1) * (-titleSize.height)
 			title:setPositionY(title.expandY)
@@ -383,10 +574,31 @@ function MarketPanel:buildAndroidGoldPage()
 			local layout = VerticalTileLayout:create(self.viewRect.size.width)
 			layout:setItemHorizontalMargin(4)
 			local items = {}
+
+
+
+			if v.name == 'wechat_2' then
+				buildHelpLinkItem(Payments.WECHAT, layout, items, scroll)
+				buildDiscountBuyGoldItem(Payments.WECHAT, layout, items, scroll, title, titles)
+			elseif v.name == 'alipay_2' then
+				buildHelpLinkItem(Payments.ALIPAY, layout, items, scroll)
+				buildDiscountBuyGoldItem(Payments.ALIPAY, layout, items, scroll, title, titles)
+			elseif v.name == 'qihoo_2' then
+				buildDiscountBuyGoldItem(Payments.QIHOO, layout, items, scroll, title, titles)
+			elseif v.name == 'wandoujia_2' then
+				buildDiscountBuyGoldItem(Payments.WDJ, layout, items, scroll, title, titles)
+			else
+				buildDiscountBuyGoldItem(nil, layout, items, scroll, title, titles)
+			end
+
 			for k, v in ipairs(v) do
-				local function updateCashLabel()
+				local function updateCashLabel(payType)
 					if self.isDisposed then return end
 					self.cashAmountTxt:setString(UserManager:getInstance().user:getCash());
+					if payType == PlatformPayType.kWechat or payType == PlatformPayType.kAlipay or
+						payType == PlatformPayType.kQihoo or payType == PlatformPayType.kWandoujia then
+						removeDiscountItems(titles)
+					end
 				end
 				local item = BuyGoldItem:create(v, updateCashLabel)
 				item:setParentView(scroll)
@@ -406,6 +618,19 @@ function MarketPanel:buildAndroidGoldPage()
 	end
 
 	local function onTitleTapped(evt)
+		if not evt.target then return end
+		if _G.thirdPayConfig and _G.thirdPayConfig.isSupport() then
+			local secondsLeft = _G.thirdPayConfig:getSecondsLeft()
+			if evt.target.textName == 'wechat_2' then
+				DcUtil:UserTrack({category = "activity", sub_category = "wechat_sale_pop", timeleft = secondsLeft})
+			elseif evt.target.textName == 'alipay_2' then
+				DcUtil:UserTrack({category = "activity", sub_category = "alipay_sale_pop", timeleft = secondsLeft})
+			elseif evt.target.textName == 'qihoo_2' then
+				DcUtil:UserTrack({category = "activity", sub_category = "qihoo_sale_pop", timeleft = secondsLeft})
+			elseif evt.target.textName == 'wandoujia_2' then
+				DcUtil:UserTrack({category = "activity", sub_category = "wandoujia_sale_pop", timeleft = secondsLeft})
+			end
+		end
 		local index = tonumber(evt.target.name)
 		print("onTitleTapped", index)
 		if #lists[index].items <= 0 then
@@ -448,6 +673,17 @@ function MarketPanel:buildAndroidGoldPage()
 	end
 	print("title length", #titles)
 	onTitleTapped({target = titles[1]})
+	PaymentNetworkCheck.getInstance():check(function ()
+		-- do nothing 
+	end, function ()
+		if self.isDisposed then return end
+		for i,v in ipairs(titles) do
+			if v.sign == "smsGoldPage" then 
+				onTitleTapped({target = v})
+				return
+			end
+		end
+	end)
 end
 
 function MarketPanel:updateCoinLabel()

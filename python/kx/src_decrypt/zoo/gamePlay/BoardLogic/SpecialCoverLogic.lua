@@ -8,6 +8,7 @@ SpecialCoverLogic = class{}
 function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreScale, actId, noCD, noScore)
 	-----成功消除时候会影响周围的东西
 	if SpecialCoverLogic:canEffectAround(mainLogic, r, c) then
+		
 		if covertype == 1 then
 			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r - 1, c, noScore)		--上下
 			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r + 1, c, noScore)
@@ -77,6 +78,7 @@ function SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, breakDirs)
 	-- print("breakLevels:", table.tostring(breakLevels))
 end
 
+--消除冰块
 function SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale, canEffectCoin)
 	if SpecialCoverLogic:canEffectLightUpAt(mainLogic, r, c, canEffectCoin) then
 		SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
@@ -87,6 +89,7 @@ function SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale,
 	end
 end
 
+--消除流沙
 function SpecialCoverLogic:doEffectSandAtPos(mainLogic, r, c)
 	local board = mainLogic.boardmap[r][c]
 	board.sandLevel = board.sandLevel - 1
@@ -156,7 +159,9 @@ function SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c)
 		or item.ItemType == GameItemType.kBoss
 		or item.ItemType == GameItemType.kHoneyBottle
 		or item.ItemType == GameItemType.kMagicLamp
+		or item.ItemType == GameItemType.kBottleBlocker
 		or item.ItemType == GameItemType.kMagicStone
+		or item.ItemType == GameItemType.kGoldZongZi
 		then
 		return true
 	end
@@ -171,6 +176,7 @@ function SpecialCoverLogic:canEffectAround(mainLogic, r, c)
 			and not mainLogic.gameItemMap[r][c]:hasLock()
 			and not mainLogic.gameItemMap[r][c]:hasFurball()
 			and mainLogic.gameItemMap[r][c]:isAvailable()
+			and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kBottleBlocker
 			then 
 			return true
 		end
@@ -179,7 +185,11 @@ function SpecialCoverLogic:canEffectAround(mainLogic, r, c)
 end
 
 function SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r1, c1, noScore)
-	if not mainLogic:isPosValid(r1, c1) then return end
+	if r1 == 9 and c1 == 3 then
+		local item = mainLogic.gameItemMap[r1][c1]
+	end
+	if not mainLogic:isPosValid(r1, c1) then 
+		return end
 
 	if SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c, r1, c1) then
 		SpecialCoverLogic:effectBlockerAt(mainLogic, r1, c1, 1, nil, false, noScore)
@@ -198,7 +208,8 @@ function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c
 	if item 
 		and (item.ItemType == GameItemType.kVenom 
 		or item.ItemType == GameItemType.kDigGround
-		or item.ItemType == GameItemType.kDigJewel)
+		or item.ItemType == GameItemType.kDigJewel
+		or item.ItemType == GameItemType.kGoldZongZi)
 		or item.honeyLevel > 0 
 		then
 		if mainLogic:hasChainInNeighbors(r, c, r1, c1) then -- 两者之间有冰柱
@@ -420,6 +431,13 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 				item.digBlockCanbeDelete = false
 			end
 			GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, scoreScale, noScore)
+		end
+	elseif item.ItemType == GameItemType.kGoldZongZi and item.digGoldZongZiLevel > 0 and item.digBlockCanbeDelete == true then
+		item.digBlockCanbeDelete = false
+		GameExtandPlayLogic:decreaseDigGoldZongZi(mainLogic, r, c)
+	elseif item.ItemType == GameItemType.kBottleBlocker and item.bottleLevel > 0 and item:isAvailable() then
+		if item.bottleState == BottleBlockerState.Waiting then
+			GameExtandPlayLogic:decreaseBottleBlocker(mainLogic, r, c , scoreScale , noScore)
 		end
 	elseif item.bigMonsterFrostingType > 0 then 
 		if not noScore then

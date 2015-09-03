@@ -1,6 +1,5 @@
 require "zoo.panel.component.enterInviteCodePanel.InviteBtn"
 require "zoo.panel.component.enterInviteCodePanel.InviteRulePanel"
---require "zoo.panel.component.enterInviteCodePanel.ShareToWeiboPanel"
 require "zoo.panel.component.enterInviteCodePanel.InvitedFriendItem"
 require "zoo.panel.WeChatPanel"
 require "zoo.panel.InviteRewardPropPanel"
@@ -18,10 +17,7 @@ assert(not InvitedFriendItemRender)
 assert(TableViewRenderer)
 InvitedFriendItemRender = class(TableViewRenderer)
 
-function InvitedFriendItemRender:init(layerToShowTip, ...)
-	assert(layerToShowTip)
-	assert(#{...} == 0)
-
+function InvitedFriendItemRender:init(layerToShowTip)
 	self.layerToShowTip = layerToShowTip
 	self.items = {}
 end
@@ -32,16 +28,8 @@ function InvitedFriendItemRender:dispose(  )
 	--self.isDisposed = true
 end
 
-function InvitedFriendItemRender:updateInvitedFriendItems(data, isPlayAnim, ...)
-	assert(data)
-	assert(type(isPlayAnim) == "boolean")
-	assert(#{...} == 0)
-
+function InvitedFriendItemRender:updateInvitedFriendItems(data, isPlayAnim)
 	self.data = data
-
-	--print("InvitedFriendItemRender:updateInvitedFriendItems Called !")
-	--print(table.tostring(self.data))
-
 	for index,v in pairs(data) do
 		if not self.items[index].isDisposed then
 			self.items[index]:update(v, isPlayAnim)
@@ -49,13 +37,7 @@ function InvitedFriendItemRender:updateInvitedFriendItems(data, isPlayAnim, ...)
 	end
 end
 
-function InvitedFriendItemRender:buildCell(cell, index, ...)
-	assert(cell)
-	assert(type(index) == "number")
-	assert(#{...} == 0)
-
-	--index = index + 1
-
+function InvitedFriendItemRender:buildCell(cell, index)
 	if self.items[index] then
 		self.items[index]:removeFromParentAndCleanup(true)
 	end
@@ -66,52 +48,21 @@ function InvitedFriendItemRender:buildCell(cell, index, ...)
 
 	cell:addChild(invitedFriendItem)
 
-	--local itemHeight	= invitedFriendItem:getGroupBounds().size.height
-	--local itemSize = ResourceManager:sharedInstance():getGroupSize("invitedFriendItem")
-	--he_log_warning("manual adjust table view item pos in InvitedFriendItemRender !")
-	--invitedFriendItem:setPosition(ccp(0, itemSize.height - 20))
-	--cell.refCocosObj:addChild(invitedFriendItem.refCocosObj)
-
-	-- -----------
-	-- Update View
-	-- ------------
-
 	if self.data then
 		self.items[index]:update(self.data[index], false)
 	end
-
-	--invitedFriendItem:releaseCocosObj()
 end
 
-function InvitedFriendItemRender:getContentSize(tableView, index, ...)
-	assert(#{...} == 0)
-
-	-- local size = ResourceManager:sharedInstance():getGroupSize("invitedFriendItem")
-	-- return CCSizeMake(size.width, size.height)
+function InvitedFriendItemRender:getContentSize(tableView, index)
 	local invitedFrienditemSize = CCSizeMake(590, 136)
 	return invitedFrienditemSize
-	--local width 	= 600
-	--local height	= 135
-	--return CCSizeMake(width, height)
 end
 
-function InvitedFriendItemRender:setData(refCocosObj, index, ...)
-	assert(#{...} == 0)
-
+function InvitedFriendItemRender:setData(refCocosObj, index)
 	local index = index + 1
-
-	--local invitedFriendItem = self.items[index]
-	--assert(invitedFriendItem)
-
-	--if self.data then
-	--	self.items[index]:update(self.data[index], false)
-	--end
 end
 
-function InvitedFriendItemRender:numberOfCells(...)
-	assert(#{...} == 0)
-
-	-- he_log_warning("Hard Coded: number of friends-can-be-invited = 10")
+function InvitedFriendItemRender:numberOfCells()
 	return kMaxRewardFriend
 end
 
@@ -120,9 +71,7 @@ function InvitedFriendItemRender:loadRequiredResource(panelConfigFile)
 	self.builder = InterfaceBuilder:create(panelConfigFile)
 end
 
-function InvitedFriendItemRender:create(layerToShowTip, ...)
-	assert(layerToShowTip)
-	assert(#{...} == 0)
+function InvitedFriendItemRender:create(layerToShowTip)
 
 	local newInvitedFriendItemRender = InvitedFriendItemRender.new()
 	newInvitedFriendItemRender:loadRequiredResource(PanelConfigFiles.invite_friend_reward_panel)
@@ -138,9 +87,7 @@ assert(not InviteFriendRewardPanel)
 assert(BasePanel)
 InviteFriendRewardPanel = class(BasePanel)
 
-function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
-	assert(scaleOriginPosInWorldSpace)
-	assert(#{...} == 0)
+function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace)
 
 	kMaxRewardFriend = MetaManager:getInstance():getInviteFriendCount()
 	local newestCfg = Localhost.getInstance():getUpdatedGlobalConfig()
@@ -148,90 +95,27 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 		kMaxRewardFriend = newestCfg.maxInviteRewardCount
 	end		
 
-	-----------
-	-- Get UI
-	-- ---------
-	-- self.ui	= ResourceManager:sharedInstance():buildGroup("inviteFriendRewardPanel")
 	self.ui	= self:buildInterfaceGroup("inviteFriendRewardPanel")
-
-	-------------------
-	-- Init Base Class
-	-- ---------------
 	BasePanel.init(self, self.ui)
 
-	-----------------
-	-- Get UI Resource
-	-- -----------------
 	self.panelCloseBtn	= self.ui:getChildByName("panelCloseBtn")
 	self.itemPh		= self.ui:getChildByName("itemPh")
-	-- self.inviteCodeLabel	= self.ui:getChildByName("inviteCodeLabel")
-	-- self.ruleBtn		= self.ui:getChildByName("ruleBtn")
-	self.ruleBtn = GroupButtonBase:create(self.ui:getChildByName("ruleBtn"))
-	self.ruleBtn:setColorMode(kGroupButtonColorMode.green)
-	self.ruleBtn:useStaticLabel(52)
-	self.ruleBtn:setString(Localization:getInstance():getText('invite.friend.panel.rule02'))
-	-- self.ruleBtn:setButtonMode(true)
-	-- self.ruleBtn:setTouchEnabled(true)
-	-- self.inviteBtnRes	= self.ui:getChildByName("inviteBtn")
-	-- self.weChatBtn = ButtonIconsetBase:create(self.ui:getChildByName('weChatBtn'))
-	-- self.weChatBtn = GroupButtonBase:create(self.ui:getChildByName('weChatBtn'))
+	self.ruleBtn = self.ui:getChildByName("ruleBtn")
+	self.ruleBtn:setButtonMode(true)
+	self.ruleBtn:setTouchEnabled(true)
 	self.weChatBtnTag = self.ui:getChildByName("weChatBtnTag")
-
-	-- if __IOS_FB then
-	-- 	self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wdj'))
-	-- else
-	-- 	self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wechat'))
-	-- end
-	-- self.weChatBtn:setIconByFrameName('inviteFriend_weChat_Symbol0000')
-
-	-- self.WdjBtn = ButtonIconsetBase:create(self.ui:getChildByName('WdjBtn'))
-	self.WdjBtn = GroupButtonBase:create(self.ui:getChildByName('WdjBtn'))
-	self.WdjBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wdj'))
-	-- self.WdjBtn:setIconByFrameName('inviteFriend_WDJ_Symbol0000')
-
 	self.topTxt = self.ui:getChildByName('topTxt')
-	self.topTxt:setString(Localization:getInstance():getText('invite.friend.panel.text.top.initial', {num = kMaxRewardFriend}))
+	self.topTxt:setString(localize('invite.friend.panel.text.top.initial', {num = kMaxRewardFriend}))
 	self.topTxt:setVisible(false)
-
-	assert(self.panelCloseBtn)
-	assert(self.itemPh)
-	-- assert(self.inviteCodeLabel)
-	-- assert(self.ruleBtnRes)
-	-- assert(self.inviteBtnRes)
-
-	------------------
-	-- Init UI Resource
-	-- -------------
 	self.itemPh:setVisible(false)
 
-	------------
-	-- Data
-	-- --------
 	self.scaleOriginPosInWorldSpace = scaleOriginPosInWorldSpace
 
-	---------------------------------
-	-- Get Data About UI Component
-	-- --------------------------
 	self.itemPhPos	= self.itemPh:getPosition()
 
 	self.inviteCode	= UserManager:getInstance().inviteCode
 
-	-------------------
-	-- Create Show Hide Anim
-	-- --------------------
 	self.showHideAnim = IconPanelShowHideAnim:create(self, self.scaleOriginPosInWorldSpace)
-
-	--------------------
-	-- Create UI Component
-	-- -------------------
-	-- self.ruleBtn	= ButtonWithShadow:create(self.ruleBtnRes)
-	-- self.inviteBtn	= InviteBtn:create(self.inviteBtnRes)
-	-- self.ruleBtn	= GroupButtonBase:create(self.ruleBtnRes)
-	-- self.ruleBtn:setColorMode(kGroupButtonColorMode.blue)
-	-- self.ruleBtn:setVisible(true)
-	-- self.ruleBtn:useStaticLabel(40)
-	-- self.inviteBtn	= GroupButtonBase:create(self.inviteBtnRes)
-	-- self.inviteBtn:setColorMode(kGroupButtonColorMode.green)
 
 	local wSize = Director:sharedDirector():getWinSize()
 	local vSize = Director:sharedDirector():getVisibleSize()
@@ -247,29 +131,19 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 	local invitedFriendItemRender		= InvitedFriendItemRender:create(showTipLayer)
 	self.invitedFriendItemRender		= invitedFriendItemRender
 
-	-- local invitedFrienditemSize		= ResourceManager:sharedInstance():getGroupSize("invitedFriendItem")
 	local invitedFrienditemSize = {width = 590, height = 136}
-	--self.invitedFriendsItemTableView	= TableView:create(invitedFriendItemRender,
-	--								invitedFrienditemSize.width, 
-	--								invitedFrienditemSize.height * 4.5)
 	local containerSize = self.itemPh:getGroupBounds().size
 
 	self.invitedFriendsItemTableView	= NewTableView:create(invitedFriendItemRender,
 									invitedFrienditemSize.width + 200, -- Extra 200 Width, To Avoid Clipping The Friend Picture When Friend Picture Is In The Right Size Of The Panel
 									containerSize.height)
-									--invitedFrienditemSize.height * 4.5)
 									
-
-
-
-
 	local inviteFriendsInfo = UserManager:getInstance().inviteFriendsInfo
 	if inviteFriendsInfo then
 		invitedFriendItemRender:updateInvitedFriendItems(inviteFriendsInfo, false)
 	end
 
 	local invitedFriendsTableViewPosX	= self.itemPhPos.x
-	--local invitedFriendsTableViewPosY	= self.itemPhPos.y - invitedFrienditemSize.height * 4.5
 	local invitedFriendsTableViewPosY	= self.itemPhPos.y 
 	self.invitedFriendsItemTableView:setPosition(ccp(invitedFriendsTableViewPosX, invitedFriendsTableViewPosY))
 
@@ -277,37 +151,12 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 	self.ui:addChild(self.invitedFriendsItemTableView)
 	self.ui:addChild(showTipLayer)
 
-	---------------------
-	-- Update View
-	-- --------------
 	local panelTitleKey	= "invite.friend.panel.tittle"
-	local panelTitleValue	= Localization:getInstance():getText(panelTitleKey, {})
+	local panelTitleValue	= localize(panelTitleKey, {})
 	self.panelTitle = TextField:createWithUIAdjustment(self.ui:getChildByName("panelTitleSize"), self.ui:getChildByName("panelTitle"))
 	self.ui:addChild(self.panelTitle)
 	self.panelTitle:setString(panelTitleValue)
 
-	-- local inviteBtnKey	= "invite.friend.panel.invite.button"
-	-- local inviteBtnValue	= Localization:getInstance():getText(inviteBtnKey, {})
-	-- self.inviteBtn:setString(inviteBtnValue)
-
-	-- local ruleBtnKey	= "invite.friend.panel.rule02"
-	-- local ruleBtnValue	= Localization:getInstance():getText(ruleBtnKey, {})
-	-- self.ruleBtn:getChildByName('txt'):setString(ruleBtnValue)
-
-	-- local inviteCodeLabelKey 	= "invite.friend.panel.code.desc"
-	-- local inviteCodeLabelValue	= Localization:getInstance():getText(inviteCodeLabelKey, {yaoqingma = self.inviteCode})
-
-	-- print(inviteCodeLabelValue)
-	-- --debug.debug()
-	-- self.inviteCodeLabel:setString(inviteCodeLabelValue)
-
-	----------------------
-	-- Add Event Listener
-	-- ------------------
-
-	-- ---------
-	-- Close Btn
-	-- -------
 	local function onCloseBtnTapped()
 		self:onCloseBtnTapped()
 	end
@@ -318,60 +167,53 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 	self.panelCloseBtn:removeFromParentAndCleanup(false)
 	self.ui:addChild(self.panelCloseBtn)
 
-	----------
 	-- Rule Btn
-	-- -----------
 	local function onRuleBtnTapped(event)
 		self:onRuleBtnTapped(event)
 	end
 	self.ruleBtn:addEventListener(DisplayEvents.kTouchTap, onRuleBtnTapped)
 	-- fix: prevent this btn from being on top of the tip layer
-	local zorder = self.ruleBtn.groupNode:getZOrder()
+	local zorder = self.ruleBtn:getZOrder()
 	self.ruleBtn:removeFromParentAndCleanup(false)
-	self.ui:addChildAt(self.ruleBtn.groupNode, zorder)
+	self.ui:addChildAt(self.ruleBtn, zorder)
 
-
-	----------------
-	-- Invite Btn
-	-- --------------
-	-- local function onInviteBtnTapped(event)
-	-- 	print 'touched'
-	-- 	self:onInviteBtnTapped(event)
-	-- end
-	-- self.inviteBtn:addEventListener(DisplayEvents.kTouchTap, onInviteBtnTapped)
-
-	-- self.inviteBtn:removeFromParentAndCleanup(false)
-	-- -- self.ui:addChild(self.inviteBtn)
-	-- self.ui:addChild(self.inviteBtn.groupNode)
-
-	--------------
 	-- WeChat Button
-	---------------
 	self.weChatBtn = GroupButtonBase:create(self.ui:getChildByName('weChatBtn'))
-	self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wechat'))
+	self.weChatBtn.groupNode:getChildByName('icon'):setVisible(false)
+	self.weChatBtn:setString(localize('invite.friend.panel.button.text.wechat'))
 	if __IOS_FB then
-		self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wdj'))
+		self.weChatBtn:setString(localize('invite.friend.panel.button.text.wdj'))
 		local function onInviteButtonTapped(event)
 			self:onFBInviteBtnTapped(event)
 		end
 		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
 	elseif PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
-		self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.mitalk'))
+		self.weChatBtn:setString(localize('invite.friend.panel.button.text.mitalk'))
 		local function onInviteButtonTapped(event)
 			self:onInviteButtonTapped(event, PlatformShareEnum.kMiTalk)
 		end
 		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
 	elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
-		self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.360'))
+		self.weChatBtn:setString(localize('invite.friend.panel.button.text.360'))
 		local function onInviteButtonTapped(event)
 			self:onInviteButtonTapped(event, PlatformShareEnum.k360)
 		end
 		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
+	elseif PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) then
+		local function onInviteButtonTapped(event)
+			self:onWdjBtnTapped(event)
+		end
+		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
+		self.weChatBtn:setString(localize('invite.friend.panel.button.text.wdj'))
 	else
 		local function onInviteButtonTapped(event)
 			self:onInviteButtonTapped(event, PlatformShareEnum.kWechat)
+			-- self:showWdjInvitePanel()
 		end
 		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
+		self.weChatBtn:setString(localize('invite.friend.panel.button.text.wechat'))
+		self.weChatBtn.groupNode:getChildByName('icon'):setVisible(true)
+		self.weChatBtn.label:setPositionX(self.weChatBtn.label:getPositionX()+35)
 	end
 
 	-- fix: prevent this btn from being on top of the tip layer
@@ -380,26 +222,16 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 	self.weChatBtn:useBubbleAnimation()
 	self.ui:addChildAt(self.weChatBtn.groupNode, zorder)
 
-	---------------------
-	-- WDJ button
-	-------------------
+	self.inviteCodeBtn = GroupButtonBase:create(self.ui:getChildByName('inviteCodeBtn'))
+	self.inviteCodeBtn:setColorMode(kGroupButtonColorMode.blue)
+	self.inviteCodeBtn:setEnabled(true)
+	self.inviteCodeBtn:setString(localize('回馈邀请人'))
+	self.inviteCodeBtn:ad(DisplayEvents.kTouchTap, function () self:onInviteCodeBtnTapped() end)
+	zorder = self.inviteCodeBtn.groupNode:getZOrder()
+	self.inviteCodeBtn:removeFromParentAndCleanup(false)
+	self.inviteCodeBtn:useBubbleAnimation()
+	self.ui:addChildAt(self.inviteCodeBtn.groupNode, zorder)
 
-	local function onWdjBtnTapped(event)
-		self:onWdjBtnTapped(event)
-	end
-	self.WdjBtn:addEventListener(DisplayEvents.kTouchTap, onWdjBtnTapped)
-	-- fix: prevent this btn from being on top of the tip layer
-	zorder = self.WdjBtn.groupNode:getZOrder()
-	self.WdjBtn:removeFromParentAndCleanup(false)
-	self.ui:addChildAt(self.WdjBtn.groupNode, zorder)
-
-
-	-------------------------------------------------------------
-	-- Adjust button positions for WDJ version and other versions
-	-------------------------------------------------------------
-
-	local wdjLocator = self.ui:getChildByName('ver.WDJ_WdjBtnLocator')
-	local wechatLocator = self.ui:getChildByName('ver.WDJ_WechatBtnLocator')
 
 	local meta = MetaManager:getInstance().rewards
 	local itemId, itemNum = 10012, 20
@@ -430,55 +262,29 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace, ...)
 		self.weChatBtnTag:addChildAt(sprite, index)
 	end
 	number:setText('+'..itemNum)
+	
 	if not MaintenanceManager:getInstance():isEnabled("ShareCoin") or
 		UserManager:getInstance():isUserRewardBitSet(3) then
 		self.weChatBtnTag:setVisible(false)
 	end
 
-	if PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) then
-		-- note: reposition the locators in the flash file to reposition these buttons
-		--       change the scale factor to resize the wechat button.
-		self.WdjBtn:setPosition(ccp(wdjLocator:getPositionX(), wdjLocator:getPositionY()))
-		self.weChatBtn:setPosition(ccp(wechatLocator:getPositionX(), wechatLocator:getPositionY()))
-		-- fix: remove bubble animation. set scale and then build animation
-		self.weChatBtn.groupNode:stopAllActions()
-		self.weChatBtn:setScale(0.5)
-		self.weChatBtnTag:setScale(0.5)
-		self.weChatBtn:useBubbleAnimation()
-		self.weChatBtn:setColorMode(kGroupButtonColorMode.blue)
-		self.weChatBtn:setString(Localization:getInstance():getText('invite.friend.panel.button.text.wechat.wdj'))
-		local buttonSize = self.weChatBtn:getGroupBounds().size
-		local tagSize = self.weChatBtnTag:getGroupBounds().size
-		self.weChatBtnTag:setPosition(ccp(wechatLocator:getPositionX() + buttonSize.width / 2 - tagSize.width / 2,
-			wechatLocator:getPositionY() + buttonSize.height / 2 + tagSize.width / 2))
-	else 
-		-- other versions: remove WDJ btn
-		self.WdjBtn:removeFromParentAndCleanup(true)
-		-- center wechat button
-		local btnPos = self.weChatBtn:getPosition()
-		local parentSize = self.weChatBtn:getParent():getGroupBounds().size
-		self.weChatBtn:setPosition(ccp(parentSize.width / 2, btnPos.y))
-		local buttonSize = self.weChatBtn:getGroupBounds().size
-		local tagSize = self.weChatBtnTag:getGroupBounds().size
-		self.weChatBtnTag:setPosition(ccp(parentSize.width / 2 + buttonSize.width / 2 - tagSize.width / 2,
-			btnPos.y + buttonSize.height / 2 + tagSize.height / 2 - 5))
+	if not self:shouldShowInviteCodeBtn() then
+		self.inviteCodeBtn:setVisible(false)
+		self.inviteCodeBtn:setEnabled(false)
+		self.weChatBtn:setPositionX(self.weChatBtn:getPositionX() + 114)
+		self.weChatBtnTag:setPositionX(self.weChatBtnTag:getPositionX() + 114)
 	end
-	-- remove the locators
-	wdjLocator:setVisible(false)
-	wechatLocator:setVisible(false)
-	self.ui:addChild(wdjLocator)
-	self.ui:addChild(wechatLocator)
 
 	------------------------------
 	-- Move Show Tip Layer To Top
 	-- --------------------------
 	showTipLayer:removeFromParentAndCleanup(false)
 	self.ui:addChild(showTipLayer)
+
+	print('wenkan', PlatformConfig.name)
 end
 
-function InviteFriendRewardPanel:getVCenterInParentY(...)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:getVCenterInParentY()
 	-- Vertical Center In Screen Y
 	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
 	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
@@ -492,13 +298,100 @@ function InviteFriendRewardPanel:getVCenterInParentY(...)
 
 	-- Vertical Center In Parent Y
 	local parent 		= self:getParent()
-	assert(parent)
 	local posInParent	= parent:convertToNodeSpace(ccp(0, vCenterInScreenY))
 
 	return posInParent.y
 end
 
+function InviteFriendRewardPanel:shouldShowInviteCodeBtn()
+	if __WIN32 then 
+		return true -- test
+	end
+	local userTopLevel = UserManager.getInstance().user:getTopLevelId()
+
+	-- If >= 31, Pop The InviteFriendRewardPanel
+	if userTopLevel >= 31 then
+		--inviteFriendPanel:popoutWithBgFadeIn()
+	else
+		-- <= 30 , and Never Entered AN Invite Code Then, Pop The EnterInviteCodePanel 
+		local flag = UserManager:getInstance().userExtend.flag or 0
+		if flag % 2 == 0  then
+			-- Not Sended Invite Code Ever
+			if not __IOS_FB and not PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function InviteFriendRewardPanel:onInviteCodeBtnTapped()
+	local enterInviteCodePanel	= EnterInviteCodePanel:create()
+	enterInviteCodePanel:popout()
+end
+
 function InviteFriendRewardPanel:onWdjBtnTapped(event)
+	self:showWdjInvitePanel()
+end
+
+function InviteFriendRewardPanel:showWdjInvitePanel()
+	if self.wdjPanel then return end
+	local panel = self:buildInterfaceGroup('invite_friend_wdj_click')
+	local wdjBtn = panel:getChildByName('wdjBtn')
+	local wechatBtn = panel:getChildByName('wechatBtn')
+	local cancelBtn = panel:getChildByName('cancelBtn')
+	wdjBtn:setButtonMode(false)
+	wdjBtn:setTouchEnabled(true)
+	wdjBtn:ad(DisplayEvents.kTouchTap, 
+		function () 
+			self:removeWdjInvitePanel() 
+			self:doWdjInvite() 
+		end)
+
+	wechatBtn:setButtonMode(false)
+	wechatBtn:setTouchEnabled(true)
+	wechatBtn:ad(DisplayEvents.kTouchTap, 
+		function () 
+			self:removeWdjInvitePanel() 
+			self:onInviteButtonTapped(nil, PlatformShareEnum.kWechat) 
+		end)
+
+	cancelBtn:setButtonMode(false)
+	cancelBtn:setTouchEnabled(true)
+	cancelBtn:ad(DisplayEvents.kTouchTap, 
+		function () 
+			self:removeWdjInvitePanel() 
+		end)
+
+	self.wdjPanel = panel
+	PopoutManager:sharedInstance():add(panel, false, true)
+	local vo = Director:sharedDirector():getVisibleOrigin()
+	local vs = Director:sharedDirector():getVisibleSize()
+	panel:setPositionX(vo.x)
+	panel:setPositionY(-vs.height)
+	panel:runAction(CCEaseExponentialOut:create(CCMoveBy:create(0.5, ccp(0, panel:getGroupBounds().size.height))))
+end
+
+function InviteFriendRewardPanel:removeWdjInvitePanel(callback)
+	if not self.wdjPanel or self.wdjPanel.isDisposed then 
+		callback() 
+		return 
+	end
+	local function remove()
+		if not self.wdjPanel or self.wdjPanel.isDisposed then return end
+		PopoutManager:sharedInstance():remove(self.wdjPanel, true)
+		self.wdjPanel = nil
+		if callback then
+			callback()
+		end
+	end
+	self.wdjPanel:runAction(CCSequence:createWithTwoActions(
+			CCEaseExponentialIn:create(CCMoveBy:create(0.5, ccp(0, -self.wdjPanel:getGroupBounds().size.height))),
+			CCCallFunc:create(remove)
+		))
+end
+
+function InviteFriendRewardPanel:doWdjInvite()
 	if not PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) then return end
 	local function onSuccess(data)
 		if data then print(table.tostring(data)) end
@@ -525,25 +418,26 @@ function InviteFriendRewardPanel:onWdjBtnTapped(event)
 
 end
 
-function InviteFriendRewardPanel:onCloseBtnTapped(event, ...)
-	assert(#{...} == 0)
+function InviteFriendRewardPanel:onCloseBtnTapped(event)
 	print("InviteFriendRewardPanel:onCloseBtnTapped")
-	self.allowBackKeyTap = false
-	self:remove()
+	
+	local function callback()
+		self.allowBackKeyTap = false
+		self:remove()
+	end
+	self:removeGuide()
+	self:removeWdjInvitePanel(callback)	
 end
 
-function InviteFriendRewardPanel:onRuleBtnTapped(event, ...)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:onRuleBtnTapped(event)
 	self:setVisible(false)
-
 	local inviteRulePanel = InviteRulePanel:create()
 	inviteRulePanel:popout()
 end
 
 function InviteFriendRewardPanel:onFBInviteBtnTapped(event)
 	if not SnsProxy:isLogin() then 
-		CommonTip:showTip(Localization:getInstance():getText("error.tip.facebook.login"), "negative",nil,2)
+		CommonTip:showTip(localize("error.tip.facebook.login"), "negative",nil,2)
 	else
 		local callback = {
 			onSuccess = function( result )
@@ -558,9 +452,7 @@ function InviteFriendRewardPanel:onFBInviteBtnTapped(event)
 	end
 end
 
-function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType )
-	assert(type(shareType) == "number")
-	--self:changeToShareToWeiboPanel()
+function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType)
 	local function doShareInvitation()
 		local shareCallback = {
 			onSuccess=function(result)
@@ -587,12 +479,26 @@ function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType )
 
 	if shareType ~= PlatformShareEnum.k360 then -- 360分享不用隐藏按钮
 		self.weChatBtn:setEnabled(false)
+		if shareType ~= PlatformShareEnum.kWechat then
+			setTimeOut(function()
+				if self.weChatBtn.isDisposed then
+					self.weChatBtn:setEnabled(true)
+				end
+			end, 2)
+		end
 	end
 
 	local invited = CCUserDefault:sharedUserDefault():getBoolForKey("game.invite.friend.wechat.tutor")
 	if shareType == PlatformShareEnum.kWechat and not invited then
 		local function onClose() self.weChatBtn:setEnabled(true) end
-		local panel = WeChatPanel:create(doShareInvitation, onClose)
+		local panel = WeChatPanel:create(function()
+			setTimeOut(function()
+				if not self.weChatBtn.isDisposed then
+					self.weChatBtn:setEnabled(true)
+				end
+			end, 2)
+			doShareInvitation()
+		end, onClose)
 		if panel then panel:popout() end
 	else
 		doShareInvitation()
@@ -600,51 +506,30 @@ function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType )
 end
 
 function InviteFriendRewardPanel:popout(...)
-	assert(#{...} == 0)
-	self:updateEachFriendItem()
-
-	
+	self:updateEachFriendItem()	
 end
 
-function InviteFriendRewardPanel:setToScreenCenterVertical(...)
-	assert(#{...} == 0)
-
-	-- Get V Center In Screen Y
+function InviteFriendRewardPanel:setToScreenCenterVertical()
 	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
 	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
 	local selfHeight	= self:getGroupBounds().size.height
-	-- local selfHeight	= 985
-
 	local deltaHeight	= visibleSize.height - selfHeight
 	local halfDeltaHeight	= deltaHeight / 2
-
 	local vCenterInScreenY	= visibleOrigin.y + halfDeltaHeight + selfHeight
-
-	-- Get Vertical Center In Parent Y
 	local parent		= self:getParent()
-	assert(parent)
 	local posInParent	= parent:convertToNodeSpace(ccp(0, vCenterInScreenY))
 
-	-- Set Position Y
-	-- self:setPositionY(posInParent.y)
 	self:setPositionForPopoutManager()
 end
 
-function InviteFriendRewardPanel:remove(...)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:remove()
 	local function onPanelHideAnimFinishFunc()
-		--PopoutManager:sharedInstance():remove(self, true)
 		PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
 	end
-
 	self.showHideAnim:playHideAnim(onPanelHideAnimFinishFunc)
 end
 
 function InviteFriendRewardPanel:onEnterHandler(event, ...)
-	assert(event)
-	assert(#{...} == 0)
-
 	if event == "enter" then
 		
 
@@ -653,44 +538,21 @@ function InviteFriendRewardPanel:onEnterHandler(event, ...)
 	end
 end
 
-function InviteFriendRewardPanel:updateEachFriendItem(...)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:updateEachFriendItem()
 	local function onSendGetInviteFriendMsgSuccess(data)
-
 		print("InviteFriendRewardPanel:updateEachFriendItem Called !")
-
-		local function onPopouted()
-
-			-- Check If User Is <= 30 Level,
-			local userTopLevel = UserManager.getInstance().user:getTopLevelId()
-
-			-- If >= 31, Pop The InviteFriendRewardPanel
-			if userTopLevel >= 31 then
-				--inviteFriendPanel:popoutWithBgFadeIn()
-			else
-				-- <= 30 , and Never Entered AN Invite Code Then, Pop The EnterInviteCodePanel 
-				local flag = UserManager:getInstance().userExtend.flag or 0
-				if flag % 2 == 0  then
-					-- Not Sended Invite Code Ever
-					if not __IOS_FB and not PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
-						local enterInviteCodePanel	= EnterInviteCodePanel:create()
-						enterInviteCodePanel:popout()
-					end
-				end
-			end
-			self.allowBackKeyTap = true
-		end
-
 		PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
-		self.showHideAnim:playShowAnim(onPopouted)
+		local function callback()
+			self.allowBackKeyTap = true
+			self:tryRunGuide()
+			if InviteFriendRewardPanel:shouldForcePopInviteCodePanel() then
+				self:onInviteCodeBtnTapped()
+				InviteFriendRewardPanel:writeForcePopTime()
+			end
+		end
+		self.showHideAnim:playShowAnim(callback)
 
-		-- print(table.tostring(data))
-		--debug.debug()
-
-		-- -------------------------------
 		-- Extrace The Invited Friend Ids
-		-- --------------------------------
 		local friendIds = {}
 
 		for k,v in pairs(data) do
@@ -703,20 +565,15 @@ function InviteFriendRewardPanel:updateEachFriendItem(...)
 
 		if #friendIds > 0 and not self.isDisposed then
 			if #friendIds < kMaxRewardFriend then
-				self.topTxt:setString(Localization:getInstance():getText('invite.friend.panel.text.top.current', 
+				self.topTxt:setString(localize('invite.friend.panel.text.top.current', 
 																{invited = #friendIds, free = kMaxRewardFriend - #friendIds}))
 			elseif #friendIds == kMaxRewardFriend then
 				self.topTxt:setString('')
 			end
 		end
 		if not self.isDisposed then self.topTxt:setVisible(true) end
-		-- print("friend ids: ")
-		-- print(table.tostring(friendIds))
 
-		---------------------------------------------
 		-- Send Friend Http Use Invited Friends UID
-		-- ----------------------------------------
-
 		local function onSendFriendHttpSuccess()
 
 			print("onSendFriendHttpSuccess Called !")
@@ -727,7 +584,6 @@ function InviteFriendRewardPanel:updateEachFriendItem(...)
 				local data = UserManager:getInstance().inviteFriendsInfo
 				self.invitedFriendItemRender:updateInvitedFriendItems(data, false)
 			else
-				--self.invitedFriendItemRender:updateInvitedFriendItems(data, true)
 				self.invitedFriendItemRender:updateInvitedFriendItems(data, false)
 			end
 		end
@@ -737,17 +593,12 @@ function InviteFriendRewardPanel:updateEachFriendItem(...)
 			print("onSendFriendHttpFailed !! ")
 		end
 		onSendFriendHttpSuccess()
-		-- self:sendFriendHttp(friendIds, onSendFriendHttpSuccess, onSendFriendHttpFailed)
 	end
 
 	self:sendGetInviteFriendsInfoMsg(onSendGetInviteFriendMsgSuccess)
 end
 
-function InviteFriendRewardPanel:sendFriendHttp(friendIds, onSuccessCallback, onFailedCallback, ...)
-	assert(friendIds)
-	assert(false == onSuccessCallback or type(onSuccessCallback) == "function")
-	assert(false == onFailedCallback or type(onFailedCallback) == "function")
-	assert(#{...} == 0)
+function InviteFriendRewardPanel:sendFriendHttp(friendIds, onSuccessCallback, onFailedCallback)
 
 	local function onSuccess()
 
@@ -767,7 +618,6 @@ function InviteFriendRewardPanel:sendFriendHttp(friendIds, onSuccessCallback, on
 		end
 	end
 
-	--local http = StartLevelHttp.new()
 	local http = FriendHttp.new()
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFailed)
@@ -775,14 +625,9 @@ function InviteFriendRewardPanel:sendFriendHttp(friendIds, onSuccessCallback, on
 	http:load(true, friendIds)
 end
 
-function InviteFriendRewardPanel:sendGetInviteFriendsInfoMsg(onSuccessCallback, ...)
-	assert(type(onSuccessCallback) == "function")
-	assert(#{...} == 0)
+function InviteFriendRewardPanel:sendGetInviteFriendsInfoMsg(onSuccessCallback)
 
 	local function onSuccess(event)
-		assert(event)
-		assert(event.data)
-
 		print("In Class InviteFriendRewardPanel: invite friend info successed !")
 		local data = event.data
 
@@ -796,16 +641,10 @@ function InviteFriendRewardPanel:sendGetInviteFriendsInfoMsg(onSuccessCallback, 
 	end
 
 	local function onFailed(event)
-		assert(event)
-		assert(event.name == Events.kError)
 
 		local err = event.data
-
-		--local errorMessage = "get invite friend info failed !"
-		--errorMessage = "errorMessage:" .. tostring(err)
-		CommonTip:showTip(Localization:getInstance():getText("error.tip."..err), "negative")
+		CommonTip:showTip(localize("error.tip."..err), "negative")
 		self:dispose()
-		--assert(false, errorMessage)
 	end
 
 	local http = GetInviteFriendsInfo.new(true)
@@ -814,16 +653,11 @@ function InviteFriendRewardPanel:sendGetInviteFriendsInfoMsg(onSuccessCallback, 
 	http:load()
 end
 
-function InviteFriendRewardPanel:reBecomeTopPanel(...)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:reBecomeTopPanel()
 	self:setVisible(true)
 end
 
-function InviteFriendRewardPanel:create(scaleOriginPosInWorldSpace, ...)
-	assert(scaleOriginPosInWorldSpace)
-	assert(#{...} == 0)
-
+function InviteFriendRewardPanel:create(scaleOriginPosInWorldSpace)
 	local newInviteFriendRewardPanel = InviteFriendRewardPanel.new()
 	newInviteFriendRewardPanel:loadRequiredResource(PanelConfigFiles.invite_friend_reward_panel)
 	newInviteFriendRewardPanel:init(scaleOriginPosInWorldSpace)
@@ -835,23 +669,131 @@ function InviteFriendRewardPanel:dispose()
 	BasePanel.dispose(self)
 end
 
-function InviteFriendRewardPanel:getHCenterInParentX(...)
-	assert(#{...} == 0)
-
-	-- Vertical Center In Screen Y
+function InviteFriendRewardPanel:getHCenterInParentX()
 	local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
 	local visibleOrigin	= CCDirector:sharedDirector():getVisibleOrigin()
-	-- local selfHeight	= self:getGroupBounds().size.height
 	local selfWidth = 670
-
 	local deltaWidth	= visibleSize.width - selfWidth
 	local halfDeltaWidth	= deltaWidth / 2
-
 	local vCenterInScreenX	= visibleOrigin.x + halfDeltaWidth
-
-	-- Vertical Center In Parent Y
 	local parent 		= self:getParent()
 	local posInParent	= parent:convertToNodeSpace(ccp(vCenterInScreenX, 0))
-
 	return posInParent.x
+end
+
+function InviteFriendRewardPanel:hasRunGuide() -- static
+	local value = CCUserDefault:sharedUserDefault():getIntegerForKey('game.invite.friend.run.guide.time', nil)
+	if value ~= nil and value ~= 0 then
+		return true, value
+	else
+		return false
+	end
+end
+
+function InviteFriendRewardPanel:setHasRunGuide()
+	CCUserDefault:sharedUserDefault():setIntegerForKey("game.invite.friend.run.guide.time", Localhost:time() / 1000)
+end
+
+function InviteFriendRewardPanel:removeGuide()
+	if not self.isGuideOnScreen then return end
+	if self.mask and not self.mask.isDisposed then
+        self.mask:removeFromParentAndCleanup(true)
+    end
+    if self.guidePanel and not self.guidePanel.isDisposed then
+        self.guidePanel:removeFromParentAndCleanup(true)
+    end
+    InviteFriendRewardPanel:setHasRunGuide()
+    self.isGuideOnScreen = false
+end
+
+function InviteFriendRewardPanel:tryRunGuide()
+	if InviteFriendRewardPanel:hasRunGuide() then
+		return false
+	end
+	if not self:shouldShowInviteCodeBtn() then
+		return false
+	end
+    if self.isGuideOnScreen then return false end
+    self.isGuideOnScreen = true
+
+    local pos = self.inviteCodeBtn.groupNode:getParent():convertToWorldSpace(self.inviteCodeBtn.groupNode:getPosition())
+    local action = 
+    {
+        opacity = 0xCC, 
+        text = "tutorial.game.invite.1",
+        panType = "down", panAlign = "viewY", panPosY = pos.y + 400, panFlip = true,
+        maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
+    }
+    local panel = GameGuideUI:panelS(nil, action, false)
+    local mask = GameGuideUI:mask(
+        action.opacity, 
+        action.touchDelay, 
+        ccp(pos.x, pos.y),
+        2, 
+        false, 
+        nil, 
+        nil, 
+        false,
+        true)
+    mask.setFadeIn(action.maskDelay, action.maskFade)
+
+    local function newOnTouch(evt)
+        self:removeGuide()
+    	if self.isDisposed then return end
+
+        if self.inviteCodeBtn.groupNode:hitTestPoint(evt.globalPosition, true) then       
+            local event = {name = DisplayEvents.kTouchTap}
+            self.inviteCodeBtn.groupNode:dispatchEvent(event)
+        end
+    end
+    mask:removeEventListenerByName(DisplayEvents.kTouchTap)
+    mask:ad(DisplayEvents.kTouchTap, newOnTouch)
+    local scene = Director:sharedDirector():getRunningScene()
+    if scene then
+        scene:addChild(mask)
+        scene:addChild(panel)
+    end
+    self.mask = mask
+    self.guidePanel = panel
+
+    return true
+end
+
+local function getDayStartTimeByTS(ts)
+	local utc8TimeOffset = 57600 -- (24 - 8) * 3600
+	local oneDaySeconds = 86400 -- 24 * 3600
+	return ts - ((ts - utc8TimeOffset) % oneDaySeconds)
+end
+
+function InviteFriendRewardPanel:shouldForcePopInviteCodePanel() -- static
+	if UserManager.getInstance().user:getTopLevelId() >= 31 then
+		return false
+	end
+	local flag = UserManager:getInstance().userExtend.flag or 0
+	if flag % 2 ~= 0 then 
+		return false
+	end
+	if __IOS_FB or PlatformConfig:isPlatform(PlatformNameEnum.k360) then
+		return false
+	end
+	-- 播放引导后才能强弹
+	local hasRunGuide, value = InviteFriendRewardPanel:hasRunGuide()
+	if not hasRunGuide then return false end
+	local runTime = tonumber(value) or 0
+	local curTime = Localhost:time() / 1000
+	if curTime - runTime > 3*24*60*60 then -- 仅头3天强弹
+		return false
+	end
+	local lastPopTime = CCUserDefault:sharedUserDefault():getIntegerForKey('game.invite.friend.last.pop.time', 0)
+	if curTime - lastPopTime < 24*3600 then -- 一天之内只弹一次
+		return false
+	end
+
+	return true
+end
+
+function InviteFriendRewardPanel:writeForcePopTime()
+	--记录的是一天开始的时间
+	local time = getDayStartTimeByTS(Localhost:time()/1000)
+	CCUserDefault:sharedUserDefault():setIntegerForKey('game.invite.friend.last.pop.time', time)
 end

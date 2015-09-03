@@ -248,7 +248,7 @@ function RegionLayoutBar:addItem(child, ...)
 	assert(child)
 	assert(#{...} == 0)
 
-	self.childrenLayer:addChildAt(child, 1)
+	self.childrenLayer:addChildAt(child, 0)
 	table.insert(self.addedChildren, child)
 
 	self:layout()
@@ -258,7 +258,7 @@ function RegionLayoutBar:addItemAt(child,index)
 
 	index = math.min(math.max(index,1),#self.addedChildren + 1)
 
-	self.childrenLayer:addChildAt(child,1)
+	self.childrenLayer:addChildAt(child,0)
 	table.insert(self.addedChildren,index,child)
 
 	self:layout()

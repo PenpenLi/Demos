@@ -318,7 +318,6 @@ local ShareConfig = {
 				if judgeCondition(ConditionOP.LESS_OR_EQUAL, top_level - ShareManager.data.level, 1) == false then
 					return false
 				end
-
 				--network condition
 				local left_step = ShareManager:getShareData(ShareManager.ConditionType.LEFT_STEP)
 				local can_link = ShareManager:getShareData(ShareManager.ConditionType.CAN_LINK)
@@ -618,6 +617,10 @@ function ShareManager:judgeShareCondition( shareID )
 end
 
 function ShareManager:judgeShare( shareID )
+	if self:checkIsLinkShare(shareID) and PlatformConfig:isJJPlatform() then
+		return nil
+	end
+
 	if self:judgeShareCondition(shareID) == false then
 		return nil
 	end
@@ -838,6 +841,8 @@ function ShareManager:startShare( ... )
 
 	--start judge share
 	self:shareWithPriority(1)
+
+	local level = ShareManager.data.level or 0
 
 	local user = UserService.getInstance().user
 	if user then

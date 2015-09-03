@@ -56,6 +56,10 @@ function GspProxyAndroid:setFAQurl(url)
   self.instance:setHelpUrlForGsp(url)  
 end
 
+function GspProxyAndroid:setExtraParams(params)
+  self.instance:setExtraParams(luaJavaConvert.table2Map(params))  
+end
+
 local function createTransactionCallback(callback)
   local transactionCallback = luajava.createProxy("com.happyelements.gsp.android.payment.TransactionCallback",
     {

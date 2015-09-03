@@ -207,6 +207,7 @@ GameModeTypeId = {
 	SEA_ORDER_ID = 14,
 	HALLOWEEN    = 15,
 	TASK_UNLOCK_DROP_DOWN = 16,
+	SUMMER_WEEKLY = 17,
 }
 
 local function getGameModeTypeIdFromModeType(modeType, ...)

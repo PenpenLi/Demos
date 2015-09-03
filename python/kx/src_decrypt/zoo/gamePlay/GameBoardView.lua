@@ -11,7 +11,7 @@ require "zoo.gamePlay.GameBoardLogic"
 require "zoo.gamePlay.BoardView.BoardViewAction"
 require "zoo.gamePlay.BoardView.BoardViewPass"
 require "zoo.gamePlay.propInteractions.InteractionController"
-require "zoo.animation.TileHalloweenBoss"
+require "zoo.animation.TileDragonBoss"
 
 GameBoardView = class(Layer)
 
@@ -19,6 +19,7 @@ local needCopyLayers = {
 	ItemSpriteType.kTileBlocker,
 	ItemSpriteType.kItem, 
 	ItemSpriteType.kItemShow,
+	ItemSpriteType.kMagicTileWater,
 	ItemSpriteType.kRope,
 	ItemSpriteType.kLock,
 	ItemSpriteType.kFurBall,
@@ -169,7 +170,7 @@ end
 
 function GameBoardView:useRandomBird()
 	local pos = self.gameBoardLogic:getPositionForRandomBird()
-	if self.gameBoardLogic:useProps(self.gamePropsType, pos.r, pos.c) then
+	if pos and self.gameBoardLogic:useProps(self.gamePropsType, pos.r, pos.c) then
 		self.gamePropsType = GamePropsType.kNone
 		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(pos.r, pos.c))
 	end
@@ -275,6 +276,7 @@ end
 -- isHalloween 为了兼容magic tile障碍加入一个clippingNode
 function GameBoardView:initView(container, context, isHalloween)
 	local showPanel = {}
+	self.isHalloween = isHalloween
 
 	for _, i in ipairs(DefaultVisibleLayers) do
 		if not showPanel[i] then
@@ -306,6 +308,9 @@ function GameBoardView:buildSingleLayerByType(layerType)
 	if layerType == ItemSpriteType.kBackground then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapTiles.png"), 200));--100表示预计有100个物体
+	elseif layerType == ItemSpriteType.kMoveTileBackground then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/map_move_tile.png"), 81));--100表示预计有100个物体
 	elseif layerType == ItemSpriteType.kLock or layerType == ItemSpriteType.kItem then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/mapBaseItem.png"), 200));--100表示预计有100个物体
@@ -333,7 +338,7 @@ function GameBoardView:buildSingleLayerByType(layerType)
 	elseif layerType == ItemSpriteType.kDigBlockerBomb then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
-	elseif isHalloween and (layerType == ItemSpriteType.kTileBlocker or layerType == ItemSpriteType.kRope) then
+	elseif self.isHalloween and (layerType == ItemSpriteType.kTileBlocker or layerType == ItemSpriteType.kRope) then
 		result = SimpleClippingNode:create()
 		result:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * 8))
 	elseif layerType == ItemSpriteType.kSand then
@@ -451,6 +456,14 @@ function GameBoardView:updateGame(dt)
 	end
 end
 
+function GameBoardView:getViewContext()
+	if not self.itemViewContext then
+		local levelType = self.gameBoardLogic.levelType
+		self.itemViewContext = {levelType = levelType}
+	end
+	return self.itemViewContext
+end
+
 function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 	if not self.baseMap then
 		self.baseMap = {}
@@ -471,7 +484,7 @@ function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 		if self.baseMap[i] == nil then self.baseMap[i] = {} end		--地图显示
 		
 		for j=1,#boardmap[i] do
-			self.baseMap[i][j] = ItemView:create();
+			self.baseMap[i][j] = ItemView:create(self:getViewContext())
 			self.baseMap[i][j].getContainer = getContainer
 			self.baseMap[i][j]:initByBoardData(boardmap[i][j])
 			self.baseMap[i][j]:initPosBoardDataPos(boardmap[i][j])
@@ -490,7 +503,7 @@ function GameBoardView:initBaseMapByItemData(ItemMap)--初始化基本地图
 	for i=1, #ItemMap do
 		if self.baseMap[i] == nil then self.baseMap[i] = {} end		--地图显示
 		for j=1,#ItemMap[i] do
-			if self.baseMap[i][j] == nil then self.baseMap[i][j] = ItemView:create() end
+			if self.baseMap[i][j] == nil then self.baseMap[i][j] = ItemView:create(self:getViewContext()) end
 			-- self.baseMap[i][j].getContainer = getItemContainer
 			self.baseMap[i][j]:initByItemData(ItemMap[i][j])
 			self.baseMap[i][j]:initPosBoardDataPos(ItemMap[i][j], true)
@@ -629,7 +642,7 @@ function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode
 		for i = startRowIndex, #gameItemMap do
 			if self.digBaseMap[i] == nil then self.digBaseMap[i] = {} end
 			for j = 1, #gameItemMap[i] do
-				if self.digBaseMap[i][j] == nil then self.digBaseMap[i][j] = ItemView:create() end
+				if self.digBaseMap[i][j] == nil then self.digBaseMap[i][j] = ItemView:create(self:getViewContext()) end
 				self.digBaseMap[i][j].getContainer = getItemContainer
 				self.digBaseMap[i][j]:initByBoardData(boardMap[i][j])
 				self.digBaseMap[i][j]:initByItemData(gameItemMap[i][j])
@@ -774,6 +787,10 @@ function GameBoardView:paintBorder(boardMap)
 	local sideB = GamePlayConfig_Tile_BorderWidth
 	local maxHeight = sideV * (GamePlayConfig_Max_Item_Y - 1)
 
+	local function isBoardWithoutBg(r,c)
+		return not boardMap[r][c].isUsed or boardMap[r][c].isMoveTile
+	end
+
 	for i = 1, #boardMap do
 		for j = 1, #boardMap[i] do
 			local function createSprite(frameName, x, y, scaleX, scaleY, rotation)
@@ -786,41 +803,41 @@ function GameBoardView:paintBorder(boardMap)
 				return sprite
 			end
 			local x, y, w, h
-			if boardMap[i][j].isUsed then
+			if boardMap[i][j].isUsed and not boardMap[i][j].isMoveTile then
 				self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("tile_center.png", 
 					self.baseMap[i][j].pos_x - sideH / 2, self.baseMap[i][j].pos_y - sideV / 2, 1, 1, 0))
 
-				if j <= 1 or not boardMap[i][j - 1].isUsed then -- 左
+				if j <= 1 or isBoardWithoutBg(i, j - 1) then -- 左
 					self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_edge_long.png", self.baseMap[i][j].pos_x -
 						sideH / 2, self.baseMap[i][j].pos_y - sideV / 2, 1, 1, 270))
 				end
-				if i <= 1 or not boardMap[i - 1][j].isUsed then -- 上
+				if i <= 1 or isBoardWithoutBg(i-1, j) then -- 上
 					local accWidth = side1
 					local widthScale = 1
-					if i > 1 and j < #boardMap[i] and boardMap[i - 1][j + 1].isUsed then
+					if i > 1 and j < #boardMap[i] and not isBoardWithoutBg(i-1, j+1) then
 						widthScale = (sideH - sideB) / sideH
 					end
 					self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_edge_long.png", self.baseMap[i][j].pos_x -
 						sideH / 2, self.baseMap[i][j].pos_y + sideV / 2, widthScale, 1, 0))
 				end
-				if j >= #boardMap[i] or not boardMap[i][j + 1].isUsed then -- 右
+				if j >= #boardMap[i] or isBoardWithoutBg(i, j+1) then -- 右
 					local finY = self.baseMap[i][j].pos_y + sideV / 2
 					local finHeight = sideV
-					if i > 1 and j < #boardMap[i] and boardMap[i - 1][j + 1].isUsed then
+					if i > 1 and j < #boardMap[i] and not isBoardWithoutBg(i-1, j+1) then
 					 	finY = finY - sideB
 					 	finHeight = sideV - sideB
 					end
-					if i < #boardMap and j < #boardMap[i] and boardMap[i + 1][j + 1].isUsed then
+					if i < #boardMap and j < #boardMap[i] and not isBoardWithoutBg(i+1, j+1) then
 						finHeight = finHeight - sideB
 					end
 					local heightScale = finHeight / sideH
 					self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_edge_long.png", self.baseMap[i][j].pos_x +
 						sideH / 2, finY, heightScale, 1, 90))
 				end
-				if i >= #boardMap or not boardMap[i + 1][j].isUsed then -- 下
+				if i >= #boardMap or isBoardWithoutBg(i+1, j) then -- 下
 					local finX = self.baseMap[i][j].pos_x + sideH / 2
 					local widthScale = 1
-					if i < #boardMap and j < #boardMap[i] and boardMap[i + 1][j + 1].isUsed then
+					if i < #boardMap and j < #boardMap[i] and not isBoardWithoutBg(i+1, j+1) then
 						finX = finX - sideB
 						widthScale = (sideH - sideB) / sideH
 					end
@@ -836,44 +853,44 @@ function GameBoardView:paintBorder(boardMap)
 					end
 				end
 
-				if i <= 1 or j <= 1 or not boardMap[i - 1][j - 1].isUsed then -- 左上
-					if (i<= 1 or not boardMap[i - 1][j].isUsed) and (j <= 1 or not boardMap[i][j - 1].isUsed) then
+				if i <= 1 or j <= 1 or isBoardWithoutBg(i-1, j-1) then -- 左上
+					if (i<= 1 or isBoardWithoutBg(i-1,j)) and (j <= 1 or isBoardWithoutBg(i,j-1)) then
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_corner.png", self.baseMap[i][j].pos_x -
 							sideH / 2 - sideB, self.baseMap[i][j].pos_y + sideV / 2, 1, 1, 0))
 					end
 				end
-				if i >= #boardMap or j <= 1 or not boardMap[i + 1][j - 1].isUsed then -- 左下
-					if (i >= #boardMap or not boardMap[i + 1][j].isUsed) and (j <= 1 or not boardMap[i][j - 1].isUsed) then
+				if i >= #boardMap or j <= 1 or isBoardWithoutBg(i+1, j-1) then -- 左下
+					if (i >= #boardMap or isBoardWithoutBg(i+1,j)) and (j <= 1 or isBoardWithoutBg(i, j-1)) then
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_corner.png", self.baseMap[i][j].pos_x -
 							sideH / 2, self.baseMap[i][j].pos_y - sideH / 2 - sideB, 1, 1, 270))
 					end
 				end
-				if i > 1 and j < #boardMap and boardMap[i - 1][j + 1].isUsed then -- 右上
-					if not boardMap[i - 1][j].isUsed then -- 右上偏上凹角
+				if i > 1 and j < #boardMap and not isBoardWithoutBg(i-1, j+1) then -- 右上
+					if isBoardWithoutBg(i-1, j) then -- 右上偏上凹角
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_in_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2 - 2 * sideB, self.baseMap[i][j].pos_y + sideH / 2 + sideB, 1, 1, 0))
 					end
-					if not boardMap[i][j + 1].isUsed then -- 右上偏右凹角
+					if isBoardWithoutBg(i, j+1) then -- 右上偏右凹角
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_in_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2 + 2 * sideB, self.baseMap[i][j].pos_y + sideH / 2 - sideB, 1, 1, 180))
 					end
 				else
-					if (i <= 1 or not boardMap[i - 1][j].isUsed) and (j >= #boardMap[i] or not boardMap[i][j + 1].isUsed) then
+					if (i <= 1 or isBoardWithoutBg(i-1, j)) and (j >= #boardMap[i] or isBoardWithoutBg(i, j+1)) then
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2, self.baseMap[i][j].pos_y + sideH / 2 + sideB, 1, 1, 90))
 					end
 				end
-				if i < #boardMap and j < #boardMap[i] and boardMap[i + 1][j + 1].isUsed then -- 右下
-					if not boardMap[i + 1][j].isUsed then -- 右下偏下凹角
+				if i < #boardMap and j < #boardMap[i] and not isBoardWithoutBg(i+1, j+1) then -- 右下
+					if isBoardWithoutBg(i+1, j) then -- 右下偏下凹角
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_in_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2 - sideB, self.baseMap[i][j].pos_y - sideH / 2 - 2 * sideB, 1, 1, 270))
 					end
-					if not boardMap[i][j + 1].isUsed then -- 右下偏右凹角
+					if isBoardWithoutBg(i, j+1) then -- 右下偏右凹角
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_in_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2 + sideB, self.baseMap[i][j].pos_y - sideH / 2 + 2 * sideB, 1, 1, 90))
 					end
 				else
-					if (i >= #boardMap or not boardMap[i + 1][j].isUsed) and (j >= #boardMap[i] or not boardMap[i][j + 1].isUsed) then
+					if (i >= #boardMap or isBoardWithoutBg(i+1, j)) and (j >= #boardMap[i] or isBoardWithoutBg(i, j+1)) then
 						self.showPanel[ItemSpriteType.kBackground]:addChild(createSprite("map_tile_corner.png", self.baseMap[i][j].pos_x +
 							sideH / 2 + sideB, self.baseMap[i][j].pos_y - sideH / 2, 1, 1, 180))
 					end

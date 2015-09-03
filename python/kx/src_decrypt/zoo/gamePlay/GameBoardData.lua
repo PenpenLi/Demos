@@ -61,6 +61,7 @@ TransmissionColor = table.const{
 
 function GameBoardData:ctor()
 	self.isUsed = false; 	--是否可用
+	self.isMoveTile = false; -- 是否是移动地块
 	self.isProducer = false;	--是否可以掉落出东西（生产）
 	self.iceLevel = 0;		--冰层厚度
 	self.passType = 0;		--没有通道，1=上方有[出口]，2=下方有[入口]，3=上方有[出口]且下方有[入口]
@@ -111,66 +112,125 @@ function GameBoardData:ctor()
 	self.honeySubSelect = false
 end
 
+function GameBoardData:resetDatas()
+	self.isUsed = false; 	--是否可用
+	self.isMoveTile = false; -- 是否是移动地块
+	self.isProducer = false;	--是否可以掉落出东西（生产）
+	self.iceLevel = 0;		--冰层厚度
+	self.passType = 0;		--没有通道，1=上方有[出口]，2=下方有[入口]，3=上方有[出口]且下方有[入口]
+	self.passExitPoint_x = 0;
+	self.passExitPoint_y = 0;	--连接的通道出口位置
+	self.passEnterPoint_x = 0;
+	self.passEnterPoint_y = 0;	--连接的通道入口位置
+	self.isCollector = false; --能否掉出豆荚--收集口
+	self.ropetype = 0;		--没有绳子 1=上方 2=下方 4=左方 8=右方<待定>
+	self.isBlock = false;	--是block类型<毒液、雪花、牢笼>
+	self.tileBlockType = 0;   --特殊地格类型 0=普通地格 1 = 翻转地格
+	self.isReverseSide = false    --所在地块是否被翻转
+	self.reverseCount = nil
+	self.sandLevel = 0 	-- 流沙等级
+
+	self.snailRoadType = 0   --蜗牛轨迹
+	self.isSnailProducer = false --蜗牛生成口
+	self.isSnailCollect  = false --蜗牛收集口
+	self.nextSnailRoad = nil
+	self.isSnailRoadBright = false
+	self.snailTargetCount = 0
+	self.snailRoadViewRotation = nil
+	self.snailRoadViewType = nil
+
+	self.isRabbitProducer = false -- 兔子生成口
+
+	self.transType = TransmissionType.kNone
+	self.transColor =TransmissionColor.kNone
+	self.transDirect  = TransmissionDirection.kNone
+	self.transLink = nil
+
+	self.gameModeId = nil
+	self.seaAnimalType = nil
+
+	self.isNeedUpdate = false;
+	self.theGameBoardFallType = {};
+	self.isMagicTileAnchor = false
+	self.magicTileId = nil
+	self.remainingHit = nil
+	self.chains = {}
+	self.showType = 0
+	self.honeySubSelect = false
+	self.tileMoveCountDown = 0
+	self.tileMoveReverse = false
+	self.tileMoveMeta = nil
+end
+
+function GameBoardData.copyDatasFrom(toData, fromData)
+	if type(fromData) ~= "table" then return end
+	
+	toData.isUsed 		= fromData.isUsed
+	toData.isMoveTile 	= fromData.isMoveTile
+	toData.isProducer		= fromData.isProducer
+	toData.iceLevel		= fromData.iceLevel
+	toData.passType		= fromData.passType
+	toData.passEnterPoint_x	= fromData.passEnterPoint_x
+	toData.passEnterPoint_y	= fromData.passEnterPoint_y
+	toData.passExitPoint_x	= fromData.passExitPoint_x
+	toData.passExitPoint_y	= fromData.passExitPoint_y
+	toData.isCollector	= fromData.isCollector
+	toData.ropetype		= fromData.ropetype
+	toData.isBlock		= fromData.isBlock
+	toData.tileBlockType = fromData.tileBlockType
+	toData.isReverseSide = fromData.isReverseSide
+	toData.reverseCount  = fromData.reverseCount
+	toData.sandLevel		= fromData.sandLevel
+
+	toData.isNeedUpdate = fromData.isNeedUpdate
+	toData.theGameBoardFallType = {}
+
+	toData.snailRoadType = fromData.snailRoadType   --蜗牛轨迹
+	toData.isSnailProducer = fromData.isSnailProducer
+	toData.isSnailCollect = fromData.isSnailCollect
+	toData.snailTargetCount = fromData.snailTargetCount
+	toData.snailRoadViewRotation = fromData.snailRoadViewRotation
+	toData.snailRoadViewType = fromData.snailRoadViewType
+
+	toData.isRabbitProducer = fromData.isRabbitProducer -- 兔子生成口
+	toData.transType = fromData.transType
+	toData.transDirect = fromData.transDirect
+	toData.transLink = fromData.transLink
+	toData.transColor = fromData.transColor
+	
+	for k, fallType in pairs(fromData.theGameBoardFallType) do
+		toData.theGameBoardFallType[k] = fallType
+	end
+
+	toData.gameModeId = fromData.gameModeId
+	toData.seaAnimalType = fromData.seaAnimalType
+	toData.isMagicTileAnchor = fromData.isMagicTileAnchor
+	toData.magicTileId = fromData.magicTileId
+	toData.remainingHit = fromData.remainingHit
+	toData.isHitThisRound = fromData.isHitThisRound
+
+	toData.chains = {}
+	for dir, chain in pairs(fromData.chains) do
+		toData.chains[dir] = {direction = dir, level = chain.level}
+	end
+
+	toData.showType = fromData.showType
+	toData.honeySubSelect = fromData.honeySubSelect
+	toData.tileMoveCountDown = fromData.tileMoveCountDown
+	toData.tileMoveReverse = fromData.tileMoveReverse
+	toData.tileMoveMeta = fromData.tileMoveMeta
+end
+
 function GameBoardData:copy()
 	local v = GameBoardData.new()
 	v:initData()
 
-	v.isUsed 		= self.isUsed
-	v.isProducer		= self.isProducer
-	v.iceLevel		= self.iceLevel
-	v.passType		= self.passType
-	v.passEnterPoint_x	= self.passEnterPoint_x
-	v.passEnterPoint_y	= self.passEnterPoint_y
-	v.passExitPoint_x	= self.passExitPoint_x
-	v.passExitPoint_y	= self.passExitPoint_y
-	v.isCollector	= self.isCollector
-	v.ropetype		= self.ropetype
-	v.isBlock		= self.isBlock
-	v.tileBlockType = self.tileBlockType
-	v.isReverseSide = self.isReverseSide
-	v.reverseCount  = self.reverseCount
-	v.sandLevel		= self.sandLevel
+	v.x = self.x
+	v.y = self.y
+	v.w = self.w
+	v.h = self.h
 
-	v.x 			= self.x
-	v.y 			= self.y
-	v.w 			= self.w
-	v.h 			= self.h
-
-	v.isNeedUpdate = self.isNeedUpdate
-	v.theGameBoardFallType = {}
-
-	v.snailRoadType = self.snailRoadType   --蜗牛轨迹
-	v.isSnailProducer = self.isSnailProducer
-	v.isSnailCollect = self.isSnailCollect
-	v.snailTargetCount = self.snailTargetCount
-	v.snailRoadViewRotation = self.snailRoadViewRotation
-	v.snailRoadViewType = self.snailRoadViewType
-
-	v.isRabbitProducer = self.isRabbitProducer -- 兔子生成口
-	v.transType = self.transType
-	v.transDirect = self.transDirect
-	v.transLink = self.transLink
-	v.transColor = self.transColor
-	
-	for k, fallType in pairs(self.theGameBoardFallType) do
-		v.theGameBoardFallType[k] = fallType
-	end
-
-	v.gameModeId = self.gameModeId
-	v.seaAnimalType = self.seaAnimalType
-	v.isMagicTileAnchor = self.isMagicTileAnchor
-	v.magicTileId = self.magicTileId
-	v.remainingHit = self.remainingHit
-	v.isHitThisRound = self.isHitThisRound
-
-	v.chains = {}
-	for dir, chain in pairs(self.chains) do
-		v.chains[dir] = {direction = dir, level = chain.level}
-	end
-
-	v.showType = self.showType
-	v.honeySubSelect = self.honeySubSelect
-
+	v:copyDatasFrom(self)
 	return v
 end
 
@@ -251,15 +311,26 @@ function GameBoardData:initByConfig(tileDef)
 	  		self.chains[v.direction] = v
 	  	end
   	end
-  	-- if table.size(self.chains) > 0 then
-	  	-- print("getChainsMeta:"..table.tostring(self.chains))
-	-- end
+  	
+  	if tileDef:hasProperty(TileConst.kMoveTile) then self.isMoveTile = true end
 
 	if tileDef:hasProperty(TileConst.kTileBlocker) then 
 		self.tileBlockType = 1 self.reverseCount = 3 
 	elseif tileDef:hasProperty(TileConst.kTileBlocker2) then
 		self.tileBlockType = 1 self.reverseCount = 3 self.isReverseSide = true
 	end  --翻转地格
+end
+
+function GameBoardData:onUseMoves()
+	self.tileMoveCountDown = self.tileMoveCountDown - 1
+end
+
+function GameBoardData:resetMoveTileData()
+	self.tileMoveCountDown = self.tileMoveMeta.moveCountDown or 1
+end
+
+function GameBoardData:checkTileCanMove()
+	return self.isMoveTile and self.tileMoveCountDown <= 0
 end
 
 function GameBoardData:setTransmissionConfig(transType, transDirection, transColor, link)
@@ -273,6 +344,15 @@ function GameBoardData:changeDataAfterTrans(gameBoardData)
 	self.iceLevel = gameBoardData.iceLevel
 	self.sandLevel = gameBoardData.sandLevel
 	self.isNeedUpdate = true
+end
+
+function GameBoardData:initTileMoveByConfig(tileMoveConfig)
+	if tileMoveConfig then
+		local tileMoveMeta = tileMoveConfig:findTileMoveMetaByPos(self.y, self.x)
+		-- print("initTileMoveByConfig:", self.y, self.x, table.tostring(tileMoveMeta))
+		self.tileMoveMeta = tileMoveMeta
+		self:resetMoveTileData()
+	end
 end
 
 function GameBoardData:initSnailRoadDataByConfig( tileDef )
@@ -494,4 +574,29 @@ function GameBoardData:initUnlockAreaDropDownModeInfo( ... )
 	if self.isCollector then 
 		self.showType = IngredientShowType.kAcorn
 	end
+end
+
+function GameBoardData:isBigMonsterEffectPrior1( ... )
+	-- body
+	if 	self.iceLevel > 0  
+		or self.sandLevel > 0 then 
+		return true
+	else
+		return false
+	end
+end
+
+function GameBoardData:isBigMonsterEffectPrior2( ... )
+	-- body
+	if self:hasChains() 
+		or self.snailRoadType > 0 then
+		return true
+	else
+		return false
+	end
+end
+
+function GameBoardData:isBigMonsterEffectPrior3( ... )
+	-- body
+	return false
 end

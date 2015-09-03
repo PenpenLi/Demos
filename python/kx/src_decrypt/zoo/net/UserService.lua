@@ -17,7 +17,6 @@ function UserService:getInstance()
 
 		--local storage
 		instance.httpData = HttpDataInfo.new()
-		if __WP8 then instance.ingameHttpData = HttpDataInfo.new() end
 		instance.levelDataInfo = LevelDataInfo.new()
 		instance.metals = {}
 	end
@@ -53,7 +52,6 @@ function UserService:encode()
 	dst.ladyBugInfos = encodeListDataRef(self.ladyBugInfos)
 
 	dst.httpData = self.httpData:encode()
-	if __WP8 then dst.ingameHttpData = self.ingameHttpData:encode() end
 	dst.levelDataInfo = self.levelDataInfo:encode()
 	dst.metals = self.metals
 	
@@ -69,6 +67,7 @@ function UserService:encode()
 	dst.timeProps = encodeListDataRef(self.timeProps)
 
 	dst.userType = self.userType
+	dst.setting = self.setting
 
 	return dst
 end
@@ -87,12 +86,6 @@ function UserService:decodeLocalStorageData( userData )
 		self.httpData = HttpDataInfo.new()
 		self.httpData:fromLua(httpData)
 
-		if __WP8 then
-			local ingameHttpData = userData.ingameHttpData
-			self.ingameHttpData = HttpDataInfo.new()
-			self.ingameHttpData:fromLua(ingameHttpData)
-		end
-
 		local levelDataInfo = userData.levelDataInfo
 		--print("levelDataInfo"..table.tostring(levelDataInfo))
 		self.levelDataInfo = LevelDataInfo.new()
@@ -106,9 +99,6 @@ end
 
 function UserService:clearCachedHttp()
 	self.httpData = HttpDataInfo.new()
-end
-function UserService:clearCachedIngameHttp()
-	self.ingameHttpData = ingameHttpData.new()
 end
 local function indexOfHttpData( indexID, httpDataAlreadySent )
 	if httpDataAlreadySent and #httpDataAlreadySent > 0 then
@@ -128,19 +118,6 @@ function UserService:clearUsedHttpCache(httpDataAlreadySent)
 	end
 	self.httpData = HttpDataInfo.new()
 	self.httpData.list = list
-
-	if __WP8 then
-		list = {}
-		local ingameHttpData = self.ingameHttpData:encode()
-		for i,element in ipairs(ingameHttpData) do 
-			if element and not indexOfHttpData(element.id, httpDataAlreadySent) then
-				table.insert(list, element) 
-			end
-		end
-		self.ingameHttpData = HttpDataInfo.new()
-		self.ingameHttpData.list = list
-	end
-
 end
 
 function UserService:setCachedHttp(httpData)
@@ -148,28 +125,12 @@ function UserService:setCachedHttp(httpData)
 	self.httpData.list = httpData
 end
 
-function UserService:setCachedIngameHttp(ingameHttpData)
-	self.ingameHttpData = HttpDataInfo.new()
-	self.ingameHttpData.list = ingameHttpData
-end
-
 function UserService:getCachedHttpData()
 	return self.httpData:encode()
 end
-function UserService:getCachedIngameHttpData()
-	return self.ingameHttpData:encode()
-end
 function UserService:cacheHttp( endpoint, body )
 	local serialized = table.serialize(body)
-	if __WP8 then
-		if endpoint == "ingame" then -- ingame requests
-			self.ingameHttpData:add(endpoint, table.deserialize(serialized))
-		else -- common requests
-			self.httpData:add(endpoint, table.deserialize(serialized))
-		end
-	else
-		self.httpData:add(endpoint, table.deserialize(serialized)) --deep clone object
-	end
+	self.httpData:add(endpoint, table.deserialize(serialized)) --deep clone object
 end
 
 function UserService:initialize()
@@ -195,20 +156,16 @@ function UserService:setSyncSerial(syncSerial)
 	self.syncSerial = syncSerial
 end
 
-function UserService:getSyncSerial(syncSerial)
+function UserService:getSyncSerial()
 	return self.syncSerial
 end
 
 function UserService:syncLocal()
 	local requests = {}
-	if __WP8 then
-		local list = self:getCachedIngameHttpData()
-		for k, v in ipairs(list) do table.insert(requests, v) end
-	end
 	local list = self:getCachedHttpData()
 	for k, v in ipairs(list) do table.insert(requests, v) end
 	if #requests <= 0 then return end
-	local successedIngame, successed = {}, {}
+	local successed = {}
 	for i, element in ipairs(requests) do
 		local success = true
 		local body = element.body
@@ -230,14 +187,9 @@ function UserService:syncLocal()
 			success = Localhost:buy(body.goodsId, body.num, body.moneyType, body.targetId)
 		end
 		if not success then break end
-		if __WP8 and element.endpoint == "ingame" then
-			table.insert(successedIngame, element)
-		else
-			table.insert(successed, element)
-		end
+		table.insert(successed, element)
 	end
 	self:setCachedHttp(successed)
-	if __WP8 then self:setCachedIngameHttp(successedIngame) end
 	local user = self.user
 	local scores = self.scores
 	local props = self.props

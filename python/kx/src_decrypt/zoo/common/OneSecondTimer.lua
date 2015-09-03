@@ -28,8 +28,8 @@ end
 
 function OneSecondTimer:start(...)
 	assert(#{...} == 0)
-
 	assert(self.started == false)
+	
 	self.started = true
 
 	local function oneSecondTimer()
@@ -41,10 +41,12 @@ end
 
 function OneSecondTimer:stop(...)
 	assert(#{...} == 0)
-
 	assert(self.started == true)
-	self.started = false
-	self.scheduler:unscheduleScriptEntry(self.scriptFunc)
+
+	if self.started == true then
+		self.started = false
+		self.scheduler:unscheduleScriptEntry(self.scriptFunc)
+	end
 end
 
 

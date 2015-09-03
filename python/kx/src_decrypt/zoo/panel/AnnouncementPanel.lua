@@ -3,6 +3,7 @@ local fontName = "Droid Sans Fallback"
 local fontSize = 30.0
 local fontColor = ccc3(00,0x33,00)
 
+
 AnnouncementPanel = class(BasePanel)
 
 local configPath = HeResPathUtils:getUserDataPath() .. "/AnnouncementConfig" 
@@ -43,7 +44,6 @@ function AnnouncementPanel:dispose( ... )
 	BasePanel.dispose(self)
 end
 
-
 function AnnouncementPanel:init( announcements,preloadingScene )
 	print("AnnouncementPanel:init")
 
@@ -57,93 +57,80 @@ function AnnouncementPanel:init( announcements,preloadingScene )
 	config.lastPopout = os.time()
 	writeConfig(config)
 
-	self.ui = self:buildInterfaceGroup("AnnouncementPanel/panel")
+	self.ui = self:buildInterfaceGroup("AnnouncementPanel/panel2")
 	BasePanel.init(self, self.ui)
 
 	local visibleSize = Director.sharedDirector():getVisibleSize()
 	local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
 
 	local bg = self.ui:getChildByName("bg")
-
-	local toHeight = nil
-	if preloadingScene.startButton then 	
-		local btnPosY = preloadingScene.startButton:getGroupBounds().origin.y - visibleOrigin.y
-		toHeight = visibleSize.height - 2 * btnPosY
-	elseif preloadingScene.blueButton then 
-		local btnPosY = preloadingScene.blueButton:getGroupBounds().origin.y - visibleOrigin.y
-		toHeight = visibleSize.height - 2 * btnPosY	
-	end
-
-	if toHeight then  
-		local diff = bg:getPreferredSize().height - toHeight
-		bg:setPreferredSize(CCSizeMake(bg:getPreferredSize().width,toHeight))
-
-		for k,v in pairs({
-			self.ui:getChildByName("btn"),
-			self.ui:getChildByName("l"),
-			self.ui:getChildByName("r")
-		}) do
-			v:setPositionY(v:getPositionY() + diff)
-		end
-	end
 	local size = bg:getGroupBounds().size
 
-
-
-	local btn = GroupButtonBase:create(self.ui:getChildByName("btn"))
-	btn:setEnabled(true)
-	btn:setString("知道了")
+	local btn = self.ui:getChildByName('closeButton')
+	btn:setTouchEnabled(true)
 	btn:addEventListener(DisplayEvents.kTouchTap,function(event) self:onKeyBackClicked() end)
 
-	local title = BitmapText:create("村长的来信", "fnt/titles.fnt")
-	title:setAnchorPoint(ccp(0.5,1))
-	title:setPositionX(size.width/2)
-	title:setPositionY(-15)
-	self.ui:addChild(title)
+	local title = self.ui:getChildByName('title')
+
+
+
 
 	local tableWidth = size.width - 60
-	local tableHeight = title:getGroupBounds():getMinY() - btn:getGroupBounds():getMaxY() - 60
+	local tableHeight = size.height - 160
 
 	for i,v in ipairs(announcements) do
 		table.insert(self.cells,self:buildCell(i,v,tableWidth))
 	end
 
-	self.tableView = self:buildTableView(tableWidth,tableHeight)
-	self.tableView:ignoreAnchorPointForPosition(false)
-	self.tableView:setAnchorPoint(ccp(0.5,1))
-	self.tableView:setPositionX(size.width/2)
-	self.tableView:setPositionY(title:getGroupBounds():getMinY() - 30)
-
-	self.ui:addChild(self.tableView)
-
-	if self.tableView:getContentSize().height <= tableHeight then 
-		self.tableView:setTouchEnabled(false)
+	local function setPanelHeight(height)
+		local originalSize = self.ui:getGroupBounds().size
+		local originalHeight = originalSize.height
+		local originalWidth = originalSize.width
+		local scale = height / originalHeight
+		local diffHeight = height - originalHeight
+		self.ui:getChildByName('bg'):setPreferredSize(CCSizeMake(originalWidth, height))
+		self.ui:getChildByName('bottom_deco'):setPositionY(self.ui:getChildByName('bottom_deco'):getPositionY() - diffHeight)
+		self.ui:getChildByName('stamp'):setPositionY(self.ui:getChildByName('stamp'):getPositionY() - diffHeight)
+		self.ui:getChildByName('left_deco'):setScaleY(scale)
+		self.ui:getChildByName('right_deco'):setScaleY(scale)
 	end
 
+	local extendPanelHeight = 150
+	-- topMargin是为了不挡住上面“开心消消乐”字样
+	if #announcements == 1 then
+		self.topMargin = 500
+	else -- 多于一条的时候，面板略微拉长
+		self.topMargin = 400
+		tableHeight = tableHeight + extendPanelHeight
+		setPanelHeight(size.height + extendPanelHeight)
+	end
+
+	self.tableView = self:buildTableView(tableWidth,tableHeight)
+	self.tableView:setPositionX(700/2 - tableWidth/2 + 10) -- 微调
+	self.tableView:setPositionY(title:getPositionY() - 100)
+
+	self.ui:addChild(self.tableView)
 end
 
 function AnnouncementPanel:buildTableView(width,height)
-	local tableViewRender = 
-	{
-		setData = function () end
-	}
-	local context = self
-	function tableViewRender:getContentSize(tableView,idx)
-		return context.cells[idx + 1]:getContentSize()
-	end
-	function tableViewRender:numberOfCells()
-		return #context.cells
-	end
-	function tableViewRender:buildCell(cell,idx)
-		local cellItem = context.cells[idx + 1]
-
-		cellItem.refCocosObj:removeFromParentAndCleanup(false)
-		
-		cell.refCocosObj:addChild(cellItem.refCocosObj)
+	local layout = VerticalTileLayout:create(width)
+	for k, v in pairs(self.cells) do 
+		local item = ItemInClippingNode:create()
+		item:setContent(v)
+		v:setAnchorPoint(ccp(0, 0))
+		-- item:setHeight(300)
+		item:setParentView(container)
+		layout:addItem(item)
 	end
 
-	local tableView = TableView:create(tableViewRender,width,height)
-	return tableView
+	local layoutHeight = layout:getHeight()
+	if layoutHeight > height then		
+		local container = VerticalScrollable:create(width, height, true, false)
+		container:setContent(layout)
+		return container
+	else
+		return layout
+	end
 end
 
 function AnnouncementPanel:buildCell(i,announcement,width)
@@ -162,14 +149,9 @@ function AnnouncementPanel:buildCell(i,announcement,width)
 		linkLine:setScaleX(linkText:getContentSize().width/linkLine:getContentSize().width)
 		local linkSize = link:getGroupBounds().size
 
-		container:setContentSize(CCSizeMake(
-			text:getContentSize().width,
-			text:getContentSize().height + linkSize.height + 35
-		))
-
 		text:setPositionX(0)
 		text:setPositionY(linkSize.height + 35)
-		link:setPositionX(container:getContentSize().width - linkSize.width)
+		link:setPositionX(text:getGroupBounds().size.width - linkSize.width - 10) -- 微调
 		link:setPositionY(linkSize.height + 30)
 
 		container:addChild(text)
@@ -195,10 +177,6 @@ function AnnouncementPanel:buildCell(i,announcement,width)
 		end
 
 	else
-		container:setContentSize(CCSizeMake(
-			text:getContentSize().width,
-			text:getContentSize().height + 30
-		))
 		text:setAnchorPoint(ccp(0,0))
 		text:setPositionX(0)
 		text:setPositionY(30)
@@ -207,20 +185,16 @@ function AnnouncementPanel:buildCell(i,announcement,width)
 
 	end
 
-	-- local num = TextField:create(i .. "22.",fontName,fontSize)
-	-- num:setColor(fontColor)
-	-- num:setAnchorPoint(ccp(1,1))
-	-- num:setPositionX(20)
-	-- num:setPositionY(container:getContentSize().height)
-	-- container:addChild(num)
-
-	return container
+	local newContainer = Layer:create()
+	newContainer:addChild(container)
+	container:setPositionY(0-container:getGroupBounds().size.height)
+	return newContainer
 end
 
 function AnnouncementPanel.loadAnnouncement( callback )
 	
 	local config = readConfig()
-	if os.time() - (config.lastPopout or 0) < 24 * 3600 then 
+	if os.time() - (config.lastPopout or 0) < 24 * 3600 and false then 
 		callback(nil)
 		return
 	end
@@ -235,13 +209,23 @@ function AnnouncementPanel.loadAnnouncement( callback )
 
 	local url = NetworkConfig.maintenanceURL
 	local uid = UserManager.getInstance().uid
-	local params = string.format("?name=announcement&uid=%s&_v=%s", uid, _G.bundleVersion)
+
+	local params = string.format("?name=announcement&_v=%s", _G.bundleVersion)
 	url = url .. params
 	print(url)
 
 	local request = HttpRequest:createGet(url)
-    request:setConnectionTimeoutMs(1 * 1000)
-    request:setTimeoutMs(3 * 1000)
+
+	local timeout = 3
+  	local connection_timeout = 2
+
+  	if __WP8 then 
+    	timeout = 30
+    	connection_timeout = 5
+  	end
+
+    request:setConnectionTimeoutMs(connection_timeout * 1000)
+    request:setTimeoutMs(timeout * 1000)
 
     if not PrepackageUtil:isPreNoNetWork() then 
    		HttpClient:getInstance():sendRequest(onCallback, request)
@@ -374,17 +358,6 @@ function AnnouncementPanel:buildRichText(text,width)
 
 	local container = CCNode:create()
 
-	-- do 
-		-- local label = CCLabelTTF:create(text,fontName,fontSize,CCSizeMake(width,0),kCCTextAlignmentLeft)
-		-- label:setAnchorPoint(ccp(0,0))
-		-- label:setPosition(ccp(0,0))
-		-- label:setColor(ccc3(00,0x33,00))
-		-- container:setContentSize(label:getContentSize())
-		-- container:addChild(label)
-
-		-- return CocosObject.new(container)
-	-- end
-
 	-- text = string.rep("有个事通知你一下，村长表示明天可以出院了。1232132.",1)
 	-- text = string.rep("有个事通知[#FFFF00]你一下，村长[#FF0000]表示明天可以出院了。12[/#]32132.[/#]",10)
 	-- text = "[#FF0000]" .. text .. "[/#]1232"
@@ -394,9 +367,6 @@ function AnnouncementPanel:buildRichText(text,width)
 		{ text=text,color="003300" }
 	}
 	while #stack > 0 do 
-
-		-- print("stack",table.tostring(stack))
-		-- print("list",table.tostring(list))
 
 		local s2,e2 = string.find(stack[#stack].text,"%[/#%]")
 		if not s2 then 
@@ -425,133 +395,128 @@ function AnnouncementPanel:buildRichText(text,width)
 		end
 
 	end
+	
 	list = table.filter(list,function( v ) return string.len(v.text) > 0 end)
 
-	if #list == 1 then 
-		local label = CCLabelTTF:create(list[1].text,fontName,fontSize,CCSizeMake(width,0),kCCTextAlignmentLeft)
+	local posX=0
+	local posY=0
+	local labels = {}
+	local lineHeight = nil
+
+	local function addLabel( label )
 		label:setAnchorPoint(ccp(0,0))
-		label:setPosition(ccp(0,0))
-		label:setColor(HeDisplayUtil:ccc3FromUInt(tonumber(list[1].color,16)))
-		container:setContentSize(label:getContentSize())
+		label:setPositionX(posX)
+		label:setPositionY(posY)
+
 		container:addChild(label)
-	else
-		local posX=0
-		local posY=0
-		local labels = {}
-		local lineHeight = nil
-
-		local function addLabel( label )
-			label:setAnchorPoint(ccp(0,0))
-			label:setPositionX(posX)
-			label:setPositionY(posY)
-
-			container:addChild(label)
-			if not lineHeight then 
-				lineHeight = label:getContentSize().height
-			end
-
-			table.insert(labels,label)
+		if not lineHeight then 
+			lineHeight = label:getContentSize().height
 		end
 
-		for k,v in pairs(list) do
+		table.insert(labels,label)
+	end
 
-			local t = {}
-			for uchar in string.gfind(v.text, "[%z\1-\127\194-\244][\128-\191]*") do
-				t[#t + 1] = uchar
-			end
+	for k,v in pairs(list) do
 
-			local function sub( s,e )
-				local t2 = {}
-				for i=s,e do
-					t2[i-s+1] = t[i]
-				end
-				return table.concat(t2,"")
-			end
-
-			local start = 1
-			while start < #t do
-
-				local str = ""
-
-				local len = #t - start + 1
-				local _end = #t
-				local i = 2
-				local newLine = false
-				while true do 
-					newLine = false
-					local str1 = sub(start,_end)
-
-					if str1 == "" then
-						str = ""
-						_end = start - 1
-						newLine = true
-						break
-					end
-
-					local w1 = measureWidth(str1)
-  					if _end == #t and posX + w1 <= width then --or str1 == "" 
-						str = str1
-						break
-					end
-
-					local str2 = sub(start,math.min(#t,_end + 1))
-					local w2 = measureWidth(str2)
-
-					if posX + w1 <= width and posX + w2 > width then 
-						str = str1
-						newLine = true
-						break
-					end
-
-					if posX + w1 > width then 
-						_end = _end - math.ceil(len / i) 
-					elseif posX + w2 <= width then 
-						_end = _end + math.ceil(len / i)
-					end
-					i = i * 2
-				end
-				start = _end + 1
-
-
-				if str ~= "" then 
-					local label = createLabel(str)--CCLabelTTF:create(str,fontName,fontSize)
-					label:setColor(HeDisplayUtil:ccc3FromUInt(tonumber(v.color,16)))
-					addLabel(label)
-
-					posX = posX + label:getContentSize().width
-				end
-
-				if newLine then 
-					posX = 0
-					posY = posY - lineHeight
-				end
-			end
+		local t = {}
+		for uchar in string.gfind(v.text, "[%z\1-\127\194-\244][\128-\191]*") do
+			t[#t + 1] = uchar
 		end
 
-		container:setContentSize(CCSizeMake(width,math.abs(posY) + lineHeight))
-		for _,v in pairs(labels) do
-			v:setPositionY(v:getPositionY() + math.abs(posY))
+		local function sub( s,e )
+			local t2 = {}
+			for i=s,e do
+				t2[i-s+1] = t[i]
+			end
+			return table.concat(t2,"")
 		end
 
+		local start = 1
+		while start < #t do
+
+			local str = ""
+
+			local len = #t - start + 1
+			local _end = #t
+			local i = 2
+			local newLine = false
+			while true do 
+				newLine = false
+				local str1 = sub(start,_end)
+
+				if str1 == "" then
+					str = ""
+					_end = start - 1
+					newLine = true
+					break
+				end
+
+				local w1 = measureWidth(str1)
+					if _end == #t and posX + w1 <= width then --or str1 == "" 
+					str = str1
+					break
+				end
+
+				local str2 = sub(start,math.min(#t,_end + 1))
+				local w2 = measureWidth(str2)
+
+				if posX + w1 <= width and posX + w2 > width then 
+					str = str1
+					newLine = true
+					break
+				end
+
+				if posX + w1 > width then 
+					_end = _end - math.ceil(len / i) 
+				elseif posX + w2 <= width then 
+					_end = _end + math.ceil(len / i)
+				end
+				i = i * 2
+			end
+			start = _end + 1
+
+
+			if str ~= "" then 
+				local label = createLabel(str)--CCLabelTTF:create(str,fontName,fontSize)
+				label:setColor(HeDisplayUtil:ccc3FromUInt(tonumber(v.color,16)))
+				addLabel(label)
+
+				posX = posX + label:getContentSize().width
+			end
+
+			if newLine then 
+				posX = 0
+				posY = posY - lineHeight
+			end
+		end
+	end
+
+	container:setContentSize(CCSizeMake(width,math.abs(posY) + lineHeight))
+	for _,v in pairs(labels) do
+		v:setPositionY(v:getPositionY() + math.abs(posY))
 	end
 
 	return CocosObject.new(container)
 end
 
-function AnnouncementPanel:popout()
+function AnnouncementPanel:popout(closeCallback)
 	PopoutManager:sharedInstance():add(self, false, false)
 	self.allowBackKeyTap = true
 
 	local visibleSize = Director.sharedDirector():getVisibleSize()
+	local scale = visibleSize.height / 1280
 
 	local bounds = self.ui:getChildByName("bg"):getGroupBounds()
 
 	self:setPositionX(visibleSize.width/2 - bounds.size.width/2)
-	self:setPositionY(-visibleSize.height/2 + bounds.size.height/2)
-
+	self:setPositionY((0-self.topMargin) * scale)
+	self.closeCallback = closeCallback
 end
 
 function AnnouncementPanel:onKeyBackClicked()
 	PopoutManager:sharedInstance():remove(self)
 	self.allowBackKeyTap = false
+	if self.closeCallback then
+		self.closeCallback() 
+	end
 end

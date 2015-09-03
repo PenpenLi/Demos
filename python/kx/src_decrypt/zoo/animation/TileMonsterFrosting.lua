@@ -14,6 +14,19 @@ function TileMonsterFrosting:initFrostring( frostingType )
 	local str = string.format("big_monster_frosting_%04d", frostingType - 1)
 	self.mainSprite = Sprite:createWithSpriteFrameName(str)
 	self:addChild(self.mainSprite)
+
+	local star = Sprite:createWithSpriteFrameName("star_light_0000")
+	local frames = SpriteUtil:buildFrames("star_light_%04d", 0, 35)
+	local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
+	star:play(animate)
+	if frostingType == 2 then 
+		star:setScaleX(-1)
+	elseif frostingType == 3 then 
+		star:setScaleY(-1)
+	elseif frostingType == 4 then 
+		star:setScale(-1)
+	end
+	self:addChild(star)
 end
 
 function TileMonsterFrosting:playDestroyAnimation( callback )

@@ -23,7 +23,9 @@ local allGameMode =
 	"seaOrder", -- attention: 特殊情况 小写字母
     "halloween",
     "Mobile Drop down",
+    "Summer_Weekly",
 }
+
 local kGameModeType = {}
 for i,v in ipairs(allGameMode) do kGameModeType[v] = i end
 	
@@ -140,11 +142,16 @@ end
 
 function LevelMapManager:getLevelGameMode( levelId )
 	if levelId == 0 then return 0 end
+
 	local levelMeta = self:getMeta(levelId)
 	if levelMeta then
 		local gameData = levelMeta.gameData
 		if gameData then
-			return self:getLevelGameModeByName(gameData.gameModeName)
+			if LevelType:isSummerMatchLevel( levelId ) then
+				return self:getLevelGameModeByName("Summer_Weekly")
+			else
+				return self:getLevelGameModeByName(gameData.gameModeName)
+			end
 		end
 	end
 	return nil
@@ -168,6 +175,25 @@ end
 
 function LevelMapManager:isRabbitWeeklyLevel(levelId)
 	return self:getLevelGameMode(levelId) == GamePlayType.kRabbitWeekly
+end
+
+function LevelMapManager:getAllLevelId()
+	local result = {}
+	for levelId, __ in pairs(levelMap) do
+		table.insert(result, levelId)
+	end
+	return result
+end
+
+function LevelMapManager:getTotalStarNumberByAreaId( areaId )
+	-- body
+	local result = 0
+
+	for k = (areaId - 1) * 15 + 1, areaId * 15 do 
+		result = result + self:getMeta(k):getTotalStarNumber()
+	end
+
+	return result
 end
 
 --
@@ -247,4 +273,9 @@ function LevelMapMeta:fromLua( src )
 
 
 	if debugDataRef then print(self.id, self.score1, self.score2, self.score3, self.score4) end
+end
+
+function LevelMapMeta:getTotalStarNumber( ... )
+	-- body
+	return #self.gameData.scoreTargets
 end

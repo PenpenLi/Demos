@@ -147,6 +147,7 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 	elseif self.levelType == GameLevelType.kDigWeekly
 		or self.levelType == GameLevelType.kMayDay
 		or self.levelType == GameLevelType.kRabbitWeekly 
+		or self.levelType == GameLevelType.kSummerWeekly 
 		or self.levelType == GameLevelType.kTaskForRecall then
 		replayBtnTxt	= Localization:getInstance():getText('button.ok', {})
 	else
@@ -290,6 +291,10 @@ function LevelFailTopPanel:createPanelTitle(levelType, levelId)
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		elseif levelType == GameLevelType.kRabbitWeekly then
 			levelDisplayName = Localization:getInstance():getText('weekly.race.panel.rabbit.begin.title')
+			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
+			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
+		elseif levelType == GameLevelType.kSummerWeekly then
+			levelDisplayName = Localization:getInstance():getText('weeklyrace.summer.panel.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		elseif levelType == GameLevelType.kTaskForRecall or levelType == GameLevelType.kTaskForUnlockArea then

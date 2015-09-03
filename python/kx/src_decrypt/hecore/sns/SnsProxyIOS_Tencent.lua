@@ -6,6 +6,7 @@ local proxy = TencentOpenApiManager:getInstance()
 
 function SnsProxy:isLogin()
 	if not __IOS_QQ then return false end
+
 	print("SnsProxy:isLogin")
     local lastLoginUser = Localhost.getInstance():getLastLoginUserConfig()
     if not lastLoginUser then
@@ -14,6 +15,15 @@ function SnsProxy:isLogin()
 
     local userData = Localhost.getInstance():readUserDataByUserID(lastLoginUser.uid)
     if userData and userData.openId then
+
+        print("userData.snsType:"..table.tostring(userData.authorType))
+        if not userData.authorType then return false end
+        self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
+
+        if userData.authorType ~= PlatformAuthEnum.kQQ then
+        	return false
+        end
+
         return proxy:isLogin()
     end
     return false
@@ -31,7 +41,7 @@ function SnsProxy:getAuthorizeType()
 	if self.authorType then
 		return self.authorType
 	else
-		return PlatformConfig.authConfig
+		return PlatformAuthEnum.kQQ --PlatformConfig.authConfig
 	end
 end
 
@@ -131,7 +141,7 @@ function SnsProxy:inviteFriends(callback)
 end
 
 function SnsProxy:syncSnsFriend()
-	if not SnsProxy:isLogin() then
+	if not proxy:isLogin() then
 		return
 	end
 	local accInfo = proxy:getUserAccountInfo()

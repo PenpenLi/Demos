@@ -98,6 +98,10 @@ function PropsModel:_createPropsInGame(levelId, selectedItemsData, hasOctopus)
 	-- In Game Props
 	-- ---------------
 	local levelModeTypeId 	= MetaModel:sharedInstance():getLevelModeTypeId(levelId)
+	if LevelType:isSummerMatchLevel( levelId ) then
+		levelModeTypeId = GameModeTypeId.SUMMER_WEEKLY
+	end
+	
 	local inGameProp = {}
 	
 	-- 做一份拷贝
