@@ -30,7 +30,7 @@ _G.isLocalDevelopMode = StartupConfig:getInstance():isLocalDevelopMode()
 _G.bundleVersion = MetaInfo:getInstance():getApkVersion()
 _G.__use_low_effect = false
 _G.launcherVerion = 1
-_G.enableSilentDynamicUpdate = true
+_G.enableSilentDynamicUpdate = false
 _G.packageName = MetaInfo:getInstance():getPackageName() 
 _G.useSmallResConfig = false
 _G.enableMdoPayement = true
@@ -161,9 +161,5 @@ local function lowDeviceDetect()
     lowDeviceDetectProcessor:start(prePackageCheck)
 end
 
-if __ANDROID and isEmulator then
-    local builder = luajava.bindClass("com.happyelements.hellolua.share.DisplayUtil")
-    builder:toast("开心消消乐暂时不支持在模拟器上运行！")
-else
-    lowDeviceDetect()
-end
+startGameDirectly()
+

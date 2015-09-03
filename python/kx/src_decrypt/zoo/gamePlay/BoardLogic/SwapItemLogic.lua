@@ -142,68 +142,60 @@ function SwapItemLogic:_trySwapedSpecialItem(mainLogic, r1,c1,r2,c2, doSwap)--do
 
 	return false
 end
-
---判断是否有match
+--判断是否有match, lxb ^_^
 function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local data1 = mainLogic.gameItemMap[r1][c1]
 	local data2 = mainLogic.gameItemMap[r2][c2]
 	local color1 = data1.ItemColorType
 	local color2 = data2.ItemColorType
-
-	if (color1 == color2) then return false end --同样的颜色交换，没有意义
-	--1.临时性颜色交换
+	if (color1 == color2) then
+        if doSwap then -- 同样颜色=>鸟
+            SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
+            return true, {}
+        end
+        return false
+    end
 	local item1Clone = data1:copy()
 	local item2Clone = data2:copy()
 	data2:getAnimalLikeDataFrom(item1Clone)
 	data1:getAnimalLikeDataFrom(item2Clone)
-
-	--2.对Item(x,y)进行检查
 	MatchItemLogic:cleanSwapHelpMap(mainLogic)
 	local ts1, possibleMove1 = MatchItemLogic:checkMatchStep1(mainLogic, r1,c1,color2, doSwap)
 	local ts2, possibleMove2 = MatchItemLogic:checkMatchStep1(mainLogic, r2,c2,color1, doSwap)
 	local possibleMoves = {}
-
 	if ts1 then
 		possibleMove1 = table.union({{ r = r2, c = c2 }}, possibleMove1)
 		possibleMove1["dir"] = { r = r1 - r2, c = c1 - c2 }
 		table.insert(possibleMoves, possibleMove1)
 	end
-
 	if ts2 then
 		possibleMove2 = table.union({{ r = r1, c = c1 }}, possibleMove2)
 		possibleMove2["dir"] = { r = r2 - r1, c = c2 - c1 }
 		table.insert(possibleMoves, possibleMove2)
 	end
-
-	if ts1 or ts2
-		then
-		----成功合成
-		----开始修改数据
-		if doSwap then
-			-- data1.isNeedUpdate = true
-			-- data2.isNeedUpdate = true
+	if ts1 or ts2 then ----成功合成
+		if doSwap then ----开始修改数据
 			mainLogic:addNeedCheckMatchPoint(r1, c1)
 			mainLogic:addNeedCheckMatchPoint(r2, c2)
-
-			-- 仅仅有神灯的匹配会引起block的变化
 			if data1.ItemType == GameItemType.kMagicLamp or data2.ItemType == GameItemType.kMagicLamp then
 				mainLogic:checkItemBlock(r1, c1)
 				mainLogic:checkItemBlock(r2, c2)
 				FallingItemLogic:preUpdateHelpMap(mainLogic)
 			end
-		else
-			----不是真实交换，所以颜色数据返还
+		else ----不是真实交换，所以颜色数据返还
 			data1:getAnimalLikeDataFrom(item1Clone)
 			data2:getAnimalLikeDataFrom(item2Clone)
 			data1.isNeedUpdate = false
 			data2.isNeedUpdate = false
 		end
-		----清理帮助数组
 		MatchItemLogic:cleanSwapHelpMap(mainLogic)
-		
 		return true, possibleMoves
 	else
-		--回调颜色
+        if doSwap then
+            SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2)
+            SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r2, c2, r1, c1)
+            return true, {}
+        end
 		data1:getAnimalLikeDataFrom(item1Clone)
 		data2:getAnimalLikeDataFrom(item2Clone)
 		data1.isNeedUpdate = false
@@ -211,7 +203,6 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		return false
 	end
 end
-
 function SwapItemLogic:calculatePossibleSwap(mainLogic)
 	local result = {}
 	for r = 1, #mainLogic.gameItemMap do
