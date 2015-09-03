@@ -149,7 +149,7 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 	local color1 = data1.ItemColorType
 	local color2 = data2.ItemColorType
 	if (color1 == color2) then
-        if doSwap then -- 同样颜色=>鸟
+        if doSwap and data1.ItemType == GameItemType.kAnimal and data1.ItemType ~= GameItemType.kIngredient then -- 同样颜色=>鸟
             SpecialMatchLogic:MatchBirdBird(mainLogic, r1, c1, r2, c2)
             return true, {}
         end
@@ -192,9 +192,11 @@ function SwapItemLogic:_trySwapedMatchItem(mainLogic, r1, c1, r2, c2, doSwap)
 		return true, possibleMoves
 	else
         if doSwap then
-            SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2)
-            SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r2, c2, r1, c1)
-            return true, {}
+            if data2.ItemType == GameItemType.kAnimal and data2.ItemType ~= GameItemType.kIngredient and data1.ItemType == GameItemType.kAnimal and data1.ItemType ~= GameItemType.kIngredient then
+                SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2)
+                SpecialMatchLogic:BirdWrapSwapBomb(mainLogic, r2, c2, r1, c1)
+            end
+            return true, possibleMoves
         end
 		data1:getAnimalLikeDataFrom(item1Clone)
 		data2:getAnimalLikeDataFrom(item2Clone)

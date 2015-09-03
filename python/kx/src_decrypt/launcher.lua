@@ -161,5 +161,9 @@ local function lowDeviceDetect()
     lowDeviceDetectProcessor:start(prePackageCheck)
 end
 
-startGameDirectly()
-
+if __ANDROID and isEmulator then
+    local builder = luajava.bindClass("com.happyelements.hellolua.share.DisplayUtil")
+    builder:toast("开心消消乐暂时不支持在模拟器上运行！")
+else
+    lowDeviceDetect()
+end

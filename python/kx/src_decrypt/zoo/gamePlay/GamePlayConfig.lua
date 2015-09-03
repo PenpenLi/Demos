@@ -168,15 +168,15 @@ GamePlayConfig_Back_AnimTime = 0.2
 GamePlayConfig_Product_As_Clipping = true 		----!!!生产口是否用Clipping做
 
 
-GamePlayConfig_Score_SpecialBomb_kLine = 200 				----消除对应特效得到的额外分数
-GamePlayConfig_Score_SpecialBomb_kCloumn = 200
-GamePlayConfig_Score_SpecialBomb_kWrap = 250
-GamePlayConfig_Score_SpecialBomb_kBird = 300
+GamePlayConfig_Score_SpecialBomb_kLine = 2000 				----消除对应特效得到的额外分数
+GamePlayConfig_Score_SpecialBomb_kCloumn = 2000
+GamePlayConfig_Score_SpecialBomb_kWrap = 2500
+GamePlayConfig_Score_SpecialBomb_kBird = 3000
 
-GamePlayConfig_Score_SpecialCombine_kLine = 20 				----生成对应特效得到的额外分数
-GamePlayConfig_Score_SpecialCombine_kCloumn = 20
-GamePlayConfig_Score_SpecialCombine_kWrap = 30
-GamePlayConfig_Score_SpecialCombine_kBird = 60
+GamePlayConfig_Score_SpecialCombine_kLine = 200 				----生成对应特效得到的额外分数
+GamePlayConfig_Score_SpecialCombine_kCloumn = 200
+GamePlayConfig_Score_SpecialCombine_kWrap = 300
+GamePlayConfig_Score_SpecialCombine_kBird = 600
 
 GamePlayConfig_Score_Swap_LineLine = 500					----交换两个直线特效附加分数
 GamePlayConfig_Score_Swap_LineWrap = 1000 					----交换直线特效和区域特效
@@ -220,7 +220,7 @@ GamePlayConfig_BonusTime_RandomBomb_CD = 10 * GamePlayConfig_Action_FPS_Time_Sca
 GamePlayConfig_BonusTime_ItemFlying_CD = 8 * GamePlayConfig_Action_FPS_Time_Scale				----两个飞行特效之间的间隔
 GamePlayConfig_BonusTime_ItemFlying = 60 * GamePlayConfig_Action_FPS_Time_Scale  				----特效飞行时间
 GamePlayConfig_BonusTime_ItemBomb_CD = 30 * GamePlayConfig_Action_FPS_Time_Scale				----特效爆炸间隔
-GamePlayConfig_BonusTime_Score = 2500															----BonusTime奖励分数
+GamePlayConfig_BonusTime_Score = 10000															----BonusTime奖励分数
 
 GamePlayConfig_MaxAction_time = 100000* GamePlayConfig_Action_FPS_Time_Scale                    ----最大action时间，由动画控制的行为
 GamePlayConfig_CrystalChange_time = 36 * GamePlayConfig_Action_FPS_Time_Scale 					----水晶变色
