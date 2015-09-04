@@ -12,20 +12,32 @@ pad = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
 unpad = lambda s : s[0:-ord(s[-1])]
 
 def main():
+    src_out_dir = './kx/src_decrypt/'
+    meta_out_dir = './kx/meta_decrypt/'
+    if not os.path.exists(src_out_dir):
+        os.makedirs(src_out_dir)
+    if not os.path.exists(meta_out_dir):
+        os.makedirs(meta_out_dir)
+
     for root, dirs, files in os.walk('./kx/src_encrypt/'):
+        out_dir=root.replace('src_encrypt', 'src_decrypt')
         for f in files:
             if f.endswith('.lua'):
-                decrypt(root, os.path.join(root, f))
+                fileName = os.path.basename(f).split('.')[0] + '.lua'
+                decryptFile = out_dir + '/' + fileName
+                print "decrypt " + os.path.join(root, f) + " to " + decryptFile
+                decrypt(os.path.join(root, f), decryptFile)
 
-def decrypt(root, path):
-    fileName = os.path.basename(path).split('.')[0] + '.lua'
-    outDir = os.path.dirname(path).replace('src_encrypt', 'src_decrypt')
-    if not os.path.exists(outDir):
-        os.makedirs(outDir)
+    for root, dirs, files in os.walk('./kx/meta_encrypt/'):
+        out_dir=root.replace('meta_encrypt', 'meta_decrypt')
+        for f in files:
+            if f.endswith('.inf'):
+                fileName = os.path.basename(f).split('.')[0] + '.inf'
+                decryptFile = meta_out_dir + '/' + fileName
+                print "decrypt " + os.path.join(root, f) + " to " + decryptFile
+                decrypt(os.path.join(root, f), decryptFile)
 
-    decryptFile = outDir + '/' + fileName
-    print "decrypt " + path + " to " + decryptFile
-
+def decrypt(path, out):
     # 1. aes decrypt
     f = open(path, "rb")
     content = f.read()
@@ -39,7 +51,7 @@ def decrypt(root, path):
     #dec = '\x78\x9c' + dec
     #dec = zlib.decompress(dec, -zlib.MAX_WBITS)
     dec = zlib.decompress(dec, zlib.MAX_WBITS)
-    fout = open(os.path.abspath(decryptFile), "wb")
+    fout = open(os.path.abspath(out), "wb")
     fout.write(dec)
     fout.close()
 
