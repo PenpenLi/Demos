@@ -6,6 +6,7 @@ from Crypto.Cipher import AES
 import zlib
 
 
+# ''
 key = '\xe9\x74\x7d\x92\xcc\x32\x2e\x7d\x11\x2e\x7c\x34\x51\xd7\xb3\x6a'
 
 pad = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
