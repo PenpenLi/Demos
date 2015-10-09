@@ -1,0 +1,37 @@
+ManorLua.manor_2={
+id=2,
+width=1280,
+height=960,backartid=866,backArtScaleSize=1,
+outersTable={
+ [1] = {normal=86, down=0, xPos=344, yPos=413, centerX=0, centerY=960},
+ [2] = {normal=85, down=0, xPos=348, yPos=409, centerX=0, centerY=960},
+ [3] = {normal=86, down=0, xPos=466, yPos=412, centerX=0, centerY=960},
+ [4] = {normal=86, down=0, xPos=466, yPos=533, centerX=0, centerY=960},
+ [5] = {normal=85, down=0, xPos=467, yPos=650, centerX=0, centerY=960},
+ [6] = {normal=85, down=0, xPos=589, yPos=650, centerX=0, centerY=960},
+ [7] = {normal=86, down=0, xPos=705, yPos=536, centerX=0, centerY=960},
+ [8] = {normal=85, down=0, xPos=586, yPos=531, centerX=0, centerY=960},
+ [9] = {normal=86, down=0, xPos=584, yPos=415, centerX=0, centerY=960},
+ [10] = {normal=86, down=0, xPos=584, yPos=294, centerX=0, centerY=960},
+ [11] = {normal=85, down=0, xPos=586, yPos=289, centerX=0, centerY=960},
+ [12] = {normal=86, down=0, xPos=705, yPos=293, centerX=0, centerY=960},
+ [13] = {normal=85, down=0, xPos=708, yPos=410, centerX=0, centerY=960},
+ [7101] = {normal=387, down=0, xPos=302, yPos=485, centerX=0, centerY=960},
+ [7102] = {normal=387, down=0, xPos=422, yPos=368, centerX=0, centerY=960},
+ [7103] = {normal=387, down=0, xPos=423, yPos=604, centerX=0, centerY=960},
+ [7104] = {normal=387, down=0, xPos=660, yPos=605, centerX=0, centerY=960},
+ [7105] = {normal=387, down=0, xPos=542, yPos=487, centerX=0, centerY=960},
+ [7106] = {normal=387, down=0, xPos=542, yPos=250, centerX=0, centerY=960},
+ [7106] = {normal=387, down=0, xPos=781, yPos=364, centerX=0, centerY=960},
+ [102] = {normal=385, down=0, xPos=301, yPos=608, centerX=0, centerY=960},
+ [101] = {normal=385, down=0, xPos=182, yPos=604, centerX=0, centerY=960},
+ [103] = {normal=385, down=0, xPos=297, yPos=253, centerX=0, centerY=960},
+ [105] = {normal=387, down=0, xPos=900, yPos=609, centerX=0, centerY=960},
+ [106] = {normal=387, down=0, xPos=905, yPos=711, centerX=0, centerY=960},
+ [107] = {normal=385, down=0, xPos=1023, yPos=603, centerX=0, centerY=960},
+ [108] = {normal=385, down=0, xPos=1026, yPos=493, centerX=0, centerY=960},
+ [104] = {normal=385, down=0, xPos=782, yPos=490, centerX=0, centerY=960}
+ },
+cangBaoTuTable={
+ }
+}

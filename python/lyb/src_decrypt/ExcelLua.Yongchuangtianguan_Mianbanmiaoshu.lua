@@ -1,0 +1,2 @@
+ExcelLua.Yongchuangtianguan_Mianbanmiaoshu={{"id","txt"},
+key1={1,"<content><font color='#ebec9F'>规则：关卡越高，难度越大，奖励也越好；</font><br/><font color='#ebec9F'>每天0:00点可获得一次重新开始的次数。</font><br/><font color='#ebec9F'>神秘关卡层将获得更好的奖励。</font></content>"}}

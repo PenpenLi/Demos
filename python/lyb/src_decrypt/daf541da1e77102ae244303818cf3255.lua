@@ -1,0 +1,15 @@
+require "main.controller.command.mainScene.MainSceneToRankListCommand";
+-- require "main.controller.command.mainScene.MainSceneToSystemMarkCommand";
+-- require "main.controller.command.mainScene.MainSceneToTitleCommand";
+-- require "main.controller.command.mainScene.MainSceneToLoginLotteryCommand";
+-- require "main.controller.command.mainScene.MainSceneToActivityCommand";
+require "main.controller.command.mainScene.MainSceneToSmallChatCommand";
+require "main.controller.command.mainScene.ToOperationCommand";
+require "main.controller.command.mainScene.MainSceneCloseCommand";
+require "main.controller.command.mainScene.InitMainSceneCommand";
+-- require "main.controller.command.mainScene.MainSceneToSavePositionInfoCommand";
+require "main.controller.command.mainScene.EnterCityCommand";
+require "main.controller.command.mainScene.MainSceneGantanhaoCommand";
+-- require "main.controller.command.littleHelper.LittleHelperNoticeCommand";
+-- require "main.controller.command.mainScene.MainSceneToAmassFortunesCommand";
+-- require "main.controller.command.mainScene.MainSceneToFundCommand";

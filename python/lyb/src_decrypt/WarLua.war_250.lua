@@ -1,0 +1,33 @@
+WarLua.war_250={
+id=250,
+width=1920,
+height=1080,backartid=368,
+monstersTable={
+	[1]={bigRoundId=1, smallRoundId=1, centerX=1066, centerY=429, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[2]={bigRoundId=1, smallRoundId=1, centerX=1196, centerY=531, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[3]={bigRoundId=1, smallRoundId=1, centerX=1324, centerY=498, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[4]={bigRoundId=1, smallRoundId=1, centerX=1344, centerY=398, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[5]={bigRoundId=1, smallRoundId=1, centerX=1221, centerY=326, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[6]={bigRoundId=1, smallRoundId=1, centerX=1504, centerY=458, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[7]={bigRoundId=2, smallRoundId=1, centerX=1372, centerY=498, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[8]={bigRoundId=2, smallRoundId=1, centerX=1389, centerY=346, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[9]={bigRoundId=2, smallRoundId=1, centerX=988, centerY=527, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[10]={bigRoundId=2, smallRoundId=1, centerX=1143, centerY=525, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[11]={bigRoundId=2, smallRoundId=1, centerX=1001, centerY=419, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[12]={bigRoundId=2, smallRoundId=1, centerX=1176, centerY=428, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[13]={bigRoundId=2, smallRoundId=1, centerX=1021, centerY=310, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[14]={bigRoundId=2, smallRoundId=1, centerX=1177, centerY=317, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[15]={bigRoundId=3, smallRoundId=1, centerX=1167, centerY=527, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[16]={bigRoundId=3, smallRoundId=1, centerX=1187, centerY=316, showTime=0, monsterLeftCount=0, type=1, monsterId=115016, propertyId=0},
+	[17]={bigRoundId=3, smallRoundId=1, centerX=948, centerY=538, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[18]={bigRoundId=3, smallRoundId=1, centerX=1059, centerY=491, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[19]={bigRoundId=3, smallRoundId=1, centerX=1183, centerY=463, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[20]={bigRoundId=3, smallRoundId=1, centerX=1311, centerY=401, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[21]={bigRoundId=3, smallRoundId=1, centerX=1463, centerY=338, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[22]={bigRoundId=3, smallRoundId=1, centerX=974, centerY=313, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[23]={bigRoundId=3, smallRoundId=1, centerX=1075, centerY=387, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[24]={bigRoundId=3, smallRoundId=1, centerX=1298, centerY=501, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[25]={bigRoundId=3, smallRoundId=1, centerX=1426, centerY=551, showTime=0, monsterLeftCount=0, type=1, monsterId=115014, propertyId=0},
+	[26]={bigRoundId=3, smallRoundId=2, centerX=1428, centerY=444, showTime=0, monsterLeftCount=0, type=2, monsterId=136004, propertyId=0}
+}
+}

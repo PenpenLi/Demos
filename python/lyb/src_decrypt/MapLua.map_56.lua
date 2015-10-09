@@ -1,0 +1,19 @@
+MapLua.map_56={mapVersion=2,
+id=56,
+width=0,
+height=0,
+xImageNum=0,
+yImageNum=0,
+imageWidth=0,
+imageHeight=0,
+xImageNum2=0,
+yImageNum2=0,
+imageWidth2=0,
+imageHeight2=0,
+size=0,
+backArtTable={
+ },
+outersTable={
+ },
+walkTilesTable={
+ }}

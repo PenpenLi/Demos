@@ -1,0 +1,105 @@
+
+
+-- BattleBeAttackCommand=class(MacroCommand);
+
+-- function BattleBeAttackCommand:ctor()
+-- 	self.class=BattleBeAttackCommand;
+-- end
+
+-- function BattleBeAttackCommand:execute(notification)
+--     if notification.type == "Handler_7_24" then
+--         self:playBeAttackAction(notification.attackterBattleUnitId,notification.resultArray)
+--     -- elseif notification.type == "GreenHandBattle" then -- 新手脚本战场用
+--     --     self:greenhandBeAttackAction(notification)
+--     elseif notification.type == BattleSceneNotifications.Battle_BeAttack then
+--         self:playBeAttackAction(notification.data.attackterBattleUnitId,notification.data.resultArray)
+--     end
+-- end
+
+-- function BattleBeAttackCommand:playBeAttackAction(battleUnitId,attackResultArray)
+--     local battleProxy = self:retrieveProxy(BattleProxy.name);
+--     local battleGeneralVO = battleProxy.battleGeneralArray[battleUnitId]
+--     local battleMediator = self:retrieveMediator(BattleSceneMediator.name)
+--     print("==========================playBeAttackAction====================="..battleGeneralVO.StandPoint)
+--     if battleGeneralVO.StandPoint == BattleConfig.Battle_StandPoint_1 then
+--         battleMediator:refreshLianji()
+--     end
+--     for key,value in pairs(attackResultArray) do
+--             local targetUnitID = value.TargetBattleUnitId;
+--             --print("===================targetUnitID===================="..targetUnitID)
+--             local targetGeneralVO = battleProxy.battleGeneralArray[targetUnitID];
+--             targetGeneralVO.enemyBattleUnitVO = battleGeneralVO;
+--             --同步被攻击坐标
+--             targetGeneralVO.coordinateX = value.TargetCoordinateX;
+--             --targetGeneralVO.coordinateX = battleProxy:transformCoordinateX(1,targetGeneralVO);
+--             targetGeneralVO.targetCoordinateX = battleGeneralVO.coordinateX;
+--             --同步被攻击漂汉字效果
+            
+--             local attackResult = value.AttackResult;
+--             if attackResult then
+--                 if attackResult ~= 1 then
+--                     battleMediator:hanZiPop(attackResult,targetUnitID);
+--                 end
+--             end
+--             --同步被攻击怒气
+--             local currentRage = value.CurrentRage;
+--             if currentRage and targetGeneralVO.isMyPlayer then
+--                     battleMediator:setRangeData(currentRage)
+--             end
+--             print("BattleBeAttackCommand====="..value.CurrentHP)
+--             targetGeneralVO.currentHP = value.CurrentHP
+--             targetGeneralVO.changeValue = value.ChangeValue
+--             targetGeneralVO.totalHpChange = (-value.ChangeValue) > value.CurrentHP and (-value.CurrentHP) or value.ChangeValue
+--             targetGeneralVO.playSkillNeedNum = targetGeneralVO.totalHpChange
+--             targetGeneralVO.booleanValue = value.BooleanValue
+--             --最后一击
+--             targetGeneralVO.isLastAttack = self:chickLastAttack(battleProxy,targetGeneralVO)
+--             battleProxy.isLastAttack = targetGeneralVO.isLastAttack;
+            
+--             --同步攻击技能
+--             targetGeneralVO.beAttackSkillId = battleGeneralVO.attackSkillId;
+--             --targetGeneralVO.nilWorldBossBlood = self:chickWorldBossBlood(battleProxy,battleGeneralVO)
+--     end
+-- end
+
+-- -- function BattleBeAttackCommand:chickWorldBossBlood(battleProxy,battleGeneralVO)
+-- --     if battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_11 then
+-- --         return nil
+-- --     else
+-- --         if battleGeneralVO.isMyPlayerPet or battleGeneralVO.isBoss then
+-- --             return nil
+-- --         else
+-- --             return true
+-- --         end
+-- --     end
+-- -- end
+
+-- function BattleBeAttackCommand:chickLastAttack(battleProxy,targetGeneralVO)
+--     if targetGeneralVO.currentHP <= 0 then
+--         if battleProxy.bossMonsterID == targetGeneralVO.generalID then
+--                 return true
+--         elseif targetGeneralVO.type == 1 then
+--             if not targetGeneralVO.isMyPlayer then
+--                 if battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_15 and
+--                    battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_11 and
+--                    battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_17 and
+--                    battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_18 and
+--                    battleProxy.battleType ~= BattleConfig.BATTLE_TYPE_19 then
+--                     return true
+--                 else
+--                     return false
+--                 end
+--             else
+--                 if battleProxy.battleType == BattleConfig.BATTLE_TYPE_13 then
+--                     return true
+--                 else
+--                     return false
+--                 end
+--             end
+--         else
+--                 return false
+--         end
+--     else
+--         return false
+--     end
+-- end

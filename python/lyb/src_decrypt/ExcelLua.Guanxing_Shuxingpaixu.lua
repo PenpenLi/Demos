@@ -1,0 +1,10 @@
+ExcelLua.Guanxing_Shuxingpaixu={{"orderid","attribute"},
+key1={1,2},
+key2={2,3},
+key3={3,1},
+key4={4,20},
+key5={5,28},
+key6={6,29},
+key7={7,30},
+key8={8,6},
+key9={9,7}}

@@ -1,0 +1,10 @@
+ExcelLua.Xunbao_Renwuleixing={{"id","pass"},
+key1={1,1},
+key2={2,1},
+key3={3,0},
+key4={4,0},
+key5={5,0},
+key6={6,0},
+key7={7,1},
+key8={8,1},
+key9={9,1}}
