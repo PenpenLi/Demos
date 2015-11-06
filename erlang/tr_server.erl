@@ -4,6 +4,7 @@
 %%% @end
 %%%---------------------------------------------------------
 -module(tr_server).
+-include_lib("eunit/include/eunit.hrl").
 
 -behaviour(gen_server).
 
@@ -78,3 +79,7 @@ args_to_terms(RawArgs) ->
     {ok, Toks, _Line} = erl_scan:string("[" ++ RawArgs ++ "]. ", 1),
     {ok, Args} = erl_parse:parse_term(Toks),
     Args.
+
+start_test() ->
+    {ok, _} = tr_server:start_link().
+
