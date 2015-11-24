@@ -49,10 +49,12 @@ def gen_png_from_plist(plist_filename, png_filename):
         result_image.save(outfile)
 
 if __name__ == '__main__':
-    filename = sys.argv[1]
-    plist_filename = filename + '.xml'
-    png_filename = filename + '.png'
-    if (os.path.exists(plist_filename) and os.path.exists(png_filename)):
-        gen_png_from_plist(os.path.abspath(plist_filename), os.path.abspath(png_filename))
-    else:
-        print "make sure you have boith plist and png files in the same directory"
+    for root, dirs, files in os.walk('./abc_assets/'):
+        for f in files:
+            if f.endswith('.xml'):
+                xml = os.path.join(root, f)
+                png = xml.replace('.xml', '.png')
+                # print xml
+                # print png
+                if os.path.exists(png):
+                    gen_png_from_plist(xml, png)

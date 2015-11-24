@@ -22,7 +22,7 @@ def tree_to_dict(tree):
 
 def gen_png_from_plist(plist_filename, png_filename):
     print "gen png from plist " + plist_filename
-    file_path = plist_filename.replace('.xml', '')
+    file_path = plist_filename.replace('.plist', '')
     print "out: " + file_path
 
     f = open(plist_filename, 'r')
@@ -76,7 +76,7 @@ def gen_png_from_plist(plist_filename, png_filename):
 
 if __name__ == '__main__':
     filename = sys.argv[1]
-    plist_filename = filename + '.xml'
+    plist_filename = filename + '.plist'
     png_filename = filename + '.png'
     if (os.path.exists(plist_filename) and os.path.exists(png_filename)):
         gen_png_from_plist(os.path.abspath(plist_filename), os.path.abspath(png_filename))
