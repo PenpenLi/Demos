@@ -9,17 +9,19 @@ def decrypt(path):
     content = f.read()
     f.close()
     try:
-        dec = zlib.decompress(content, zlib.MAX_WBITS)
+        dec = zlib.decompress(content[9:], zlib.MAX_WBITS)
         fout = open(path, "wb")
         fout.write(dec)
         fout.close()
     except:
+        print "error"
         pass
 
 def main():
-    for root, dirs, files in os.walk('./abc_assets/'):
+    for root, dirs, files in os.walk('./abc_assets/otherAssets/xml/'):
         for f in files:
-            if f.endswith('.mp3') or f.endswith('.jpg') or f.endswith('.png') or f.endswith('.xml') or f.endswith('.bytes'):
+            # if f.endswith('.mp3') or f.endswith('.jpg') or f.endswith('.png') or f.endswith('.xml') or f.endswith('.bytes'):
+            if f.endswith('.xml'):
                 print "decrypt " + os.path.join(root, f)
                 decrypt(os.path.join(root, f))
 
