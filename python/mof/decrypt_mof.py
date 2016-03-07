@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # _*_ coding: utf-8 _*_
 
 import os
@@ -13,20 +13,20 @@ unpad = lambda s : s[0:-ord(s[-1])]
 pngcrush = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/pngcrush'
 
 def main():
-    for root, dirs, files in os.walk('/Users/xiaobin/Desktop/MOF_tongbu/'):
+    for root, dirs, files in os.walk('/Users/xiaobin/Desktop/MOF_le8/'):
         for f in files:
             if f.endswith('.ini'):
                 decrypt(root, os.path.join(root, f))
 
-            if f.endswith('.png'):
-                plist = os.path.join(root, os.path.basename(f).split('.')[0] + ".plist")
-                if os.path.exists(plist):
-                    handelFrame(os.path.join(root, f), plist)
+            # if f.endswith('.png'):
+                # plist = os.path.join(root, os.path.basename(f).split('.')[0] + ".plist")
+                # if os.path.exists(plist):
+                    # handelFrame(os.path.join(root, f), plist)
 
 
 def handelFrame(png, plist):
-    outPng = './res/' + os.path.basename(png)
-    outPlist = './res/' + os.path.basename(plist)
+    outPng = './res_le8/' + os.path.basename(png)
+    outPlist = './res_le8/' + os.path.basename(plist)
     print "handle " + png + " to " + outPng
     os.system(pngcrush + " -revert-iphone-optimizations " + png + " " + outPng)
     os.system("plutil -convert xml1 " + plist)
@@ -35,7 +35,7 @@ def handelFrame(png, plist):
 
 def decrypt(root, path):
     fileName = os.path.basename(path)
-    decryptFile = './ini/' + fileName
+    decryptFile = './ini_le8/' + fileName
     print "decrypt " + path + " to " + decryptFile
 
     # 1. aes decrypt
