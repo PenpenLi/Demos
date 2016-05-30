@@ -19,9 +19,10 @@ function EndlessMayDayTargetItem:setTargetNumber(itemId, itemNum, animate, globa
             local tx, ty = position.x, position.y
             local function onIconScaleFinished()
                 cloned:removeFromParentAndCleanup(true)
+                self.animNode = nil
             end 
             local function onIconMoveFinished()         
-                self.sprite:getChildByName("label"):setString(tostring(self.itemNum or 0))
+                self.label:setString(tostring(self.itemNum or 0))
                 self.context:playLeafAnimation(true)
                 self.context:playLeafAnimation(false)
                 self:shakeObject()
@@ -45,8 +46,9 @@ function EndlessMayDayTargetItem:setTargetNumber(itemId, itemNum, animate, globa
             array:addObject(CCCallFunc:create(onIconMoveFinished))
             cloned:setPosition(targetPos)
             cloned:runAction(CCSequence:create(array))
+            self.animNode = cloned
         else
-            self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+            self.label:setString(tostring(itemNum or 0))
         end
     end
 end

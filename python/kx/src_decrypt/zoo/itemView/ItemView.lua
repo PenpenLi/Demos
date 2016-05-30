@@ -26,6 +26,9 @@ require "zoo.animation.TileBoss"
 require "zoo.animation.TileRabbit"
 require "zoo.animation.TileTransDoor"
 require "zoo.animation.TileMagicLamp"
+require "zoo.animation.TileWukong"
+require "zoo.animation.TileWukongTarget"
+require "zoo.animation.TileWukongEff"
 require "zoo.animation.TileSuperBlocker"
 require "zoo.animation.TileHoneyBottle"
 require "zoo.animation.TileHoney"
@@ -37,6 +40,17 @@ require "zoo.animation.TileChain"
 require "zoo.animation.TileMagicStone"
 require "zoo.animation.TileMove"
 require "zoo.animation.TileBottleBlocker"
+require "zoo.animation.Halloween2015.TileHalloweenNewBoss"
+require "zoo.animation.TileHedgehogRoad"
+require "zoo.animation.TileHedgehog"
+require "zoo.animation.TileHedgehogBox"
+require "zoo.animation.TileRocket"
+require "zoo.animation.TileBeanpod"
+require "zoo.animation.TileCrystalStone"
+require "zoo.animation.TileTotems"
+require "zoo.animation.TileLotus"
+require "zoo.animation.TileDrip"
+require "zoo.animation.TileSuperCuteBall"
 
 ItemView = class{}
 
@@ -48,14 +62,21 @@ ItemSpriteTypeNames = table.const
 	"kNone",
 	"kBackground",		-- 地格--------添加层次时请保持这个在最后
 	"kMoveTileBackground", -- 移动地格背景
-	"kTileBlocker",       -- 翻转地格, 传送带, 海洋生物
+	"kTileBlocker",       -- 翻转地格, 传送带
+	"kSuperCuteLowLevel", -- 超级毛球静默
+	"kSeaAnimal",         -- 海洋生物
 	"kSnailRoad",         --蜗牛轨迹
+	"kHedgehogRoad",      --刺猬轨迹
+	"kTileHighlightEffect", -- 小金刚爆炸区域地格特效
+	"kHedgehogRoadEffect", --刺猬轨迹播放动画
 	"kRabbitCaveDown",    --兔子洞穴, 问号爆炸背景光
 	"kSand",			    -- 流沙动画
 	"kSandMove",			-- 流沙动画
 	"kLight",				-- 冰层, 流沙
 	"kQuestionMarkDestoryBg", --问号消除背景光 
 	"kItemBack",			-- 鸟的特效
+	"kLotus_bottom",		-- 草地底层（荷叶）
+	"kItemLowLevel",		-- 物品&物品特效--专门用来放置需要出现在顶层的物品及物品特效（例如草地）
 	"kItem",				-- 物品--动物
 	"kItemShow",			-- 物品特效--某个动物的动画，或者是消除特效qq
 	"kMagicTileWater",
@@ -67,14 +88,20 @@ ItemSpriteTypeNames = table.const
 	"kRope",				-- 绳子
 	"kChain",			-- 冰柱
 	"kLock",				-- 笼子
-	"kFurBall",			-- 毛球, 蜂蜜
+	"kFurBall",			-- 毛球
+	"kSnail",               --蜗牛，刺猬
+	"kHoney",			-- 蜂蜜
 	"kBigMonster",       -- 雪怪
 	"kLockShow",			-- 笼子消除
 	"kSnowShow",			-- 雪花消除
+	"kBigMonsterIce",			-- 雪花消除
 	"kNormalEffect",     -- 毛球消除，毒液扩散, 雪怪的冰层等
 	"kTransClipping",    -- 传送带遮罩
 	"kPass",	            -- 通道
 	"kTransmissionDoor",  -- 传送带出入口
+	"kItemHighLevel",	  -- 物品&物品特效--专门用来放置需要出现在顶层的物品及物品特效（例如猴子,草地）
+	"kLotus_top",		-- 草地顶层（荷叶）
+	"kSuperCuteHighLevel",	-- 超级毛球活跃
 	"kSpecial",			-- 鸟飞行,刷新飞行
 	"kRoostFly",			-- 鸡窝飞行,与刷新飞行冲突
 	"kSnailMove",       	-- 蜗牛移动，问号爆炸前景光
@@ -83,7 +110,14 @@ ItemSpriteTypeNames = table.const
 	"kDigBlockerBomb",
 	"kTileMoveEffect",
 	"kBigMonsterFoot",  --雪怪作用时的脚印
+	"kCrystalStoneEffect", -- 染色宝宝特效层 for batch
+	"kSuperTotemsLight",
+	"kSuperTotemsEffect",
 	"kLast",			-- 最上层--------添加层次时请保持这个在最前
+}
+
+TileHighlightType = table.const {
+	kTotems = 1,
 }
 
 ItemSpriteType = {}
@@ -148,26 +182,46 @@ ItemSpriteItemShowType = table.const
 local boardViewLayers = {
 	ItemSpriteType.kMoveTileBackground, 
 	ItemSpriteType.kTileBlocker, 
+	ItemSpriteType.kSeaAnimal,
 	ItemSpriteType.kMagicTileWater,
-	ItemSpriteType.kSnailRoad, 
+	ItemSpriteType.kSnailRoad,
+	ItemSpriteType.kHedgehogRoad, 
+	ItemSpriteType.kHedgehogRoadEffect,
 	ItemSpriteType.kRabbitCaveDown, 
 	ItemSpriteType.kClipping, 
 	ItemSpriteType.kEnterClipping, 
 	ItemSpriteType.kRope, 
 	ItemSpriteType.kChain, 
 	ItemSpriteType.kBigMonster, 
+	ItemSpriteType.kBigMonsterIce,
 	ItemSpriteType.kSand,
 	ItemSpriteType.kLight,
+	ItemSpriteType.kLotus_bottom,
+	ItemSpriteType.kItemLowLevel,
 	ItemSpriteType.kItem, 
 	ItemSpriteType.kItemShow,
 	ItemSpriteType.kDigBlocker,
 	ItemSpriteType.kLock,
 	ItemSpriteType.kFurBall,
+	ItemSpriteType.kSnail,
+	ItemSpriteType.kHoney,
 	ItemSpriteType.kPass,
+	ItemSpriteType.kItemHighLevel,
+	ItemSpriteType.kLotus_top,
+	ItemSpriteType.kSuperCuteLowLevel,
+	ItemSpriteType.kSuperCuteHighLevel,
+	
 	-- ItemSpriteType.kNormalEffect,
 }
 
-local itemsName = { "horse", "frog", "bear", "cat", "fox", "chicken"}
+local itemsName = { 
+	[AnimalTypeConfig.kBlue] = "horse", 
+	[AnimalTypeConfig.kGreen] = "frog", 
+	[AnimalTypeConfig.kOrange] = "bear", 
+	[AnimalTypeConfig.kPurple] = "cat", 
+	[AnimalTypeConfig.kRed] = "fox", 
+	[AnimalTypeConfig.kYellow] = "chicken"
+}
 local kCharacterAnimationTime = 1/30
 
 function ItemView:ctor()
@@ -222,6 +276,9 @@ end
 function ItemView.copyDatasFrom(toData, fromData)
 	if type(fromData) ~= "table" then return end
 	
+	toData.w = fromData.w
+	toData.h = fromData.h
+
 	toData.itemShowType = fromData.itemShowType
 	toData.cl_hoff = fromData.cl_hoff
 	toData.cl_h = fromData.cl_h
@@ -295,6 +352,7 @@ function ItemView:initByBoardData(data)
 	end
 
 	if data.seaAnimalType then
+		self.itemSprite[ItemSpriteType.kSeaAnimal] = {}
 		self:buildSeaAnimal(data.seaAnimalType)
 	end
 
@@ -302,8 +360,20 @@ function ItemView:initByBoardData(data)
 		self:buildMagicTile(data)
 	end
 
+	if data.isWukongTarget then
+		self:buildWukongTarget(data)
+	end
+
 	if data.isHalloweenBottle then
 		self:buildHalloweenBoss()
+	end
+
+	if data.lotusLevel > 0 then
+		self:buildLotus(data.lotusLevel)
+	end
+
+	if data:hasSuperCuteBall() then
+		self:addSuperCuteBall(data.superCuteState)
 	end
 
 	if data:hasPortal() then		--通道
@@ -361,18 +431,168 @@ function ItemView:initByBoardData(data)
 	end
 
 	-- chain todo
-	self:addChainsView(data)
+	if data.y >= self.context.startRowIndex then 
+	-- 挖地滚动到地格外面后冰柱不再显示，绳子是做了遮罩，但冰柱为了做batch无法再做遮罩
+	-- 由于魔法地格的存在导致上一行的数据可能仍然存在
+		self:addChainsView(data)
+	end
 
 	self:initSnailRoad(data)
+end
+
+function ItemView:buildLotus(lotusLevel)
+	self:playLotusAnimation(lotusLevel , "in")
+end
+
+function ItemView:createLotusAnimation(currLotusLevel , animationType , layer , noAnimation)
+
+	local resName = ""
+	local animeName = ""
+	local animeLength = 10
+
+	local spr = nil
+	local spr_frames = nil
+	local spr_animate = nil
+
+	
+
+	if layer == "bottom" then
+		--构建荷叶底层
+		if currLotusLevel == 1 then
+			if noAnimation then
+				resName = "state_1_in_0010"
+				spr = Sprite:createWithSpriteFrameName(resName)
+			else
+				resName = "state_1_".. tostring(animationType) .. "_0001"
+				animeName = "state_1_" .. tostring(animationType) .. "_%04d"
+				animeLength = 10
+
+				spr = Sprite:createWithSpriteFrameName(resName)
+				spr_frames = SpriteUtil:buildFrames(animeName, 1, animeLength)
+				spr_animate = SpriteUtil:buildAnimate(spr_frames, 1/24)
+				spr:play(spr_animate, 0, 1, nil, false)
+			end
+		else
+			resName = "state_1_in_0010"
+			spr = Sprite:createWithSpriteFrameName(resName)
+		end
+	elseif layer == "top" then
+		--构建荷叶顶层
+		if currLotusLevel == 2 then
+			resName = "state_2_" .. tostring(animationType) .. "_0001"
+			animeName = "state_2_" .. tostring(animationType) .. "_%04d"
+			if animationType == "in" then 
+				animeLength = 16
+			elseif animationType == "out" then
+				animeLength = 13
+			end
+		elseif currLotusLevel == 3 then
+			resName = "state_3_" .. tostring(animationType) .. "_0001"
+			animeName = "state_3_" .. tostring(animationType) .. "_%04d"
+			if animationType == "in" then 
+				animeLength = 22
+			elseif animationType == "out" then
+				animeLength = 17
+			end
+		end
+		
+		if currLotusLevel > 1 then
+			if noAnimation then
+				resName = "state_" .. tostring(currLotusLevel) .. "_" .. tostring(animationType) .. "_00" .. tostring(animeLength)
+				spr = Sprite:createWithSpriteFrameName(resName)
+			else
+				spr = Sprite:createWithSpriteFrameName(resName)
+				local spr_frames = SpriteUtil:buildFrames(animeName, 1, animeLength)
+				local spr_animate = SpriteUtil:buildAnimate(spr_frames, 1/24)
+				spr:play(spr_animate, 0, 1, nil, false)
+			end
+		end
+	end
+
+	return spr
+end
+
+function ItemView:playLotusAnimation(currLotusLevel , animationType)
+	print("RRR    ItemView:playLotusAnimation   " , currLotusLevel , animationType )
+	if currLotusLevel < 0 or currLotusLevel > 3 then return end
+
+	local function clearLotus()
+		if self.itemSprite[ItemSpriteType.kLotus_bottom] then
+			self.itemSprite[ItemSpriteType.kLotus_bottom]:removeFromParentAndCleanup(false)
+			self.itemSprite[ItemSpriteType.kLotus_bottom] = nil
+		end
+
+		if self.itemSprite[ItemSpriteType.kLotus_top] then
+			self.itemSprite[ItemSpriteType.kLotus_top]:removeFromParentAndCleanup(false)
+			self.itemSprite[ItemSpriteType.kLotus_top] = nil
+		end
+	end
+	--clearLotus()
+
+	--构建荷叶底层
+	--self.itemSprite[ItemSpriteType.kLotus_bottom] = self:createLotusAnimation(currLotusLevel , animationType , "bottom" )
+	
+	if not self.itemSprite[ItemSpriteType.kLotus_bottom] then
+		self.itemSprite[ItemSpriteType.kLotus_bottom] = TileLotus:create(currLotusLevel , animationType , "bottom")
+		self.itemSprite[ItemSpriteType.kLotus_bottom]:setPosition( ccp( (self.x - 0.5 ) * self.w , (Max_Item_Y - self.y - 0.5 ) * self.h ) )
+	else
+		self.itemSprite[ItemSpriteType.kLotus_bottom]:playAnimation(currLotusLevel , animationType , "bottom")
+	end
+	
+
+
+	--构建荷叶顶层
+	--self.itemSprite[ItemSpriteType.kLotus_top] = self:createLotusAnimation(currLotusLevel , animationType , "top" )
+	if not self.itemSprite[ItemSpriteType.kLotus_top] then
+		self.itemSprite[ItemSpriteType.kLotus_top] = TileLotus:create(currLotusLevel , animationType , "top")
+		self.itemSprite[ItemSpriteType.kLotus_top]:setPosition( ccp( (self.x - 0.5 ) * self.w , (Max_Item_Y - self.y - 0.5 ) * self.h ) )
+	else
+		self.itemSprite[ItemSpriteType.kLotus_top]:playAnimation(currLotusLevel , animationType , "top")
+	end
+
+	local function setItemVisible(isvisible)
+
+		if self.itemSprite[ItemSpriteType.kItem] then
+			self.itemSprite[ItemSpriteType.kItem]:setVisible(isvisible)
+		end
+
+		if self.itemSprite[ItemSpriteType.kItemShow] then
+			self.itemSprite[ItemSpriteType.kItemShow]:setVisible(isvisible)
+		end
+
+	end
+
+	if currLotusLevel == 3 and animationType == "in" then
+		
+		setTimeOut( function () 
+				setItemVisible(false)
+			end , 22 / 24 )
+
+	elseif currLotusLevel == 3 and animationType == "out" then
+		setItemVisible(true)
+	end
+
+	if currLotusLevel == 1 and animationType == "out" then
+		setTimeOut( function () 
+				clearLotus()
+			end , 10 / 24 )
+	end
+	self.isNeedUpdate = true
 end
 
 --处理蜗牛轨迹
 function ItemView:initSnailRoad( data )
 	-- body
 	if data:getSnailRoadViewType() then
-		local snailRoad = TileSnailRoad:create(data:getSnailRoadViewType(), data:getSnailRoadRotation())
+		local snailRoad
+		if data.roadType == TileRoadShowType.kSnail then
+			snailRoad = TileSnailRoad:create(data:getSnailRoadViewType(), data:getSnailRoadRotation())
+			self.itemSprite[ItemSpriteType.kSnailRoad] = snailRoad
+		else
+			snailRoad = TileHedgehogRoad:create(data:getSnailRoadViewType(), data:getSnailRoadRotation(), data.hedgeRoadState)
+			self.itemSprite[ItemSpriteType.kHedgehogRoad] = snailRoad
+		end
 		-- snailRoad:setPosition(self:getBasePosition())
-		self.itemSprite[ItemSpriteType.kSnailRoad] = snailRoad
 	end
 end
 
@@ -383,15 +603,21 @@ function ItemView:getBasePosition(x, y)
 end
 
 local needUpdateLayers = {
+	ItemSpriteType.kLotus_bottom,
+	ItemSpriteType.kItemLowLevel,
 	ItemSpriteType.kItem, 
 	ItemSpriteType.kLight,
 	ItemSpriteType.kItemShow,
 	ItemSpriteType.kDigBlocker,
 	ItemSpriteType.kFurBall, 
+	ItemSpriteType.kHoney,
 	ItemSpriteType.kClipping, 
 	ItemSpriteType.kEnterClipping,
 	ItemSpriteType.kTransClipping,
 	ItemSpriteType.kBigMonster,
+	ItemSpriteType.kBigMonsterIce,
+	ItemSpriteType.kItemHighLevel,
+	ItemSpriteType.kLotus_top,
 }
 
 function ItemView:getBoardViewTransContainer()
@@ -488,6 +714,8 @@ function ItemView:upDatePosBoardDataPos(data, forcePos)
 					elseif i == ItemSpriteType.kBigMonster then
 						
 						self.itemSprite[i]:setPositionXY(tempX + 0.5 * self.w, tempY - 0.5 * self.h)
+					elseif i == ItemSpriteType.kLotus_bottom then
+						self.itemSprite[i]:setPositionXY(tempX, tempY)
 					else
 						self.itemSprite[i]:setPositionXY(tempX, tempY)
 					end
@@ -582,7 +810,7 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildMonster()
 	elseif data.ItemType == GameItemType.kBlackCuteBall then 
 		self:buildBlackCuteBall(data.blackCuteStrength)
-	elseif data.ItemType == GameItemType.kMimosa then
+	elseif data.ItemType == GameItemType.kMimosa or data.ItemType == GameItemType.kKindMimosa then
 		self:buildMimosa(data)
 	elseif data.isSnail then
 		self:buildSnail(data.snailRoadType)
@@ -592,6 +820,8 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildRabbit(data.ItemColorType, data.rabbitLevel, GameItemRabbitState.kSpawn == data.rabbitState)
 	elseif data.ItemType == GameItemType.kMagicLamp then
 		self:buildMagicLamp(data.ItemColorType, data.lampLevel)
+	elseif data.ItemType == GameItemType.kWukong then
+		self:buildWukong(data)
 	elseif data.ItemType == GameItemType.kSuperBlocker then
 		self:buildSuperBlocker()
 	elseif data.ItemType == GameItemType.kHoneyBottle then
@@ -604,15 +834,27 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 		self:buildMagicStone(data.magicStoneDir, data.magicStoneLevel)
 	elseif data.ItemType == GameItemType.kBottleBlocker then
 		self:buildBottleBlocker(data.bottleLevel , data.ItemColorType)
+	elseif data:isHedgehog() then
+		self:buildHedgehog(data.snailRoadType, data.hedgehogLevel, data.hedge_before)
+	elseif data.ItemType == GameItemType.kHedgehogBox then
+		self:buildHedgehogBox()
+	elseif data.ItemType == GameItemType.kRocket then
+		self:buildRocket(data.ItemColorType)	
+	elseif data.ItemType == GameItemType.kCrystalStone then
+		self:buildCrystalStone(data.ItemColorType, data.crystalStoneEnergy, data.crystalStoneBombType)
+	elseif data.ItemType == GameItemType.kTotems then
+		self:buildTotems(data.ItemColorType, data:isActiveTotems())
+	elseif data.ItemType == GameItemType.kDrip then
+		self:buildDrip()
 	end
 
 	if data.isHalloweenBottle then
 		self:buildHalloweenBoss()
 	end
 
-	if self.oldBoard and self.oldBoard.magicTileId ~= nil then
-		self:addMagicTileWater(data)
-	end
+	-- if self.oldBoard and self.oldBoard.magicTileId ~= nil then
+	-- 	self:addMagicTileWater(data)
+	-- end
 
 	--附加属性
 	if data:hasFurball() then
@@ -636,12 +878,58 @@ function ItemView:initByItemData(data)	--通过GameItem的数据进行初始化
 	end
 
 	if data.bigMonsterFrostingType> 0 and data.bigMonsterFrostingStrength > 0 then --雪怪的冰块
-		self.itemSprite[ItemSpriteType.kNormalEffect] = ItemViewUtils:buildMonsterFrosting(data.bigMonsterFrostingType)
+		self.itemSprite[ItemSpriteType.kBigMonsterIce] = ItemViewUtils:buildMonsterFrosting(data.bigMonsterFrostingType)
 	end
 
-	if data.beEffectByMimosa then
-		self:addMimosaEffect(data.mimosaDirection)
+	if data.beEffectByMimosa > 0 then
+		self:addMimosaEffect(data.beEffectByMimosa ,data.mimosaDirection)
 	end
+end
+
+
+function ItemView:buildDrip(isOnlyGetSprite)
+	local sprite = TileDrip:create(self)
+	if not isOnlyGetSprite then
+		self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	end
+	return sprite
+end
+
+function ItemView:changeDripState(newData)
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	local newState = newData.dripState
+	local newMovePos = self:getBasePosition( newData.dripLeaderPos.x , newData.dripLeaderPos.y )
+
+	if sprite then
+		sprite:changeDripState(newState , newMovePos)
+
+		if newState == DripState.kCasting then
+			self.itemSprite[ItemSpriteType.kItemShow] = nil
+			self.itemSprite[ItemSpriteType.kItemHighLevel] = sprite
+			self.isNeedUpdate = true
+		elseif newState == DripState.kMove then
+			--self.itemSprite[ItemSpriteType.kItemShow] = nil
+			--self.itemSprite[ItemSpriteType.kItemHighLevel] = sprite
+			--self.isNeedUpdate = true
+		end
+	end
+end
+
+function ItemView:buildCrystalStone(colortype, energy, bombType, isOnlyGetSprite)
+	local sprite = TileCrystalStone:create(colortype, energy/GamePlayConfig_CrystalStone_Energy, bombType)
+	if not isOnlyGetSprite then
+		self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	end
+	return sprite
+end
+
+function ItemView:buildRocket(colortype, isOnlyGetSprite)
+	local rocket = TileRocket:create(colortype)
+	if not isOnlyGetSprite then
+		self.itemSprite[ItemSpriteType.kItemShow] = rocket
+		self.itemShowType = ItemSpriteItemShowType.kCharacter
+	end
+	return rocket
 end
 
 function ItemView:buildBottleBlocker( bottleLevel , itemColorType , texture , isOnlyGetSprite )
@@ -721,7 +1009,10 @@ end
 function ItemView:cleanGameItemView()
 	if self.itemSprite[ItemSpriteType.kItem] then self.itemSprite[ItemSpriteType.kItem]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kItem] = nil; end;
 	if self.itemSprite[ItemSpriteType.kItemShow] then self.itemSprite[ItemSpriteType.kItemShow]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kItemShow] = nil; end;
+	if self.itemSprite[ItemSpriteType.kItemHighLevel] then self.itemSprite[ItemSpriteType.kItemHighLevel]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kItemHighLevel] = nil; end;
+	if self.itemSprite[ItemSpriteType.kItemLowLevel] then self.itemSprite[ItemSpriteType.kItemLowLevel]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kItemLowLevel] = nil; end;
 	if self.itemSprite[ItemSpriteType.kFurBall] then self.itemSprite[ItemSpriteType.kFurBall]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kFurBall] = nil; end;
+	if self.itemSprite[ItemSpriteType.kHoney] then self.itemSprite[ItemSpriteType.kHoney]:removeFromParentAndCleanup(true); self.itemSprite[ItemSpriteType.kHoney] = nil; end;
 end
 
 function ItemView:cleanFurballView()
@@ -734,7 +1025,14 @@ end
 function ItemView:getGameItemSprite()
 	local t1 = self.itemSprite[ItemSpriteType.kItemShow]
 	local t2 = self.itemSprite[ItemSpriteType.kItem]
-	if t1 then return t1 else return t2 end
+	local t3 = self.itemSprite[ItemSpriteType.kItemHighLevel]
+	if t1 then 
+		return t1 
+	elseif t2 then
+		return t2 
+	else
+		return t3
+	end
 end
 
 ------小动物和鸟的消除动画--------
@@ -988,9 +1286,9 @@ function ItemView:playRabbitUpstarirsAnimation(r, c, boardView, isShowDangerous 
 			self.itemSprite[ItemSpriteType.kItemShow] = s
 			s:setScale(1)
 			s:setPosition(self:getBasePosition(c, r))
-			if isShowDangerous then 
-				s:playHappyAnimation(true)
-			end
+			-- if isShowDangerous then 
+			-- 	s:playHappyAnimation(true)
+			-- end
 		end
 		if callback then callback() end
 	end
@@ -1005,6 +1303,32 @@ function ItemView:playRabbitUpstarirsAnimation(r, c, boardView, isShowDangerous 
 
 	if boardView and boardView.PlayUIDelegate then 
 		boardView.PlayUIDelegate.effectLayer:addChild(s)
+	end
+end
+
+function ItemView:updateDangerousStatus(isDangerous)
+	if self.itemShowType == ItemSpriteItemShowType.kRabbit then
+		local s = self.itemSprite[ItemSpriteType.kItemShow]
+		if s then
+			if isDangerous then 
+				s:playInDangerAnimation()
+			else
+				s:stopInDangerAnimation()
+			end
+		end
+	else
+		local s = self.itemSprite[ItemSpriteType.kItem]
+		if s then
+			if isDangerous then 
+				if s.playInDangerAnimation then
+					s:playInDangerAnimation()
+				end
+			else
+				if s.stopInDangerAnimation then
+					s:stopInDangerAnimation()
+				end
+			end
+		end
 	end
 end
 
@@ -1033,11 +1357,11 @@ function ItemView:playUpstairsAnimation(r, c, boardView, isShowDangerous ,callba
 		-- body
 		if s then
 			s:setVisible(true)
-			if isShowDangerous then 
-				local action_zoom = CCScaleTo:create(0.4, 1.1)
-				local action_narrow = CCScaleTo:create(0.2, 0.9)
-				s:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions(action_zoom, action_narrow)))
-			end
+			-- if isShowDangerous then 
+			-- 	local action_zoom = CCScaleTo:create(0.4, 1.1)
+			-- 	local action_narrow = CCScaleTo:create(0.2, 0.9)
+			-- 	s:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions(action_zoom, action_narrow)))
+			-- end
 		end
 		if sprite then sprite:removeFromParentAndCleanup(true) end
 		if sprite_fg then sprite_fg:removeFromParentAndCleanup(true) end
@@ -1145,7 +1469,13 @@ function ItemView:playFurballTransferEffect(direction, callback)
 		self.itemSprite[ItemSpriteType.kFurBall]:removeFromParentAndCleanup(true)
 		self.itemSprite[ItemSpriteType.kFurBall] = nil
 	else
-		print("furball origin view not exist")
+		local boardLogic = GameBoardLogic:getCurrentLogic()
+		local replayData = boardLogic and boardLogic:getReplayRecordsData() or {}
+		
+		assert(false, "furball origin view not exist. replayData="..table.serialize(replayData))
+
+		self.isNeedUpdate = true
+		if callback and type(callback) == "function" then callback() end
 		return
 	end
 
@@ -1244,6 +1574,13 @@ function ItemView:updateByNewBoardData(data)
 		self.itemSprite[ItemSpriteType.kLight] = ItemViewUtils:buildLight(data.iceLevel, data.gameModeId)
 	end
 
+	if not self.oldBoard or self.oldBoard.superCuteState ~= data.superCuteState then
+		self:cleanSuperCuteBallView()
+		if data:hasSuperCuteBall() then
+			self:addSuperCuteBall(data.superCuteState)
+		end
+	end
+
 	data.isNeedUpdate = false;
 	self.oldBoard = data:copy();
 end
@@ -1251,7 +1588,7 @@ end
 function ItemView:updateByNewItemData(data)
 	----==========1.修改动物状态--------------
 	------全空--------
-	if data.ItemType == GameItemType.kNone and not data.isSnail then 				----空了---进行更新，并且修改标志
+	if data.ItemType == GameItemType.kNone and not (data.isSnail or data:isHedgehog()) then 				----空了---进行更新，并且修改标志
 		data.isNeedUpdate = false
 		self:cleanGameItemView()
 	end
@@ -1309,6 +1646,24 @@ function ItemView:updateByNewItemData(data)
 			self:buildMagicLamp(data.ItemColorType, data.lampLevel)
 		end
 	end 
+
+	if data.ItemType == GameItemType.kWukong then
+		if self.oldData and (self.oldData.ItemType ~= data.ItemType or self.oldData.ItemColorType ~= data.ItemColorType) then
+			self:removeItemSpriteGameItem();
+			self:buildWukong(data)
+		end
+	end 
+
+	if data.ItemType == GameItemType.kDrip then
+		if self.oldData then
+			if self.oldData.ItemType ~= data.ItemType then
+				self:removeItemSpriteGameItem();
+				self:buildDrip()
+			elseif self.oldData.ItemType == data.ItemType and self.oldData.dripState ~= data.dripState then
+				self:changeDripState(data)
+			end
+		end
+	end
 
 	if data.ItemType == GameItemType.kAddMove then
 		if self.oldData and (self.oldData.ItemType ~= data.ItemType or self.oldData.ItemColorType ~= data.ItemColorType) then
@@ -1378,6 +1733,19 @@ function ItemView:updateByNewItemData(data)
 		end
 	end
 	
+	if data.ItemType == GameItemType.kRocket then
+		if self.oldData and (self.oldData.ItemType ~= data.ItemType or self.oldData.ItemColorType ~= data.ItemColorType) then
+			self:removeItemSpriteGameItem()
+			self:buildRocket(data.ItemColorType)
+		end
+	end
+
+	if data.ItemType == GameItemType.kTotems then
+		if self.oldData and self.oldData.ItemType ~= data.ItemType then
+			self:removeItemSpriteGameItem()
+			self:buildTotems(data.ItemColorType, data:isActiveTotems())
+		end
+	end
 
 	------掉落-------
 	if data.ItemStatus == GameItemStatusType.kIsFalling 
@@ -1397,9 +1765,15 @@ function ItemView:updateByNewItemData(data)
 			or data.ItemType == GameItemType.kHoneyBottle
 			or data.ItemType == GameItemType.kAddTime
 			or data.ItemType == GameItemType.kQuestionMark
+			or data.ItemType == GameItemType.kRocket
+			or data.ItemType == GameItemType.kCrystalStone
+			or data.ItemType == GameItemType.kTotems
+			or data.ItemType == GameItemType.kDrip
 			then
 			self.itemPosAdd[ItemSpriteType.kItem] = data.itemPosAdd 			----掉落一个物品
 			self.itemPosAdd[ItemSpriteType.kItemShow] = data.itemPosAdd 		----掉落一个特效
+			self.itemPosAdd[ItemSpriteType.kItemHighLevel] = data.itemPosAdd 		----掉落一个特效
+			self.itemPosAdd[ItemSpriteType.kItemLowLevel] = data.itemPosAdd 		----掉落一个特效
 			self.itemPosAdd[ItemSpriteType.kFurBall] = data.itemPosAdd
 			self.itemPosAdd[ItemSpriteType.kClipping] = data.ClippingPosAdd 	----生成口的某些掉落物品
 			self.itemPosAdd[ItemSpriteType.kEnterClipping] = data.EnterClippingPosAdd
@@ -1416,6 +1790,17 @@ function ItemView:updateByNewItemData(data)
 				self.itemSprite[ItemSpriteType.kSnailMove] = nil
 			end
 			self:buildSnail(data.snailRoadType)
+		end
+	end
+
+	if data:isHedgehog() then 
+		if self.oldData and (self.oldData.hedgehogLevel ~= data.hedgehogLevel) then
+			self:removeItemSpriteGameItem();
+			if self.itemSprite[ItemSpriteType.kSnailMove] ~= nil then
+				self.itemSprite[ItemSpriteType.kSnailMove]:removeFromParentAndCleanup(true)
+				self.itemSprite[ItemSpriteType.kSnailMove] = nil
+			end
+			self:buildHedgehog(data.snailRoadType, data.hedgehogLevel)
 		end
 	end
 
@@ -1471,6 +1856,10 @@ function ItemView:updateByNewItemData(data)
 	end
 
 	if self.oldData then 
+		if data.ItemType == GameItemType.kGoldZongZi and self.oldData.ItemType ~= GameItemType.kGoldZongZi then
+			self:removeItemSpriteGameItem()
+			self:buildGoldZongZi(data.digGoldZongZiLevel)
+		end
 		if self.oldData.ItemType == GameItemType.kGoldZongZi then
 			if data.ItemType == GameItemType.kGoldZongZi then
 				if self.oldData.digGoldZongZiLevel ~= data.digGoldZongZiLevel then
@@ -1481,17 +1870,16 @@ function ItemView:updateByNewItemData(data)
 				self:removeItemSpriteGameItem()
 				self:buildDigGround(data.digGroundLevel)
 			end
-			
 		end
 	end
+
 
 	-------------------------妖精瓶子-------------------------
 
 	if self.oldData then 
 		if self.oldData.ItemType == GameItemType.kBottleBlocker then
 			if data.ItemType == GameItemType.kBottleBlocker then
-				if data.bottleState == BottleBlockerState.Waiting 
-					and (self.oldData.bottleLevel ~= data.bottleLevel or self.oldData.ItemColorType ~= data.ItemColorType)
+				if data.bottleLevel > 0 and (self.oldData.bottleLevel ~= data.bottleLevel or self.oldData.ItemColorType ~= data.ItemColorType)
 					then
 					self:removeItemSpriteGameItem()
 					self:buildBottleBlocker(data.bottleLevel , data.ItemColorType)
@@ -1513,16 +1901,28 @@ function ItemView:updateByNewItemData(data)
 	--------------------7.修改蜂蜜状态-------------------
 	if (self.oldData) then
 		if (self.oldData.honeyLevel ~= data.honeyLevel) then
-			if self.itemSprite[ItemSpriteType.kFurBall] ~= nil then
-				if self.itemSprite[ItemSpriteType.kFurBall]:getParent() then
-					self.itemSprite[ItemSpriteType.kFurBall]:removeFromParentAndCleanup(true);
-					self.itemSprite[ItemSpriteType.kFurBall] = nil
+			if self.itemSprite[ItemSpriteType.kHoney] ~= nil then
+				if self.itemSprite[ItemSpriteType.kHoney]:getParent() then
+					self.itemSprite[ItemSpriteType.kHoney]:removeFromParentAndCleanup(true);
+					self.itemSprite[ItemSpriteType.kHoney] = nil
 				end
 			end
 			if data.honeyLevel > 0 then
 				self:buildHoney()
 			end
 		end
+	end
+
+	if data.ItemType == GameItemType.kCrystalStone then
+		if self.oldData and (self.oldData.ItemType ~= data.ItemType
+			or self.oldData.ItemColorType ~= data.ItemColorType or self.oldData.crystalStoneEnergy ~= data.crystalStoneEnergy) then
+			self:removeItemSpriteGameItem()
+			self:buildCrystalStone(data.ItemColorType, data.crystalStoneEnergy, data.crystalStoneBombType)
+		end
+	end
+
+	if data.isReverseSide then -- 更新翻转地格上的视图状态
+		self:setTileBlockCoverSpriteVisible(false)
 	end
 
 	----不论如何都赋值data
@@ -1542,6 +1942,11 @@ function ItemView:removeItemSpriteGameItem()
 			self.itemSprite[ItemSpriteType.kItemShow] = nil
 		end
 
+		if self.itemSprite[ItemSpriteType.kSnail] ~= nil then
+			self.itemSprite[ItemSpriteType.kSnail]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kSnail] = nil
+		end
+
 		if self.itemSprite[ItemSpriteType.kDigBlocker] ~= nil then
 			self.itemSprite[ItemSpriteType.kDigBlocker]:removeFromParentAndCleanup(true)
 			self.itemSprite[ItemSpriteType.kDigBlocker] = nil
@@ -1551,6 +1956,17 @@ function ItemView:removeItemSpriteGameItem()
 			self.itemSprite[ItemSpriteType.kBigMonster]:removeFromParentAndCleanup(true)
 			self.itemSprite[ItemSpriteType.kBigMonster] = nil
 		end
+
+		if self.itemSprite[ItemSpriteType.kItemHighLevel] ~= nil then
+			self.itemSprite[ItemSpriteType.kItemHighLevel]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kItemHighLevel] = nil
+		end
+
+		if self.itemSprite[ItemSpriteType.kItemLowLevel] ~= nil then
+			self.itemSprite[ItemSpriteType.kItemLowLevel]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kItemLowLevel] = nil
+		end
+		
 	end
 end
 
@@ -1558,12 +1974,12 @@ end
 ----autoset 自动设置为物品， autotype 自动设置创建类型
 ----返回1，物品对象，返回2，物品对象的类型
 function ItemView:buildNewAnimalItem(colortype, specialtype, autoset, autotype)
-	if specialtype >= AnimalTypeConfig.kLine 				----动态图片
-		and specialtype < AnimalTypeConfig.kColor
+	if AnimalTypeConfig.isSpecialTypeValid(specialtype)
+		and specialtype ~= AnimalTypeConfig.kColor
 		then
-		if colortype >= AnimalTypeConfig.kBlue and colortype <= AnimalTypeConfig.kYellow then
+		if AnimalTypeConfig.isColorTypeValid(colortype) and colortype ~= AnimalTypeConfig.kDrip then 
 			---特殊动画
-			local sprite = TileCharacter:create(itemsName[colortype])
+			local sprite = TileCharacter:create(table.getMapValue(itemsName, colortype))
 			if specialtype == AnimalTypeConfig.kLine then
 	  			sprite:play(kTileCharacterAnimation.kLineRow)
 	  		elseif specialtype == AnimalTypeConfig.kColumn then
@@ -1587,9 +2003,7 @@ function ItemView:buildNewAnimalItem(colortype, specialtype, autoset, autotype)
 		if (autoset) then self.itemSprite[ItemSpriteType.kItemShow] = bird end;
 		if (autotype) then self.itemShowType = ItemSpriteItemShowType.kBird end;
 		return bird
-	elseif colortype >= AnimalTypeConfig.kBlue
-		and colortype <= AnimalTypeConfig.kYellow
-		then
+	elseif AnimalTypeConfig.isColorTypeValid(colortype) and colortype ~= AnimalTypeConfig.kDrip then
 		--------静态图片
 		local sprite = ItemViewUtils:buildAnimalStatic(colortype);
 		local pos = self:getBasePosition(self.x, self.y)
@@ -1676,6 +2090,200 @@ function ItemView:buildMagicLamp(color, level)
 	local pos = self:getBasePosition(self.x, self.y)
 	sprite:setPosition(pos)
 	self.itemSprite[ItemSpriteType.kItemShow] = sprite
+end
+
+function ItemView:buildWukong(data)
+	local sprite = TileWukong:create(data)
+	local pos = self:getBasePosition(self.x, self.y)
+	sprite:setPosition(pos)
+	self.itemSprite[ItemSpriteType.kItemShow] = sprite
+end
+
+function ItemView:changeWukongState(state , callback)
+	local sprite = self:getWukongSprite()
+	if sprite then
+		
+		if sprite.state ~= state then
+			if state == TileWukongState.kReadyToJump then
+				self.itemSprite[ItemSpriteType.kItemShow] = nil
+				sprite:getParent():removeChild(sprite , false)
+				self.itemSprite[ItemSpriteType.kSnailMove] = sprite
+				self.isNeedUpdate = true
+			elseif sprite.state == TileWukongState.kReadyToJump and state == TileWukongState.kOnActive then
+				self.itemSprite[ItemSpriteType.kSnailMove] = nil
+				sprite:getParent():removeChild(sprite , false)
+
+				self.itemSprite[ItemSpriteType.kItemShow] = sprite
+				self.isNeedUpdate = true
+			end
+		end
+
+		sprite:changeState(state , callback)
+	end
+end
+
+function ItemView:changeWukongColor(color , callback)
+	local sprite = self:getWukongSprite()
+	if sprite then
+		sprite:setColor(color , callback)
+	end
+end
+
+function ItemView:getWukongSprite()
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if not sprite then
+		sprite = self.itemSprite[ItemSpriteType.kSnailMove]
+	end
+	return sprite
+end
+
+function ItemView:onWukongJumpFin()
+	local sprite = self.itemSprite[ItemSpriteType.kSnailMove]
+	
+	if sprite then
+		sprite:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kSnailMove] = nil
+	end
+
+	--[[
+	sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite then
+		sprite:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kItemShow] = nil
+	end
+	]]
+
+	sprite = self.itemSprite[ItemSpriteType.kRoostFly]
+	
+	if sprite then
+		sprite:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kRoostFly] = nil
+	end
+end
+
+function ItemView:playWukongJumpAnimation(toPos, completeCallback , nojump)
+	local sprite = nil
+	local context = self
+	local function onAnimComplete()
+		--[[
+		if sprite and sprite:getParent() then
+			sprite:removeFromParentAndCleanup(true)
+			context.itemSprite[ItemSpriteType.kRoostFly] = nil
+			context.isNeedUpdate = true
+		end
+		--]]
+	end
+
+	if nojump then
+		setTimeOut( function ()
+
+			local locksprite = self.itemSprite[ItemSpriteType.kRoostFly]
+	
+			if locksprite then
+				locksprite:removeFromParentAndCleanup(false)
+				self.itemSprite[ItemSpriteType.kRoostFly] = nil
+			end
+
+			local sprite = self.itemSprite[ItemSpriteType.kSnailMove]
+	
+			if sprite then
+				sprite:removeFromParentAndCleanup(false)
+				self.itemSprite[ItemSpriteType.kSnailMove] = nil
+			end
+
+			self.itemSprite[ItemSpriteType.kItemShow] = sprite
+			self.isNeedUpdate = true
+
+		end , 1.8 )
+
+		setTimeOut( function ()
+			if completeCallback then completeCallback() end
+		end , 2 )
+
+		local monkey = self.itemSprite[ItemSpriteType.kItemShow]
+		self.itemSprite[ItemSpriteType.kItemShow] = nil
+		monkey:getParent():removeChild(monkey , false)
+		
+
+		sprite = monkey
+
+		local lockrect = TileWukongEff:create()
+		--local pos = self:getBasePosition(self.x, self.y)
+		local pos = self:getBasePosition( 1,1 )
+		lockrect:setPosition(pos)
+		self.itemSprite[ItemSpriteType.kRoostFly] = lockrect
+
+		self.itemSprite[ItemSpriteType.kSnailMove] = sprite
+		self.isNeedUpdate = true
+
+	else
+		--[[
+		local monkey = self.itemSprite[ItemSpriteType.kItemShow]
+		if monkey then
+			self.itemSprite[ItemSpriteType.kItemShow] = nil
+			monkey:getParent():removeChild(monkey , false)
+		end
+		]]
+		
+		sprite = self:getWukongSprite()
+
+		local fromCCP = self:getBasePosition(self.x, self.y)
+		local toCCP = self:getBasePosition(toPos.x, toPos.y)
+
+		local controlPoint = nil
+		if fromCCP.y < toCCP.y then
+			controlPoint = ccp(toCCP.x - (toCCP.x - fromCCP.x) / 5, toCCP.y + 350)
+		elseif fromCCP.y > toCCP.y then
+			if fromCCP.x == toCCP.x then
+				controlPoint = ccp(fromCCP.x, fromCCP.y)
+			else
+				controlPoint = ccp(fromCCP.x - (fromCCP.x - toCCP.x) / 5, fromCCP.y + 240)
+			end
+		elseif fromCCP.y == toCCP.y then
+			controlPoint = ccp(fromCCP.x - (fromCCP.x - toCCP.x) / 2, fromCCP.y + 360)
+		end
+
+		local bezierConfig = ccBezierConfig:new()
+		bezierConfig.controlPoint_1 = fromCCP
+		bezierConfig.controlPoint_2 = controlPoint
+		bezierConfig.endPosition = toCCP
+		local bezierAction = CCBezierTo:create(2, bezierConfig)
+		local callbackAction = CCCallFunc:create(completeCallback)
+		local delayAction = CCDelayTime:create(0.3)
+
+		local actionList = CCArray:create()
+		actionList:addObject(bezierAction)
+		actionList:addObject(callbackAction)
+		actionList:addObject(delayAction)
+		actionList:addObject(CCCallFunc:create(onAnimComplete))
+		-- local sequenceAction = CCSequence:createWithTwoActions(bezierAction, callbackAction)
+		local sequenceAction = CCSequence:create(actionList)
+
+		
+		--sprite = TileWukong:createByAnimation()
+
+		sprite:setPosition(fromCCP)
+
+		sprite:runAction(sequenceAction)
+
+		local scaleArr = CCArray:create()
+		scaleArr:addObject( CCEaseSineIn:create( CCScaleTo:create( 1.3 , 1.8 , 1.8) ) )
+		scaleArr:addObject( CCEaseSineOut:create( CCScaleTo:create( 0.7 , 1 , 1) ) )
+		sprite:runAction(CCSequence:create(scaleArr))
+
+		----[[
+		self.itemSprite[ItemSpriteType.kSnailMove] = sprite
+		self.isNeedUpdate = true
+		--]]
+
+		local lockrect = TileWukongEff:create()
+		--local pos = self:getBasePosition(self.x, self.y)
+		local pos = self:getBasePosition( 1,1 )
+		lockrect:setPosition(pos)
+		self.itemSprite[ItemSpriteType.kRoostFly] = lockrect
+	end
+	
+
 end
 
 function ItemView:buildRabbitCave()
@@ -1872,16 +2480,16 @@ function ItemView:buildMonster()
 end
 
 function ItemView:buildBoss(data)
-	local boss = TileBoss:create(BossType.kElephant)
+	local boss = TileBoss:create(BossType.kDeer)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
-	self:updateBossBlood(data.blood/data.maxBlood, false)
+	self:updateBossBlood(data.blood/data.maxBlood, false, tostring(data.blood)..'/'..tostring(data.maxBlood))
 	self:upDatePosBoardDataPos(data)
 end
 
-function ItemView:updateBossBlood(value, playAnim)
+function ItemView:updateBossBlood(value, playAnim, debug_string)
 	local s = self.itemSprite[ItemSpriteType.kBigMonster]
 	if s then
-		s:setBloodPercent(value, playAnim)
+		s:setBloodPercent(value, playAnim, debug_string)
 	end
 end
 
@@ -1934,12 +2542,16 @@ function ItemView:buildMimosa(data, isOnlyGetSprite)
 	end
 end
 
-function ItemView:addMimosaEffect( direction )
+function ItemView:addMimosaEffect( itemType, direction )
 	-- body
 	local container = Sprite:createEmpty()
 	local mask = Sprite:createWithSpriteFrameName("mimosa_mask")
 	container:addChild(mask)
-	mask:setAlpha(0.8)
+	if itemType == GameItemType.kKindMimosa then
+		mask:setAlpha(0)
+	else
+		mask:setAlpha(0.8)
+	end
 	container.mask = mask
 
 	local sprite = Sprite:createWithSpriteFrameName("mimosa.grow.up_0026")
@@ -1961,11 +2573,18 @@ end
 
 function ItemView:playMimosaBackAnimation(delaytime,callback)
 	-- body
+	if self.isPlayBackAnimation then 
+		if callback then callback() end
+		return
+	end
+
 	local sprite = self:getGameItemSprite()
+	self.isPlayBackAnimation = true
 	if sprite then
 		local function play( ... )
 			-- body
 			sprite:playBackAnimation(callback)
+			self.isPlayBackAnimation = nil
 		end 
 		sprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(delaytime), CCCallFunc:create(play)))
 	end
@@ -1979,14 +2598,14 @@ function ItemView:playMimosaGrowAnimation( callback )
 	end
 end
 
-function ItemView:playMimosaEffectGrow( direction, delay, callback)
+function ItemView:playMimosaEffectGrow( itemType, direction, delay, callback)
 	-- body
 	local container = Sprite:createEmpty()
 	local mask = Sprite:createWithSpriteFrameName("mimosa_mask")
 	container:addChild(mask)
 	mask:setAlpha(0)
 	container.mask = mask
-	if not self.itemSprite[ItemSpriteType.kNormalEffect] then 
+	if not self.itemSprite[ItemSpriteType.kNormalEffect] and itemType == GameItemType.kMimosa then 
 		mask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(delay + 0.4), CCFadeTo:create(0.3, 255 * 0.8)))
 	end
 
@@ -2000,7 +2619,11 @@ function ItemView:playMimosaEffectGrow( direction, delay, callback)
 		if self.itemSprite[ItemSpriteType.kNormalEffect] then
 			container:removeFromParentAndCleanup(true)
 		else
-			mask:setAlpha(0.8)
+			if itemType == GameItemType.kMimosa then
+				mask:setAlpha(0.8)
+			else
+				mask:setAlpha(0)
+			end
 			self.itemSprite[ItemSpriteType.kNormalEffect] = container
 			self.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(false)
 			self.getContainer(ItemSpriteType.kNormalEffect):addChild(container)
@@ -2027,7 +2650,7 @@ function ItemView:playMimosaEffectGrow( direction, delay, callback)
 	container:setPosition(self:getBasePosition(self.x, self.y))
 end
 
-function ItemView:playMimosaEffectBack( direction, delay, callback )
+function ItemView:playMimosaEffectBack( itemType, direction, delay, callback )
 	-- body
 	delay = delay or 0
 	-- delay = 0
@@ -2035,7 +2658,7 @@ function ItemView:playMimosaEffectBack( direction, delay, callback )
 	if sprite then
 		local mimosaLefa = sprite.mimosaLefa
 		local mask = sprite.mask
-		if mask then 
+		if mask and itemType == GameItemType.kMimosa then 
 			mask:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(delay), CCFadeOut:create(0.3)) )
 		end
 
@@ -2056,12 +2679,12 @@ function ItemView:playMimosaEffectBack( direction, delay, callback )
 
 end
 
-function ItemView:playMimosaEffectAnimation( direction, delay, callback, isGrow )
+function ItemView:playMimosaEffectAnimation( itemType, direction, delay, callback, isGrow )
 	-- body
 	if isGrow then
-		self:playMimosaEffectGrow( direction, delay, callback)
+		self:playMimosaEffectGrow( itemType, direction, delay, callback)
 	else
-		self:playMimosaEffectBack( direction, delay, callback )
+		self:playMimosaEffectBack( itemType, direction, delay, callback )
 	end
 end
 
@@ -2078,11 +2701,36 @@ function ItemView:buildSnail( snailRoadType )
 	-- body
 	local sprite = TileSnail:create()
 	sprite:setPosition(self:getBasePosition(self.x, self.y))
-	self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	self.itemSprite[ItemSpriteType.kSnail] = sprite
 	if snailRoadType == RouteConst.kLeft then 
 		sprite:setScaleX(-1)
 	end
 	sprite:updateArrow(snailRoadType)
+end
+
+function ItemView:playHedgehogOut( callback )
+	-- body
+	local function _callback( ... )
+		-- body
+		if callback then callback() end
+	end
+	local sp = self.itemSprite[ItemSpriteType.kSnail]
+	if sp then
+		sp:playHedgehogOutAnimation(_callback)
+	else
+		_callback()
+	end
+
+end
+function ItemView:buildHedgehog( roadType, hedgehogLevel, isbefore )
+	-- body
+	local sprite = TileHedgehog:create(hedgehogLevel,isbefore)
+	sprite:setPosition(self:getBasePosition(self.x, self.y))
+	self.itemSprite[ItemSpriteType.kSnail] = sprite
+	if roadType == RouteConst.kLeft then 
+		sprite:setScaleX(-1)
+	end
+	sprite:updateArrow(roadType)
 end
 
 -----创建掉落中被裁减的物品的sprite
@@ -2114,10 +2762,26 @@ function ItemView:CreateFallingClippingSprite(data, autotype)
 		tempsprite = ItemViewUtils:createQuestionMark(data.ItemColorType)
 	elseif data.ItemType == GameItemType.kAddMove then
 		tempsprite = self:buildAddMove(data.ItemColorType, data.numAddMove, true)
+	elseif data.ItemType == GameItemType.kRocket then
+		tempsprite = self:buildRocket(data.ItemColorType, true)
+	elseif data.ItemType == GameItemType.kCrystalStone then
+		tempsprite = self:buildCrystalStone(data.ItemColorType, data.crystalStoneEnergy, data.crystalStoneBombType, true)
+	elseif data.ItemType == GameItemType.kTotems then
+		tempsprite = self:buildTotems(data.ItemColorType, data:isActiveTotems(), true)
+	elseif data.ItemType == GameItemType.kDrip then
+		tempsprite = self:buildDrip(true)
 	else
 		he_log_error("unexcepted item type:"..tostring(data.ItemType))
 	end 
 
+	if not tempsprite then
+		local logMsg = string.format("failed to create item.ItemType=%s,ColorType=%s,SpecialType=%s", 
+			tostring(data.ItemType), 
+			tostring(AnimalTypeConfig.convertColorTypeToIndex(data.ItemColorType)), 
+			tostring(AnimalTypeConfig.convertSpecialTypeToIndex(data.ItemSpecialType)))
+		he_log_error(logMsg)
+	end
+	
 	local container = Sprite:createEmpty()
 	tempsprite:setPosition(ccp(0, 0))
 	container:addChild(tempsprite)
@@ -2533,12 +3197,12 @@ end
 
 function ItemView:playSelectEffect(data)
 	if data.ItemType == GameItemType.kAnimal then
-		if data.ItemSpecialType < AnimalTypeConfig.kLine or data.ItemSpecialType > AnimalTypeConfig.kColor then
+		if not AnimalTypeConfig.isSpecialTypeValid(data.ItemSpecialType) then
 			local itemView = self.itemSprite[ItemSpriteType.kItem]
 			if itemView and itemView.refCocosObj then
 				itemView:setVisible(false)
 
-				local sprite = TileCharacter:create(itemsName[data.ItemColorType])
+				local sprite = TileCharacter:create(table.getMapValue(itemsName, data.ItemColorType))
 				sprite:playSelectAnimation()
 				local pos = self:getBasePosition(self.x, self.y)
 				sprite:setPosition(pos)
@@ -2557,6 +3221,16 @@ function ItemView:playSelectEffect(data)
 		if itemView and itemView.refCocosObj then 
 			itemView:playHappyAnimation()
 		end
+	elseif data.ItemType == GameItemType.kCrystalStone then
+		local itemView = self.itemSprite[ItemSpriteType.kItemShow]
+		if itemView and itemView.refCocosObj then 
+			itemView:playSelectedAnimate()
+		end
+	elseif data.ItemType == GameItemType.kTotems then
+		local itemView = self.itemSprite[ItemSpriteType.kItemShow]
+		if itemView and itemView.refCocosObj then 
+			itemView:playSelectedAnimate()
+		end
 	end
 
 	if self.itemSprite[ItemSpriteType.kSpecial] == nil then
@@ -2570,7 +3244,7 @@ end
 
 function ItemView:stopSelectEffect(data)
 	if data.ItemType == GameItemType.kAnimal then
-		if data.ItemSpecialType < AnimalTypeConfig.kLine or data.ItemSpecialType > AnimalTypeConfig.kColor then
+		if not AnimalTypeConfig.isSpecialTypeValid(data.ItemSpecialType) then
 			local itemView, itemShowView = self.itemSprite[ItemSpriteType.kItem], self.itemSprite[ItemSpriteType.kItemShow]
 			if itemView then
 				itemView:setVisible(true)
@@ -2587,6 +3261,16 @@ function ItemView:stopSelectEffect(data)
 				itemView:playNormalAnimation()
 			end
 		end
+	elseif data.ItemType == GameItemType.kCrystalStone then
+		local itemView = self.itemSprite[ItemSpriteType.kItemShow]
+		if itemView then
+			itemView:stopSelectedAnimate()
+		end
+	elseif data.ItemType == GameItemType.kTotems then
+		local itemView = self.itemSprite[ItemSpriteType.kItemShow]
+		if itemView then
+			itemView:stopSelectedAnimate()
+		end
 	end
 
 	local borderEffect = self.itemSprite[ItemSpriteType.kSpecial]
@@ -2600,7 +3284,6 @@ end
 
 ------------------------balloon------------------
 function ItemView:buildBalloon( data )
-	-- body
 	local balloon =  TileBalloon:create(data.ItemColorType, data.balloonFrom)
 	local pos = self:getBasePosition(self.x, self.y)
 	balloon:setPosition(pos)
@@ -2688,7 +3371,7 @@ end
 
 function ItemView:setTileBlockCoverSpriteVisible( value )
 	-- body
-	for i = ItemSpriteType.kSnailRoad, ItemSpriteType.kLast do
+	for i = ItemSpriteType.kSeaAnimal, ItemSpriteType.kLast do
 		if self.itemSprite[i] ~= nil then
 			if i == ItemSpriteType.kRope or i == ItemSpriteType.kPass or i == ItemSpriteType.kChain then 
 			else
@@ -2735,11 +3418,11 @@ end
 
 function ItemView:playMonsterFrostingDec( callback )
 	-- body
-	local monster_frosting = self.itemSprite[ItemSpriteType.kNormalEffect]
+	local monster_frosting = self.itemSprite[ItemSpriteType.kBigMonsterIce]
 	local function animationCallback( ... )
 		-- body
 		if monster_frosting then monster_frosting:removeFromParentAndCleanup(true) end
-		self.itemSprite[ItemSpriteType.kNormalEffect] = nil
+		self.itemSprite[ItemSpriteType.kBigMonsterIce] = nil
 		if callback and type(callback) == "function" then callback() end
 	end
 	
@@ -2820,7 +3503,11 @@ function ItemView:playMaydayBossDie(boardView, callback)
 		if callback then callback() end
 		
 	end
-	boss:destroy(animationCallback)
+	if boss then
+		boss:destroy(animationCallback)
+	else
+		if callback then callback() end
+	end
 end
 
 function ItemView:playMaydayBossDisappear(boardView, callback)
@@ -2845,7 +3532,7 @@ function ItemView:playMaydayBossCast(boardView, callback)
 end
 
 function ItemView:buildBossAnim(data)
-	local boss = TileBoss:create(BossType.kElephant)
+	local boss = TileBoss:create(BossType.kDeer)
 	self.itemSprite[ItemSpriteType.kBigMonster] = boss
 	self:updateBossBlood(data.blood/data.maxBlood, false)
 	self:upDatePosBoardDataPos(data)
@@ -2917,12 +3604,43 @@ function ItemView:playSnailRoadChangeState( changeToBright )
 	end
 end
 
+function ItemView:playHedgehogRoadChangeState( state )
+	-- body
+	local road = self.itemSprite[ItemSpriteType.kHedgehogRoad]
+	local function callback( ... )
+		-- body
+		road:setVisible(true)
+		local s = self.itemSprite[ItemSpriteType.kHedgehogRoadEffect]
+		if s then
+			s:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kHedgehogRoadEffect] = nil
+		end
+	end
+
+	if road then 
+		road:changeState(state)
+		--[[
+		if state == HedgeRoadState.kPass then
+			road:setVisible(false)
+			local tmpRoad = road:copy()
+			local size = tmpRoad:getGroupBounds().size
+			local pos = self:getBasePosition(self.x, self.y)
+			local roadAni = TileHedgehogRoad:createChangeBrightAnimation(tmpRoad, pos, callback)
+			self.itemSprite[ItemSpriteType.kHedgehogRoadEffect] = roadAni
+			-- roadAni:setPosition(ccp(pos.x - size.width/2, pos.y - size.height/2))
+			self.isNeedUpdate = true
+		end
+		]]
+		
+	end
+end
+
 function ItemView:playSnailInShellAnimation(direction,callback )
 	-- body
-	local item = self.itemSprite[ItemSpriteType.kItemShow]
+	local item = self.itemSprite[ItemSpriteType.kSnail]
 	if item then
 		if item then item:removeFromParentAndCleanup(true) end
-		self.itemSprite[ItemSpriteType.kItemShow] = nil
+		self.itemSprite[ItemSpriteType.kSnail] = nil
 	end
 	local tempSnail = TileSnail:create()
 	local function animationCallback( ... )
@@ -2930,6 +3648,32 @@ function ItemView:playSnailInShellAnimation(direction,callback )
 		self.isNeedUpdate = true
 		if callback then callback() end
 		tempSnail:playMoveAnimation()
+	end
+
+	
+	tempSnail:setPosition(self:getBasePosition(self.x, self.y))
+	tempSnail:playToShellAnimation(animationCallback)
+	self.itemSprite[ItemSpriteType.kSnailMove] = tempSnail
+	if direction == RouteConst.kLeft then
+		tempSnail:setScaleX(-1)
+	end
+
+	self.isNeedUpdate = true
+end
+
+function ItemView:playHedgehogInShellAnimation(direction,callback, hedgehogLevel, isCrazy )
+	-- body
+	local item = self.itemSprite[ItemSpriteType.kSnail]
+	if item then
+		if item then item:removeFromParentAndCleanup(true) end
+		self.itemSprite[ItemSpriteType.kSnail] = nil
+	end
+	local tempSnail = TileHedgehog:create(hedgehogLevel)
+	local function animationCallback( ... )
+		-- body
+		self.isNeedUpdate = true
+		if callback then callback() end
+		tempSnail:playMoveAnimation(nil, isCrazy)
 	end
 
 	
@@ -2951,8 +3695,8 @@ function ItemView:playSnailOutShellAnimation(direction, callback)
 		self.itemSprite[ItemSpriteType.kSnailMove] = nil
 		self:cleanGameItemView()
 		self:buildSnail(direction)
-		if self.getContainer(ItemSpriteType.kItemShow) ~= nil then 
-			self.getContainer(ItemSpriteType.kItemShow):addChild(self.itemSprite[ItemSpriteType.kItemShow]);
+		if self.getContainer(ItemSpriteType.kSnail) ~= nil then 
+			self.getContainer(ItemSpriteType.kSnail):addChild(self.itemSprite[ItemSpriteType.kSnail]);
 		else
 			self.isNeedUpdate = true;
 		end
@@ -2972,6 +3716,44 @@ function ItemView:playSnailOutShellAnimation(direction, callback)
 	end
 end
 
+function ItemView:playHedgehogOutShellAnimation(direction, callback, hedgehogLevel)
+	local item = self.itemSprite[ItemSpriteType.kSnailMove]
+	local function animationCallback( ... )
+		-- body
+		item:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kSnailMove] = nil
+		self:cleanGameItemView()
+		self:buildHedgehog(direction, hedgehogLevel)
+		if self.getContainer(ItemSpriteType.kSnail) ~= nil then 
+			self.getContainer(ItemSpriteType.kSnail):addChild(self.itemSprite[ItemSpriteType.kSnail]);
+		else
+			self.isNeedUpdate = true;
+		end
+		if callback then callback() end
+	end
+	if item then
+		item:setRotation(0)
+		if direction == RouteConst.kLeft then
+			item:setScaleX(-1)
+		else
+			item:setScaleX(1)
+		end
+		item:updateArrow(direction)
+		item:playOutShellAnimation(animationCallback) 
+	end
+end
+
+function ItemView:playHedgehogChangeAnimation( level, callback )
+	-- body
+	local item = self.itemSprite[ItemSpriteType.kSnail]
+	local function animationCallback( ... )
+		-- body
+		if callback then callback() end
+	end 
+	item:playChangeAnimation(level, animationCallback)
+end
+
+
 
 function ItemView:playSnailMovingAnimation(rotation , callback)
 	-- body
@@ -2982,13 +3764,29 @@ function ItemView:playSnailMovingAnimation(rotation , callback)
 		if callback then callback() end
 		self.isNeedUpdate = true
 	end
+	--[[
 	item:setScaleX(1)
 	item:setRotation(0)
+	item:setMainSpriteRotation(0)
 	if rotation == 180 then 
 		item:setScaleX(-1)
 	else
 		item:setRotation(rotation)
+		item:setMainSpriteRotation(rotation)
 	end
+	]]
+
+	if rotation == 180 then 
+		item:setScaleX(-1)
+		item:setRotation(0)
+		item:setMainSpriteRotation(0)
+	else
+		item:setScaleX(1)
+		item:setRotation(rotation)
+		item:setMainSpriteRotation(rotation)
+	end
+
+	
 	local action_move = CCMoveTo:create(0.3, self:getBasePosition(self.x, self.y))
 	local action_callback = CCCallFunc:create(animationCallback)
 	item:runAction(CCSequence:createWithTwoActions(action_move, action_callback))
@@ -3016,7 +3814,7 @@ function ItemView:changToSnail( direction, callback )
 	-- body
 	self:cleanGameItemView()
 	self:buildSnail(direction)
-	local item = self.itemSprite[ItemSpriteType.kItemShow]
+	local item = self.itemSprite[ItemSpriteType.kSnail]
 	self.isNeedUpdate = true
 	if item then item:playOutShellAnimation(callback) end
 end
@@ -3043,7 +3841,9 @@ end
 local needTransLayer = table.const{
 	-- ItemSpriteType.kTileBlocker,
 	ItemSpriteType.kMoveTileBackground,
-
+	ItemSpriteType.kSuperCuteLowLevel,
+	ItemSpriteType.kLotus_bottom,
+	ItemSpriteType.kItemLowLevel,
 	ItemSpriteType.kSand,
 	ItemSpriteType.kLight,
 	ItemSpriteType.kItem, 
@@ -3051,6 +3851,10 @@ local needTransLayer = table.const{
 	ItemSpriteType.kDigBlocker,
 	ItemSpriteType.kLock,
 	ItemSpriteType.kFurBall,
+	ItemSpriteType.kHoney,
+	ItemSpriteType.kItemHighLevel,
+	ItemSpriteType.kLotus_top,
+	ItemSpriteType.kSuperCuteHighLevel,
 }
 
 function ItemView:getTransItemCopy()
@@ -3091,6 +3895,7 @@ function ItemView:reinitTransHeadByLogic(gameItemData, boardData)
 	-- 重建sprite
 	for k, v in pairs(self.transClippingContainer.items) do
 		v:removeFromParentAndCleanup(false)
+		print("RRR      ItemView:reinitTransHeadByLogic    ----------------->  " , k)
 		self.itemSprite[k] = v
 	end
 	self.transClippingContainer:dispose()
@@ -3269,6 +4074,12 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 	local container = Sprite:createEmpty()
 	container.items = {}
 
+	if boardData.superCuteState == GameItemSuperCuteBallState.kInactive then
+		local cuteBall = TileSuperCuteBall:create(boardData.superCuteState)
+		container:addChild(cuteBall)
+		container.items[ItemSpriteType.kSuperCuteLowLevel] = cuteBall
+	end
+
 	if boardData.sandLevel > 0 then
 		local sprite = ItemViewUtils:buildSand(boardData.sandLevel)
 		container:addChild(sprite)
@@ -3281,12 +4092,19 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		container.items[ItemSpriteType.kLight] = ice
 	end
 
+	if boardData.lotusLevel > 0 then		 --草地（荷叶）底层
+		--local bottom = self:createLotusAnimation(boardData.lotusLevel , "in" , "bottom" , true)
+		local bottom = TileLotus:create(boardData.lotusLevel , "in" , "bottom" , true)
+		container:addChild(bottom)
+		container.items[ItemSpriteType.kLotus_bottom] = bottom
+	end
+
 	local itemSprite = nil
 	local layer = nil
 	local isOnlyGetSprite = true
 	if itemData.ItemType == GameItemType.kAnimal then
 		itemSprite = self:buildNewAnimalItem(itemData.ItemColorType, itemData.ItemSpecialType, false, false)
-		if itemData.ItemSpecialType >= AnimalTypeConfig.kYellow and itemData.ItemSpecialType <= AnimalTypeConfig.kColor then
+		if AnimalTypeConfig.isSpecialTypeValid(itemData.ItemSpecialType) then
 			layer = ItemSpriteType.kItemShow
 		else			
 			layer = ItemSpriteType.kItem
@@ -3360,11 +4178,26 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 	elseif itemData.ItemType == GameItemType.kMagicLamp then
 		itemSprite = TileMagicLamp:create(itemData.ItemColorType, itemData.lampLevel)
 		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kWukong then
+		itemSprite = TileWukong:create(itemData.ItemColorType, itemData.wukongProgressCurr)
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kDrip then
+		itemSprite = self:buildDrip(true)
+		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kSuperBlocker then
 		itemSprite = TileSuperBlocker:create()
 		layer = ItemSpriteType.kItemShow
 	elseif itemData.ItemType == GameItemType.kMagicStone then
 		itemSprite = TileMagicStone:create(itemData.magicStoneLevel, itemData.magicStoneDir)
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kRocket then
+		itemSprite = self:buildRocket(itemData.ItemColorType, true)
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kCrystalStone then
+		itemSprite = self:buildCrystalStone(itemData.ItemColorType, itemData.crystalStoneEnergy, itemData.crystalStoneBombType, true)
+		layer = ItemSpriteType.kItemShow
+	elseif itemData.ItemType == GameItemType.kTotems then
+		itemSprite = self:buildTotems(itemData.ItemColorType, itemData:isActiveTotems(), true)
 		layer = ItemSpriteType.kItemShow
 	end
 
@@ -3373,7 +4206,6 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		container:addChild(itemSprite)
 		container.items[layer] = itemSprite
 	end
-	
 
 	--附加属性
 	if itemData:hasFurball() then
@@ -3392,7 +4224,24 @@ function ItemView:createTransClippingSprite(itemData, boardData)
 		local honey = TileHoney:create()
 		honey:normal()
 		container:addChild(honey)
-		container.items[ItemSpriteType.kFurBall] = honey
+		container.items[ItemSpriteType.kHoney] = honey
+	end
+
+	if boardData.lotusLevel > 0 then		 --草地（荷叶）顶层
+		--local top = self:createLotusAnimation(boardData.lotusLevel , "in" , "top" , true)
+		local top = TileLotus:create(boardData.lotusLevel , "in" , "top" , true)
+		if top then
+			container:addChild(top)
+			container.items[ItemSpriteType.kLotus_top] = top
+		else
+			print("RRR   createLotusAnimation ERROR !!!!!!!!!!!!!!!!!!!!!!!!!!!!    " , boardData.lotusLevel , "in" , "top")
+		end
+	end
+
+	if boardData.superCuteState == GameItemSuperCuteBallState.kActive then
+		local cuteBall = TileSuperCuteBall:create(boardData.superCuteState)
+		container:addChild(cuteBall)
+		container.items[ItemSpriteType.kSuperCuteHighLevel] = cuteBall
 	end
 
 	return container
@@ -3545,14 +4394,14 @@ function ItemView:buildSeaAnimal(seaAnimalType)
 	sprite:setAnchorPoint(anchorPoint)
 	sprite:setRotation(rotation)
 	sprite:setPosition(pos)
-	self.itemSprite[ItemSpriteType.kTileBlocker] = sprite
+	self.itemSprite[ItemSpriteType.kSeaAnimal] = sprite
 end
 
 function ItemView:clearSeaAnimal()
-	local sprite = self.itemSprite[ItemSpriteType.kTileBlocker]
+	local sprite = self.itemSprite[ItemSpriteType.kSeaAnimal]
 	if sprite then
 		sprite:removeFromParentAndCleanup(true)
-		self.itemSprite[ItemSpriteType.kTileBlocker] = nil
+		self.itemSprite[ItemSpriteType.kSeaAnimal] = nil
 	end
 end
 
@@ -3618,7 +4467,7 @@ function ItemView:playBeInfectAnimation( fromPos, callback )
 
 	local function finishCallback( ... )
 		-- body
-		local honey = self.itemSprite[ItemSpriteType.kFurBall]
+		local honey = self.itemSprite[ItemSpriteType.kHoney]
 		self.isNeedUpdate = true
 		if honey then honey:normal() end
 	end
@@ -3630,7 +4479,7 @@ function ItemView:playBeInfectAnimation( fromPos, callback )
 		local honey = TileHoney:create()
 		honey:setPosition(self:getBasePosition(self.x, self.y))
 		honey:add(finishCallback)
-		self.itemSprite[ItemSpriteType.kFurBall] = honey
+		self.itemSprite[ItemSpriteType.kHoney] = honey
 		if callback then callback() end
 		self.isNeedUpdate = true
 	end
@@ -3644,7 +4493,7 @@ function ItemView:buildHoney( honeyLevel )
 	-- body
 	local honey = TileHoney:create()
 	honey:normal()
-	self.itemSprite[ItemSpriteType.kFurBall] = honey
+	self.itemSprite[ItemSpriteType.kHoney] = honey
 end
 
 function ItemView:playHoneyDec( callback )
@@ -3660,11 +4509,45 @@ function ItemView:playHoneyDec( callback )
 	honeyEffect:disappear(animationCallback)
 	self.itemSprite[ItemSpriteType.kNormalEffect] = honeyEffect
 
-	local sprite = self.itemSprite[ItemSpriteType.kFurBall]
+	local sprite = self.itemSprite[ItemSpriteType.kHoney]
 	if sprite then sprite:removeFromParentAndCleanup(true) end
-	self.itemSprite[ItemSpriteType.kFurBall] = nil
+	self.itemSprite[ItemSpriteType.kHoney] = nil
 	self.isNeedUpdate = true
 end
+
+function ItemView:buildWukongTarget(data)
+	local sprite = TileWukongTarget:create()
+	if self.itemSprite[ItemSpriteType.kTileBlocker] and self.itemSprite[ItemSpriteType.kTileBlocker]:getParent() then
+		self.itemSprite[ItemSpriteType.kTileBlocker]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kTileBlocker] = nil
+	end
+	self.itemSprite[ItemSpriteType.kTileBlocker] = sprite
+end
+
+function ItemView:setWukongTargetLightVisible(direction , visible)
+	local sprite = self.itemSprite[ItemSpriteType.kTileBlocker]
+	if sprite then
+		sprite:setLightVisible(direction , visible)
+	end
+end
+
+function ItemView:playWukongTargetLoopAnimation(animationType)
+	local sprite = self.itemSprite[ItemSpriteType.kTileBlocker]
+	if sprite then
+		sprite:playLoopAnimation(animationType)
+	end
+end
+
+
+
+function ItemView:deleteWukongTarget()
+	local sprite = self.itemSprite[ItemSpriteType.kTileBlocker]
+	if sprite and sprite:getParent() then
+		sprite:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kTileBlocker] = nil
+	end
+end
+
 
 function ItemView:buildMagicTile(data)
 	local level = data.remainingHit or 1
@@ -3678,8 +4561,12 @@ end
 
 function ItemView:deleteMagicTile()
 	if self.itemSprite[ItemSpriteType.kTileBlocker] and self.itemSprite[ItemSpriteType.kTileBlocker]:getParent() then
-		self.itemSprite[ItemSpriteType.kTileBlocker]:removeFromParentAndCleanup(true)
-		self.itemSprite[ItemSpriteType.kTileBlocker] = nil
+		local tile = self.itemSprite[ItemSpriteType.kTileBlocker]
+		local function onHide()
+			self.itemSprite[ItemSpriteType.kTileBlocker]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kTileBlocker] = nil
+		end
+		tile:hideBG(onHide)
 	end
 end
 
@@ -3708,9 +4595,11 @@ function ItemView:changeMagicTileColor(color)
 end
 
 function ItemView:buildHalloweenBoss()
-	-- debug.debug()
-	-- local bossIcon = Sprite:createWithSpriteFrameName('xmas_boss_icon_0000')
-	self.itemSprite[ItemSpriteType.kNormalEffect] = TileDragonBoss:buildHalloweenBoss()
+	local node = BossBeeArmature:createGeneratorBottleIcon()
+	local wrapper = CocosObject:create()
+	wrapper:addChild(node)
+	node:setPosition(ccp(-35, 35))
+	self.itemSprite[ItemSpriteType.kNormalEffect] = wrapper
 end
 
 function ItemView:clearHalloweenBoss()
@@ -3910,5 +4799,347 @@ function ItemView:playStoneActiveAnim(stoneLevel, targetPos, callback)
 		self.isNeedUpdate = true
 	else
 		if callback then callback() end
+	end
+end
+
+function ItemView:buildHedgehogBox( ... )
+	-- body
+	local sp = TileHedgehogBox:create()
+	self.itemSprite[ItemSpriteType.kItemShow] = sp
+end
+
+function ItemView:playHedgehogBoxOpen(callback, targetPos)
+	-- body
+	local sp = self.itemSprite[ItemSpriteType.kItemShow]
+	if sp then
+		sp:playOpenAnimation(targetPos, callback)
+	else
+		if callback then callback() end
+	end
+end
+
+local kRocketSpeed = 500
+function ItemView:playRocketFlyAnimation(boardView, colortype, startPos, finalPos, callback)
+	local rocket = TileRocket:create(colortype)
+	if rocket and startPos and finalPos then
+		colortype = colortype or rocket.color
+		if rocket:getParent() then
+			rocket:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kItemShow] = nil
+		end
+
+		local startPosInView, ufoPosInView = boardView:getPositionFromTo(startPos, finalPos)
+		local effectLayer = boardView.PlayUIDelegate.effectLayer
+		local function onAnimFinish()
+			local explode = TileRocket:buildRocketExplodeAnimation()
+			local offsetPos = ccp(0, 0)
+			if finalPos.y > startPos.y then offsetPos = ccp(-50, 0) -- UFO在导弹右边
+			elseif finalPos.y < startPos.y then offsetPos = ccp(50, 0) -- UFO在导弹左边
+			end
+			explode:setPosition(ccp(ufoPosInView.x + offsetPos.x, ufoPosInView.y + offsetPos.y))
+			effectLayer:addChild(explode)
+
+			if callback then callback() end
+		end
+
+		local finalPosInView = ccp(ufoPosInView.x, ufoPosInView.y + 15) -- 向上偏移一定距离
+		local movePosList = {}
+		table.insert(movePosList, startPosInView)
+		if finalPos.y ~= startPos.y then -- 转弯点
+			table.insert(movePosList, ccp(startPosInView.x, finalPosInView.y))
+		end
+		table.insert(movePosList, finalPosInView)
+		local ani = TileRocket:buildRocketAnimation(colortype, movePosList, onAnimFinish)
+		if ani then
+			ani:setPosition(startPosInView)
+			effectLayer:addChild(ani)
+		else
+			if callback then callback() end
+		end
+	else
+		if callback then callback() end
+	end
+end
+
+----------------------
+-- 染色宝宝动画
+----------------------
+-- 染色宝宝外发光动画
+function ItemView:playCrystalStoneChargeEffect()
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite and type(sprite.playChargeEffect) == "function" then
+		sprite:playChargeEffect()
+	end
+end
+
+-- 充能动画
+function ItemView:playCrystalStoneCharge(fromItemPos, color)
+	local function onAnimFinish( ... )
+		self:playCrystalStoneChargeEffect()
+	end
+	local layer = self.getContainer(ItemSpriteType.kCrystalStoneEffect)
+	if layer then
+		local startPos = self:getBasePosition(fromItemPos.y, fromItemPos.x)
+		local endPos = self:getBasePosition(self.x, self.y)
+		local finalPos = ccp(endPos.x, endPos.y+28)
+
+		local animate = TileCrystalStoneAnimate:buildAddEnergyAnimate(color, ccp(finalPos.x-startPos.x, finalPos.y-startPos.y), onAnimFinish)
+		animate:setPosition(startPos)
+
+		layer:addChild(animate)
+	end
+end
+
+-- 更新能量进度
+function ItemView:updateCrystalStoneEnergy(energyPercent, withAnimate)
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite and type(sprite.updateEnergyPercent) == "function" then
+		sprite:updateEnergyPercent(energyPercent, withAnimate)
+	end
+end
+
+-- 激活状态
+function ItemView:playCrystalStoneFullAnimate()
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite and type(sprite.updateState) == "function" then
+		sprite:updateState(CrystalStongAnimateStates.kFull)
+	end
+end
+
+-- 消失动画
+function ItemView:playCrystalStoneDisappear(isSpecial, callback)
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite and type(sprite.playDisappearAnimate) == "function" then
+		sprite:playDisappearAnimate(callback)
+
+		if isSpecial then
+			if self.itemSprite[ItemSpriteType.kCrystalStoneEffect] then 
+				self.itemSprite[ItemSpriteType.kCrystalStoneEffect]:removeFromParentAndCleanup(true) 
+			end
+
+			local effect = TileCrystalStoneAnimate:buildExplodeEffect()
+			local pos = self:getBasePosition(self.x, self.y)
+			effect:setPosition(ccp(pos.x, pos.y-2))
+
+			self.itemSprite[ItemSpriteType.kCrystalStoneEffect] = effect
+			self.isNeedUpdate = true
+		end
+	else
+		if callback then callback() end
+	end
+end
+
+-- 转换为等待消失
+function ItemView:playCrystalStoneChangeToWaiting()
+	local sprite = self.itemSprite[ItemSpriteType.kItemShow]
+	if sprite and type(sprite.playChangeToWaitingBomb) == "function" then
+		sprite:playChangeToWaitingBomb()
+	end
+end
+
+-- 染色宝宝发出改变颜色的特效
+function ItemView:playChangeColorByCrystalStone(fromItem, color, callback)
+	local fromPos = self:getBasePosition(fromItem.y, fromItem.x)
+	local finalPos = self:getBasePosition(self.x, self.y)
+	local function onAnimationFinished()
+		if callback then callback() end
+	end
+
+	local startPos = ccp(fromPos.x, fromPos.y+28)
+	local animate = TileCrystalStoneAnimate:buildChangeColorAnimate(color, ccp(finalPos.x - startPos.x, finalPos.y - startPos.y), onAnimationFinished)
+	animate:setPosition(startPos)
+	self.itemSprite[ItemSpriteType.kCrystalStoneEffect] = animate
+	self.isNeedUpdate = true
+end
+
+function ItemView:buildTotems(colortype, isActived, isOnlyGetSprite)
+	local sprite = TileTotems:create(colortype, isActived)
+	if not isOnlyGetSprite then
+		self.itemSprite[ItemSpriteType.kItemShow] = sprite
+	end
+	return sprite
+end
+
+function ItemView:playTotemsChangeToActive(callback)
+	local totems = self.itemSprite[ItemSpriteType.kItemShow]
+	if totems and type(totems.playChangeAnimate) == "function" then
+		totems:playChangeAnimate(callback)
+	end
+end
+
+function ItemView:playSuperTotemsWaittingExplode(linkToPos)
+	local totems = self.itemSprite[ItemSpriteType.kItemShow]
+	if totems and type(totems.hideTotems) == "function" then
+		totems:hideTotems()
+	end
+
+	local selfPos = self:getBasePosition(self.x, self.y)
+	local waittingAnimate = TileTotemsAnimation:buildTotemsWattingExplodeAnimate()
+	waittingAnimate:setPosition(selfPos)
+	self.itemSprite[ItemSpriteType.kSuperTotemsEffect] = waittingAnimate
+
+	if linkToPos then
+		local targetPos = self:getBasePosition(linkToPos.y, linkToPos.x)
+		local lightningAnimate = TileTotemsAnimation:buildTotemsExplodeLightning(selfPos, targetPos)
+		lightningAnimate:setPosition(selfPos)
+		self.itemSprite[ItemSpriteType.kSuperTotemsLight] = lightningAnimate
+	end
+end
+
+function ItemView:playSuperTotemsDestoryAnimate()
+	if self.itemSprite[ItemSpriteType.kSuperTotemsLight] then
+		self.itemSprite[ItemSpriteType.kSuperTotemsLight]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kSuperTotemsLight] = nil
+	end
+	if self.itemSprite[ItemSpriteType.kSuperTotemsEffect] then
+		self.itemSprite[ItemSpriteType.kSuperTotemsEffect]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kSuperTotemsEffect] = nil
+	end
+	if self.itemSprite[ItemSpriteType.kItemShow] then
+		self.itemSprite[ItemSpriteType.kItemShow]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kItemShow] = nil
+	end
+end
+
+function ItemView:playTileHighlightEffect(highlightType)
+	self:stopTileHighlightEffect()
+
+	if highlightType == TileHighlightType.kTotems then
+		local effect = TileTotemsAnimation:createTileLight()
+		effect:setPosition(self:getBasePosition(self.x, self.y))
+
+		self.itemSprite[ItemSpriteType.kTileHighlightEffect] = effect
+	end
+end
+
+function ItemView:stopTileHighlightEffect()
+	if self.itemSprite[ItemSpriteType.kTileHighlightEffect] then
+		self.itemSprite[ItemSpriteType.kTileHighlightEffect]:removeFromParentAndCleanup(true)
+		self.itemSprite[ItemSpriteType.kTileHighlightEffect] = nil
+	end
+end
+function ItemView:addWukongProgress(add)
+	if self.oldData and self.oldData.ItemType == GameItemType.kWukong then
+		local tileWukong = self:getWukongSprite()
+		self.oldData.wukongProgressCurr = self.oldData.wukongProgressCurr + add
+		if self.oldData.wukongProgressCurr > self.oldData.wukongProgressTotal then
+			self.oldData.wukongProgressCurr = self.oldData.wukongProgressTotal
+		end
+		if tileWukong then
+			tileWukong:setProgress(self.oldData.wukongProgressCurr , self.oldData.wukongProgressTotal)
+		end
+	end
+end
+
+function ItemView:setWukongProgress(curr , total)
+	local tileWukong = self:getWukongSprite()
+	if tileWukong then
+
+		tileWukong:setProgress(curr , total)
+	end
+end
+
+function ItemView:cleanSuperCuteBallView()
+	if self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] then
+		if self.itemSprite[ItemSpriteType.kSuperCuteHighLevel]:getParent() then
+			self.itemSprite[ItemSpriteType.kSuperCuteHighLevel]:removeFromParentAndCleanup(true)
+		end
+		self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] = nil
+	end
+	if self.itemSprite[ItemSpriteType.kSuperCuteLowLevel] then
+		if self.itemSprite[ItemSpriteType.kSuperCuteLowLevel]:getParent() then
+			self.itemSprite[ItemSpriteType.kSuperCuteLowLevel]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kSuperCuteLowLevel] = nil
+		end
+	end
+end
+
+function ItemView:addSuperCuteBall(ballState)
+	self:cleanSuperCuteBallView()
+
+	local sprite = TileSuperCuteBall:create(ballState)
+	sprite:setPosition(self:getBasePosition(self.x, self.y))
+
+	if ballState == GameItemSuperCuteBallState.kInactive then
+		self.itemSprite[ItemSpriteType.kSuperCuteLowLevel] = sprite
+	else
+		self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] = sprite
+	end
+end
+
+function ItemView:playSuperCuteMove(direction, callback)
+	local superCute = self.itemSprite[ItemSpriteType.kSuperCuteHighLevel]
+
+	if superCute then
+		local function onAnimFinish()
+			if type(callback) == "function" then callback() end 
+		end	
+
+		superCute:removeFromParentAndCleanup(false)
+		self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] = nil
+
+		if self.itemSprite[ItemSpriteType.kSpecial] then
+			self.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(true)
+			self.itemSprite[ItemSpriteType.kSpecial] = nil
+		end
+
+		self.itemSprite[ItemSpriteType.kSpecial] = superCute
+		self.isNeedUpdate = true
+
+		local jumDir = nil
+		if direction.x == 0 and direction.y == 1 then
+			jumDir = SuperCuteBallJumpDirection.kRight
+		elseif direction.x == 0 and direction.y == -1 then
+			jumDir = SuperCuteBallJumpDirection.kLeft
+		elseif direction.x == 1 and direction.y == 0 then
+			jumDir = SuperCuteBallJumpDirection.kDown
+		elseif direction.x == -1 and direction.y == 0 then
+			jumDir = SuperCuteBallJumpDirection.kUp
+		end
+		if jumDir then
+			superCute:playJump(jumDir, onAnimFinish)
+		else
+			onAnimFinish()
+		end
+	else
+		if type(callback) == "function" then callback() end 
+	end
+end
+
+function ItemView:playSuperCuteInactive(callback)
+	local superCute = self.itemSprite[ItemSpriteType.kSuperCuteHighLevel]
+	if superCute then
+		local function onAnimFinish()
+			superCute:removeFromParentAndCleanup(false)
+			self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] = nil
+			superCute:playInactive()
+			self.itemSprite[ItemSpriteType.kSuperCuteLowLevel] = superCute
+		
+			self.isNeedUpdate = true
+			if type(callback) == "function" then callback() end 
+		end
+		superCute:playHide(onAnimFinish)
+	else
+		if type(callback) == "function" then callback() end 
+	end
+end
+
+function ItemView:playSuperCuteRecover(callback)
+	local superCute = self.itemSprite[ItemSpriteType.kSuperCuteLowLevel]
+	if superCute then
+		local function jumpToHighLevel()
+			superCute:removeFromParentAndCleanup(false)
+			self.itemSprite[ItemSpriteType.kSuperCuteLowLevel] = nil
+
+			self.itemSprite[ItemSpriteType.kSuperCuteHighLevel] = superCute
+			self.isNeedUpdate = true
+		end
+		local function onAnimFinish()
+			superCute:playIdle(true)
+			if type(callback) == "function" then callback() end
+		end
+		superCute:playShow(onAnimFinish, jumpToHighLevel)
+	else
+		if type(callback) == "function" then callback() end 
 	end
 end

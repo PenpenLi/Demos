@@ -12,8 +12,13 @@ require "zoo.scenes.component.HomeScene.interaction.WorldSceneBranchInteractionC
 require "zoo.scenes.component.HomeScene.interaction.WorldSceneTrunkInteractionController"
 require "zoo.scenes.component.HomeScene.WorldMapOptimizer"
 require "zoo.scenes.component.HomeSceneFlyToAnimation"
+require "zoo.mission.panels.MissionTrunkLevelNodeBubble"
+
 
 require "zoo.events.GamePlayEvents"
+
+require "zoo.scenes.component.HomeScene.AnniversaryFloatButton"
+--require "zoo.scenes.component.HomeScene.animation.AnniversaryTwoYearsAnimation"
 
 ---------------------------------------------------
 -------------- WorldScene
@@ -23,11 +28,42 @@ assert(not WorldScene)
 assert(WorldSceneScroller)
 WorldScene = class(WorldSceneScroller)
 
+
+local function buildPlane(context)
+	--local backitemLayer = context.parallaxLayer:getChildByName("backitem")
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() or true then
+
+		local plane = Sprite:createWithSpriteFrameName("plane_0001")
+		--star:setPositionX(-30)
+		local plane_frames = SpriteUtil:buildFrames("plane_%04d", 1, 9)
+		local plane_animate = SpriteUtil:buildAnimate(plane_frames, 1/24)
+		plane:play(plane_animate, 0, 0, nil, false)
+		context.planeAnimate = plane
+
+		--context.backItemLayer:addChild(plane)
+		local locationNode = context.levelToNode[UserManager:getInstance().user:getTopLevelId()]
+		local posY = locationNode:getPositionY()
+		--local ppp = buildPlane(self)
+		plane:setPosition(ccp( 50 , posY ) )
+
+		--plane:setPosition(ccp(200 , 200))
+		--star1Layer:removeFromParentAndCleanup(false)
+
+		return plane
+	else
+		--star1Layer:removeFromParentAndCleanup(true)
+		return nil
+	end
+end
+
+
+
 function WorldScene:init(homeScene, ...)
 	assert(homeScene)
 	assert(#{...} == 0)
 
-	WorldSceneShowManager.getInstance()
+	
+	WorldSceneShowManager:getInstance()
 	-----------------
 	-- Init Base Class
 	-- --------------
@@ -66,23 +102,29 @@ function WorldScene:init(homeScene, ...)
 	self.gradientBackgroundLayer = Layer:create()
 	self.maskedLayer:addParallaxChild(self.gradientBackgroundLayer, 0, self.gradientBackgroundParallaxRatio, ccp(0,0))
 
-	-- 主界面星星先关（春节用 已过期）
-	-- local star1Parallax = 0.007
-	-- self.star1Parallax = ccp(star1Parallax, star1Parallax)
-	-- local plistPath = "flash/scenes/homeScene/home_night/home_scene_star.plist"
-	-- if __use_small_res then  
-	-- 	plistPath = table.concat(plistPath:split("."),"@2x.")
-	-- end
-	-- CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
-	-- local texture = CCSprite:createWithSpriteFrameName("home_scene_star.png"):getTexture()
-	-- self.star1Layer = SpriteBatchNode:createWithTexture(texture)
-	-- self.maskedLayer:addParallaxChild(self.star1Layer, 1, self.star1Parallax, ccp(0,0))
-	-- if WorldSceneShowManager.getInstance():getShowType() == 2 then 
-	-- 	self.star1Layer:setVisible(true)
-	-- else
-	-- 	self.star1Layer:setVisible(false)
-	-- end
+	local backItemLayerParallax = config.worldScene_backItemParallax
+	self.backItemLayerParallaxRatio = ccp(backItemLayerParallax, backItemLayerParallax)
+	self.backItemLayer = Layer:create()
+	self.maskedLayer:addParallaxChild(self.backItemLayer, 1, self.backItemLayerParallaxRatio, ccp(0,0))
 
+	--------------2016春节星星----------------
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		local star1Parallax = 0.007
+		self.star1Parallax = ccp(star1Parallax, star1Parallax)
+		local plistPath = "flash/scenes/homeScene/home_night/home_scene_star.plist"
+		if __use_small_res then  
+			plistPath = table.concat(plistPath:split("."),"@2x.")
+		end
+		CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(plistPath)
+		local texture = CCSprite:createWithSpriteFrameName("home_scene_star.png"):getTexture()
+		self.star1Layer = SpriteBatchNode:createWithTexture(texture)
+		self.maskedLayer:addParallaxChild(self.star1Layer, 1, self.star1Parallax, ccp(0,0))
+		if WorldSceneShowManager:getInstance():getShowType() == 2 then 
+			self.star1Layer:setVisible(true)
+		else
+			self.star1Layer:setVisible(false)
+		end
+	end
 	------------------------------
 	-- Some Cloud 1 Change Layer
 	-- ---------------------------
@@ -118,11 +160,27 @@ function WorldScene:init(homeScene, ...)
 	-- ---------------------
 	self.scaleOutButPreserveInnerLayers = {}
 
+	--------------2016春节烟花----------------
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		local fireworkParallax = 0.001
+		self.fireworkParallax = ccp(fireworkParallax, fireworkParallax)
+		self.worldSceneFireworkLayer = SpringFireworkAnimation:create()
+		self.maskedLayer:addParallaxChild(self.worldSceneFireworkLayer, 5, self.fireworkParallax, ccp(0,0))
+	end
+	------------------------------------------
+
+	------------两周年活动浮空岛---------------
+	self.floatIcons = {}
+	local floatIconsLayer = Layer:create()
+	self.floatIconsLayer = floatIconsLayer
+	self.maskedLayer:addParallaxChild(floatIconsLayer, 5, ccp(1, 1), ccp(0, 0))
+	-------------------------------------------
+
 	-------------------------------
 	--	Scale Small Layer 1
 	-- --------------------------
 	self.scaleTreeLayer1 = Layer:create()--藤蔓树（包含树干，分支树枝，关卡点，特效等）
-	self.maskedLayer:addParallaxChild(self.scaleTreeLayer1, 5, ccp(1,1), ccp(0,0))
+	self.maskedLayer:addParallaxChild(self.scaleTreeLayer1, 6, ccp(1,1), ccp(0,0))
 
 	---------------------
 	--- Hidden Branch Layer
@@ -188,6 +246,45 @@ function WorldScene:init(homeScene, ...)
 	-- Locked Cloud Layer
 	-- ------------------
 	self.lockedCloudLayer = Layer:create()
+	function self.lockedCloudLayer:getBatchNode( ... )
+		if not self.batchNode then
+			local cloudSpriteFrame = Sprite:createWithSpriteFrameName("home_clouds0000")
+			local texture = cloudSpriteFrame:getTexture()
+			self.batchNode = SpriteBatchNode:createWithTexture(texture)
+			cloudSpriteFrame:dispose()
+
+			self:addChild(self.batchNode)
+		end
+
+		return self.batchNode
+	end
+
+	-- 掩藏关卡显示 15-30关全3星开启 文案
+	function self.lockedCloudLayer:getHiddenBranchTextBatchNode( ... )
+		if not self.hiddenTextBatchNode then
+			self.hiddenTextBatchNode = BMFontLabelBatch:create(
+				"fnt/tutorial_white.png",
+				"fnt/tutorial_white.fnt",
+				10
+			)
+			self:addChild(self.hiddenTextBatchNode)
+		end
+
+		return self.hiddenTextBatchNode
+	end
+
+	function self.lockedCloudLayer:getHiddenBranchNumberBatchNode( ... )
+		if not self.hiddenNumberBatchNode then
+			self.hiddenNumberBatchNode = BMFontLabelBatch:create(
+				"fnt/event_default_digits.png",
+				"fnt/event_default_digits.fnt",
+				10
+			)
+			self:addChild(self.hiddenNumberBatchNode)
+		end
+
+		return self.hiddenNumberBatchNode
+	end
 	self.scaleTreeLayer2:addChild(self.lockedCloudLayer)
 
 	self.lockedCloudAnimLayer = Layer:create()
@@ -203,6 +300,12 @@ function WorldScene:init(homeScene, ...)
 	self.levelFriendPicStacksByLevelId = {}
 	self.levelFriendPicStacks = {}
 
+	----------------------
+	-- Icon Button Layer
+	-- ----------------------
+	self.iconButtonLayer = Layer:create()
+	self.scaleTreeLayer2:addChild(self.iconButtonLayer)
+
 	self.guideLayer = Layer:create()
 	self.scaleTreeLayer2:addChild(self.guideLayer)
 
@@ -215,15 +318,23 @@ function WorldScene:init(homeScene, ...)
 	self.foregroundLayer = Layer:create()
 	self.maskedLayer:addParallaxChild(self.foregroundLayer, 15, self.foregroundParallax, ccp(0,0))
 
+
+	local frontItemLayerParallax = config.worldScene_frontItemParallax
+	self.frontItemLayerParallaxRatio = ccp(frontItemLayerParallax, frontItemLayerParallax)
+	self.frontItemLayer = Layer:create()
+	self.maskedLayer:addParallaxChild(self.frontItemLayer, 16, self.frontItemLayerParallaxRatio, ccp(0,0))
+
+	--AnniversaryTwoYearsAnimation:init(self)
 	-- ------------
 	-- Init Layer
 	-- ----------------
-	WorldSceneShowManager.getInstance():changeCloudColor()
+	WorldSceneShowManager:getInstance():changeCloudColor()
 	local parallaxLayer = ResourceManager:sharedInstance():buildGroup("parallax")
 	self.parallaxLayer = parallaxLayer
 
 	self:buildTreeContainer()
 	self:buildGradientBackground()
+	
 	self:buildStarLayer()
 	self:buildcloudLayer1()
 	self:buildcloudLayer2()
@@ -233,7 +344,10 @@ function WorldScene:init(homeScene, ...)
 	self:buildNodeView()
 	self:buildLockedCloudLayer()
 	self:buildForegroundLayer()
+	self:buildBackItemLayer()
+	self:buildFrontItemLayer()
 
+	
 	---------------------------------
 	-- Scale The scaleTreeLayers
 	-- ------------------------------
@@ -325,9 +439,11 @@ function WorldScene:init(homeScene, ...)
 	self.branchInteractionController = WorldSceneBranchInteractionController:create(self)
 	self:setInteractionController(self.trunkInteractionController)
 	
-	local function onSyncFinished()
+	local function onSyncFinished(evt)
 		print("WorldScene onSyncFinished Called !")
-		self:onSyncFinished()
+		if evt.data == SyncFinishReason.kRestoreData then
+			self:onSyncFinished()
+		end
 	end
 
 	GlobalEventDispatcher:getInstance():addEventListener(kGlobalEvents.kSyncFinished, onSyncFinished)
@@ -339,6 +455,10 @@ function WorldScene:init(homeScene, ...)
 		self:onEnterHandler(event)
 	end
 	self:registerScriptHandler(onEnterHandler)
+	self.missionBubbles = {}
+
+	-- 六一彩蛋
+	EggsManager:showIfNecessary(self)
 end
 
 function WorldScene:setEnterFromGamePlay(levelId)
@@ -358,7 +478,7 @@ function WorldScene:onEnterHandler(event, ...)
 			local levelId = self.sourceLevelId
 			self:moveNodeToCenter(levelId, function()
 				if self.levelPassedInfo then
-					self:playLevelPassed(self.levelPassedInfo.passedLevelId, self.levelPassedInfo.rewardsIdAndPos, self.levelPassedInfo.isPlayNextLevel)
+					self:playLevelPassed(self.levelPassedInfo.passedLevelId, self.levelPassedInfo.rewardsIdAndPos, self.levelPassedInfo.isPlayNextLevel, self.levelPassedInfo.jumpLevelPawn)
 				else
 					local node = self.levelToNode[levelId]
 					print("node", node, levelId)
@@ -371,6 +491,14 @@ function WorldScene:onEnterHandler(event, ...)
 			end
 		end
 		self.sourceLevelId = nil
+
+		-- 设置完星星数需要解锁隐藏关
+		if self.unlockHiddenBranchCloudBranchId then
+			self:unlockHiddenBranchCloud(self.unlockHiddenBranchCloudBranchId)
+			self.unlockHiddenBranchCloudBranchId = nil
+		end
+
+		self:updateAnniversaryFloatButton()
 	end
 end
 
@@ -381,52 +509,200 @@ end
 function WorldScene:onSyncFinished(...)
 	assert(#{...} == 0)
 
-	self:updateLevelData()
-	--------------------------
-	-- Update Node Score
-	-- --------------------
+	self:onSyncRefreshHiddenBranch()
+	self:onSyncRefreshLevelNode()
+	self:onSyncRefreshUnlockCloud()
+	self:onSyncRefreshHomeSceneAndGuide()
+end
+
+function WorldScene:onSyncRefreshLevelNode()
+	local metaModel = MetaModel:sharedInstance()
 	local scores = UserManager:getInstance().scores
-	local lastPassedLevel = UserManager:getInstance().lastPassedLevel
-
-	for k,v in pairs(scores) do
+	local hiddenLevelIdList = MetaManager:getInstance():getHideAreaLevelIds()
+	local waitToAddHiddenNodes = {}
+	for i,v in ipairs(hiddenLevelIdList) do
+		waitToAddHiddenNodes[v] = true
+	end
+	local shouldRemoveList = {}
+	
+	for k, v in pairs(self.levelToNode) do
 		local levelId = v.levelId
-		local star = v.star
-		local node = self.levelToNode[levelId]
+		local ingredientCount = JumpLevelManager:getInstance():getLevelPawnNum(levelId) or 0
+		local score = UserManager:getInstance():getUserScore(levelId)
+		local isHiddenNode = LevelType:isHideLevel(levelId)
+		local shouldRemove = isHiddenNode and not metaModel:isHiddenBranchCanShow(metaModel:getHiddenBranchIdByHiddenLevelId(levelId))
+		
 
-		if node then
-			-- Node Exist , Need To Update IT's Star
-			if tostring(levelId) ~= tostring(lastPassedLevel) then
-				node:setStar(star, true, false, false)
-				local function onNodeTouched(evt)
-					self:onNodeViewTapped(evt)
+		if shouldRemove then
+			v:removeFromParentAndCleanup(true)
+			table.insert(shouldRemoveList, k)
+			waitToAddHiddenNodes[levelId] = nil
+		else
+			if isHiddenNode then
+				local hiddenBranchId = MetaModel:sharedInstance():getHiddenBranchIdByHiddenLevelId(levelId)
+				local preHiddenLevelScore = UserManager.getInstance():getUserScore(levelId - 1)
+				local isFirstFlowerInHiddenBranch = (MetaModel:sharedInstance():getHiddenBranchDataByHiddenLevelId(levelId) or {}).startHiddenLevel == levelId
+				
+
+				local star = -1
+				if MetaModel:sharedInstance():isHiddenBranchCanOpen(hiddenBranchId) then
+					if score and score.star > 0 then
+						star = score.star
+					elseif isFirstFlowerInHiddenBranch or (preHiddenLevelScore and preHiddenLevelScore.star > 0) then				
+						star = 0
+					end
+
+					if star >= 0 then
+						local function onNodeTouched(evt)
+							self:onNodeViewTapped(evt)
+						end
+						if not v:hasEventListenerByName(DisplayEvents.kTouchTap) then
+							v:addEventListener(DisplayEvents.kTouchTap, onNodeTouched, v)
+						end
+					else
+						if v:hasEventListenerByName(DisplayEvents.kTouchTap) then
+							v:removeEventListenerByName(DisplayEvents.kTouchTap)
+						end
+					end
 				end
-				if star > 0 and not node:hasEventListenerByName(DisplayEvents.kTouchTap) then
-					node:addEventListener(DisplayEvents.kTouchTap, onNodeTouched, node)
+				v:setStar(star, false, false, false, false)
+
+				waitToAddHiddenNodes[levelId] = nil
+			else
+				if score or v.levelId == UserManager:getInstance():getUserRef():getTopLevelId() then
+					v:setStar(score and score.star or 0, ingredientCount, true, false, false)
+					local function onNodeTouched(evt)
+						self:onNodeViewTapped(evt)
+					end
+					if not v:hasEventListenerByName(DisplayEvents.kTouchTap) then
+						v:addEventListener(DisplayEvents.kTouchTap, onNodeTouched, v)
+					end
+				elseif ingredientCount > 0 then
+					print("hit no score and jump level", levelId)
+					v:setStar(0, ingredientCount, true, false, false)
+					local function onNodeTouched(evt)
+						self:onNodeViewTapped(evt)
+					end
+					if not v:hasEventListenerByName(DisplayEvents.kTouchTap) then
+						v:addEventListener(DisplayEvents.kTouchTap, onNodeTouched, v)
+					end
+				else
+					v:setStar(-1, ingredientCount, true, false, false)
+					if v:hasEventListenerByName(DisplayEvents.kTouchTap) then
+						v:removeEventListenerByName(DisplayEvents.kTouchTap)
+					end
 				end
 			end
 		end
 	end
 
-	local remain = {}
-	local topLevel = UserManager:getInstance().user:getTopLevelId()
-	for k, v in ipairs(self.lockedClouds) do
-		local cloud = MetaModel:sharedInstance():getLevelAreaDataById(v.id)
-		if cloud and tonumber(cloud.minLevel) <= topLevel then
-			v:removeFromParentAndCleanup(true)
+	for k, v in pairs(waitToAddHiddenNodes) do
+		self:buildHiddenNode(k)
+	end
+
+	for i, v in ipairs(shouldRemoveList) do
+		self.levelToNode[v] = nil
+	end
+end
+
+function WorldScene:onSyncRefreshHiddenBranch()
+	local metaModel = MetaModel:sharedInstance()
+	local branchList = metaModel:getHiddenBranchDataList()
+
+	for index = 1, #branchList do
+		if metaModel:isHiddenBranchCanShow(index) then
+			if not self.hiddenBranchArray[index] then
+				local branch = HiddenBranch:create(index, true, self.hiddenBranchLayer.refCocosObj:getTexture())
+				self.hiddenBranchArray[index] = branch
+				self.hiddenBranchLayer:addChild(branch)
+				metaModel:markHiddenBranchOpen(index)
+
+				if not metaModel:isHiddenBranchCanOpen(index) then
+					branch:showCloud(
+						self.lockedCloudLayer:getBatchNode(),
+						self.lockedCloudLayer:getHiddenBranchTextBatchNode(),
+						self.lockedCloudLayer:getHiddenBranchNumberBatchNode()
+					)
+				end
+
+				branch:updateState()
+
+				local function onHiddenBranchTapped(event)
+					self:onHiddenBranchTapped(event)
+				end
+
+				branch:addEventListener(DisplayEvents.kTouchTap, onHiddenBranchTapped, index)
+			end
 		else
-			v:updateState()
-			table.insert(remain, v)
+			if self.hiddenBranchArray[index] then
+				self.hiddenBranchArray[index]:removeFromParentAndCleanup(true)
+				self.hiddenBranchArray[index] = nil
+				metaModel:markHiddenBranchClose(index)
+			end
 		end
 	end
-	self.lockedClouds = remain
+end
 
-	local logic = AdvanceTopLevelLogic:create(topLevel)
+function WorldScene:onSyncRefreshUnlockCloud()
+	local levelAreaDataArray = MetaModel:sharedInstance():getLevelAreaDataArray()
+	local usrCurTopLevel = UserManager.getInstance():getUserRef():getTopLevelId()
+	local batchNode = self.lockedCloudLayer:getBatchNode()
+
+	local newArray, dirtyCloud = {}, false
+	for i = 1, #levelAreaDataArray do
+		local cloudInfo = levelAreaDataArray[i]
+		local minNode = self.levelToNode[tonumber(cloudInfo.minLevel)]
+		local cloud = table.find(self.lockedClouds, function(v)
+				return v.id == tonumber(cloudInfo.id)
+			end)
+		if minNode and tonumber(cloudInfo.star) ~= 0 and tonumber(cloudInfo.minLevel) > usrCurTopLevel then
+			if cloud then
+				if cloud:ifCanWaitToOpen() then
+					cloud:changeState(LockedCloudState.WAIT_TO_OPEN, false)
+				else
+					cloud:manualDisposeWaitToOpenSprites()
+					cloud:changeState(LockedCloudState.STATIC, false)
+				end
+				table.insert(newArray, cloud)
+			else
+				local lockedCloud = LockedCloud:create(tonumber(cloudInfo.id), self.lockedCloudAnimLayer, batchNode.refCocosObj:getTexture())
+
+				local startNodePos = self.trunks:getFlowerPos(lockedCloud:getStartNodeId())
+				local lockedCloudSize = lockedCloud:getGroupBounds().size
+				local halfDeltaWidth = (self.visibleSize.width - lockedCloudSize.width) / 2
+				lockedCloud:setPositionX(self.visibleOrigin.x + halfDeltaWidth)
+				lockedCloud:setPositionY(startNodePos.y + lockedCloudSize.height - 180)
+
+				table.insert(newArray, lockedCloud)
+				batchNode:addChild(lockedCloud)
+				dirtyCloud = true
+			end
+		elseif cloud then
+			cloud:removeFromParentAndCleanup(true)
+			dirtyCloud = true
+		end
+	end
+	self.lockedClouds = newArray
+
+	if dirtyCloud then
+		if self.levelAreaOpenedId ~= false then
+			self.levelAreaOpenedId = (MetaManager:getInstance():getLevelAreaRefByLevelId(usrCurTopLevel) or {}).id or false
+		end
+		UserManager:getInstance().levelAreaOpenedId = false
+	end
+
+	local logic = AdvanceTopLevelLogic:create(usrCurTopLevel)
 	logic:start()
 
+	self:updateLevelData()
+end
+
+function WorldScene:onSyncRefreshHomeSceneAndGuide()
 	print("WorldScene:onSyncFinished")
+	self:updateUserIconPos(false)
+
 	local scene = Director:sharedDirector():getRunningScene()
 	if scene == HomeScene:sharedInstance() then
-		self:updateUserIconPos(false)
 		self:refreshTopAreaCloudState()
 		if GameGuide then
 			GameGuide:sharedInstance():forceStopGuide()
@@ -467,9 +743,7 @@ function WorldScene:getTouchedLockedCloud(worldPos, ...)
 
 	------ Convert Global Position To Self Space
 	--local nodeSpacePoint = self:convertToNodeSpace(ccp(worldPos.x, worldPos.y))
-
 	for k,v in pairs(self.lockedClouds) do
-
 		if v:hasEventListenerByName(DisplayEvents.kTouchTap) then
 
 			if v:hitTestPoint(worldPos, true) then
@@ -500,6 +774,26 @@ function WorldScene:getTouchedBranch(worldPos)
 	end
 end
 
+function WorldScene:getTouchedReward( worldPos )
+	for k,v in pairs(self.hiddenBranchArray) do
+		local reward = v:getRewardNode()
+		if reward then
+			if reward:hitTestPoint(worldPos, true) then
+				return reward
+			end
+		end
+	end
+end
+
+function WorldScene:getTouchedFloatIcon(worldPos)
+	for _, floatIcon in pairs(self.floatIcons) do
+		if floatIcon:hitTestPoint(worldPos, true) then
+			return floatIcon
+		end
+	end
+	return nil
+end
+
 --------------------------
 --- Touch Event Handler
 ---------------------------
@@ -517,7 +811,7 @@ function WorldScene:onScrolledToOrigin(event, ...)
 	assert(event.name == WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN)
 	assert(#{...} == 0)
 
-	assert(self.currentStayBranchIndex)
+	-- assert(self.currentStayBranchIndex)
 	self.currentStayBranchIndex = false
 
 	self:checkInteractionStateChange()
@@ -556,9 +850,6 @@ end
 function WorldScene:buildLockedCloudLayer(...)
 	assert(#{...} == 0)
 
-	-- Delay Create The Batch Node
-	local batchNode = false
-
 	-- Get Data
 	local metaModel = MetaModel:sharedInstance()
 	local levelAreaDataArray = metaModel:getLevelAreaDataArray()
@@ -592,14 +883,8 @@ function WorldScene:buildLockedCloudLayer(...)
 			lockedCloudNeedStar ~= 0 and 
 			lockedCloudLevel > usrCurTopLevel then
 
-			-- Delay Create The Batch Node
-			if not batchNode then
-				-- batchNode = Layer:create()
-				local cloudSpriteFrame = Sprite:createWithSpriteFrameName("home_clouds0000")
-				local texture = cloudSpriteFrame:getTexture()
-				batchNode = SpriteBatchNode:createWithTexture(texture)
-				cloudSpriteFrame:dispose()
-			end
+
+			local batchNode = self.lockedCloudLayer:getBatchNode()
 
 			-- ---------------------
 			-- Create Locked Cloud
@@ -626,12 +911,8 @@ function WorldScene:buildLockedCloudLayer(...)
 			lockedCloud:setPositionY(startNodePos.y + lockedCloudSize.height + manualAdjust) 
 
 			table.insert(self.lockedClouds, lockedCloud)
-			batchNode:addChild(lockedCloud)
+			batchNode:addChildAt(lockedCloud,0)
 		end
-	end
-
-	if batchNode then
-		self.lockedCloudLayer:addChild(batchNode)
 	end
 
 	-- -----------------------
@@ -650,8 +931,9 @@ end
 
 function WorldScene:refreshTopAreaCloudState()
 	if UserManager.getInstance().user:getTopLevelId() == self.maxNormalLevelId 
-		and UserManager:getInstance():getUserScore(self.maxNormalLevelId) ~= nil
-		and UserManager:getInstance():getUserScore(self.maxNormalLevelId).star > 0 then
+		and (UserManager:getInstance():getUserScore(self.maxNormalLevelId) ~= nil
+		and UserManager:getInstance():getUserScore(self.maxNormalLevelId).star > 0)
+		or JumpLevelManager:getLevelPawnNum(self.maxNormalLevelId) > 0 then
 		self.topAreaCloud:playAnim()
 		return true
 	end
@@ -663,49 +945,99 @@ function WorldScene:getLockedCloudById(lockedCloudId, ...)
 	assert(#{...} == 0)
 
 	for index,v in pairs(self.lockedClouds) do
-
 		if v.id == lockedCloudId then
 			return v
 		end
 	end
 end
 
-function WorldScene:buildGradientBackground(...)
-	assert(#{...} == 0)
-	
+function WorldScene:buildGradientBackground()
 	local background = self.parallaxLayer:getChildByName("background")
-	assert(background)
-
 	local winSize = CCDirector:sharedDirector():getWinSize()
-	local size = background:getGroupBounds().size
 	local posX = winSize.width / 2
-
-	local spriteWidth = __use_small_res and 3 or 4
-	local scaleX = (winSize.width + self:getHorizontalScrollRange() * self.gradientBackgroundParallaxRatio.x + 10) / spriteWidth
-	self.gradientBackgroundLayer.childScaleX = scaleX
-
-	if WorldSceneShowManager.getInstance().showType == 2 then
-		local s1 = Sprite:createWithSpriteFrameName("home_color2.png")
-		s1:setScaleX(scaleX)
-		s1:setAnchorPoint(ccp(0.5, 0))
-		s1:setPositionX(posX)
-		self.gradientBackgroundLayer:addChild(s1)
-
-		local s2 = Sprite:createWithSpriteFrameName("home_color1.png")
-		s2:setScaleX(scaleX)
-		s2:setAnchorPoint(ccp(0.5, 0))
-		s2:setPositionX(posX)
-		s2:setPositionY(s1:getContentSize().height)
-		self.gradientBackgroundLayer:addChild(s2)
-	elseif WorldSceneShowManager.getInstance().showType == 1 then
-		local sprite = Sprite:createWithSpriteFrameName("home_color.png")
-		sprite:setScaleX(scaleX)
-		sprite:setAnchorPoint(ccp(0.5, 0))
-		sprite:setPositionX(posX)
-		sprite:setScaleY(2.5)
-		sprite.name = "background"
-		self.gradientBackgroundLayer:addChild(sprite)
+	-- new bg
+	local gradients = {
+		{startColor="3d0378", endColor="3d0378", height=0},
+		{startColor="3d0378", endColor="420ab4", height=19},
+		{startColor="420ab4", endColor="3930eb", height=21},
+		{startColor="3930eb", endColor="2572ff", height=23},
+		{startColor="2572ff", endColor="13b1fc", height=22},
+		{startColor="13b1fc", endColor="83dfef", height=15},
+	}
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		gradients = {
+			{startColor="01b3ff", endColor="01b3ff", height=0},
+			{startColor="01b3ff", endColor="01b3ff", height=19},
+			{startColor="01b3ff", endColor="01b3ff", height=21},
+			{startColor="01b3ff", endColor="01b3ff", height=23},
+			{startColor="01b3ff", endColor="01b3ff", height=22},
+			{startColor="01b3ff", endColor="acf5da", height=15},
+		}
 	end
+	if WorldSceneShowManager:getInstance().showType == 2 then
+		gradients = {
+			{startColor="474edd", endColor="474edd", height=0},
+			{startColor="474edd", endColor="4b43cc", height=19},
+			{startColor="4b43cc", endColor="4e3bbe", height=21},
+			{startColor="4e3bbe", endColor="5133b2", height=23},
+			{startColor="5133b2", endColor="542ba6", height=22},
+			{startColor="542ba6", endColor="591f93", height=15},
+		}
+	end
+	local bgColor = self:buildBackgroundLayer(gradients)
+	
+	bgColor:setAnchorPoint(ccp(0.5, 0))
+	bgColor:ignoreAnchorPointForPosition(false)
+	bgColor:setPositionX(posX)
+	bgColor.name = "background"
+	self.gradientBackgroundLayer:addChild(bgColor)
+end
+
+-- 创建多重渐变色的天空背景
+function WorldScene:buildBackgroundLayer(gradients)
+	local winSize = CCDirector:sharedDirector():getWinSize()
+	local topLevel = MetaManager:getInstance():getMaxNormalLevelByLevelArea()
+	local topLevelPos = self.trunks:getFlowerPos(topLevel)
+	local config = UIConfigManager:sharedInstance():getConfig()
+
+	local width = winSize.width + self:getHorizontalScrollRange() * self.gradientBackgroundParallaxRatio.x + 10
+	local height = topLevelPos.y * config.worldScene_foregroundParallax * config.worldScene_backgroundParallax + 650
+
+	local originHeight = 0
+	for _, v in pairs(gradients) do
+		originHeight = originHeight + v.height
+	end
+	local heightScale = 30 --height / originHeight
+	if height > originHeight * heightScale then
+		-- 将最上面的一个渐变(纯色)拉伸
+		gradients[1].height = gradients[1].height + height - originHeight * heightScale
+	end
+	local bgLayer = Layer:create()
+	bgLayer:setContentSize(CCSizeMake(width, height))
+
+	local offsetPosY = 0
+	for index = #gradients, 1, -1 do
+		local gradient = gradients[index]
+		local layerHeight = gradient.height * heightScale
+		if layerHeight > 0 then
+			local lg = LayerGradient:createWithColor(hex2ccc3(gradient.startColor), hex2ccc3(gradient.endColor))
+			lg:changeWidthAndHeight(width, layerHeight+1) -- +1让最后一个像数与下一个渐变的第一个像数重合
+			lg:setPosition(ccp(0, offsetPosY))
+			bgLayer:addChild(lg)
+
+			offsetPosY = offsetPosY + layerHeight
+		end
+	end
+	return bgLayer
+end
+
+
+
+function WorldScene:buildBackItemLayer()
+
+	--local balloon = AnniversaryTwoYearsAnimation:buildBalloon()
+
+	--self.backItemLayer:addChild(  balloon  )
 
 end
 
@@ -740,7 +1072,7 @@ function WorldScene:buildcloudLayer1(...)
 
 	local cloudLayer1 = self.parallaxLayer:getChildByName("cloud1")
 	assert(cloudLayer1)
-	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+	if WorldSceneShowManager:getInstance():getShowType() == 2 then
 		for i=1, 4 do
 			local cloud = cloudLayer1:getChildByName("cloud"..i)
 			if i == 3 then 
@@ -760,7 +1092,7 @@ function WorldScene:buildcloudLayer2(...)
 
 	local cloudLayer2 = self.parallaxLayer:getChildByName("cloud2")
 	assert(cloudLayer2)
-	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+	if WorldSceneShowManager:getInstance():getShowType() == 2 then
 		for i=1, 2 do
 			local cloud = cloudLayer2:getChildByName("cloud"..i)
 			cloud:setAlpha(0.7)
@@ -778,6 +1110,12 @@ function WorldScene:buildForegroundLayer(...)
 	foreground:removeFromParentAndCleanup(false)
 
 	self.foregroundLayer:addChild(foreground)
+end
+
+function WorldScene:buildFrontItemLayer(...)
+	--local plane = AnniversaryTwoYearsAnimation:buildPlane()
+
+	--self.frontItemLayer:addChild( plane )
 end
 
 function WorldScene:buildFriendPicture(...)
@@ -902,6 +1240,20 @@ function WorldScene:buildFriendPicture(...)
 	local userIconParent = self.userIcon:getParent()
 	self.userIcon:removeFromParentAndCleanup(false)
 	userIconParent:addChild(self.userIcon)
+	local button = HomeScene:sharedInstance().starRewardButton
+	if button then
+		local layer = button:getParent()
+		button:removeFromParentAndCleanup(false)
+		layer:addChild(button)
+	end
+	local button = HomeScene:sharedInstance().inviteFriendBtn
+	if button then
+		local layer = button:getParent()
+		button:removeFromParentAndCleanup(false)
+		layer:addChild(button)
+	end
+
+	WorldMapOptimizer:getInstance():update()
 end
 
 
@@ -910,7 +1262,7 @@ function WorldScene:buildCloudLayer(...)
 
 	local cloudLayer3 = self.parallaxLayer:getChildByName("cloud3")
 	assert(cloudLayer3)
-	if WorldSceneShowManager.getInstance():getShowType() == 2 then
+	if WorldSceneShowManager:getInstance():getShowType() == 2 then
 		for i=1, 3 do
 			local cloud = cloudLayer3:getChildByName("cloud"..i)
 			cloud:setAlpha(0.9)
@@ -938,11 +1290,22 @@ function WorldScene:buildHiddenBranch(...)
 	local metaModel = MetaModel:sharedInstance()
 	local branchList = metaModel:getHiddenBranchDataList()
 	for index = 1, #branchList do
-		if metaModel:isHiddenBranchCanOpen(index) then
+		-- if metaModel:isHiddenBranchCanOpen(index) then
+		if metaModel:isHiddenBranchCanShow(index) then
 			local branch = HiddenBranch:create(index, true, self.hiddenBranchLayer.refCocosObj:getTexture())
 			self.hiddenBranchArray[index] = branch
 			self.hiddenBranchLayer:addChild(branch)
 			metaModel:markHiddenBranchOpen(index)
+
+			if not metaModel:isHiddenBranchCanOpen(index) then
+				branch:showCloud(
+					self.lockedCloudLayer:getBatchNode(),
+					self.lockedCloudLayer:getHiddenBranchTextBatchNode(),
+					self.lockedCloudLayer:getHiddenBranchNumberBatchNode()
+				)
+			end
+
+			branch:updateState()
 
 			local function onHiddenBranchTapped(event)
 				self:onHiddenBranchTapped(event)
@@ -951,6 +1314,45 @@ function WorldScene:buildHiddenBranch(...)
 			branch:addEventListener(DisplayEvents.kTouchTap, onHiddenBranchTapped, index)
 		end
 	end
+
+	local function showCloudLabel( ... )
+		for k,v in pairs(self.hiddenBranchArray) do
+			v:showCloudLabel()
+		end
+	end
+	local function hideCloudLabel( ... )
+		for k,v in pairs(self.hiddenBranchArray) do
+			v:hideCloudLabel()
+		end
+	end
+
+	local cloudLabelIsShow = false
+	self:addEventListener(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED,function( ... )
+		if not cloudLabelIsShow and self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_ORIGIN then
+			showCloudLabel()
+			cloudLabelIsShow = true
+		end
+	end)
+	self:addEventListener(WorldSceneScrollerEvents.START_SCROLLED_TO_RIGHT,function( ... )
+		if not cloudLabelIsShow then
+			showCloudLabel()
+			cloudLabelIsShow = true
+		end
+	end)
+	self:addEventListener(WorldSceneScrollerEvents.START_SCROLLED_TO_LEFT,function( ... )
+		if not cloudLabelIsShow then
+			showCloudLabel()
+			cloudLabelIsShow = true
+		end
+	end)
+	self:addEventListener(WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN, function( ... )
+		if cloudLabelIsShow then
+			hideCloudLabel()
+			cloudLabelIsShow = false
+		end
+	end)
+
+
 end
 
 function WorldScene:buildNodeView(...)
@@ -986,9 +1388,10 @@ function WorldScene:buildNormalNode(levelId)
 	if id <= userTopLevelId then
 		local curLevelScore = UserManager.getInstance():getUserScore(id)
 		if curLevelScore and curLevelScore.star > 0 then
-			nodeView:setStar(curLevelScore.star, false, false, false)
+			nodeView:setStar(curLevelScore.star, 0, false, false, false)
 		else
-			nodeView:setStar(0, false, false, false)
+			local ingredientCount = JumpLevelManager:getInstance():getLevelPawnNum(id)
+			nodeView:setStar(0, ingredientCount, false, false, false)
 		end
 	end
 
@@ -1021,6 +1424,7 @@ function WorldScene:buildNormalNode(levelId)
 
 		nodeView:addEventListener(WorldMapNodeViewEvents.FLOWER_OPENED_WITH_NO_STAR, onLevelCanPlay)
 		nodeView:addEventListener(WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR, onGetNewStarLevel)
+		nodeView:addEventListener(WorldMapNodeViewEvents.OPENED_WITH_JUMP, onGetNewStarLevel)
 		
 		if id <= userTopLevelId then
 			nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)
@@ -1046,59 +1450,116 @@ function WorldScene:buildHiddenNode(levelId)
 		isFirstFlowerInHiddenBranch = true
 	end
 
-	local hiddenBranchCanOpen = MetaModel:sharedInstance():isHiddenBranchCanOpen(hiddenBranchId)
-	if hiddenBranchCanOpen then
-		if isFirstFlowerInHiddenBranch or (preHiddenLevelScore and preHiddenLevelScore.star > 0) then
-			nodeView = WorldMapNodeView:create(false, id, self.playFlowerAnimLayer, self.flowerLevelNumberBatchLayer, self.treeNodeLayer.refCocosObj:getTexture())
-			self.levelToNode[id] = nodeView
+	if not MetaModel:sharedInstance():isHiddenBranchCanShow(hiddenBranchId) then
+		return
+	end
 
-			local indexInBranch = id - hiddenBranchData.startHiddenLevel + 1
-			local posX = 0
-			local posY = 0
-			local rightBranchOffsetX = {150, 300, 450}
-			local rightBranchOffsetY = {80, 150, 160}
-			local leftBranchOffsetX = {-150, -300, -450}
-			local leftBranchOffsetY = {80, 150, 160}
-			if hiddenBranchData.type == "1" then
-				posX = hiddenBranchData.x + rightBranchOffsetX[indexInBranch]
-				posY = hiddenBranchData.y + rightBranchOffsetY[indexInBranch]
-			elseif hiddenBranchData.type == "2" then
-				posX = hiddenBranchData.x + leftBranchOffsetX[indexInBranch]
-				posY = hiddenBranchData.y + leftBranchOffsetY[indexInBranch]
-			end
-			nodeView:setPosition(ccp(posX, posY))
+	if MetaModel:sharedInstance():isHiddenBranchDesign(hiddenBranchId) then
+		return
+	end
 
-			-- Init Hidden Node View Star State
-			if hiddenLevelScore and hiddenLevelScore.star > 0 then
-				nodeView:setStar(hiddenLevelScore.star, false, false, false)
-			else
-				-- Is The Top Hidden Level
-				nodeView:setStar(0, false, false, false)
+	nodeView = WorldMapNodeView:create(false, id, self.playFlowerAnimLayer, self.flowerLevelNumberBatchLayer, self.treeNodeLayer.refCocosObj:getTexture())
+	self.levelToNode[id] = nodeView
+
+	local indexInBranch = id - hiddenBranchData.startHiddenLevel + 1
+	local posX = 0
+	local posY = 0
+	local rightBranchOffsetX = {150, 300, 450}
+	local rightBranchOffsetY = {80, 150, 160}
+	local leftBranchOffsetX = {-150, -300, -450}
+	local leftBranchOffsetY = {80, 150, 160}
+	if hiddenBranchData.type == "1" then
+		posX = hiddenBranchData.x + rightBranchOffsetX[indexInBranch]
+		posY = hiddenBranchData.y + rightBranchOffsetY[indexInBranch]
+	elseif hiddenBranchData.type == "2" then
+		posX = hiddenBranchData.x + leftBranchOffsetX[indexInBranch]
+		posY = hiddenBranchData.y + leftBranchOffsetY[indexInBranch]
+	end
+	nodeView:setPosition(ccp(posX, posY))
+
+	local star = -1
+	if MetaModel:sharedInstance():isHiddenBranchCanOpen(hiddenBranchId) then
+		if hiddenLevelScore and hiddenLevelScore.star > 0 then
+			star = hiddenLevelScore.star
+		elseif isFirstFlowerInHiddenBranch or (preHiddenLevelScore and preHiddenLevelScore.star > 0) then				
+			star = 0
+		end
+
+		if star >= 0 then
+			local function onNodeViewTapped_inner(event)
+				self:onNodeViewTapped(event)
 			end
+			nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)
 		end
 	end
 
-	if nodeView then
-		self.treeNodeLayer:addChild(nodeView)
-		nodeView:updateView(false, false)
-
-		-- --------------------
-		-- Add Event Listener
-		-- ---------------------
-		local context = self
-		local function onNodeViewTapped_inner(event)
-			context:onNodeViewTapped(event)
-		end
-
-		local function onGetNewStarLevel(event)
-			context:onGetNewStarLevel(event)
-		end
-
-		nodeView:addEventListener(WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR, onGetNewStarLevel)
-		nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)
-
-		return nodeView
+	local function onGetNewStarLevel(event)
+		self:onGetNewStarLevel(event)
 	end
+	nodeView:addEventListener(WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR, onGetNewStarLevel)
+
+
+	self.treeNodeLayer:addChild(nodeView)
+	nodeView:setStar(star, false, false, false, false)
+	nodeView:updateView(false, false)
+
+	return nodeView
+
+	-- nodeView:setStar(0, 0, false, false, false)
+
+	-- local hiddenBranchCanOpen = MetaModel:sharedInstance():isHiddenBranchCanOpen(hiddenBranchId)
+	-- if hiddenBranchCanOpen then
+	-- 	if isFirstFlowerInHiddenBranch or (preHiddenLevelScore and preHiddenLevelScore.star > 0) then
+	-- 		nodeView = WorldMapNodeView:create(false, id, self.playFlowerAnimLayer, self.flowerLevelNumberBatchLayer, self.treeNodeLayer.refCocosObj:getTexture())
+	-- 		self.levelToNode[id] = nodeView
+
+	-- 		local indexInBranch = id - hiddenBranchData.startHiddenLevel + 1
+	-- 		local posX = 0
+	-- 		local posY = 0
+	-- 		local rightBranchOffsetX = {150, 300, 450}
+	-- 		local rightBranchOffsetY = {80, 150, 160}
+	-- 		local leftBranchOffsetX = {-150, -300, -450}
+	-- 		local leftBranchOffsetY = {80, 150, 160}
+	-- 		if hiddenBranchData.type == "1" then
+	-- 			posX = hiddenBranchData.x + rightBranchOffsetX[indexInBranch]
+	-- 			posY = hiddenBranchData.y + rightBranchOffsetY[indexInBranch]
+	-- 		elseif hiddenBranchData.type == "2" then
+	-- 			posX = hiddenBranchData.x + leftBranchOffsetX[indexInBranch]
+	-- 			posY = hiddenBranchData.y + leftBranchOffsetY[indexInBranch]
+	-- 		end
+	-- 		nodeView:setPosition(ccp(posX, posY))
+
+	-- 		-- Init Hidden Node View Star State
+	-- 		if hiddenLevelScore and hiddenLevelScore.star > 0 then
+	-- 			nodeView:setStar(hiddenLevelScore.star, 0, false, false, false)
+	-- 		else
+	-- 			-- Is The Top Hidden Level
+	-- 			nodeView:setStar(0, 0, false, false, false)
+	-- 		end
+	-- 	end
+	-- end
+
+	-- if nodeView then
+	-- 	self.treeNodeLayer:addChild(nodeView)
+	-- 	nodeView:updateView(false, false)
+
+	-- 	-- --------------------
+	-- 	-- Add Event Listener
+	-- 	-- ---------------------
+	-- 	local context = self
+	-- 	local function onNodeViewTapped_inner(event)
+	-- 		context:onNodeViewTapped(event)
+	-- 	end
+
+	-- 	local function onGetNewStarLevel(event)
+	-- 		context:onGetNewStarLevel(event)
+	-- 	end
+
+	-- 	nodeView:addEventListener(WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR, onGetNewStarLevel)
+	-- 	nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)
+
+	-- 	return nodeView
+	-- end
 end
 
 ----------------------------------------------------------
@@ -1115,6 +1576,7 @@ function WorldScene:onLevelPassed(gameResult)
 				passedLevelId = gameResult.levelId,
 				rewardsIdAndPos = gameResult.rewardsIdAndPos,
 				isPlayNextLevel = gameResult.isPlayNextLevel,
+				jumpLevelPawn = gameResult.jumpLevelPawn,
 			}
 
 			self:updateLevelData()
@@ -1181,8 +1643,8 @@ function WorldScene:recallTaskLevelUnlock()
 		end
 	end
 
-	local function onSendUnlockMsgFailed(event)
-		CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+	local function onSendUnlockMsgFailed(errorCode)
+		CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 	end
 
 	local function onSendUnlockMsgCanceled(event)
@@ -1211,7 +1673,7 @@ function WorldScene:updateLevelData( ... )
 	end
 
 	local newLevelAreaOpenedId = UserManager.getInstance().levelAreaOpenedId
-	if self.levelAreaOpenedId ~= newLevelAreaOpenedId then
+	if self.levelAreaOpenedId ~= newLevelAreaOpenedId and newLevelAreaOpenedId ~= false then
 		self.levelAreaOpenedId = newLevelAreaOpenedId
 		GamePlayEvents.dispatchAreaOpenIdChangeEvent(newLevelAreaOpenedId)
 	end
@@ -1220,6 +1682,10 @@ end
 function WorldScene:onAreaUnlocked( areaId )
 	self:updateLevelData()
 	self:updateUserIconPos(false)
+	local cloud, index = table.find(self.lockedClouds, function(v)
+			return v.id == areaId
+		end)
+	table.remove(self.lockedClouds, index)
 end
 
 function WorldScene:onAreaOpenIdChange( areaId )
@@ -1249,14 +1715,14 @@ function WorldScene:updateUserIconPos(finishCallback, ...)
 	print("WorldScene:updateUserIconPos Called !")
 	if self.userIconLevelId ~= self.topLevelId then
 		self.userIconLevelId = self.topLevelId
-
+		
 		local topLevelNode = self.levelToNode[self.topLevelId]
 		assert(topLevelNode)
 		
 		-- Set Top Level Open
 		local function setTopLevelNodeStarWrapper(callback)
 			if topLevelNode:getStar() < 1 then
-				topLevelNode:setStar(0, true, true, callback)
+				topLevelNode:setStar(0, 0, true, true, callback)
 			else
 				callback()
 			end
@@ -1269,10 +1735,17 @@ function WorldScene:updateUserIconPos(finishCallback, ...)
 			self:moveUserIconToNode(self.topLevelId, finishCallback)
 		end
 
+		local function showMissionTrunkLevelNodeBubble()
+			--self:buildMissionBubble(self.topLevelId)
+		end
+
 		local chain = CallbackChain:create()
 		chain:appendFunc(setTopLevelNodeStarWrapper)
 		chain:appendFunc(moveUserIconToNodeWrapper)
+		chain:appendFunc(showMissionTrunkLevelNodeBubble)
 		chain:call()
+
+		self:updateAllFloatIconPos()
 	end
 end
 
@@ -1297,11 +1770,15 @@ end
 ------ 		Node View Event Listener
 ----------------------------------------------------------
 
-function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLevel, ...)
+function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLevel, jumpLevelPawn, ...)
 	assert(type(passedLevelId) 	== "number")
 	assert(type(rewardsIdAndPos)	== "table")
 	assert(type(isPlayNextLevel) 	== "boolean")
 	assert(#{...} == 0)
+
+	if not jumpLevelPawn  then
+		jumpLevelPawn = 0
+	end
 
 	-- fix
 	self:setTouchEnabled(true, 0, true)
@@ -1314,6 +1791,9 @@ function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLe
 
 	-- Get Correspond Node View , And Star Level
 	local node = self.levelToNode[passedLevelId]
+	if not node then
+		return
+	end
 	local oldStar = node:getStar()
 	assert(oldStar >= 0)
 
@@ -1336,7 +1816,11 @@ function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLe
 					if not button or button.isDisposed then return end
 					button:updateView()
 				end
-				HomeSceneFlyToAnimation:sharedInstance():levelNodeCoinAnimation(pos, onFinish)
+				local anim = FlyLevelNodeCoinAnimation:create(v.num)
+				anim:setWorldPosition(pos)
+				anim:setFinishCallback(onFinish)
+				anim:play()
+				-- HomeSceneFlyToAnimation:sharedInstance():levelNodeCoinAnimation(pos, onFinish)
 			elseif v.itemId == ItemType.ENERGY_LIGHTNING then
 				local function onFinish()
 					local scene = HomeScene:sharedInstance()
@@ -1346,7 +1830,11 @@ function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLe
 					if not button or button.isDisposed then return end
 					button:updateView()
 				end
-				HomeSceneFlyToAnimation:sharedInstance():levelNodeEnergyAnimation(pos, onFinish)
+				local anim = FlyLevelNodeEnergyAnimation:create(v.num)
+				anim:setWorldPosition(pos)
+				anim:setFinishCallback(onFinish)
+				anim:play()
+				-- HomeSceneFlyToAnimation:sharedInstance():levelNodeEnergyAnimation(pos, onFinish)
 			else
 				table.insert(itemTable, v.itemId)
 			end
@@ -1360,16 +1848,22 @@ function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLe
 
 	-- Get New Star
 	local levelScoreRef = UserManager:getInstance():getUserScore(passedLevelId)
-	--assert(levelScoreRef)
+	local isJumpLevel = JumpLevelManager:getLevelPawnNum(passedLevelId) > 0
 
-	if levelScoreRef then
-		local newStar = levelScoreRef.star
+	if levelScoreRef or isJumpLevel then
+		local newStar
+		if not isJumpLevel then
+			newStar = levelScoreRef.star
+		else
+			newStar = 0
+		end
 
 		-- Update Node's Star Level
 		local function updateNodeViewStar(callback)
-			if newStar > oldStar then
-				--function WorldMapNodeView:setStar(star, updateView, playAnimInLogic, animFinishCallback, ...)
-				node:setStar(newStar, true, true, callback)
+			if jumpLevelPawn and jumpLevelPawn > 0 then
+				node:setStar(newStar, jumpLevelPawn, true, true, callback)
+			elseif newStar > oldStar then
+				node:setStar(newStar, 0, true, true, callback)
 			else
 				node:playParticle()
 				callback()
@@ -1381,12 +1875,15 @@ function WorldScene:playLevelPassed(passedLevelId, rewardsIdAndPos, isPlayNextLe
 			-- open start panel as anim finished while no window nor ladybug anim on screen
 			local function onUserIconMoveAnimFinished()
 				if not self.isUnlockingHiddenBranch then 
-					self:startLevel(UserManager:getInstance().user:getTopLevelId())
+					if not PopoutManager:haveWindowOnScreen() then
+						self:startLevel(UserManager:getInstance().user:getTopLevelId())
+					end
 				end
 			end
-
+			
 			self.homeScene:checkDataChange()
-			if isPlayNextLevel then self:updateUserIconPos(onUserIconMoveAnimFinished)
+			if isPlayNextLevel then 
+				self:updateUserIconPos(onUserIconMoveAnimFinished)
 			else self:updateUserIconPos(false) end
 			self:refreshTopAreaCloudState()
 		end
@@ -1413,6 +1910,15 @@ function WorldScene:startLevel(levelId)
 			and not HomeScene:sharedInstance().ladyBugOnScreen then
 		local levelType = LevelType:getLevelTypeByLevelId(levelId)
 		local startGamePanel = StartGamePanel:create(levelId, levelType)
+		
+		-- 
+		startGamePanel:setOnClosePanelCallback(function( ... )
+			if self.unlockHiddenBranchCloudBranchId then
+				self:unlockHiddenBranchCloud(self.unlockHiddenBranchCloudBranchId)
+				self.unlockHiddenBranchCloudBranchId = nil
+			end
+		end)
+
 		startGamePanel:popout(false)
 	end
 end
@@ -1434,6 +1940,91 @@ function WorldScene:onNodeViewTapped(event, ...)
 	self:startLevel(levelId)
 
 	print("WorldSceneScroller:onNodeViewTapped end")
+
+	-- 保证当前星数跟分数一致
+	local score = UserManager:getInstance():getUserScore(levelId)
+	local levelMapMeta = LevelMapManager.getInstance():getMeta(levelId)
+	local levelRewardMeta = MetaManager.getInstance():getLevelRewardByLevelId(levelId)
+
+	if score and score.star >= 0 then
+		-- score.star = 0
+		local newStar = levelMapMeta:getStar(score.score)
+		if newStar > score.star then
+			local function onSuccess( evt )
+
+				DcUtil:UserTrack({ category="stage", sub_category="repair_stage_star" })
+
+				local newStar = evt.data.star
+				local score = UserManager:getInstance():getUserScore(levelId)
+				local deltaStar = newStar - score.star 
+
+				if newStar <= score.star then
+					return
+				end
+				-- 
+				score.star = newStar
+				UserManager:getInstance():removeUserScore(levelId)
+				UserManager:getInstance():addUserScore(score)
+				UserService:getInstance():removeUserScore(levelId)
+				UserService:getInstance():addUserScore(score)
+
+				if LevelType:isMainLevel(levelId) then
+					local curNormalStar = UserManager:getInstance().user:getStar()
+					local newNormalStar = curNormalStar + deltaStar
+					UserManager:getInstance().user:setStar(newNormalStar)
+					UserService.getInstance().user:setStar(newNormalStar)
+				elseif LevelType:isHideLevel(levelId) then
+					local curHideStar = UserManager:getInstance().user:getHideStar()
+					local newHideStar = curHideStar + deltaStar
+					UserManager:getInstance().user:setHideStar(newHideStar)
+					UserService.getInstance().user:setHideStar(newHideStar)
+				end
+
+				HomeScene:sharedInstance().starButton:updateView()
+
+				local nodeView = self.levelToNode[levelId]
+				if nodeView then
+					nodeView:setStar(newStar, false, false, false, false)
+					nodeView:updateView(false, false)
+				end
+
+				local curStarReward = false
+				if newStar == 1 then
+					curStarReward = levelRewardMeta.oneStarReward 
+				elseif newStar == 2 then
+					curStarReward = levelRewardMeta.twoStarReward
+				elseif newStar == 3 then
+					curStarReward = levelRewardMeta.threeStarReward
+				elseif newStar == 4 then
+					curStarReward = levelRewardMeta.fourStarReward
+				end
+
+				if curStarReward then
+					for k,v in pairs(curStarReward) do
+						if v.itemId == 10011 then
+							UserManager:getInstance():addRewards({v})
+							UserService:getInstance():addRewards({v})
+						end
+					end
+				end
+
+				Localhost:flushCurrentUserData()
+
+				if LevelType:isMainLevel(levelId) then
+					local branchId = MetaModel:sharedInstance():getHiddenBranchIdByNormalLevelId(levelId)
+					if branchId and MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
+						if self.hiddenBranchArray[branchId] and self.hiddenBranchArray[branchId]:isClosed() then
+							self.unlockHiddenBranchCloudBranchId = branchId
+						end
+					end
+				end
+			end
+
+			local http = SetLevelStarHttp.new()
+			http:ad(Events.kComplete, onSuccess)
+			http:load(levelId,newStar)
+		end
+	end
 end
 
 function WorldScene:moveTopLevelNodeToCenter( animFinishCallback )
@@ -1442,9 +2033,14 @@ function WorldScene:moveTopLevelNodeToCenter( animFinishCallback )
 	-- body
 	if self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_LEFT or
 			self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_RIGHT then
+			self:addEventListener(WorldSceneScrollerEvents.SCROLLED_FOR_TUTOR, function ()
+				self:removeEventListenerByName(WorldSceneScrollerEvents.SCROLLED_FOR_TUTOR)
+				self:moveNodeToCenter(self.topLevelId, animFinishCallback)
+			end)
 		self:scrollToOrigin()
+	else
+		self:moveNodeToCenter(self.topLevelId, animFinishCallback)
 	end
-	self:moveNodeToCenter(self.topLevelId, animFinishCallback)
 end
 
 function WorldScene:moveCloudLockToCenter(cloudId, animFinishCallback)
@@ -1499,6 +2095,31 @@ function WorldScene:moveCloudLockToCenter(cloudId, animFinishCallback)
 
 end
 
+function WorldScene:showLadybugFourStarGuid( levelId )
+	-- body
+	local node = self.levelToNode[levelId]
+	local size = node:getGroupBounds().size
+	local pos_to = node:getPosition()
+	local function flyAwayCallback( ... )
+		-- body
+		if self.ladybugFourStar then 
+			self.ladybugFourStar:removeFromParentAndCleanup(true)
+			self.ladybugFourStar = nil
+		end
+	end
+	flyAwayCallback()
+	local txt = Localization:getInstance():getText("fourstar_this_stage_tips_2")
+	local xDelta = 2*size.width /3
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		xDelta = 1*size.width /2
+	end
+	local sprite = LadybugFourStarAnimationInLevelNode:create( ccp(pos_to.x + xDelta, pos_to.y - size.height/2), 200,
+		LadyBugFourStarAnimationType.kScaleWithoutBtn, txt, flyAwayCallback)
+
+	self.scaleTreeLayer1:addChild(sprite)
+	self.ladybugFourStar = sprite
+end
+
 function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
 	if PublishActUtil:isGroundPublish() then 
 		return
@@ -1509,67 +2130,129 @@ function WorldScene:moveNodeToCenter(levelId, animFinishCallback, ...)
 	assert(animFinishCallback == false or type(animFinishCallback) == "function")
 	assert(#{...} == 0)
 
-	local node = self.levelToNode[levelId]
+	local function verticalScroll( ... )
+		local node = self.levelToNode[levelId]
+		assert(node)
+
+		if not node then 
+			if animFinishCallback then animFinishCallback() end
+			return
+		end
+
+		local nodePosition = node:getPosition()
+		local actionArray = CCArray:create()
+
+		local nodeParent = node:getParent()
+		local targetNodePosInWorld = nodeParent:convertToWorldSpace(ccp(nodePosition.x, nodePosition.y))
+
+		local visibleOrigin = CCDirector:sharedDirector():getVisibleOrigin()
+		local visibleSize = CCDirector:sharedDirector():getVisibleSize()
+
+		he_log_warning("need adapt the screen resolution ?? ")
+		local distanceToVisibleTopTriggerTrunkMove = visibleSize.height * 0.3
+		-- local distanceToVisibleTopTrunkMoveTo = visibleSize.height * 0.5
+		
+		local function onMoveToFinishedFunc()
+			-- debug.debug()
+			self:setScrollable(true)
+			if animFinishCallback then animFinishCallback() end
+			WorldMapOptimizer:getInstance():update()
+		end
+
+		if targetNodePosInWorld.y > visibleOrigin.y + visibleSize.height - distanceToVisibleTopTriggerTrunkMove or targetNodePosInWorld.y < visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove then
+
+			local deltaMoveDistance = (visibleOrigin.y + visibleSize.height - distanceToVisibleTopTriggerTrunkMove) - targetNodePosInWorld.y
+			if targetNodePosInWorld.y < visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove then
+				deltaMoveDistance = visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove - targetNodePosInWorld.y
+			end
+
+			-- ------------
+			-- Init Action
+			-- -----------
+			local function initMoveMaskLayerFunc()
+				self:setScrollable(false)
+			end
+			local initMoveMaskLayerAction = CCCallFunc:create(initMoveMaskLayerFunc)
+			actionArray:addObject(initMoveMaskLayerAction)
+			-- delay for 0.1 sec to avoid parallax node error
+			actionArray:addObject(CCDelayTime:create(0.1))
+
+			-- ----------
+			-- Move To
+			-- -----------
+
+			if not self.isUnlockingHiddenBranch then
+				actionArray:addObject(CCMoveBy:create(0.8, ccp(0, deltaMoveDistance)))
+			end
+
+			---------------
+			-- Move To Finished
+			-- --------------
+
+			local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
+			actionArray:addObject(onMoveToFinishedAction)
+			local seq = CCSequence:create(actionArray)
+			self.maskedLayer:stopAllActions()
+			self.maskedLayer:runAction(seq)
+		else
+			-- if animFinishCallback then animFinishCallback() end
+			self.maskedLayer:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.1), CCCallFunc:create(onMoveToFinishedFunc)))
+		end
+
+	end
+
+	if LevelType:isMainLevel(levelId) and self.scrollHorizontalState ~= WorldSceneScrollerHorizontalState.STAY_IN_ORIGIN then
+		self:scrollToOrigin()
+		local seq = CCSequence:createWithTwoActions(CCDelayTime:create(1),CCCallFunc:create(verticalScroll))
+		self.maskedLayer:runAction(seq)
+	else
+		verticalScroll()
+	end
+end
+
+function WorldScene:buildMissionBubble(level)
+	
+	if not level then level = self.topLevelId end
+
+	local node = self.levelToNode[level]
 	assert(node)
 
 	local nodePosition = node:getPosition()
-	local actionArray = CCArray:create()
+	local targetPos = ccp(nodePosition.x, nodePosition.y + 0)
 
-	local nodeParent = node:getParent()
-	local targetNodePosInWorld = nodeParent:convertToWorldSpace(ccp(nodePosition.x, nodePosition.y))
-
-	local visibleOrigin = CCDirector:sharedDirector():getVisibleOrigin()
-	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
-
-	he_log_warning("need adapt the screen resolution ?? ")
-	local distanceToVisibleTopTriggerTrunkMove = visibleSize.height * 0.3
-	-- local distanceToVisibleTopTrunkMoveTo = visibleSize.height * 0.5
-	
-	local function onMoveToFinishedFunc()
-		-- debug.debug()
-		self:setScrollable(true)
-		if animFinishCallback then animFinishCallback() end
-		WorldMapOptimizer:getInstance():update()
+	if not self.missionBubbles[level] then
+		self.missionBubbles[level] = MissionTrunkLevelNodeBubble:create()
+		self.friendPictureLayer:addChild(self.missionBubbles[level])
 	end
+	local bubble = self.missionBubbles[level]
+	bubble:setPosition( ccp( targetPos.x + 1 , targetPos.y - 72 ) )
+	bubble:setScale(0.8)
+end
 
-	if targetNodePosInWorld.y > visibleOrigin.y + visibleSize.height - distanceToVisibleTopTriggerTrunkMove or targetNodePosInWorld.y < visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove then
+function WorldScene:clearMissionBubble(level)
+	if self.missionBubbles[level] and self.missionBubbles[level]:getParent() then
+		self.missionBubbles[level]:removeFromParentAndCleanup(true)
+		self.missionBubbles[level] = nil
+	end
+end
 
-		local deltaMoveDistance = (visibleOrigin.y + visibleSize.height - distanceToVisibleTopTriggerTrunkMove) - targetNodePosInWorld.y
-		if targetNodePosInWorld.y < visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove then
-			deltaMoveDistance = visibleOrigin.y + distanceToVisibleTopTriggerTrunkMove - targetNodePosInWorld.y
+function WorldScene:clearAllMissionBubble()
+	if self.missionBubbles then
+		for k,v in pairs(self.missionBubbles) do
+			if v:getParent() then
+				v:removeFromParentAndCleanup(true)
+			end
 		end
 
-		-- ------------
-		-- Init Action
-		-- -----------
-		local function initMoveMaskLayerFunc()
-			self:setScrollable(false)
-		end
-		local initMoveMaskLayerAction = CCCallFunc:create(initMoveMaskLayerFunc)
-		actionArray:addObject(initMoveMaskLayerAction)
-		-- delay for 0.1 sec to avoid parallax node error
-		actionArray:addObject(CCDelayTime:create(0.1))
+		self.missionBubbles = {}
+	end
+end
 
-		-- ----------
-		-- Move To
-		-- -----------
-
-		if not self.isUnlockingHiddenBranch then
-			actionArray:addObject(CCMoveBy:create(0.8, ccp(0, deltaMoveDistance)))
-		end
-
-		---------------
-		-- Move To Finished
-		-- --------------
-
-		local onMoveToFinishedAction = CCCallFunc:create(onMoveToFinishedFunc)
-		actionArray:addObject(onMoveToFinishedAction)
-		local seq = CCSequence:create(actionArray)
-		self.maskedLayer:stopAllActions()
-		self.maskedLayer:runAction(seq)
+function WorldScene:checkMissionBubbleShow(level)
+	if self.missionBubbles[level] then
+		return true
 	else
-		-- if animFinishCallback then animFinishCallback() end
-		self.maskedLayer:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.1), CCCallFunc:create(onMoveToFinishedFunc)))
+		return false
 	end
 end
 
@@ -1684,11 +2367,75 @@ function WorldScene:moveUserIconToNode(levelId, animFinishCallback, ...)
 
 end
 
+function WorldScene:scrollToBranch( branchId,callback )
+
+	local curBranchData = MetaModel:sharedInstance():getHiddenBranchDataByBranchId(branchId)
+
+	local function onVerticalScrollComplete()
+		self.currentStayBranchIndex = branchId
+		if tonumber(curBranchData.type) == 1 then
+			self:scrollToRight()
+		elseif tonumber(curBranchData.type) == 2 then
+			self:scrollToLeft()
+		end
+
+		self:runAction(CCSequence:createWithTwoActions(
+			CCDelayTime:create(0.5),
+			CCCallFunc:create(function( ... )
+				if callback then
+					callback()
+				end
+			end)
+		))
+	end
+
+	local branchPos = self.hiddenBranchLayer:convertToWorldSpace(ccp(0, curBranchData.y))
+	local branchPos = self.maskedLayer:convertToNodeSpace(branchPos)
+	local targetY = branchPos.y - Director:sharedDirector():getVisibleOrigin().y
+	local function verticalScroll()
+		self:verticalScrollTo(targetY, onVerticalScrollComplete)
+	end
+
+	if self.scrollHorizontalState ~= WorldSceneScrollerHorizontalState.STAY_IN_ORIGIN then
+		self:scrollToOrigin()
+		self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCCallFunc:create(verticalScroll)))
+	else
+		verticalScroll()
+	end
+end
+
+function WorldScene:unlockHiddenBranchCloud( branchId )
+	if not self.hiddenBranchArray[branchId] then
+		return
+	end
+
+	if not self.hiddenBranchArray[branchId]:isClosed() then
+		return
+	end
+
+	self:scrollToBranch(branchId,function( ... )
+
+		local hiddenBranchData = MetaModel:sharedInstance():getHiddenBranchDataByBranchId(branchId)
+		local nodeView = self.levelToNode[hiddenBranchData.startHiddenLevel]
+		if nodeView then
+			nodeView:setStar(0, false, false, false, false)
+			nodeView:updateView(true, false)
+			local function onNodeViewTapped_inner(event)
+				self:onNodeViewTapped(event)
+			end
+			nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)					
+		end
+
+		self.hiddenBranchArray[branchId]:updateState()
+
+	end)
+end
+
 function WorldScene:onGetNewStarLevel(event, ...)
-	assert(event)
-	assert(event.name == WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR)
-	assert(event.data)
-	assert(#{...} == 0)
+	-- assert(event)
+	-- assert(event.name == WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR)
+	-- assert(event.data)
+	-- assert(#{...} == 0)
 
 	local changedLevelId = event.data
 	local branchDataList = MetaModel:sharedInstance():getHiddenBranchDataList()
@@ -1696,10 +2443,11 @@ function WorldScene:onGetNewStarLevel(event, ...)
 	local function unlockHiddenBranch(branchId)
 		-- If Exist A Hidden Branch Based On This Normal Level
 		if branchId then
-			if not self.hiddenBranchArray[branchId] or WorldSceneShowManager.getInstance():getHideBranchOpenFlag() then
-				WorldSceneShowManager.getInstance():setHideBranchOpenFlag(false)
+			if not self.hiddenBranchArray[branchId] or WorldSceneShowManager:getInstance():getHideBranchOpenFlag() then
+				WorldSceneShowManager:getInstance():setHideBranchOpenFlag(false)
 				-- Check If This Hidden Branch Can Open
-				if MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
+				-- if MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
+				if MetaModel:sharedInstance():isHiddenBranchCanShow(branchId) then 
 					local function onHiddenBranchTapped(event)
 						self:onHiddenBranchTapped(event)
 					end
@@ -1714,38 +2462,22 @@ function WorldScene:onGetNewStarLevel(event, ...)
 
 						newBranch:addEventListener(HiddenBranchEvent.OPEN_ANIM_FINISHED, self.onHiddenBranchOpenAnimFinished, self)
 						newBranch:addEventListener(DisplayEvents.kTouchTap, onHiddenBranchTapped, branchId)
-						newBranch:playOpenAnim(self.hiddenBranchAnimLayer)
-					end
-
-					local curBranchData = branchDataList[branchId]
-
-					local function onVerticalScrollComplete()
-						self.currentStayBranchIndex = branchId
-						if tonumber(curBranchData.type) == 1 then
-							self:scrollToRight()
-						elseif tonumber(curBranchData.type) == 2 then
-							self:scrollToLeft()
+						
+						if not MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
+							newBranch:showCloud(
+								self.lockedCloudLayer:getBatchNode(),
+								self.lockedCloudLayer:getHiddenBranchTextBatchNode(),
+								self.lockedCloudLayer:getHiddenBranchNumberBatchNode()
+							)
 						end
 
-						self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.5), CCCallFunc:create(createNewBranch)))
+						newBranch:playOpenAnim(self.hiddenBranchAnimLayer)
 					end
 
 					self:setTouchEnabled(false)
 					self.isUnlockingHiddenBranch = true
+					self:scrollToBranch(branchId,createNewBranch)
 
-					local branchPos = self.hiddenBranchLayer:convertToWorldSpace(ccp(0, curBranchData.y))
-					local branchPos = self.maskedLayer:convertToNodeSpace(branchPos)
-					local targetY = branchPos.y + 200
-					local function verticalScroll()
-						self:verticalScrollTo(targetY, onVerticalScrollComplete)
-					end
-
-					if self.scrollHorizontalState ~= WorldSceneScrollerHorizontalState.STAY_IN_ORIGIN then
-						self:scrollToOrigin()
-						self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCCallFunc:create(verticalScroll)))
-					else
-						verticalScroll()
-					end
 					-- Cookie.getInstance():write(CookieKey.kUnlockHiddenArea, "true")
 				end
 			end
@@ -1754,16 +2486,34 @@ function WorldScene:onGetNewStarLevel(event, ...)
 
 	if LevelType:isMainLevel(changedLevelId) then
 		local branchId = MetaModel:sharedInstance():getHiddenBranchIdByNormalLevelId(changedLevelId)
-		unlockHiddenBranch(branchId)
+		if not self.hiddenBranchArray[branchId] then
+			unlockHiddenBranch(branchId)
+		else
+			if MetaModel:sharedInstance():isHiddenBranchCanOpen(branchId) then
+				self:unlockHiddenBranchCloud(branchId)
+			else
+				self.hiddenBranchArray[branchId]:updateState()
+			end
+		end
 	elseif LevelType:isHideLevel(changedLevelId) then
 		local hiddenBranchData = MetaModel:sharedInstance():getHiddenBranchDataByHiddenLevelId(changedLevelId)
 		local endHiddenLevel = hiddenBranchData.endHiddenLevel
 		local nextHiddenLevelOnSameBranch = changedLevelId + 1
 
-		if changedLevelId < endHiddenLevel and not self.levelToNode[nextHiddenLevelOnSameBranch] then
-			local nodeView = self:buildHiddenNode(nextHiddenLevelOnSameBranch)
+		local branchId = MetaModel:sharedInstance():getHiddenBranchIdByHiddenLevelId(changedLevelId)
+		self.hiddenBranchArray[branchId]:updateState()
+
+		if changedLevelId < endHiddenLevel then
+			local nodeView = self.levelToNode[nextHiddenLevelOnSameBranch]
+			if nodeView and nodeView:getStar() < 0 then
+				nodeView:setStar(0, false, false, false, false)
+				nodeView:updateView(true, false)
+				local function onNodeViewTapped_inner(event)
+					self:onNodeViewTapped(event)
+				end
+				nodeView:addEventListener(DisplayEvents.kTouchTap, onNodeViewTapped_inner, nodeView)
+			end
 		else
-			local branchId = MetaModel:sharedInstance():getHiddenBranchIdByHiddenLevelId(changedLevelId)
 			local dependedBranch = MetaModel:sharedInstance():getHiddenBranchIdByDependingBranch(branchId)
 			unlockHiddenBranch(dependedBranch)
 		end
@@ -1794,7 +2544,9 @@ function WorldScene.onHiddenBranchOpenAnimFinished(event, ...)
 	
 	local headHiddenLevel = curBranchData.startHiddenLevel
 
-	local nodeView = self:buildHiddenNode(headHiddenLevel)
+	for headHiddenLevel=curBranchData.startHiddenLevel,curBranchData.endHiddenLevel do
+		local nodeView = self:buildHiddenNode(headHiddenLevel)
+	end
 
 	self:setTouchEnabled(true)
 	self.isUnlockingHiddenBranch = false
@@ -1966,6 +2718,9 @@ function WorldScene:sendFriendHttp(onSuccessCallback, ...)
 	
 		local function onSuccess()
 			self.lastGetFriendTime = Localhost:time()
+			self.friendsInitiated = true
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(MessageCenterPushEvents.kFriendsSynced))
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(MessageCenterPushEvents.kInitPushEnergyRequestTask))
 
 			if onSuccessCallback then
 				onSuccessCallback()
@@ -2041,4 +2796,92 @@ function WorldScene:getCurrentAreaId( ... )
 	end
 
 	return maxArea
+end
+
+function WorldScene:addFloatIcon(floatIcon)
+	local function onFloatIconTapped(event)
+		if self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_ORIGIN then
+			if floatIcon:getFloatType() == FloatIconType.kRight then
+				self:scrollToRight()
+			elseif floatIcon:getFloatType() == FloatIconType.kLeft then
+				self:scrollToLeft()
+			end
+			local dcData = {game_type="stage", game_name="two_year_anniversary", category="other", sub_category="two_year_anniversary_change"}
+			DcUtil:log(109, dcData)
+		elseif self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_RIGHT 
+			or self.scrollHorizontalState == WorldSceneScrollerHorizontalState.STAY_IN_LEFT then
+			-- self:scrollToOrigin()
+		end
+	end
+	floatIcon:addEventListener(DisplayEvents.kTouchTap, onFloatIconTapped)
+
+	self.floatIconsLayer:addChild(floatIcon)
+	table.insert(self.floatIcons, floatIcon)
+
+	self:updateFloatIconPos(floatIcon)
+end
+
+function WorldScene:updateAllFloatIconPos()
+	for _, v in pairs(self.floatIcons) do
+		self:updateFloatIconPos(v)
+	end
+end
+
+function WorldScene:updateFloatIconPos(floatIcon)
+	if floatIcon and not floatIcon.isDisposed then
+		local checks = {topLevelId = UserManager:getInstance().user:getTopLevelId()}
+		if not floatIcon:checkVisible(checks) then
+			floatIcon:setVisible(false)
+			return
+		else
+			floatIcon:setVisible(true)
+		end
+
+		if floatIcon:getPosType() == FloatIconPositionType.kTopLevel then
+			local topLevelId = topLevelId or self.topLevelId
+			local locationNode = self.levelToNode[topLevelId]
+
+			if locationNode then
+				local posY = locationNode:getPositionY()
+
+				local levelIdInArea = topLevelId % 15
+				if levelIdInArea == 0 then levelIdInArea = 15 end
+				-- 计算最高位置限制
+				local maxPosY = self.levelToNode[topLevelId - levelIdInArea + 15]:getPositionY() - 590
+				posY = math.min(posY, maxPosY)
+				-- 计算最低位置限制
+				local hiddenBranchId = MetaModel:sharedInstance():getHiddenBranchIdByNormalLevelId(topLevelId - levelIdInArea)
+				if hiddenBranchId then
+					local minPosY = posY
+
+					-- print(">>>>>>>>>>", floatIcon:getFloatType(), hiddenBranchId)
+					if floatIcon:getFloatType() == FloatIconType.kRight and hiddenBranchId % 2 == 1 then -- 右边的隐藏关
+						minPosY = self.levelToNode[topLevelId - levelIdInArea]:getPositionY() + 400
+					elseif floatIcon:getFloatType() == FloatIconType.kLeft and hiddenBranchId % 2 == 0 then -- 左边的隐藏关
+						minPosY = self.levelToNode[topLevelId - levelIdInArea]:getPositionY() + 400
+					end
+					posY = math.max(posY, minPosY)
+				end
+				floatIcon:setPosition(ccp(floatIcon:getPositionX(), posY))
+			else
+				floatIcon:setVisible(false)
+			end			
+		end
+	end
+end
+
+function WorldScene:updateAnniversaryFloatButton()
+	if not self.anniversaryFloatButton and UserManager:getInstance().user:getTopLevelId() >= 20 then
+		if AnniversaryFloatButton and AnniversaryFloatButton:isSupport() and AnniversaryFloatButton:isInAcitivtyTime() then
+			local floatIcon = AnniversaryFloatButton:create(FloatIconType.kRight, FloatIconPositionType.kTopLevel)
+			self.anniversaryFloatButton = floatIcon
+
+			self.anniversaryFloatButton:setAnchorPoint(ccp(0.5, 0.5))
+			self.anniversaryFloatButton:ignoreAnchorPointForPosition(false)
+
+			floatIcon:setPositionXY(820, 0)
+
+			self:addFloatIcon(floatIcon)
+		end
+	end
 end

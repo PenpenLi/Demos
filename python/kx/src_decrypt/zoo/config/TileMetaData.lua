@@ -202,7 +202,7 @@ function TileMetaData:convertArrayFromBitToTile(bitMap, stringMap , crossStrengt
 				tileData:convertFromStringToTileIndex(stringMap[h][w])
 			end
 
-			tileData.crossStrengthValue = 0
+			tileData.crossStrengthValue = 0 --我给大家讲个笑话：crossStrengthValue这个参数意思其实是妖精瓶子的初始化等级，哈哈哈哈哈哈
 			if crossStrengthCfg and type(crossStrengthCfg) == "table" then
 				if crossStrengthCfg[h] and type(crossStrengthCfg[h]) == "table" then
 					tileData.crossStrengthValue = tonumber(crossStrengthCfg[h][w] or 0)

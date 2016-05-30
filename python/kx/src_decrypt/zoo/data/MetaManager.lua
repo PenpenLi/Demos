@@ -101,9 +101,12 @@ function MetaManager:initialize()
 		self.activity_rewards = parseItemDict(metaXML,'activity_rewards',ActivityRewardsMetaRef)
 		self.rewards = parseItemDict(metaXML, "rewards", RewardsRef)
 		self.summerWeeklyRewards = parseItemDict(metaXML,'summer_week_match',SummerWeeklyLevelRewardsRef)
+		self.autumnWeeklyLevelRewards = parseItemDict(metaXML,'spring_week_match',AutumnWeeklyLevelRewardsRef)
 
 		self.level_status = parseItemDict(metaXML, "level_status", LevelStatusRef)
-		
+
+		self.missions = parseItemDict(metaXML, "task", MissionRef)
+		self.mission_create_info = parseItemDict(metaXML, "task_creat_info", MissionCreateInfoRef)
 	end
 	if __WP8 then
 		self.product_wp8 = {
@@ -209,9 +212,17 @@ end
 function MetaManager:getLevelAreaById( levelId )
 	return self.level_area[levelId]
 end
+
 function MetaManager:getCoinBlockersByLevelId( levelId )
-	return self.coin_blocker[levelId]
+	for i, v in pairs(self.coin_blocker) do 
+		if v.level == levelId then 
+			return v 
+		end
+	end
+	return nil
+	-- return self.coin_blocker[levelId]
 end
+
 function MetaManager:getPropMeta(propId)
 	return self.prop[propId]
 end
@@ -368,6 +379,10 @@ function MetaManager:getBagCapacity()
 	return self.global.bag_capacity
 end
 
+function MetaManager:getFailLevelNumToShowJump()
+	return self.global.failLevelNumToShowJump
+end
+
 function MetaManager:getProductMetaByID( id )
 	for k, v in pairs(self.product) do
 		if v.id == id then
@@ -427,4 +442,40 @@ end
 
 function MetaManager:getInviteFriendCount()
 	return self.global.invite_friends_count
+end
+
+function MetaManager:getMissionMeta()
+	return self.missions
+end
+
+function MetaManager:getMissionIdMeta(missionId)
+	for i,v in pairs(self.missions) do
+		if v.id == missionId then
+			return v
+		end
+	end
+	return nil
+end
+
+function MetaManager:getMissionTypeData(typeId)
+	if not typeId then
+		return self.mission_create_info
+	else
+		for i,v in ipairs(self.mission_create_info) do
+			if v.id == typeId then
+				return v
+			end
+		end
+		return nil
+	end
+end
+
+function MetaManager:getMissionIdMetaByType(typeId)
+	local ret = {}
+	for i,v in pairs(self.missions) do
+		if table.indexOf(v.cType, typeId) then
+			table.insert(ret, v)
+		end
+	end
+	return ret
 end

@@ -16,14 +16,22 @@ end
 function UFOUpdateState:onEnter()
 	BaseStableState.onEnter(self)
 	self.nextState = nil
-	local function callback( ... )
-		-- body
-		self:handleItemComplete();
-	end
-
 	self.hasItemToHandle = false
 	self.complete = 0
-	self.total, self.isTop = GameExtandPlayLogic:checkUFOItemUpdate(self.mainLogic, callback)
+	self.total =  0
+	self.isTop = false
+
+	if self.mainLogic.UFOSleepCD > 0 then
+		-- 飞碟恢复
+		GameExtandPlayLogic:recoverUFO(self.mainLogic)
+	else
+		self.mainLogic.oldUFOSleepCD = 0
+		local function callback( ... )
+			self:handleItemComplete()
+		end
+		self.total, self.isTop = GameExtandPlayLogic:checkUFOItemUpdate(self.mainLogic, callback)
+	end
+
 	if self.total == 0 then
 		self:handleItemComplete()
 	else

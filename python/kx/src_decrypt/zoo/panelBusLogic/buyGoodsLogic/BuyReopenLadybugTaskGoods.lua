@@ -52,18 +52,15 @@ function BuyReopenLadybugTaskGoods:start(isShowTip, successCallback, failCallbac
 		end
 	end
 
-	local function onFail(event)
+	local function onFail(errorCode)
 		print("BuyReopenLadybugTaskGoods:onFail Called !")
-		print("event.data: " .. event.data)
+		print("event.data: " .. errorCode)
 
 		if failCallback then
-			failCallback(event)
+			failCallback(errorCode)
 		end
 	end
-
-	--local buy = BuyLogic:create(ItemType.REOPEN_LADYBUG_TASK,1, 2, self.taskDay)
-	--buy:start(onSuccess, onFail, isShowTip)
-
+	
 	local reopenLadybugTaskId	= 28
 	local buy = BuyLogic:create(reopenLadybugTaskId, 2, self.taskDay)
 	buy:getPrice()

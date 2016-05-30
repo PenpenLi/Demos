@@ -86,7 +86,7 @@ PassLevelHttp = class(HttpBase) --è¿‡å…³
 --  <response>
 --		<list code="rewardItems" ref="Reward" desc="é€šè¿‡å…³å¡èŽ·å¾—å¥–åŠ±"/>
 --	</response>
-function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, opLog, gameLevelType)
+function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, opLog, gameLevelType, costMove)
 	assert(levelId ~= nil, "levelId must not a nil")
 	assert(score ~= nil, "gameMode must not a nil")
 	assert(star ~= nil, "star must not a nil")
@@ -94,19 +94,61 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 	assert(coin ~= nil, "coin must not a nil")
 
 	local context = self
-	print('passLevel', levelId, score, star, stageTime, coin, targetCount, opLog, gameLevelType)
+	print('passLevel', levelId, score, star, stageTime, coin, targetCount, opLog, gameLevelType, costMove)
 
 	if gameLevelType == GameLevelType.kQixi and star < 1 then -- attention
 		targetCount = 0
 	end
-
+	
+	costMove = costMove or 0
 	local actFlag = gameLevelType
 	--召回功能最高关卡临时道具特殊处理 
 	if RecallManager.getInstance():getRecallLevelState(levelId) then
 		actFlag = 101
 	end
 
+	if StartupConfig:getInstance():isLocalDevelopMode() then
+		-- debug模式全部上传，方便QA出现问题时回放
+	else
+		-- 检查是否需要上传oplog, 减少上传不必要的数据
+		local uid = tonumber(UserManager:getInstance().user.uid)
+		local uploadEnable = uid and (uid % 100 < 5) -- 5% for test
+		if not LevelType.isNeedUploadOpLog(gameLevelType) or not uploadEnable then
+			opLog = nil
+		else
+			-- 只上传不低于原成绩的操作
+			if gameLevelType == GameLevelType.kMainLevel or gameLevelType == GameLevelType.kHiddenLevel then
+				local oriScore = UserService:getInstance():getUserScore( levelId )
+				if star < 3 or (oriScore and score < oriScore.score) then
+					opLog = nil
+				end
+			end
+		end
+	end
+
+	if opLog then
+		DcUtil:logOpLog(levelId, score, stageTime, targetCount, opLog)
+	end
+
 	if NetworkConfig.useLocalServer then
+
+		-- 根据
+		-- 是否满五步 或 成功通关 或时间关超过30秒
+		-- 来判断是否算活动次数
+		local levelMeta = LevelMapManager.getInstance():getMeta(levelId)
+		local gameData = levelMeta.gameData
+		local levelModeType = gameData.gameModeName
+
+		local extraStr = "0"
+		if costMove >= 5 or star > 0 or (levelModeType == GameModeType.CLASSIC and stageTime >= 30) then
+			extraStr = "1"
+		end
+
+		print("costStep==========================================",costMove)
+		print("levelModeType==========================",levelModeType)
+		print("stageTime==========================",stageTime)
+		print("extraStr==========================",extraStr)
+
 		local cacheHttp = 
 		{
 			levelId=levelId, 
@@ -116,7 +158,12 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 			coin=coin,
 			targetCount=targetCount,
 			requestTime=Localhost:time(), 
-			activityFlag = actFlag
+			activityFlag = actFlag,
+			step = costMove,
+			extra = extraStr,
+			opLog = opLog,
+			curMd5 = ResourceLoader.getCurVersion(), 	-- game version
+			curConfigMd5 = LevelMapManager.getInstance():getLevelUpdateVersion(), -- level update version
 		}
 		
 		local topLevelId = UserService:getInstance().user:getTopLevelId()
@@ -159,7 +206,22 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 				end
 			end
 			
+			if MissionManager then
+				local triggerContext = TriggerContext:create(TriggerContextPlace.OFFLINE)
+				triggerContext:addValue( kHttpEndPoints.passLevel , {levelId=levelId,star=star,score=score} )
+				MissionManager:getInstance():checkAll(triggerContext)
+			end
+
+			if star > 0 then
+				UserManager.getInstance():removeJumpLevelRef(levelId)
+				print('UserManager removeJumpLevelRef')
+			end
 			context:onLoadingComplete(result) 
+
+			if MissionManager then
+				local triggerContext = TriggerContext:create(TriggerContextPlace.ANY_WHERE)
+				MissionManager:getInstance():checkAll(triggerContext)
+			end
 		end
 		return
 	end
@@ -196,7 +258,19 @@ function PassLevelHttp:load(levelId, score, star, stageTime, coin, targetCount, 
 					DcUtil:logRewardItem("pass_level", v.itemId, v.num, levelId)
 				end
 			end
+
+			if MissionManager then
+				local triggerContext = TriggerContext:create(TriggerContextPlace.OFFLINE)
+				triggerContext:addValue( kHttpEndPoints.passLevel , data )
+				MissionManager:getInstance():checkAll(triggerContext)
+			end
+
 	    	context:onLoadingComplete(data.rewardItems)
+
+	    	if MissionManager then
+				local triggerContext = TriggerContext:create(TriggerContextPlace.ANY_WHERE)
+				MissionManager:getInstance():checkAll(triggerContext)
+			end
 	    end
 	end
 	
@@ -476,6 +550,9 @@ function SettingHttp:load(settingFlag)
 	local body = {setting=settingFlag}
 
 	if NetworkConfig.useLocalServer then
+		UserManager.getInstance().setting = settingFlag
+		UserService.getInstance().setting = settingFlag
+		
 		UserService.getInstance():cacheHttp(kHttpEndPoints.setting, body)
 		if NetworkConfig.writeLocalDataStorage then 
 			Localhost:getInstance():flushCurrentUserData()
@@ -498,4 +575,65 @@ function SettingHttp:load(settingFlag)
 	end
 	
 	self.transponder:call(kHttpEndPoints.setting, body, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+UpdateMissionHttp = class(HttpBase)
+-- progress是个字符串，格式是"current-total,current-total"
+function UpdateMissionHttp:load(position, taskId, state, progress)
+	local context = self
+
+	if NetworkConfig.useLocalServer then
+		UserService.getInstance():cacheHttp(kHttpEndPoints.updateMission, {position = position,
+			taskId = taskId, state = state, progress = progress, requestTime = Localhost:time()})
+		if NetworkConfig.writeLocalDataStorage then 
+			Localhost:getInstance():flushCurrentUserData()
+		else 
+			print("Did not write user data to the device.") 
+		end
+		context:onLoadingComplete()
+		return
+	end
+
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	he_log_info("UpdateMissionHttp fail, err: " .. err)
+	    	context:onLoadingError(err)
+	    else
+	    	he_log_info("UpdateMissionHttp success")
+	    	context:onLoadingComplete()
+	    end
+	end
+	
+	self.transponder:call(kHttpEndPoints.updateMission, {position = position, taskId = taskId,
+		state = state, progress = progress, requestTime = Localhost:time()}, loadCallback,
+		rpc.SendingPriority.kHigh, false)
+end
+
+TriggerAchievement = class(HttpBase)
+function TriggerAchievement:load( id )
+	local context = self
+
+	if NetworkConfig.useLocalServer then
+		UserService.getInstance():cacheHttp(kHttpEndPoints.triggerAchievement, {id = id})
+		if NetworkConfig.writeLocalDataStorage then 
+			Localhost:getInstance():flushCurrentUserData()
+		else 
+			print("Did not write user data to the device.") 
+		end
+		context:onLoadingComplete()
+		return
+	end
+
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.triggerAchievement, {id = id}, loadCallback, rpc.SendingPriority.kHigh, false)
 end

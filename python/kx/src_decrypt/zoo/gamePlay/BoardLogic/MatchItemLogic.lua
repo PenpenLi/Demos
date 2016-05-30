@@ -28,6 +28,7 @@ end
 
 ----检测是否能对位置(r,c)调整为color进行合成
 function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
+	--print("RRR   MatchItemLogic:checkMatchStep1")
 	local includePos = {}
 	local colMatchIncludePos = {}
 	local rowMatchIncludePos = {}
@@ -37,6 +38,7 @@ function MatchItemLogic:checkMatchStep1(mainLogic, r, c, color, doSwap)
 	local sf_new = #mainLogic.swapHelpList + 1
 	local canDeleted = false
 	----颜色为0不参与匹配
+	--print("RRR   MatchItemLogic:checkMatchStep1    r = " , r , "  c = " , c , "  color = " , color , "  doSwap = " , doSwap )
 	if color == 0 then 
 		return false
 	end
@@ -201,6 +203,8 @@ function MatchItemLogic:_checkCombineItem(mainLogic, r,c, sf_start, sf_end, sf_d
 		return 0
 	end
 
+	local checkItem = mainLogic.gameItemMap[r][c]
+
 	local maxMix = 0
 
 	----match中的部分item带有swapHelpMap Id, 代表此match与其他math发生交汇, 由于另一个match长度至少为3,
@@ -217,6 +221,11 @@ function MatchItemLogic:_checkCombineItem(mainLogic, r,c, sf_start, sf_end, sf_d
 		 		maxMix = mainLogic.swapHelpList[i]		--记录最大合成物
 		 	end
 		end
+
+		if checkItem.ItemType == GameItemType.kDrip then
+			maxMix = AnimalTypeConfig.kDrip
+		end
+
 		if minCombineID > 0 then
 			for i = 1, #mainLogic.swapHelpMap do 			----合并号统一
 				for j = 1, #mainLogic.swapHelpMap[i] do
@@ -226,16 +235,20 @@ function MatchItemLogic:_checkCombineItem(mainLogic, r,c, sf_start, sf_end, sf_d
 				end
 			end
 		end
-
 		mainLogic.swapHelpList[minCombineID] = maxMix		---记录合并号生成的物体类型
 
 		--成功合成
 		MatchItemLogic:_swapHelpMakeSign(mainLogic, r, c, sf_start, sf_end, sf_direction, minCombineID)---填充合成标志--用合成ID填充
+		
 		return minCombineID
 	else 
 		--判断是否能生成直线或鸟特效
 		if sf_end - sf_start >= 4 then
-			maxMix = AnimalTypeConfig.kColor
+			if checkItem.ItemType == GameItemType.kDrip then
+				maxMix = AnimalTypeConfig.kDrip
+			else
+				maxMix = AnimalTypeConfig.kColor
+			end
 			mainLogic.swapHelpList[sf_new] = maxMix
 			MatchItemLogic:_swapHelpMakeSign(mainLogic, r, c, sf_start, sf_end, sf_direction, sf_new)
 		elseif sf_end - sf_start == 3 then 
@@ -244,12 +257,20 @@ function MatchItemLogic:_checkCombineItem(mainLogic, r,c, sf_start, sf_end, sf_d
 			else
 				maxMix = AnimalTypeConfig.kColumn---c方向合成，生成列特效
 			end
+			if checkItem.ItemType == GameItemType.kDrip then
+				maxMix = AnimalTypeConfig.kDrip
+			end
 			mainLogic.swapHelpList[sf_new] = maxMix
 			MatchItemLogic:_swapHelpMakeSign(mainLogic, r, c, sf_start, sf_end, sf_direction, sf_new)
 			return sf_new 		--返回生成的物品的集合ID
 		elseif sf_end - sf_start == 2 then
 			----标号表上的东西
-			mainLogic.swapHelpList[sf_new] = 1		---什么也不合成
+			if checkItem.ItemType == GameItemType.kDrip then
+				mainLogic.swapHelpList[sf_new] = AnimalTypeConfig.kDrip
+				--mainLogic.swapHelpList[sf_new] = 1
+			else
+				mainLogic.swapHelpList[sf_new] = 1		---什么也不合成
+			end
 			MatchItemLogic:_swapHelpMakeSign(mainLogic, r, c, sf_start, sf_end, sf_direction, sf_new)
 			return sf_new
 		end
@@ -268,12 +289,12 @@ function MatchItemLogic:calculateSpecialMergePos(mainLogic, setId)
 			local c2 = mainLogic.swapInfo[2].c
 			if mainLogic.swapHelpMap[r1][c1] == setId then
 				local item = mainLogic.gameItemMap[r1][c1]
-				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
+				if not AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType) and item:canBeMixToSpecialByMatch() then
 					mainLogic.swapHelpMakePos[setId] = { r = r1, c = c1 }
 				end
 			elseif mainLogic.swapHelpMap[r2][c2] == setId then
 				local item = mainLogic.gameItemMap[r2][c2]
-				if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
+				if not AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType) and item:canBeMixToSpecialByMatch() then
 					mainLogic.swapHelpMakePos[setId] = { r = r2, c = c2 }
 				end
 			end
@@ -288,7 +309,7 @@ function MatchItemLogic:calculateSpecialMergePos(mainLogic, setId)
 			for c = 1, #mainLogic.swapHelpMap[r] do
 				if mainLogic.swapHelpMap[r][c] == setId then
 					local item = mainLogic.gameItemMap[r][c]
-					if (item.ItemSpecialType < AnimalTypeConfig.kLine or item.ItemSpecialType > AnimalTypeConfig.kColor) and item:canBeMixToSpecialByMatch() then
+					if not AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType) and item:canBeMixToSpecialByMatch() then
 						table.insert(result, {r = r, c = c})
 					end
 				end
@@ -325,54 +346,110 @@ function MatchItemLogic:_MatchSuccessAndMix(mainLogic)
 	for r = 1, #mainLogic.swapHelpMap do
 		for c = 1, #mainLogic.swapHelpMap[r] do
 			if mainLogic.swapHelpMap[r][c] > 0 then 		----有合成
+				local matchItem = mainLogic.gameItemMap[r][c]
 				local setId = mainLogic.swapHelpMap[r][c]
-				local color = mainLogic.gameItemMap[r][c].ItemColorType
+				local color = matchItem.ItemColorType
 				local needDeleted = true
 				
 				local specialType = mainLogic.swapHelpList[setId] ----通过集合编号找到特效类型
 				
-				if specialType and specialType > 1 then 	----合成了东西   1表示进行了普通消除
+				if specialType and AnimalTypeConfig.isSpecialTypeValid(specialType) then 	----合成了东西   1表示进行了普通消除
 					-- local pos = mainLogic.swapHelpMakePos[setId]
 					local pos = MatchItemLogic:calculateSpecialMergePos(mainLogic, setId)
-					if pos and pos.r == r and pos.c == c then
-						--合成时需要为原有位置上的普通动物消除数量额外计数
-						mainLogic:tryDoOrderList(r, c, GameItemOrderType.kAnimal, mainLogic.gameItemMap[r][c].ItemColorType)
-						--修改数据，生成新物品
-						if (specialType == AnimalTypeConfig.kColor and color ~= 0) then
-							color = 0
-						end
-						if mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCrystal then
-							ProductItemLogic:shoundCome(mainLogic, GameItemType.kCrystal)
-						end
-						GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 
-						mainLogic.gameItemMap[r][c].oldItemType = mainLogic.gameItemMap[r][c].ItemType 
-						mainLogic.gameItemMap[r][c].ItemType = GameItemType.kAnimal
-						mainLogic.gameItemMap[r][c]:changeItemType(color, specialType)
-						mainLogic.swapHelpMap[r][c] = -mainLogic.swapHelpMap[r][c]		--生成后不再属于等待消除的数据
-						----播放特效生成动画
-						needDeleted = false
+					if pos and pos.r ~= -1 and pos.c ~= -1 then
 
-						local boardView = mainLogic.boardView
-						local itemView = boardView.baseMap[r][c]
-						itemView:updateByNewItemData(mainLogic.gameItemMap[r][c])
-						
-						mainLogic.gameItemMap[r][c].isNeedUpdate = true
+						if pos.r == r and pos.c == c then
+							--合成时需要为原有位置上的普通动物消除数量额外计数
+							mainLogic:tryDoOrderList(r, c, GameItemOrderType.kAnimal, matchItem.ItemColorType)
+							-- 给水晶石充能
+							if matchItem:canChargeCrystalStone() then
+								GameExtandPlayLogic:chargeCrystalStone(mainLogic, r, c, matchItem.ItemColorType)
+							end
 
-						----声音
-						if specialType == AnimalTypeConfig.kLine or specialType == AnimalTypeConfig.kColumn then
-							GamePlayMusicPlayer:playEffect(GameMusicType.kCreateLine)
-						elseif specialType == AnimalTypeConfig.kWrap then
-							GamePlayMusicPlayer:playEffect(GameMusicType.kCreateWrap)
-						elseif specialType == AnimalTypeConfig.kColor then
-							GamePlayMusicPlayer:playEffect(GameMusicType.kCreateColor)
+							--修改数据，生成新物品
+							if (specialType == AnimalTypeConfig.kColor and color ~= 0) then
+								color = 0
+							end
+							if matchItem.ItemType == GameItemType.kCrystal then
+								ProductItemLogic:shoundCome(mainLogic, GameItemType.kCrystal)
+							end
+							GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
+
+							if matchItem.ItemType == GameItemType.kDrip then
+
+								if _G.test_DripMode == 2 then
+									--print("RRR   【MatchItemLogic:_MatchSuccessAndMix】1  " , r , c )
+									--if not matchItem.startDripCastingAction then
+										matchItem.dripState = DripState.kGrow
+										matchItem.dripLeaderPos = IntCoord:create( pos.c , pos.r )
+										mainLogic:checkItemBlock(r, c)
+
+										--matchItem:AddItemStatus(GameItemStatusType.kIsMatch)------作用是注册一个状态，防止播放两次消除动画
+										--matchItem.gotoPos = nil
+										--matchItem.comePos = nil
+										GameExtandPlayLogic:__dripCasting( mainLogic, r, c )
+									--end
+								else
+									matchItem.dripState = DripState.kGrow
+									matchItem.dripLeaderPos = IntCoord:create( pos.c , pos.r )
+									mainLogic:checkItemBlock(r, c)
+								end
+
+							else
+								matchItem.oldItemType = matchItem.ItemType 
+								matchItem.ItemType = GameItemType.kAnimal
+								matchItem:changeItemType(color, specialType)
+								mainLogic.swapHelpMap[r][c] = -mainLogic.swapHelpMap[r][c]		--生成后不再属于等待消除的数据
+							end
+							
+							----播放特效生成动画
+							needDeleted = false
+
+							local boardView = mainLogic.boardView
+							local itemView = boardView.baseMap[r][c]
+							itemView:updateByNewItemData(matchItem)
+							
+							matchItem.isNeedUpdate = true
+
+							----声音
+							if specialType == AnimalTypeConfig.kLine or specialType == AnimalTypeConfig.kColumn then
+								GamePlayMusicPlayer:playEffect(GameMusicType.kCreateLine)
+							elseif specialType == AnimalTypeConfig.kWrap then
+								GamePlayMusicPlayer:playEffect(GameMusicType.kCreateWrap)
+							elseif specialType == AnimalTypeConfig.kColor then
+								GamePlayMusicPlayer:playEffect(GameMusicType.kCreateColor)
+							end
+						else
+
+							if matchItem.ItemType == GameItemType.kDrip then
+
+								if _G.test_DripMode == 2 then
+									--if not matchItem.startDripCastingAction then
+										matchItem.dripState = DripState.kReadyToMove
+										matchItem.dripLeaderPos = IntCoord:create( pos.c , pos.r )
+										mainLogic:checkItemBlock(r, c)
+
+										--matchItem:AddItemStatus(GameItemStatusType.kIsMatch)------作用是注册一个状态，防止播放两次消除动画
+										--matchItem.gotoPos = nil
+										--matchItem.comePos = nil
+										GameExtandPlayLogic:__dripCasting( mainLogic, r, c )
+									--end
+								else
+									matchItem.dripState = DripState.kReadyToMove
+									matchItem.dripLeaderPos = IntCoord:create( pos.c , pos.r )
+									mainLogic:checkItemBlock(r, c)
+								end
+
+								needDeleted = false
+							end
 						end
 					end
 				end
 
 				----2.播放rc的消除动画
 				if needDeleted then
-					local item = mainLogic.gameItemMap[r][c]
+					local item = matchItem
 					if item:canBeEliminateByMatch() then
 						item:AddItemStatus(GameItemStatusType.kIsMatch)------作用是注册一个状态，防止播放两次消除动画
 						item.gotoPos = nil
@@ -398,6 +475,10 @@ function MatchItemLogic:_MatchSuccessAndMix(mainLogic)
 end
 
 function MatchItemLogic:checkPossibleMatch(mainLogic)
+	if mainLogic.isCrystalStoneInHandling then 
+		return false 
+	end
+
 	MatchItemLogic:cleanSwapHelpMap(mainLogic)
 	-----全地图落点判断------
 	local needMix = false

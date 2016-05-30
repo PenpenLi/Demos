@@ -1,6 +1,5 @@
 require "zoo.panel.basePanel.BasePanel"
-require 'zoo.panel.BuyPropPanel'
-
+require 'zoo.payment.AddMinusButton'
 
 local kButtonType = {
 	kAdd = 0,
@@ -59,8 +58,7 @@ function MarketBuyPanel:init(goodsId)
 	end
 	self.icon:setScale(1.2)
 	self.items = self.goodsData.items
-	-- self.buyLogic = BuyLogic:create(self.goodsData.id, 2, nil)
-	self.price, self.amountLimit, self.originalPrice = self.goodsData.currentPrice, self.goodsData.buyLimit, self.goodsData.originalPrice --self.buyLogic:getPrice()
+	self.price, self.amountLimit, self.originalPrice = self.goodsData.currentPrice, self.goodsData.buyLimit, self.goodsData.originalPrice 
 
 	if self.amountLimit ~= -1 then
 		local _txt = Localization:getInstance():getText('market.buy.panel.buylimit', {num = self.amountLimit})
@@ -166,12 +164,10 @@ function MarketBuyPanel:init(goodsId)
 
 	self:buildBubbleAnimation()
 
+	self.dcWindmillInfo = DCWindmillObject:create()
+	self.dcWindmillInfo:setGoodsId(goodsId)
 	if __ANDROID then
-		self.uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
-		PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, self.goodsId, 1, self.amount, 0, 0)	
-	elseif __IOS then 
-		self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
-		PaymentIosDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, self.goodsId, 1, self.amount, 0)
+		PaymentDCUtil.getInstance():sendAndroidWindMillPayStart(self.dcWindmillInfo)
 	end
 end
 
@@ -321,77 +317,98 @@ function MarketBuyPanel:onBuyButtonClick()
 
 	local userCash = UserManager:getInstance():getUserRef():getCash()
 
-	local function onSuccess(event)
+	local function onSuccess(data)
 		local scene = HomeScene:sharedInstance()
 		local items = {}
 		local amounts = {}
 		local anim = nil
+
+		local bounds = self.icon:getGroupBounds() 
+
 		if #self.items == 1 then
-			anim = scene:createFlyToBagAnimation(self.items[1].itemId, 1)
+			local anim = FlyItemsAnimation:create({self.items[1]})
+			anim:setScale(1.8)
+			anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+			anim:play()			
 		else 	
-			anim = scene:createFlyToBagAnimation(self.goodsData.id, 1, true)
+			local anim = FlyBagAnimation:createWithGoodsId(self.goodsData.id,self.amount)
+			anim:setScale(1.8)
+			anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+			anim:play()
 		end
 
-		if anim then
-			local relativePos = self.icon:getPosition()
-			local absPos = self.icon:getParent():convertToWorldSpace(ccp(relativePos.x, relativePos.y))
-			anim:setPosition(ccp(absPos.x, absPos.y))
-			anim:playFlyToAnim(false) 
+		local scene = Director.sharedDirector():getRunningScene()
+
+		if scene then
+			local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
+			local toWorldPosX = 360 + visibleOrigin.x
+			local toWorldPosY = 40 + visibleOrigin.y
+
+			local animLabel = TextField:create("-" .. total,"",30)
+			animLabel:setAnchorPoint(ccp(0.5,0.5))
+			animLabel:setPositionXY(toWorldPosX + 55,toWorldPosY)
+			animLabel:setColor(ccc3(0x35,0x11,0x19))
+			scene:addChild(animLabel)
+
+			local actions = CCArray:create()
+			actions:addObject(CCMoveBy:create(0.8,ccp(0,42)))
+			actions:addObject(CCCallFunc:create(function( ... )
+				animLabel:removeFromParentAndCleanup(true)
+			end))
+			animLabel:runAction(CCSequence:create(actions))
+
+			actions = CCArray:create()
+			actions:addObject(CCDelayTime:create(0.4))
+			actions:addObject(CCFadeOut:create(0.4))
+			animLabel:runAction(CCSequence:create(actions))
 		end
+
 
 		BuyObserver:sharedInstance():onBuySuccess()
 		self.paySuccess = true
+		self.dcWindmillInfo:setResult(DCWindmillPayResult.kSuccess)
 		if __ANDROID then 
-			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-												self.amount, 0, 0, self.amount * self.price, 0, nil, 0)
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
 		elseif __IOS then 
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-												self.amount, 0, 0, self.amount * self.price, 0)
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
 		end
 		CommonTip:showTip(Localization:getInstance():getText('buy.prop.panel.success'), 'positive', nil)
 		self:reload()
 	end
 
-	local function onFailure(event)
+	local function onFailure(errorCode)
 		print(table.tostring(event))
-		self.failBeforePayEnd = true
-		local code = tonumber(event.data)
-		if not code then code = 730632 end
+		if not errorCode then errorCode = 730632 end
 
-		if code == 730330 then 
-			self:goldNotEnough()
-		else
-			local txt = Localization:getInstance():getText('error.tip.'..code)
-			CommonTip:showTip(txt, 'negative', nil)
-			if __ANDROID then 
-				PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-													self.amount, 0, 0, self.amount * self.price, 1, code, 0)
-			elseif __IOS then 
-				PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-													self.amount, 0, 0, self.amount * self.price, 1, code)
-			end
+		local txt = Localization:getInstance():getText('error.tip.'..errorCode)
+		CommonTip:showTip(txt, 'negative', nil)
+
+		self.dcWindmillInfo:setResult(DCWindmillPayResult.kFail, errorCode)
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
 		end
 	end
 
 	if self.price == 0 then 
-
-		--failed
 		return 
 	end
 
+	self.dcWindmillInfo:setGoodsNum(self.amount)
+	self.dcWindmillInfo:setWindMillPrice(total)
+
 	if userCash < total then 
-		-- CommonTip:showTip(Localization:getInstance():getText('buy.prop.panel.err.no.gold'), 'negative', nil)
+		self.dcWindmillInfo:setResult(DCWindmillPayResult.kNoWindmill)
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
+		end
 		self:goldNotEnough()
 		return
 	end
-
-
-
-	-- logic:start(self.amount, onSuccess, onFailure, true, self.price)
 	MarketManager:sharedInstance():buy(self.goodsId, self.amount, self.price, onSuccess, onFailure)
-
-
-
 end
 
 function MarketBuyPanel:goldNotEnough()
@@ -402,19 +419,11 @@ function MarketBuyPanel:goldNotEnough()
 		local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
 		if index ~= 0 then
 			local panel = createMarketPanel(index)
-			-- panel:slideToPage(index)
 			self:onCloseBtnTapped()
 		end
 	end
 	local function askForGoldPanel()
-		-- local text = {
-		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		-- }
-		-- CommonTipWithBtn:setShowFreeFCash(true)
-		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, nil, {y = self:getPositionY()})
-		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil, self.uniquePayId):popout()
+		GoldlNotEnoughPanel:create(createGoldPanel):popout()
 	end
 	askForGoldPanel()
 end
@@ -432,6 +441,7 @@ function MarketBuyPanel:onHelpButtonClick()
 	else 
 		
 		local size = self.bg:getGroupBounds().size
+		size = {width = size.width, height = size.height}
 		
 		self:runAction(CCSequence:createWithTwoActions(
 		               CCEaseSineOut:create(CCMoveBy:create(0.2, ccp(0, 130))),
@@ -472,16 +482,19 @@ end
 
 function MarketBuyPanel:onCloseBtnTapped()
 	if not self.paySuccess then 
-		local endResult = 3
-		if self.failBeforePayEnd then 
-			endResult = 4
+		local payResult = self.dcWindmillInfo:getResult()
+		if payResult and payResult == DCWindmillPayResult.kNoWindmill then 
+			self.dcWindmillInfo:setResult(DCWindmillPayResult.kCloseAfterNoWindmill)
+		elseif payResult and payResult == DCWindmillPayResult.kFail then 
+			self.dcWindmillInfo:setResult(DCWindmillPayResult.kCloseAfterFail)
+		else
+			self.dcWindmillInfo:setResult(DCWindmillPayResult.kCloseDirectly)
 		end
+
 		if __ANDROID then 
-			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-												self.amount, 0, 0, self.amount * self.price, endResult, nil, 0)
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
 		elseif __IOS then 
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-												self.amount, 0, 0, self.amount * self.price, endResult)
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
 		end
 	end
 	CCTextureCache:sharedTextureCache():removeTextureForKey(CCFileUtils:sharedFileUtils():fullPathForFilename("skeleton/tutorial_animation/texture.png"))

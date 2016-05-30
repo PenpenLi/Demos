@@ -56,13 +56,14 @@ function SeaAnimalCollectState:tryCollect()
 	end
 
 	for k, v in pairs(seaAnimals) do
-		-- 判断动物上的冰是否都消除了
+		-- 判断动物上的冰是否都消除了，并且都在反转地格的正面
 		if v.isFreed ~= true then
 
 			local isFreed = true
 			for r = v.y, v.yEnd do 
 				for c = v.x, v.xEnd do
-					if boardMap[r][c].iceLevel and boardMap[r][c].iceLevel > 0 then
+					if boardMap[r][c].iceLevel and boardMap[r][c].iceLevel > 0 or
+						boardMap[r][c].tileBlockType == 1 and boardMap[r][c].isReverseSide then
 						isFreed = false
 						break
 					end
@@ -93,23 +94,23 @@ function SeaAnimalCollectState:tryCollect()
 				if v.type == SeaAnimalType.kPenguin then
 					key2 = GameItemOrderType_SeaAnimal.kPenguin
 					rotation = 0
-					addScore = GamePlayConfig_SeaAnimal_Penguin_Score
+					addScore = GamePlayConfigScore.SeaAnimalPenguin
 				elseif v.type == SeaAnimalType.kPenguin_H then
 					key2 = GameItemOrderType_SeaAnimal.kPenguin
 					rotation = 90
-					addScore = GamePlayConfig_SeaAnimal_Penguin_Score
+					addScore = GamePlayConfigScore.SeaAnimalPenguin
 				elseif v.type == SeaAnimalType.kSeaBear then
 					key2 = GameItemOrderType_SeaAnimal.kSeaBear
 					rotation = 0
-					addScore = GamePlayConfig_SeaAnimal_Bear_Score
+					addScore = GamePlayConfigScore.SeaAnimalBear
 				elseif v.type == SeaAnimalType.kSeal then
 					key2 = GameItemOrderType_SeaAnimal.kSeal
 					rotation = 0
-					addScore = GamePlayConfig_SeaAnimal_Seal_Score
+					addScore = GamePlayConfigScore.SeaAnimalSeal
 				elseif v.type == SeaAnimalType.kSeal_V then 
 					key2 = GameItemOrderType_SeaAnimal.kSeal
 					rotation = -90
-					addScore = GamePlayConfig_SeaAnimal_Seal_Score
+					addScore = GamePlayConfigScore.SeaAnimalSeal
 				end
 				self.mainLogic:tryDoOrderList(v.y,v.x,key1,key2,1, rotation)
 

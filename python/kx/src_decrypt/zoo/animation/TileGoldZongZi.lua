@@ -80,19 +80,36 @@ function TileGoldZongZi:createSprite( level )
 
 	self.light_cirlce:setVisible( level == 0 )
 	
-	self.jewelGrow = Sprite:createWithSpriteFrameName("dig_jewel_goldzongzi_grow_0000")
-	self.jewelGrow:setPosition(ccp(0, 3)) 
+	
+	if GamePlaySceneSkinManager:isHalloweenLevel() then
+		self.jewelGrow = Sprite:createWithSpriteFrameName("dig_goldzongzi_cupcake_grow_0000")
+		self.jewelGrow:setScale(0.9)
+		
+	else
+		self.jewelGrow = Sprite:createWithSpriteFrameName("dig_jewel_goldzongzi_grow_0000")
+	end
+	self.jewelGrow:setPosition(ccp(0, 6)) 
 	self:addChild(self.jewelGrow)
 
 	local animations = CCArray:create()
-	animations:addObject(CCFadeTo:create(1.0, 0))
-	animations:addObject(CCFadeTo:create(1.0, 255))
+	animations:addObject(CCScaleTo:create(0.7, 0.85))
+	animations:addObject(CCScaleTo:create(0.7, 0.9))
 	self.jewelGrow:runAction(CCRepeatForever:create( CCSequence:create(animations) ))
 
-	self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_goldzongzi_0000")
+	if GamePlaySceneSkinManager:isHalloweenLevel() then
+		self.jewel = Sprite:createWithSpriteFrameName("dig_goldzongzi_cupcake_0000")
+		self.jewel:setScale(0.85)
+	else
+		self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_goldzongzi_0000")
+	end
+	
 	self.jewel:setPosition(ccp(0, 3)) 
 	self:addChild(self.jewel)
 
+	local star2 = Sprite:createWithSpriteFrameName('dig_goldzongzi_cupcake_star_0000')
+	star2:play(SpriteUtil:buildAnimate(SpriteUtil:buildFrames("dig_goldzongzi_cupcake_star_%04d", 0, 25), kCharacterAnimationTime), 0, 0, nil)
+
+	self:addChild(star2)
 
 	self.star_1 = getStars()
 	self:addChild(self.star_1)

@@ -464,22 +464,7 @@ function RabbitWeeklyLevelInfoPanel:updatePlayState(visible)
             local label = string.format("%s%0.2f %s", mark, self.price, text)
             self.startBtn:setColorMode(kGroupButtonColorMode.blue)
 
-            local tmpLogic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
-            local decision, paymentType = tmpLogic:getPaymentDecision()
-            -- local operator = AndroidPayment.getInstance():getOperator()
-
             local needSecondConfirm = false
-            if decision == IngamePaymentDecisionType.kPayWithType and 
-                -- operator == TelecomOperators.CHINA_MOBILE then
-                (paymentType == Payments.CHINA_MOBILE  or paymentType == Payments.DUOKU) then
-                needSecondConfirm = true
-            end
-
-            if needSecondConfirm then
-                label = Localization:getInstance():getText('energy.panel.continue.button.label')
-                self.startBtn:setColorMode(kGroupButtonColorMode.green)
-            end
-           
 			self.startBtn:setString(label)
 		    self.startBtn:ad(DisplayEvents.kTouchTap, function () self:onPayForPlayBtnTapped(needSecondConfirm) end)
 		elseif false and __IOS and _mgr():getMaxBuyCount() == _mgr():getRemainingPayCount() then

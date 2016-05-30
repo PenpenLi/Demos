@@ -34,6 +34,13 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 		return self:startQixiLevel(uid, levelId, gameMode, itemIds, energyBuff, requestTime)
 	end
 
+	if gameLevelType == GameLevelType.kSummerWeekly then
+		local matchData = SeasonWeeklyRaceManager:getInstance().matchData
+		if not matchData or requestTime < (matchData.updateTime * 1000) then
+			return false, ZooErrorCode.LEVEL_INVALID_REQUEST_TIME
+		end
+	end
+
 	UserLocalLogic:refreshEnergy()
 	local user = UserService.getInstance().user
 	local consumeEnergy = true
@@ -43,9 +50,6 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 	end
 
 	local user_energy_level_consume = MetaManager.getInstance().global.user_energy_level_consume or 5
-	-- if levelId > LevelConstans.DIGGER_MATCH_LEVEL_ID_START and DailyDataLocalLogic:isFirstDailyDigg( uid ) then
-	-- 	consumeEnergy = false
-	-- end
 
 	-- DigMoveEndless mode
 	if gameLevelType == GameLevelType.kDigWeekly then
@@ -64,6 +68,8 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 	elseif gameLevelType == GameLevelType.kTaskForRecall then
 		consumeEnergy = false
 	elseif gameLevelType == GameLevelType.kSummerWeekly then
+		consumeEnergy = false
+	elseif gameLevelType == GameLevelType.kWukong then
 		consumeEnergy = false
 	end
 	self:refreshEnergy(requestTime)
@@ -130,7 +136,7 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 
 						if not isFreeItem then -- qixi
 							totalAmount = totalAmount + goodsMeta.coin
-							DcUtil:logBuyItem(goodsMeta.id, goodsMeta.coin, 1, oriCoin - totalAmount , levelId)
+							DcUtil:logSilverCoinBuy(goodsMeta.id, goodsMeta.coin, 1, oriCoin - totalAmount , levelId)
 						else
 							QixiUtil:consumeFreeItem(itemId)
 							DcUtil:useQixiFreePreProps(itemId) -- qixi
@@ -144,7 +150,7 @@ function UserLocalLogic:startLevel( uid, levelId, gameMode, itemIds, energyBuff,
 
 					if not isFreeItem then -- qixi
 						totalAmount = totalAmount + goodsMeta.coin
-						DcUtil:logBuyItem(goodsMeta.id, goodsMeta.coin, 1, oriCoin - totalAmount , levelId)
+						DcUtil:logSilverCoinBuy(goodsMeta.id, goodsMeta.coin, 1, oriCoin - totalAmount , levelId)
 					else
 						QixiUtil:consumeFreeItem(itemId)
 						DcUtil:useQixiFreePreProps(itemId) -- qixi
@@ -198,10 +204,16 @@ function UserLocalLogic:updateScore(levelId, score, flashStar, useItem, stageTim
 	local oriStar = 0
 	local oriScore = 0
 	local animalScore = UserService.getInstance():getUserScore(levelId)
+	local jumpLevelRef = UserService.getInstance():getUserJumpLevelRef(levelId)
 	if animalScore == nil then
 		UserLocalLogic:insertNewLevel(uid, levelId, star, score)
 		if star > 0 then
 			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
+		end
+
+		if star > 0 and jumpLevelRef and jumpLevelRef.pawnNum > 0 then
+			table.addAll(result, {RewardItemRef.new(ItemType.INGREDIENT, jumpLevelRef.pawnNum)})
+			UserService.getInstance():removeJumpLevelRef(levelId)
 		end
 		
 		if star > oriStar then
@@ -228,6 +240,12 @@ function UserLocalLogic:updateScore(levelId, score, flashStar, useItem, stageTim
 			table.addAll(result, UserLocalLogic:getLevelDefaultStarRewards(star > oriStar and oriStar or star, rewardConfig))
 			table.addAll(result, UserLocalLogic:getLevelNewStarRewards(star, oriStar, rewardConfig))
 		end
+
+		if star >0 and jumpLevelRef and jumpLevelRef.pawnNum > 0 then
+			table.addAll(result, {RewardItemRef.new(ItemType.INGREDIENT, jumpLevelRef.pawnNum)})
+			UserService.getInstance():removeJumpLevelRef(levelId)
+		end
+
 		if oriStar == 0 then
 			if star > oriStar then
 				if levelId == topLevelId and (not UserLocalLogic:isNewLevelAreaStart(levelId + 1)) then
@@ -259,7 +277,7 @@ function UserLocalLogic:updateScore(levelId, score, flashStar, useItem, stageTim
 	if star > 0 and coinAmount > 0 then
 		--CoinBlockerMeta
 		local coinBlockerMeta = MetaManager.getInstance():getCoinBlockersByLevelId(levelId)
-		if coinBlockerMeta and coinAmount < coinBlockerMeta.coin_amount then
+		if coinBlockerMeta and coinAmount <= coinBlockerMeta.coin_amount then
 			local coinValue = MetaManager.getInstance().global.coin or 5
 			local addCoin = coinValue * coinAmount
 			local succeed, err = ItemLocalLogic:add(uid, ItemConstans.ITEM_COIN, addCoin)
@@ -280,8 +298,19 @@ function UserLocalLogic:insertNewLevel( uid, levelId, star, score )
 	animalScore.score = score
 	animalScore.star = star
 	animalScore.updateTime = Localhost:time()
+	-- animalScore.pawnNum = pawnNum or 0
 	--TODO: if (star == 0) animalScore.setScore(0);		
 	UserService.getInstance():addUserScore(animalScore)	
+end
+
+function UserLocalLogic:insertJumpLevelInfo( levelId, pawnNum)
+	-- body
+	local user = UserService.getInstance().user
+
+	local jumpLevelRef = JumpLevelRef.new()
+	jumpLevelRef.levelId = levelId
+	jumpLevelRef.pawnNum = pawnNum
+	UserService.getInstance():addJumpLevelInfo(jumpLevelRef)
 end
 function UserLocalLogic:updateRepeatLevel( score, star, oldAnimalScore, uid )
 	local dataChanged = false
@@ -348,6 +377,8 @@ function UserLocalLogic:updateHideLevelScore(levelId, score, flashStar, useItem,
 			--refresh global level rank
 			UserLocalLogic:updateLevelScoreRank( levelId, score )
 		end
+		DcUtil:logFirstLevelGame(levelId, math.floor(levelId / 10000), star > 0, useItem, stageTime, 0)
+		DcUtil:logBeforeFirstWin(levelId, math.floor(levelId / 10000), star > 0, useItem, stageTime, 0)
 	else
 		--repeat level
 		oriStar = animalScore.star
@@ -362,12 +393,15 @@ function UserLocalLogic:updateHideLevelScore(levelId, score, flashStar, useItem,
 			--// refresh the global level rank
 			UserLocalLogic:updateLevelScoreRank( levelId, score )
 		end
+		if oriStar == 0 then
+			DcUtil:logBeforeFirstWin(levelId, math.floor(levelId / 10000), star > 0, useItem, stageTime, 0)
+		end
 	end
 
 	--coin blocker
 	if star > 0 and coinAmount > 0 then
 		local coinBlockerMeta = MetaManager.getInstance():getCoinBlockersByLevelId(levelId)
-		if coinBlockerMeta and coinAmount < coinBlockerMeta.coin_amount then
+		if coinBlockerMeta and coinAmount <= coinBlockerMeta.coin_amount then
 			local coinValue = MetaManager.getInstance().global.coin or 5
 			local addCoin = coinValue * coinAmount
 			local succeed, err = ItemLocalLogic:add(uid, ItemConstans.ITEM_COIN, addCoin)
@@ -807,4 +841,22 @@ function UserLocalLogic:getNewUserRewards(type)
 
 	UserService.getInstance().userExtend:setNewUserReward(1)
 	return rewards, true
+end
+
+function UserLocalLogic:jumpLevel( levelId, pawnNum)
+	-- body
+	local user = UserService.getInstance().user
+	local uid = user.uid
+	local result = {}
+	local topLevelId = user:getTopLevelId()
+	if levelId > topLevelId then
+		return false, "levelId > topLevelId"
+	end
+
+	UserLocalLogic:insertJumpLevelInfo(levelId, pawnNum)
+	if levelId == topLevelId and (not UserLocalLogic:isNewLevelAreaStart(levelId + 1)) then
+		local succeed, err = UserLocalLogic:updateTopLevelId(uid, levelId + 1,0)
+		if err ~= nil then return false, "UserLocalLogic:updateTopLevelId() err" end
+	end
+	return true
 end

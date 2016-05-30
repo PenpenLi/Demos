@@ -71,7 +71,21 @@ function NewVersionUtil:hasNewVersion()
 end
 
 function NewVersionUtil:hasDynamicUpdate()
-    return false
+	if PrepackageUtil:isPreNoNetWork() or _G.isPrePackageCannotShowUpdatePanel then return false end
+	
+	if not UserManager.getInstance().updateInfo  then
+		return false
+	end
+
+	if not UserManager.getInstance().updateInfo.tips then
+		return false
+	end
+
+	if UserManager.getInstance().user:getTopLevelId() < 20 and not __WP8 then
+		return false
+	end
+
+	return UserManager.getInstance().updateInfo.type == 2
 end
 
 function NewVersionUtil:hasPackageUpdate()

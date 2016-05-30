@@ -1,5 +1,5 @@
 require 'zoo.panel.IosPayGuidePanels'
-require "zoo.payment.PaymentIosDCUtil"
+require "zoo.payment.paymentDC.PaymentIosDCUtil"
 
 local function addReward(reward)
     for k, v in pairs(reward) do 
@@ -40,16 +40,32 @@ function IosOneYuanShopPanel:init(items, cdSeconds, promoEndCallback)
     self.desc = ui:getChildByName('desc')
     self.desc:setString(localize('ios.tuiguang.desc3'))
     self.buyBtn = GroupButtonBase:create(ui:getChildByName('btn'))
+    self.resetBtn = GroupButtonBase:create(ui:getChildByName("btnReset"))
     self.guideBtn = ui:getChildByName('guideBtn')
     self.originalPrice = ui:getChildByName('originalPrice')
     self.nowPrice = ui:getChildByName('nowPrice')
-    self.animText = ui:getChildByName('animText')
+    
+    self.animText = ui:getChildByName('animText1')
+    self.animText:setPreferredSize(220, 44)
+    self:refreshOriginPrice()
+
     self.redline = ui:getChildByName('redline')
-    self.timeTxt = ui:getChildByName('time')
+    self.cdPanel = ui:getChildByName("deco")
+    self.timeTxt = self.cdPanel:getChildByName("time")
+    self.timeTxt:setPreferredSize(105, 33)
+    -- self.time_hour = self.cdPanel:getChildByName("time_hour")
+    -- self.time_min = self.cdPanel:getChildByName("time_min")
+    -- self.time_sec = self.cdPanel:getChildByName("time_sec")
+    self.pen = ui:getChildByName("pen")
 
     self.buyBtn:setEnabled(true)
     self.buyBtn:setString('')
     self.buyBtn:ad(DisplayEvents.kTouchTap, function () self:onBuyBtnTapped() end)
+
+    self.resetBtn:setEnabled(true)
+    self.resetBtn:setString("重置道具")
+    self.resetBtn:ad(DisplayEvents.kTouchTap, function () self:onResetProp() end)
+    self.resetBtn:setVisible(IosPayGuide:maintenanceEnabled() and IosPayGuide:isInAppleVerification())
 
     self.guideBtn:setButtonMode(true)
     self.guideBtn:setTouchEnabled(true, 0, true)
@@ -66,8 +82,37 @@ function IosOneYuanShopPanel:init(items, cdSeconds, promoEndCallback)
     self:startTimer(cdSeconds)
 
     self.data = IapBuyPropLogic:oneYuanShop()
-    self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
-    PaymentIosDCUtil.getInstance():sendPayStart(Payments.IOS_RMB, 0, self.uniquePayId, self.data.productIdentifier, 1, 1, 0)
+
+    self.dcIosInfo = DCIosRmbObject:create()
+    self.dcIosInfo:setGoodsId(self.data.productIdentifier)
+    self.dcIosInfo:setGoodsType(1)
+    self.dcIosInfo:setGoodsNum(1)
+    self.dcIosInfo:setRmbPrice(self.data.iapPrice)
+end
+
+function IosOneYuanShopPanel:refreshOriginPrice()
+    local guideModel = require("zoo.gameGuide.IosPayGuideModel"):create()
+    self.animText:setString(localize("ios.tuiguang.originPrice", {price = guideModel:getOneYuanShopPrice()}))
+end
+
+function IosOneYuanShopPanel:updateCDText(text)
+    self.timeTxt:setString(text)
+    if __use_small_res then
+        self.timeTxt:setPositionXY(-32, -10)
+    else
+        self.timeTxt:setPositionXY(-41, -4)
+    end
+    
+    -- if string.isEmpty(text) then
+    --     return
+    -- end
+
+    -- local splitArr = string.split(text, ":")
+    -- assert(#splitArr == 3, "invalid time format!!!!!!!!")
+
+    -- self.time_hour:setString(splitArr[1])
+    -- self.time_min:setString(splitArr[2])
+    -- self.time_sec:setString(splitArr[3])
 end
 
 function IosOneYuanShopPanel:startTimer(cdSeconds)
@@ -80,13 +125,13 @@ function IosOneYuanShopPanel:startTimer(cdSeconds)
         if self.isDisposed then return end
         self.cdSeconds = self.cdSeconds - 1
         if self.cdSeconds >= 0 then
-            self.timeTxt:setString('倒计时：'..convertSecondToHHMMSSFormat(self.cdSeconds))
+            self:updateCDText(convertSecondToHHMMSSFormat(self.cdSeconds))
         else
             if self.schedId then
                 CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedId)
                 self.schedId = nil
             end
-            self.buyBtn:setEnabled(false)
+            self.buyBtn:setEnabled(IosPayGuide:maintenanceEnabled() and IosPayGuide:isInAppleVerification())
             if self.promoEndCallback then
                 self.promoEndCallback()
             end
@@ -108,6 +153,14 @@ function IosOneYuanShopPanel:skeleton()
 end
 
 function IosOneYuanShopPanel:initItems()
+    if self.icon1 then
+        self.icon1:removeFromParentAndCleanup(true)
+    end
+
+    if self.icon2 then
+        self.icon2:removeFromParentAndCleanup(true)
+    end
+
     local ph1 = self.ui:getChildByName('item1')
     local ph2 = self.ui:getChildByName('item2')
     local num1 = self.ui:getChildByName('num1')
@@ -142,50 +195,126 @@ function IosOneYuanShopPanel:playPriceAnimation(playAnim)
     local deltaX = -285 --从素材抄的
     local deltaY = 15
     if not playAnim  then
-        self.animText:setPositionX(self.animText:getPositionX() + deltaX)
-        self.animText:setPositionY(self.animText:getPositionY() + deltaY)
-        self.redline:setPositionX(self.redline:getPositionX() + deltaX)
-        self.redline:setPositionY(self.redline:getPositionY() + deltaY)
+        self.pen:setVisible(false)
         self.originalPrice:setVisible(false)
+        -- self.animText:setPositionX(self.animText:getPositionX() + deltaX)
+        -- self.animText:setPositionY(self.animText:getPositionY() + deltaY)
+        -- self.redline:setPositionX(self.redline:getPositionX() + deltaX)
+        -- self.redline:setPositionY(self.redline:getPositionY() + deltaY)
+        -- self.originalPrice:setVisible(false)
         return 
     end
+
+    self.guideBtn:setVisible(false)
+    self.originalPrice:setVisible(false)
+    self.buyBtn.groupNode:setVisible(false)
+    self.buyBtn.groupNode:setScale(0)
+
     self.nowPrice:setVisible(false)
-    self.animText:setVisible(false)
+    self.nowPrice:setScale(0)
+
     self.redline:setVisible(false)
     self.redline:setScaleX(0)
+    self.pen:setVisible(false)
+
     local arr1 = CCArray:create()
-    arr1:addObject(CCDelayTime:create(1)) -- 等
+    arr1:addObject(CCDelayTime:create(0.5)) -- 等
     arr1:addObject(CCShow:create())
     arr1:addObject(CCScaleTo:create(0.5, 1, 1)) -- 拉长
-    arr1:addObject(CCEaseSineOut:create(CCMoveBy:create(0.5, ccp(deltaX, deltaY)))) -- 飞
+    --arr1:addObject(CCEaseSineOut:create(CCMoveBy:create(0.5, ccp(deltaX, deltaY)))) -- 飞
     self.redline:runAction(CCSequence:create(arr1))
+
     local arr2 = CCArray:create()
-    arr2:addObject(CCDelayTime:create(1.5))
+    arr2:addObject(CCDelayTime:create(0.5))
+    arr2:addObject(CCShow:create())
+    arr2:addObject(CCMoveBy:create(0.5, ccp(200, -23)))
     arr2:addObject(CCHide:create())
-    self.originalPrice:runAction(CCSequence:create(arr2))
+    self.pen:runAction(CCSequence:create(arr2))
+
     local arr3 = CCArray:create()
-    arr3:addObject(CCDelayTime:create(1.5))
+    arr3:addObject(CCDelayTime:create(1)) -- 等
     arr3:addObject(CCShow:create())
-    arr3:addObject(CCEaseSineOut:create(CCMoveBy:create(0.5, ccp(deltaX, deltaY)))) -- 飞
-    self.animText:runAction(CCSequence:create(arr3))
+    arr3:addObject(CCEaseSineOut:create(CCScaleTo:create(0.3, 1, 1)))
+    self.buyBtn.groupNode:runAction(CCSequence:create(arr3))
+
     local arr4 = CCArray:create()
-    arr4:addObject(CCDelayTime:create(1.5)) -- 等
+    arr4:addObject(CCDelayTime:create(1)) -- 等
     arr4:addObject(CCShow:create())
+    arr4:addObject(CCEaseSineOut:create(CCScaleTo:create(0.3, 1, 1)))
+    arr4:addObject(CCCallFunc:create(function() 
+            self.guideBtn:setVisible(true)
+        end))
     self.nowPrice:runAction(CCSequence:create(arr4))
+
+    local arr5 = CCArray:create()
+    arr5:addObject(CCDelayTime:create(1))
+    arr5:addObject(CCRotateBy:create(0.05, -8))
+    arr5:addObject(CCRotateBy:create(0.05, 16))
+    arr5:addObject(CCRotateBy:create(0.05, -16))
+    arr5:addObject(CCRotateBy:create(0.05, 16))
+    arr5:addObject(CCRotateBy:create(0.05, -16))
+    arr5:addObject(CCRotateBy:create(0.05, 16))
+    arr5:addObject(CCRotateBy:create(0.05, -8))
+    self.cdPanel:runAction(CCSequence:create(arr5))
+end
+
+function IosOneYuanShopPanel:updateItems()
+    self.items = IapBuyPropLogic:oneYuanShop().items
+    self:initItems()
+    self:refreshOriginPrice()
+end
+
+function IosOneYuanShopPanel:onResetProp()
+    local guideModel = require("zoo.gameGuide.IosPayGuideModel"):create()
+    guideModel:resetOneYuanShop(
+            function()
+                self.data = IapBuyPropLogic:oneYuanShop() 
+                self:updateItems()
+                self:startTimer(guideModel:getOneYuanShopLeftSeconds())
+                self.resetBtn:setEnabled(true)
+            end,
+
+            function()
+                self.resetBtn:setEnabled(true)
+            end
+        )
+
+    self.resetBtn:setEnabled(false)
 end
 
 function IosOneYuanShopPanel:onBuyBtnTapped()
     self.buyBtn:setEnabled(false)
+    local guideModel = require("zoo.gameGuide.IosPayGuideModel"):create()
+
     local function onSuccess()
         print('onBuyBtnTapped success')
         if self.isDisposed then return end
-        self.buyBtn:setEnabled(false)
-        self.buyBtn:setString('已购买')
-        self.nowPrice:setVisible(false)
-        self:playRewardAnim(self.items)
-        -- addReward(self.items)
-        if self.promoEndCallback then
-            self.promoEndCallback()
+
+        if IosPayGuide:maintenanceEnabled() and IosPayGuide:isInAppleVerification() then
+            guideModel:triggerPromotion(IosOneYuanPromotionType.OneYuanProp,
+                            function()
+                                self:updateItems()
+                                IosPayGuide:updateOneYuanShopIcon()
+                                self.data = IapBuyPropLogic:oneYuanShop()
+                            end,
+                            function()
+                                if self.promoEndCallback then
+                                    self.promoEndCallback()
+                                end
+                                CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
+                                self:onCloseBtnTapped()
+                            end
+                        )
+            self.buyBtn:setEnabled(true)
+        else
+            self.buyBtn:setEnabled(false)
+            self.buyBtn:setString('已购买')
+            self.nowPrice:setVisible(false)
+            self:playRewardAnim(self.items)
+            -- addReward(self.items)
+            if self.promoEndCallback then
+                self.promoEndCallback()
+            end
         end
     end
     local function onFail()
@@ -195,19 +324,49 @@ function IosOneYuanShopPanel:onBuyBtnTapped()
         CommonTip:showTip(localize('buy.gold.panel.err.undefined'))
     end
 
+    print('IosOneYuanShopPanel:onBuyBtnTapped')
     local peDispatcher = PaymentEventDispatcher.new()
     local function successDcFunc(evt)
-        self.paySuccess = true
-        PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 0, self.data.iapPrice, 0, 0)
+        self.dcIosInfo:setResult(IosRmbPayResult.kSuccess)
+        PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)
     end
     local function failedDcFunc(evt)
-        self.failBeforePayEnd = true
-        PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 0, self.data.iapPrice, 0, 1)
+        self.dcIosInfo:setResult(IosRmbPayResult.kSdkFail)
+        PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)
     end
     peDispatcher:addEventListener(PaymentEvents.kIosBuySuccess, successDcFunc)
     peDispatcher:addEventListener(PaymentEvents.kIosBuyFailed, failedDcFunc)
 
-    IapBuyPropLogic:buy(self.data, onSuccess, onFail, peDispatcher)
+    RequireNetworkAlert:callFuncWithLogged(function()
+                         
+                        guideModel:loadPromotionInfo(
+                                function() --complete callback
+                                    if IosPayGuide:maintenanceEnabled() and IosPayGuide:isInAppleVerification() then
+                                        IapBuyPropLogic:buy(self.data, onSuccess, onFail, peDispatcher)
+                                        return
+                                    end
+
+                                    if guideModel:isInOneYuanShopPromotion() then
+                                        IapBuyPropLogic:buy(self.data, onSuccess, onFail, peDispatcher)
+                                    else
+                                        if self.promoEndCallback then
+                                            self.promoEndCallback()
+                                        end
+                                        self:onCloseBtnTapped()
+
+                                        CommonTip:showTip(localize('您已经购买过了一元道具！'))
+                                    end
+                                end,
+                                function() --error callback
+                                    CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
+                                    self.buyBtn:setEnabled(true)
+                                end
+                            )
+                    end,
+                    function()
+                        self.buyBtn:setEnabled(true)
+                    end, 
+                    kRequireNetworkAlertAnimation.kDefault)
 end
 
 function IosOneYuanShopPanel:onGuideBtnTapped()
@@ -215,16 +374,23 @@ function IosOneYuanShopPanel:onGuideBtnTapped()
     IosPayCartoonPanel:create():popout()
 end
 
-function IosOneYuanShopPanel:removeSelf()
-    if not self.paySuccess then 
-        local endResult = 3
-        if self.failBeforePayEnd then 
-            endResult = 4
-        end
-        PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 0, self.data.iapPrice, 0, endResult)
-    end
+function IosOneYuanShopPanel:removePopout()
     self.allowBackKeyTap = false
     PopoutManager:sharedInstance():removeWithBgFadeOut(self, false)
+    IosPayGuide:setSalesPanel(nil)
+end
+
+function IosOneYuanShopPanel:removeSelf()
+    local payResult = self.dcIosInfo:getResult()
+    if payResult and payResult ~= IosRmbPayResult.kSuccess then 
+        if payResult == IosRmbPayResult.kSdkFail then 
+            self.dcIosInfo:setResult(IosRmbPayResult.kCloseAfterSdkFail)
+        else
+            self.dcIosInfo:setResult(IosRmbPayResult.kCloseDirectly)
+        end
+        PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)  
+    end
+    self:removePopout()
 end
 
 function IosOneYuanShopPanel:onCloseBtnTapped()
@@ -235,7 +401,7 @@ function IosOneYuanShopPanel:popout()
     PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false)
     self:setToScreenCenter()
     self.allowBackKeyTap = true
-    self:playEntryAnimation(not CCUserDefault:sharedUserDefault():getBoolForKey('ios.pay.guide.activity.anim.played', false))
+    self:playEntryAnimation( not CCUserDefault:sharedUserDefault():getBoolForKey('ios.pay.guide.activity.anim.played', false))
 end
 
 function IosOneYuanShopPanel:playRewardAnim(rewards)
@@ -255,11 +421,12 @@ function IosOneYuanShopPanel:playRewardAnim(rewards)
             local num = v.num
             if num > 10 then num = 10 end
             local config = {number = num, updateButton = true,}
+            print("config.number: "..tostring(config.number))
             local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
             local position = self['icon'..k]:getPosition()
             local size = self['icon'..k]:getGroupBounds().size
             local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
-            for k, v2 in ipairs(anim.sprites) do
+            for __, v2 in ipairs(anim.sprites) do
                 v2:setPosition(ccp(wPosition.x, wPosition.y))
                 v2:setScaleX(self['icon'..k]:getScaleX())
                 v2:setScaleY(self['icon'..k]:getScaleY())

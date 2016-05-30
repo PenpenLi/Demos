@@ -267,8 +267,6 @@ function RankListCache:sendGetLevelTopMessage(...)
 			end
 		end
 
-		LocalNotificationManager.getInstance():sendBeyondFriendsNotification(self.levelId, self.friendRankList)
-
 		----------------------------
 		---- Call Callback Function
 		----------------------------

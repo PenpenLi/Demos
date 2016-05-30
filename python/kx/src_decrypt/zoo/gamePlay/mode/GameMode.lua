@@ -71,6 +71,9 @@ function GameMode:revertDataFromBackProp()
 	mainLogic.snailCount = mainLogic.saveRevertData.snailCount
 	mainLogic.snailMoveCount = mainLogic.saveRevertData.snailMoveCount
 	mainLogic.questionMarkFirstBomb = mainLogic.saveRevertData.questionMarkFirstBomb
+	mainLogic.bigMonsterMark = mainLogic.saveRevertData.bigMonsterMark
+	mainLogic.UFOSleepCD = mainLogic.saveRevertData.UFOSleepCD
+	mainLogic.oldUFOSleepCD = mainLogic.saveRevertData.oldUFOSleepCD
 	mainLogic.saveRevertData = nil
 
 	FallingItemLogic:updateHelpMapByDeleteBlock(mainLogic)
@@ -81,6 +84,7 @@ function GameMode:revertUIFromBackProp()
 	if mainLogic.PlayUIDelegate then
 		mainLogic.PlayUIDelegate:setMoveOrTimeCountCallback(mainLogic.theCurMoves, false)
 		mainLogic.PlayUIDelegate.scoreProgressBar:revertScoreTo(mainLogic.totalScore)
+		GameExtandPlayLogic:revertUFOToPreStatus(mainLogic)
 	end
 end
 

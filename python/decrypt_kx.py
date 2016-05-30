@@ -52,6 +52,10 @@ def decrypt(path, out):
     #dec = '\x78\x9c' + dec
     #dec = zlib.decompress(dec, -zlib.MAX_WBITS)
     dec = zlib.decompress(dec, zlib.MAX_WBITS)
+    outdir = os.path.dirname(os.path.abspath(out))
+    if not os.path.exists(outdir):
+        print outdir
+        os.makedirs(outdir)
     fout = open(os.path.abspath(out), "wb")
     fout.write(dec)
     fout.close()

@@ -8,6 +8,7 @@ local FailReason = {success = 0, move = 6, time = 14, score = 19, addStep = 22}
 
 require "zoo.panel.component.common.BubbleCloseBtn"
 require "zoo.baseUI.ButtonWithShadow"
+require "zoo.panel.jumpLevel.JumpLevelIcon"
 
 ---------------------------------------------------
 -------------- LevelFailTopPanel
@@ -17,7 +18,7 @@ assert(not LevelFailTopPanel)
 assert(BaseUI)
 LevelFailTopPanel = class(BaseUI)
 
-function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason, ...)
+function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, useSpecialActivityUI, ...)
 	assert(type(parentPanel)	== "table")
 	assert(type(levelId)		== "number")
 	assert(type(failScore)		== "number")
@@ -30,7 +31,44 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 	-------------------------------
 	self.resourceManager	= ResourceManager:sharedInstance()
 
-	self.ui	= ResourceManager:sharedInstance():buildGroup("levelFailPanel/levelFailTopPanel")
+	self.useSpecialActivityUI = useSpecialActivityUI
+	if self.useSpecialActivityUI then
+		self.builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_game_start_activity)
+		self.ui = self.builder:buildGroup("Spring2016UI/levelFailTopPanel")
+	else
+		self.ui	= ResourceManager:sharedInstance():buildGroup("levelFailPanel/levelFailTopPanel")
+	end
+
+	-- -------------------
+	-- Pattern in activity version
+	-- -------------------
+	if self.useSpecialActivityUI then
+		local pattern = self.ui:getChildByName("pattern")
+		pattern:removeFromParentAndCleanup(false)
+
+		local childList = {}
+		pattern:getVisibleChildrenList(childList)
+		if #childList > 0 then
+			local batch = SpriteBatchNode:createWithTexture(childList[1]:getTexture())
+			for i,v in ipairs(childList) do
+				v:removeFromParentAndCleanup(false)
+				batch:addChild(v)
+			end
+			batch:setPositionXY(pattern:getPositionX(), pattern:getPositionY())
+			pattern:dispose()
+			pattern = batch
+		end
+		
+		local mask = self.ui:getChildByName("mask")
+		local maskPosition = {x = mask:getPositionX(), y = mask:getPositionY()}
+		local maskIndex = self.ui:getChildIndex(mask)
+		mask:removeFromParentAndCleanup(false)
+		local clip = ClippingNode.new(CCClippingNode:create(mask.refCocosObj))
+		clip:setAlphaThreshold(0.7)
+		self.ui:addChildAt(clip, maskIndex)
+		pattern:setPositionXY(pattern:getPositionX() - maskPosition.x, pattern:getPositionY())
+		clip:addChild(pattern)
+	end
 
 	-- ----------------
 	-- Init Base Class
@@ -115,7 +153,7 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 	local levelNumberHeight		= 68.5
 	local manualAdjustInterval	= -15
 
-	local panelTitle = self:createPanelTitle(levelType, levelId)
+	local panelTitle = self:createPanelTitle(levelType, levelId, self.useSpecialActivityUI)
 	local contentSize = panelTitle:getContentSize()
 	self:addChild(panelTitle)
 	panelTitle:ignoreAnchorPointForPosition(false)
@@ -148,6 +186,7 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 		or self.levelType == GameLevelType.kMayDay
 		or self.levelType == GameLevelType.kRabbitWeekly 
 		or self.levelType == GameLevelType.kSummerWeekly 
+		or self.levelType == GameLevelType.kWukong
 		or self.levelType == GameLevelType.kTaskForRecall then
 		replayBtnTxt	= Localization:getInstance():getText('button.ok', {})
 	else
@@ -160,6 +199,10 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 	local label		= self.replayBtn:getLabel()
 	local curLabelPos	= label:getPosition()
 	label:setPosition(ccp(curLabelPos.x + manualAdjustBtnPosX, curLabelPos.y + manualAdjustBtnPosY)) 
+
+	local function logStageEnd(currentStage, score, star, failReason)
+		DcUtil:logStageEnd(currentStage, score, star, failReason, stageTime)
+	end
 
 	-- 刷新出错导致的失败，优先级最高
 	if failReason == 'refresh' then
@@ -176,7 +219,7 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 		local failDesValue = Localization:getInstance():getText(failDesKey, {})
 		self.failDes:setString(failDesValue)
 
-		DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.score)
+		logStageEnd(levelId, failScore, failStar, FailReason.score)
 	else
 		-- Target Not Reach
 		-- Get Fail Description Txt
@@ -187,22 +230,22 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 
 		if gameModeName == "Classic moves" then
 			failDesKey	= "level.fail.step.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.score)
+			logStageEnd(levelId, failScore, failStar, FailReason.score)
 		elseif gameModeName == "Classic" then
 			failDesKey	= "level.fail.time.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.time)
+			logStageEnd(levelId, failScore, failStar, FailReason.time)
 		elseif gameModeName == "Drop down" then
 			failDesKey	= "level.fail.drop.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
+			logStageEnd(levelId, failScore, failStar, FailReason.move)
 		elseif gameModeName == "Mobile Drop down" then 
 			failDesKey = "level.fail.drop.key.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
+			logStageEnd(levelId, failScore, failStar, FailReason.move)
 		elseif gameModeName == "Light up" then
 			failDesKey	= "level.fail.ice.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
+			logStageEnd(levelId, failScore, failStar, FailReason.move)
 		elseif gameModeName == "DigMove" then
 			failDesKey	= "level.fail.dig.step.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.move)
+			logStageEnd(levelId, failScore, failStar, FailReason.move)
 		elseif gameModeName == "Order" or gameModeName == 'seaOrder' then
 			local function getOrderType(str) return string.sub(str, 1, string.find(str, '_') - 1) end
 			if levelGameData.orderList and #levelGameData.orderList > 0 then
@@ -225,18 +268,22 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 			-- 由gameMode指定的failReason,属于特殊的失败原因类型
 			if failReason == 'venom' then failDesKey = 'level.fail.venom.effect.mode' end
 
-			DcUtil:logStageEnd(levelId, failScore, failStar, 6)
+			logStageEnd(levelId, failScore, failStar, 6)
 		elseif gameModeName == "DigMoveEndless" then
 			failDesKey	= "level.fail.dig.endless.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.score)
+			logStageEnd(levelId, failScore, failStar, FailReason.score)
 		elseif gameModeName == "RabbitWeekly" then
 			failDesKey	= "level.fail.dig.endless.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, FailReason.score)
-		elseif gameModeName == "MaydayEndless" or gameModeName == "halloween" then
+			logStageEnd(levelId, failScore, failStar, FailReason.score)
+		elseif gameModeName == "MaydayEndless" or gameModeName == "halloween" 
+				or gameModeName == "HedgehogDigEndless" or gameModeName == "MonkeyDigEndless" then
 			failDesKey	= "level.fail.mayday.endless.mode"
-			DcUtil:logStageEnd(levelId, failScore, failStar, 19)
+			logStageEnd(levelId, failScore, failStar, 19)
+		elseif gameModeName == GameModeType.LOTUS then
+			failDesKey	= "level.fail.meadow.mode"
+			logStageEnd(levelId, failScore, failStar, 20)
 		else
-			print("levelModeTypeId: " .. self.levelModeTypeId)
+			print("levelModeTypeId: " .. tostring(self.levelModeTypeId))
 			he_log_warning("not implemented !")
 			assert(false, "not implemented !")
 		end
@@ -254,7 +301,7 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 			self:onCloseBtnTapped(event)
 		elseif self.levelType == GameLevelType.kTaskForRecall then
 			self:onCloseBtnTapped(event)
-		elseif self.levelType == GameLevelType.kMayDay then
+		elseif self.levelType == GameLevelType.kMayDay or self.levelType == GameLevelType.kWukong then
 			self.btnTappedState = self.BTN_TAPPED_STATE_NONE
 			self:onCloseBtnTapped()
 		else
@@ -269,9 +316,11 @@ function LevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, fail
 	end
 
 	self.closeBtn.ui:addEventListener(DisplayEvents.kTouchTap, onCloseBtnTapped)
+
+	self:initJumpLevelArea()
 end
 
-function LevelFailTopPanel:createPanelTitle(levelType, levelId)
+function LevelFailTopPanel:createPanelTitle(levelType, levelId, useSpecialActivityUI)
 	local panelTitle = nil
 	if PublishActUtil:isGroundPublish() then
 		panelTitle = BitmapText:create("精彩活动关", "fnt/titles.fnt", -1, kCCTextAlignmentCenter)
@@ -301,9 +350,13 @@ function LevelFailTopPanel:createPanelTitle(levelType, levelId)
 			levelDisplayName = Localization:getInstance():getText("recall_text_5")
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
+		elseif levelType == GameLevelType.kWukong then
+			levelDisplayName = Localization:getInstance():getText('春节关卡')
+			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
+			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		else
 			levelDisplayName = LevelMapManager.getInstance():getLevelDisplayName(levelId)
-			panelTitle = PanelTitleLabel:create(levelDisplayName)
+			panelTitle = PanelTitleLabel:create(levelDisplayName, nil, nil, nil, nil, nil, useSpecialActivityUI)
 		end
 	end
 	return panelTitle
@@ -345,13 +398,55 @@ end
 
 function LevelFailTopPanel:onQuestionMarkTapped(failReason)
 	if failReason == 'refresh' then
-		CommonTip:showTip(Localization:getInstance():getText('level.fail.animal.tips', {n = '\n'}), 'positive')
+		if self.levelType and self.levelType == GameLevelType.kWukong then 
+			CommonTip:showTip(Localization:getInstance():getText("小猴子与同色动物三消\n也能攒能量哦~试着移动\n猴子吧！"), 'positive')
+		else
+			CommonTip:showTip(Localization:getInstance():getText('level.fail.animal.tips', {n = '\n'}), 'positive')
+		end
 	else
 		assert(false, 'failReason not supported, Check you code!')
 	end
 end
 
-function LevelFailTopPanel:create(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason, ...)
+function LevelFailTopPanel:initJumpLevelArea( ... )
+	-- body
+	local area = self.ui:getChildByName("jump_level_area")
+	local pos = area:getPosition()
+
+	-- isFakeIcon31-39关可见跳关按钮，但并走真正的逻辑
+	-- 只是弹出tip提示xx关开启跳关功能
+	local isFakeIcon = JumpLevelManager:shouldShowFakeIcon(self.levelId)
+	if JumpLevelManager:getInstance():shouldShowJumpLevelIcon(self.levelId) then
+		FrameLoader:loadArmature('skeleton/jump_level_btn_animation', 'jump_level_btn_animation')
+		local armature = nil
+		if not isFakeIcon then
+			armature = ArmatureNode:create('skip')
+		else
+			armature = ArmatureNode:create('skip2')
+		end
+		armature:playByIndex(0, 1)
+		armature:update(0.001)
+		armature:stop()
+		self.jumpLevelIconArmature = armature
+		local layer = Layer:create()
+		layer:addChild(armature)
+		area:getParent():addChildAt(layer, area:getZOrder())
+		layer:setPosition(ccp(pos.x, pos.y))
+		self.jumpLevelArea = JumpLevelIcon:create(layer, self.levelId, self.levelType, nil, isFakeIcon)
+		area:setVisible(false)
+	else
+		area:setVisible(false)
+	end
+end
+
+function LevelFailTopPanel:dispose()
+	BasePanel.dispose(self)
+	if self.builder then
+		self.builder:unloadAsset(PanelConfigFiles.panel_game_start_activity)
+	end
+end
+
+function LevelFailTopPanel:create(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, useSpecialActivityUI, ...)
 	assert(type(parentPanel) 	== "table")
 	assert(type(levelId) 		== "number")
 	assert(type(levelType) 		== "number")
@@ -361,6 +456,12 @@ function LevelFailTopPanel:create(parentPanel, levelId, levelType, failScore, fa
 	--assert(levelModeTypeId)
 
 	local newLevelFailTopPanel = LevelFailTopPanel.new()
-	newLevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason)
+	newLevelFailTopPanel:init(parentPanel, levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, useSpecialActivityUI)
 	return newLevelFailTopPanel
+end
+
+function LevelFailTopPanel:afterPopout()
+	if self.jumpLevelIconArmature then
+		self.jumpLevelIconArmature:playByIndex(0, 1)
+	end
 end

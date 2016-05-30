@@ -47,7 +47,7 @@ function AddFriendPanel:create(scaleOriginPosInWorldPos, popCallback)
 		panel:loadRequiredResource(PanelConfigFiles.panel_with_keypad)
 		if panel:_init(scaleOriginPosInWorldPos) then 
 			if popCallback then 
-				popCallback()
+				popCallback(panel)
 			end
 			panel:popout()
 			return nil

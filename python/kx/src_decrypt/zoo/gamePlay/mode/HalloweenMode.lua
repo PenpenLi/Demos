@@ -12,67 +12,6 @@ local max_generate_row              = 2
 local generate_boss_interval        = 4
 local generate_jewel_interval       = 2
 
-local GroundGenerator = class()
-
-function GroundGenerator:create(mainLogic)
-    local ret = GroundGenerator.new()
-    ret:init(mainLogic)
-    return ret
-end
-
-function GroundGenerator:init(mainLogic)
-    self.mainLogic = mainLogic
-    self.level1 = 13
-    self.level2 = 5
-    self.level3 = 0
-    self.curIndex = 0
-    self.genCount = 0
-    self.groundPool = self:genNewGroundPool()
-end
-
-function GroundGenerator:genGround()
-    if self.curIndex >= #self.groundPool then
-        self.groundPool = self:genNewGroundPool()
-        self.curIndex = 0
-    end
-    self.curIndex = self.curIndex + 1
-    return self.groundPool[self.curIndex]
-end
-
-function GroundGenerator:genNewGroundPool()
-    if self.genCount > 0 and self.genCount % ground_upgrade_interval == 0 then
-        if self.level2 < 10 and self.level3 < 3 then
-            if self.level2 < 1 or self.mainLogic.randFactory:rand(1, 100) > 50 then -- 1 -> 2
-                self.level1 = self.level1 - 1
-                self.level2 = self.level2 + 1
-            else -- 2 -> 3
-                self.level2 = self.level2 - 1
-                self.level3 = self.level3 + 1
-            end
-        elseif self.level2 < 10 then
-            self.level1 = self.level1 - 1
-            self.level2 = self.level2 + 1
-        elseif self.level3 < 3 then
-            self.level2 = self.level2 - 1
-            self.level3 = self.level3 + 1
-        end
-    end
-    self.groundPool = {}
-    for i = 1, self.level1 do table.insert(self.groundPool, 1) end
-    for i = 1, self.level2 do table.insert(self.groundPool, 2) end
-    for i = 1, self.level3 do table.insert(self.groundPool, 3) end
-
-    local length = self.level1 + self.level2 + self.level3
-    -- 打乱次序
-    for i =1 , length do 
-        local selector = self.mainLogic.randFactory:rand(1, length)
-        self.groundPool[1], self.groundPool[selector] = self.groundPool[selector], self.groundPool[1]
-    end
-    self.genCount = self.genCount + 1
-    -- print("GroundGenerator:genNewGroundPool:", table.tostring(self.groundPool))
-    return self.groundPool
-end
-
 function HalloweenMode:initModeSpecial(config)
     self.mainLogic.digJewelCount = DigJewelCount.new()
     self.mainLogic.maydayBossCount = 0
@@ -83,6 +22,17 @@ function HalloweenMode:initModeSpecial(config)
     self.generatedRowCount = 0
     self.rowCountSinceLastAddMove = 0
     self.bossGenRowCountDown = 1
+
+    -- 两周年活动新生成模式
+    self.generationPoolSize = 16
+    self.generationDigItemMap = {}
+    self.generationDigBoardMap = {}
+    self.digItemMapReadCursor = 1
+    self.digBoardMapReadCursor = 1
+    self.generationPoolCursor = 1
+    -- 两周年活动新生成模式 end
+
+
 
     self.lastGenBossTimes = 0
     self.lastGenJewelTimes = 0
@@ -130,7 +80,7 @@ function HalloweenMode:onGameInit()
         self.rowCountSinceLastAddMove = 0
         self.lastGenJewelTimes = 0
         self.lastGenBossTimes  = 0
-        self.groundGenerator = GroundGenerator:create(self.mainLogic)
+
     end
 
     local function playPrePropAnimation()
@@ -173,14 +123,8 @@ function HalloweenMode:onGameInit()
         zongziIndex = zongziIndex + 1
 
         local lastRandom = lastDataList[zongziIndex]
-        if not lastRandom then
-            randomSelect = context.mainLogic.randFactory:rand(1, randomPackage)
-        else
-            randomSelect = context.mainLogic.randFactory:rand(1, tonumber(randomPackage - 1) )
-            if randomSelect >= lastRandom then
-                randomSelect = randomSelect + 1
-            end
-        end
+        randomSelect = context.mainLogic.randFactory:rand(1, randomPackage)--去掉每次随机不能和上次一样的判断
+
         lastDataList[zongziIndex] = randomSelect
     end
 
@@ -299,34 +243,10 @@ function HalloweenMode:getExtraMap(passedRow, additionRow)
     end
 
     if rowCountUsingGenerator > 0 then
-        local generatedItems = self:generateGroundRow(rowCountUsingGenerator)
-        local newItemRows = {}
-        local newBoardRows = {}
-        for i=1, rowCountUsingGenerator do 
-            newItemRows[i] = {}
-            newBoardRows[i] = {}
-        end
-
-
-        for k, v in pairs(generatedItems) do 
-            local item = GameItemData:create()
-            item:initByConfig(v)
-            local r = self.mainLogic:randomColor()
-            item:initByAnimalDef(math.pow(2, r))
-            item:initBalloonConfig(self.mainLogic.balloonFrom)
-            item:initAddMoveConfig(self.mainLogic.addMoveBase)
-
-            local board = GameBoardData:create()
-            board:initByConfig(v)
-
-            local rowIndex = math.ceil(k / 9)
-            local colIndex = k - (rowIndex - 1) * 9 
-            newItemRows[rowIndex][colIndex] = item
-            newBoardRows[rowIndex][colIndex] = board
-        end
-
-
+        local newItemRows, newBoardRows = self:generateGroundRow(rowCountUsingGenerator)
         local genRowStartIndex = additionRow + normalRowCount - rowCountUsingGenerator
+
+        print('newItemRows', #newItemRows, 'newBoardRows', #newBoardRows)
 
         for k1, itemRow in pairs(newItemRows) do 
             table.insert(itemMap, itemRow)
@@ -349,6 +269,8 @@ function HalloweenMode:getExtraMap(passedRow, additionRow)
     return itemMap, boardMap
 end
 
+
+
 function HalloweenMode:checkScrollDigGround(stableScrollCallback)
     local maxDigGroundRow = self:getDigGroundMaxRow()
     local SCROLL_GROUND_MIN_LIMIT = 2
@@ -357,31 +279,44 @@ function HalloweenMode:checkScrollDigGround(stableScrollCallback)
     if maxDigGroundRow <= SCROLL_GROUND_MIN_LIMIT then
         local moveUpRow = SCROLL_GROUND_MAX_LIMIT - maxDigGroundRow
 
+        local function __stableCallback()
+            if stableScrollCallback then
+                stableScrollCallback()
+            end
+        end
+
+
         local function localCallback()
             self.mainLogic:updateAllMagicTiles()
 
             local position = nil
-            local goldZongziPos = nil
             for r = 1, #self.mainLogic.gameItemMap do
                 for c = 1, #self.mainLogic.gameItemMap[r] do
                     local item = self.mainLogic.gameItemMap[r][c]
                     if item.isHalloweenBottle then
                         position = {r = r, c = c}                            
                     end
-                    if item.ItemType == GameItemType.kGoldZongZi and not goldZongziPos then
-                        goldZongziPos = {r = r, c = c}
-                    end
                 end
-            end
-
-            if goldZongziPos then
-                -- print("~~~~~~~~~~~~~~~goldZongziPos~~~~~~~~~~")
-                GameGuide:sharedInstance():onGoldZongziAppear(goldZongziPos)
             end
 
             local boss = self.mainLogic:getHalloweenBoss()
             if not boss then
                 if position then
+                    local function completeCallback()
+
+                        if not self.firstBoss then
+                            self.firstBoss = true
+                            local guideTilePos = self:getGuideTilePos()
+                            if guideTilePos then
+                                GameGuide:sharedInstance():onHalloweenBossFirstComeout(guideTilePos)
+                            end
+                        end
+                        if __stableCallback then
+                            __stableCallback()
+                        end
+                    end
+                    print('gen boss', position.x, position.y)
+                    -- debug.debug()
                     local action = GameBoardActionDataSet:createAs(
                             GameActionTargetType.kGameItemAction,
                             GameItemActionType.kItem_Halloween_Boss_Create,
@@ -389,21 +324,14 @@ function HalloweenMode:checkScrollDigGround(stableScrollCallback)
                             nil,
                             GamePlayConfig_MaxAction_time
                         )
-                    action.completeCallback = stableScrollCallback
+                    action.completeCallback = completeCallback
                     self.mainLogic:addGameAction(action)
 
-                    if not self.firstBoss then
-                        self.firstBoss = true
-                        local guideTilePos = self:getGuideTilePos()
-                        if guideTilePos then
-                            GameGuide:sharedInstance():onHalloweenBossFirstComeout(guideTilePos)
-                        end
-                    end
                 else
-                    stableScrollCallback()
+                    __stableCallback()
                 end
             else
-                stableScrollCallback()
+                __stableCallback()
             end
         end
         self:doScrollDigGround(moveUpRow, localCallback)
@@ -415,10 +343,13 @@ end
 function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
     -- print('moveUpRow', moveUpRow) debug.debug()
     local extraItemMap, extraBoardMap = self:getExtraMap(self.mainLogic.passedRow, moveUpRow)
+    for k, v in pairs(extraItemMap) do
+        print('row', k)
+    end
     local mainLogic = self.mainLogic
     local context = self
 
-    local selector = nil
+    local bossGenerated = false
     local function scrollCallback()
         local newItemMap = {}
         local newBoardMap = {}
@@ -430,14 +361,13 @@ function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
                 local item = extraItemMap[row][c]:copy()
                 local tileDef = TileMetaData.new()
                 tileDef:addTileData(TileConst.kEmpty)
-                if r == 1 then 
+                if r < mainLogic.boardView.startRowIndex then 
                     item = GameItemData:create() 
                     item:initByConfig(tileDef)
                 end
-                -- if tileDef.isHalloweenBottle then
-                if selector and r == selector.r and c == selector.c then
+                
+                if bossGenerated and r == 9 and c == 5 then
                     print('tileDef.isHalloweenBottle')
-                    -- debug.debug()
                     item.isHalloweenBottle = true
                 end
                 local mimosaHoldGrid = item.mimosaHoldGrid
@@ -451,7 +381,7 @@ function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
                 
                 item.y = r
                 local board = extraBoardMap[row][c]:copy()
-                if r == 1 and item.magicTileId ~= nil then 
+                if r < mainLogic.boardView.startRowIndex and item.magicTileId ~= nil then 
                     board = GameBoardData:create() 
                     board:initByConfig(tileDef)
                 end
@@ -480,41 +410,11 @@ function HalloweenMode:doScrollDigGround(moveUpRow, stableScrollCallback)
     local genBoss = (self.mainLogic:getHalloweenBoss() == nil)
 
     if genBoss then
+        print('genBoss self.bossGenRowCountDown', self.bossGenRowCountDown)
         if self.bossGenRowCountDown <= moveUpRow then
-            local selectionPool = {}
-            local r = #extraItemMap - moveUpRow + self.bossGenRowCountDown
-            if extraItemMap[r] then
-                -- 优先选择一级云块
-                for c = 1, #extraItemMap[r] do
-                    local item = extraItemMap[r][c]
-                    if item and item.ItemType == GameItemType.kDigGround and item.digGroundLevel == 1 then
-                        table.insert(selectionPool, {r = r, c = c})
-                    end
-                end
-                -- 如果没有一级云块，随便找一个动物吧。。。
-                if #selectionPool == 0 then
-                    for c = 1, #extraItemMap[r] do
-                        local item = extraItemMap[r][c]
-                        if item and item.ItemType == GameItemType.kAnimal then
-                            table.insert(selectionPool, {r = r, c = c})
-                        end
-                    end
-                end
-                -- 如果还是不行，随便选一个
-                if #selectionPool == 0 then
-                    for c = 1, #extraItemMap[r] do
-                        local item = extraItemMap[r][c]
-                        if item then
-                            table.insert(selectionPool, {r = r, c = c})
-                        end
-                    end
-                end
-            end
-
-            -- 生成鹿角
-            selector = selectionPool[self.mainLogic.randFactory:rand(1, #selectionPool)]
-            extraItemMap[selector.r][selector.c].isHalloweenBottle = true
-            selector.r = selector.r - moveUpRow 
+            local item = extraItemMap[#extraItemMap][5]
+            item.isHalloweenBottle = true
+            bossGenerated = true
         else
             self.bossGenRowCountDown = self.bossGenRowCountDown - moveUpRow
         end
@@ -532,6 +432,7 @@ function HalloweenMode:getDigGroundMaxRow()
         for c = 1, #gameItemMap[r] do
             if gameItemMap[r][c].ItemType == GameItemType.kDigGround
                 or gameItemMap[r][c].ItemType == GameItemType.kDigJewel
+                or gameItemMap[r][c].ItemType == GameItemType.kGoldZongZi
                 then
                 return 10 - r
             end
@@ -569,7 +470,453 @@ function HalloweenMode:revertUIFromBackProp()
     MoveMode.revertUIFromBackProp(self)
 end
 
+function HalloweenMode:readDigItemMap(rowCount)
+    local ret = {}
+    for i = 1, rowCount do
+        if self.digItemMapReadCursor > #self.mainLogic.digItemMap then
+            self.digItemMapReadCursor = 1
+        end
+        table.insert(ret, self.mainLogic.digItemMap[self.digItemMapReadCursor])
+        self.digItemMapReadCursor = self.digItemMapReadCursor + 1
+    end
+    return ret
+end
+
+function HalloweenMode:readDigBoardMap(rowCount)
+    local ret = {}
+    for i = 1, rowCount do
+        if self.digBoardMapReadCursor > #self.mainLogic.digBoardMap then
+            self.digBoardMapReadCursor = 1
+        end
+        table.insert(ret, self.mainLogic.digBoardMap[self.digBoardMapReadCursor])
+        self.digBoardMapReadCursor = self.digBoardMapReadCursor + 1
+    end
+    return ret
+end
+
+function HalloweenMode:generateFunc(itemMap, boardMap, count, changePara, validateFunc, changeFunc)
+    local pool = {}
+    local cordinates = {}
+    for r = 1, #itemMap do
+        for c = 1, #itemMap[r] do
+            local item = itemMap[r][c]
+            if validateFunc(item) then
+                table.insert(pool, item)
+                table.insert(cordinates, {r, c})
+                -- print('validateFunc', r, c)
+            end
+        end
+    end
+
+    if #pool <= count then
+        for k, v in pairs(pool) do
+            changeFunc(v, changePara)
+        end
+    else
+        local selected = {}
+        for i = 1, count do
+            local index = self.mainLogic.randFactory:rand(1, #pool)
+            table.insert(selected, pool[index])
+            print('selected r, c ', cordinates[index][1], cordinates[index][2])
+            table.remove(pool, index)
+            table.remove(cordinates, index)
+        end
+        for k, v in pairs(selected) do
+            changeFunc(v, changePara)
+        end
+    end
+end
+
+
+function HalloweenMode:generateDigJewel(itemMap, count)
+    print('generateDigJewel', count)
+
+    local function validateFunc(item)
+        if item and item.ItemType == GameItemType.kDigGround then 
+            return true
+        end
+        return false
+    end
+    local function changeToDigJewel(item)
+        local level = item.digGroundLevel
+        item:cleanAnimalLikeData()
+        item.isEmpty = false
+        item.ItemType = GameItemType.kDigJewel
+        item.digJewelLevel = level
+        item.isBlock = true
+        item.isNeedUpdate = true
+    end
+    self:generateFunc(itemMap, nil, count, nil, validateFunc, changeToDigJewel)
+end
+
+function HalloweenMode:generateDigGround(itemMap, count)
+    print('generateDigGround', count)
+
+    local function validateFunc(item)
+        if item and item.ItemType == GameItemType.kDigGround then
+            if item.digGroundLevel < 3 then
+                return true
+            end
+        elseif item and item.ItemType == GameItemType.kDigJewel then
+            if item.digJewelLevel < 3 then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function changeLevel(item)
+        if item.ItemType == GameItemType.kDigGround then
+            item.digGroundLevel = item.digGroundLevel + 1
+        elseif item.ItemType == GameItemType.kDigJewel then
+            item.digJewelLevel = item.digJewelLevel + 1
+        end
+    end
+    self:generateFunc(itemMap, nil, count, nil, validateFunc, changeLevel)
+end
+
+function HalloweenMode:isItemAnimalOrDigGround(item)
+    if (item.ItemType == GameItemType.kAnimal 
+    and item.ItemSpecialType == 0 
+    and not item:hasLock() and not item:hasFurball())
+    or item.ItemType == GameItemType.kDigGround
+    then
+        return true
+    end
+    return false
+end
+
+function HalloweenMode:getRandomAnimalColor()
+    local count = #self.mainLogic.mapColorList
+    local select = self.mainLogic.randFactory:rand(1, count)
+    return self.mainLogic.mapColorList[select]
+end
+
+function HalloweenMode:generateCage(itemMap, count)
+    print('generateCage', count)
+    local function validateFunc(item)
+        return self:isItemAnimalOrDigGround(item)
+    end
+    local function changetoCage(item)
+        if item.ItemType == GameItemType.kAnimal then
+            item.cageLevel = 1
+            -- item.isBlock = true
+        elseif item.ItemType == GameItemType.kDigGround then
+            item:cleanAnimalLikeData()
+            item.isEmpty = false
+            item.ItemType = GameItemType.kAnimal
+            item.ItemColorType = self:getRandomAnimalColor()
+            item.cageLevel = 1
+            -- item.isBlock = true
+        end
+    end
+    self:generateFunc(itemMap, nil, count, nil, validateFunc, changetoCage)
+end
+
+function HalloweenMode:generateVenom(itemMap, count)
+    print('generateVenom', count)
+    local function validateFunc(item)
+        return self:isItemAnimalOrDigGround(item)
+    end
+    local function changetoVenom(item)
+        item:cleanAnimalLikeData()
+        item.isEmpty = false
+        item.ItemType = GameItemType.kVenom
+        item.isBlock = true
+        item.venomLevel = 1
+    end
+    self:generateFunc(itemMap, nil, count, nil, validateFunc, changetoVenom)
+end
+
+function HalloweenMode:generateCoin(itemMap, count)
+    print('generateCoin', count)
+    local function validateFunc(item)
+        return self:isItemAnimalOrDigGround(item)
+    end
+    local function changeToCoin(item)
+        item:cleanAnimalLikeData()
+        item.isEmpty = false
+        item.ItemType = GameItemType.kCoin
+    end
+    self:generateFunc(itemMap, nil, count, nil, validateFunc, changeToCoin)
+end
+
+function HalloweenMode:generateOctopus(itemMap, boardMap, count)
+    print('generateOctopus', count)
+    local function validateFunc(item)
+        return self:isItemAnimalOrDigGround(item)
+    end
+    local function changeToOctopus(item)
+        item:cleanAnimalLikeData()
+        item.ItemType = GameItemType.kPoisonBottle
+        item.forbiddenLevel = 0 
+        item.isBlock = true
+    end
+    self:generateFunc(itemMap, boardMap, count, nil, validateFunc, changeToOctopus)
+
+end
+
+function HalloweenMode:generateFurball(itemMap, count, color)
+    print('generateFurball', count)
+    local function validateFunc(item)
+        return self:isItemAnimalOrDigGround(item)
+    end
+    local function changeToFurball(item, color)
+        item:cleanAnimalLikeData()
+        item.ItemType = GameItemType.kAnimal
+        item.ItemColorType = self:getRandomAnimalColor()
+        item.furballLevel = 1
+        item.furballType = color
+        -- item.isBlock = true
+        item.isEmpty = false
+    end
+    self:generateFunc(itemMap, nil, count, color, validateFunc, changeToFurball)
+end
+
+function HalloweenMode:generateAddStep(itemMap, count)
+    -- not needed
+end
+
+local GenerationConfig = {
+    digJewel = {4, 4},
+    digGround = {2, 4},
+    furball = {border = 20, count = {2, 3}},
+    cage = {border = 40, count = {3, 4}},
+    venom = {border = 60, count = {2, 3}},
+    coin = {border = 80, count = {3, 4}},
+    octopus = {border = 100, count = {1, 1}},
+    addStep = {0, 0},
+}
+
+function HalloweenMode:initGenerationPool()
+    print('initGenerationPool')
+    -- if self.generationPoolCursor <= self.generationPoolSize then
+    --     return
+    -- end
+
+    self.generationPoolCursor = 1
+    self.generationDigItemMap = {}
+    self.generationDigBoardMap = {}
+    local templateDigItemMap = self:readDigItemMap(self.generationPoolSize)
+    local templateDigBoardMap = self:readDigBoardMap(self.generationPoolSize)
+
+    print('templateDigItemMap', #templateDigItemMap)
+
+    for cycle = 1, 4 do
+        local itemMap = {}
+        local boardMap = {}
+        for index = 1, 4 do
+            local cursor = (cycle-1)*4+index
+            local copyItemRow = {}
+            for i = 1, 9 do
+                local copyItem = templateDigItemMap[cursor][i]:copy()
+                table.insert(copyItemRow, copyItem)
+            end
+            table.insert(itemMap, copyItemRow)
+
+            local copyBoardRow = {}
+            for i = 1, 9 do
+                local copyItem = templateDigBoardMap[cursor][i]:copy()
+                table.insert(copyBoardRow, copyItem)
+            end
+            table.insert(boardMap, copyBoardRow)
+        end
+
+        local digGroundCount = self.mainLogic.randFactory:rand(GenerationConfig.digGround[1],GenerationConfig.digGround[2])
+        if digGroundCount > 0 then
+            self:generateDigGround(itemMap, digGroundCount)
+        end
+
+        local digJewelCount = self.mainLogic.randFactory:rand(GenerationConfig.digJewel[1],GenerationConfig.digJewel[2])
+        if digJewelCount > 0 then
+            self:generateDigJewel(itemMap, digJewelCount)
+        end
+
+        local addStepCount = self.mainLogic.randFactory:rand(GenerationConfig.addStep[1],GenerationConfig.addStep[2])
+        if addStepCount > 0 then
+            self:generateAddStep(itemMap, addStepCount)
+        end
+
+        local selection = self.mainLogic.randFactory:rand(1, 100)
+        print('selection', selection)
+        if selection <= GenerationConfig.furball.border then
+            local color = ((self.mainLogic.randFactory:rand(1, 100) <= 50) and GameItemFurballType.kGrey or GameItemFurballType.kBrown)
+            local count = self.mainLogic.randFactory:rand(GenerationConfig.furball.count[1],GenerationConfig.furball.count[2])
+            self:generateFurball(itemMap, count, color)
+        elseif selection <= GenerationConfig.cage.border then
+            local count = self.mainLogic.randFactory:rand(GenerationConfig.cage.count[1],GenerationConfig.cage.count[2])
+            self:generateCage(itemMap, count)
+        elseif selection <= GenerationConfig.venom.border then
+            local count = self.mainLogic.randFactory:rand(GenerationConfig.venom.count[1],GenerationConfig.venom.count[2])
+            self:generateVenom(itemMap, count)
+        elseif selection <= GenerationConfig.coin.border then
+            local count = self.mainLogic.randFactory:rand(GenerationConfig.coin.count[1],GenerationConfig.coin.count[2])
+            self:generateCoin(itemMap, count)
+        elseif selection <= GenerationConfig.octopus.border then
+            local count = self.mainLogic.randFactory:rand(GenerationConfig.octopus.count[1],GenerationConfig.octopus.count[2])
+            self:generateOctopus(itemMap, boardMap, count)
+        end
+
+        for i = 1, 4 do
+            table.insert(self.generationDigItemMap, itemMap[i])
+            table.insert(self.generationDigBoardMap, boardMap[i])
+        end
+    end
+    -- print('start..................')
+    -- for r = 1, 16 do
+    --     print('row no.', r)
+    --     for c = 1, 9 do
+    --         print(self.generationDigItemMap[r][c].ItemType)
+    --     end
+    --     print('row end')
+    -- end
+    -- print('end...............')
+
+    print('self.generationDigItemMap', #self.generationDigItemMap)
+    print('self.generationDigBoardMap', #self.generationDigBoardMap)
+end
+
 function HalloweenMode:generateGroundRow(rowCount)
+    local newItemMap, newBoardMap = {}, {}
+    if rowCount <= 0 then return newItemMap, newBoardMap end
+
+    print('rowCount', rowCount)
+    for i = 1, rowCount do
+        if self.generationPoolCursor > self.generationPoolSize or not self.poolInited then
+            self:initGenerationPool()
+            self.poolInited = true
+        end
+        print('generationPoolCursor', self.generationPoolCursor)
+        table.insert(newItemMap, self.generationDigItemMap[self.generationPoolCursor])
+        table.insert(newBoardMap, self.generationDigBoardMap[self.generationPoolCursor])
+        self.generationPoolCursor = self.generationPoolCursor + 1
+    end
+    return newItemMap, newBoardMap
+end
+
+function HalloweenMode:getGenBossCount()
+    return 0
+end
+
+
+
+function HalloweenMode:getGuideTilePos()
+    local boardmap = self.mainLogic.boardmap
+    for r = 1, #boardmap do
+        if boardmap[r] then
+            for c = 1, #boardmap[r] do
+                local item = boardmap[r][c]
+                if item and item.isMagicTileAnchor then
+                    local pos = {r = r, c = c}
+                    return pos
+                end
+            end
+        end
+    end
+end
+
+function HalloweenMode:getExtraMapOld(passedRow, additionRow)
+    print('passedRow, additionRow', passedRow, additionRow, '#self.mainLogic.digItemMap', #self.mainLogic.digItemMap, '#self.mainLogic.gameItemMap', #self.mainLogic.gameItemMap)
+    -- debug.debug()
+    local itemMap = {}
+    local boardMap = {}
+
+    local rowCountUsingConfig = 0
+    local rowCountUsingGenerator = 0
+
+    local totalAvailableConfigRowCount = #self.mainLogic.digItemMap
+    ---------------------- TEST -----------------------
+    -- local totalAvailableConfigRowCount = 0 -- TEST
+    ---------------------------------------------------
+
+    if passedRow + additionRow <= totalAvailableConfigRowCount then -- all rows from config
+        rowCountUsingConfig = additionRow
+        rowCountUsingGenerator = 0
+    elseif passedRow >= totalAvailableConfigRowCount then -- all rows from generator
+        rowCountUsingConfig = 0
+        rowCountUsingGenerator = additionRow 
+    else
+        rowCountUsingConfig = totalAvailableConfigRowCount - passedRow
+        rowCountUsingGenerator = additionRow - rowCountUsingConfig
+    end
+
+    -- init row 1 to row 9
+    local normalRowCount = #self.mainLogic.gameItemMap
+    -- print('normalRowCount', normalRowCount)
+    for row = 1, normalRowCount do
+        table.insert(itemMap, self.mainLogic.gameItemMap[row])
+        table.insert(boardMap, self.mainLogic.boardmap[row])
+    end
+
+    -- read config rows if available
+    if rowCountUsingConfig > 0 then
+        -- print('using config')
+        for i = 1, rowCountUsingConfig do 
+            local configRowIndex = passedRow + i
+            table.insert(itemMap, self.mainLogic.digItemMap[configRowIndex])
+            table.insert(boardMap, self.mainLogic.digBoardMap[configRowIndex])
+            for c = 1, #self.mainLogic.digItemMap[configRowIndex] do 
+                self.mainLogic.digItemMap[configRowIndex][c].y = i + normalRowCount
+            end
+            for c = 1, #self.mainLogic.digBoardMap[configRowIndex] do
+                self.mainLogic.digBoardMap[configRowIndex][c].y = i + normalRowCount
+            end
+        end
+    end
+
+    if rowCountUsingGenerator > 0 then
+        local generatedItems = self:generateGroundRow(rowCountUsingGenerator)
+        local newItemRows = {}
+        local newBoardRows = {}
+        for i=1, rowCountUsingGenerator do 
+            newItemRows[i] = {}
+            newBoardRows[i] = {}
+        end
+
+
+        for k, v in pairs(generatedItems) do 
+            local item = GameItemData:create()
+            item:initByConfig(v)
+            local r = self.mainLogic:randomColor()
+            local colorIndex = AnimalTypeConfig.convertColorTypeToIndex(r)
+            item:initByAnimalDef(math.pow(2, colorIndex))
+            item:initBalloonConfig(self.mainLogic.balloonFrom)
+            item:initAddMoveConfig(self.mainLogic.addMoveBase)
+
+            local board = GameBoardData:create()
+            board:initByConfig(v)
+
+            local rowIndex = math.ceil(k / 9)
+            local colIndex = k - (rowIndex - 1) * 9 
+            newItemRows[rowIndex][colIndex] = item
+            newBoardRows[rowIndex][colIndex] = board
+        end
+
+
+        local genRowStartIndex = additionRow + normalRowCount - rowCountUsingGenerator
+
+        for k1, itemRow in pairs(newItemRows) do 
+            table.insert(itemMap, itemRow)
+            for k2, col in pairs(itemRow) do 
+                col.x = k2
+                col.y = k1 + genRowStartIndex
+            end
+        end
+
+        for k1, boardRow in pairs(newBoardRows) do 
+            table.insert(boardMap, boardRow)
+            for k2, col in pairs(boardRow) do 
+                col.x = k2
+                col.y = k1 + genRowStartIndex
+            end
+        end
+    end
+
+    -- print('itemMap, boardMap', #itemMap, #boardMap)
+    return itemMap, boardMap
+end
+
+function HalloweenMode:generateGroundRowOld(rowCount)
 
     local result = {}
 
@@ -648,21 +995,6 @@ function HalloweenMode:generateGroundRow(rowCount)
     return result
 end
 
-function HalloweenMode:testGen()
-    for i = 1, 30 do
-        local str = ""
-        for j = 1, 18 do
-            local ground = self.groundGenerator:genGround()
-            str = str .. ground
-        end
-        print(str)
-    end
-end
-
-function HalloweenMode:getGenBossCount()
-    return 0
-end
-
 function HalloweenMode:getMaxJewelPerTwoRows()
     local maxJewel = initial_max_jewel + math.floor(self.generatedRowCount / add_max_jewel_interval)
     return math.min(maxJewel, max_jewel_limit)
@@ -731,17 +1063,15 @@ end
 function HalloweenMode:initBossBlood()
 end
 
-function HalloweenMode:getGuideTilePos()
-    local boardmap = self.mainLogic.boardmap
-    for r = 1, #boardmap do
-        if boardmap[r] then
-            for c = 1, #boardmap[r] do
-                local item = boardmap[r][c]
-                if item and item.isMagicTileAnchor then
-                    local pos = {r = r, c = c}
-                    return pos
-                end
-            end
+
+
+function HalloweenMode:testGen()
+    for i = 1, 30 do
+        local str = ""
+        for j = 1, 18 do
+            local ground = self.groundGenerator:genGround()
+            str = str .. ground
         end
+        print(str)
     end
 end

@@ -16,15 +16,16 @@ function DestroyItemLogic:destroyDecision(mainLogic)
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
 
-			if item.ItemStatus == GameItemStatusType.kIsSpecialCover 
-				or item.ItemStatus == GameItemStatusType.kIsMatch
+			if (item.ItemStatus == GameItemStatusType.kIsSpecialCover 
+				or item.ItemStatus == GameItemStatusType.kIsMatch)
+				and item.ItemType ~= GameItemType.kDrip
 				then
 				count = count + 1
 				output = output .. string.format("(%d, %d) ", r, c)
 				flag = true
 				
 				local specialType = mainLogic.gameItemMap[r][c].ItemSpecialType
-				if specialType >= AnimalTypeConfig.kLine and specialType <= AnimalTypeConfig.kColor then
+				if AnimalTypeConfig.isSpecialTypeValid(specialType) then
 					BombItemLogic:BombItem(mainLogic, r, c, 1, 0)
 				end
 
@@ -41,7 +42,14 @@ function DestroyItemLogic:destroyDecision(mainLogic)
 					if item.ItemType == GameItemType.kBalloon then 
 						deletedAction.addInfo = "balloon"
 					end
+					if item.ItemType == GameItemType.kDrip then 
+						deletedAction.addInfo = "drip"
+					end
 					mainLogic:addDestroyAction(deletedAction)
+
+					if item:canChargeCrystalStone() then
+						GameExtandPlayLogic:chargeCrystalStone(mainLogic, r, c, item.ItemColorType)
+					end
 				end
 			end
 		end
@@ -107,6 +115,8 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runningGameItemActionMaydayBossLossBlood(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Charging then
 		DestroyItemLogic:runningGameItemActionMagicLampCharging(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Charging then
+		DestroyItemLogic:runningGameItemActionWukongCharging(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_WitchBomb then
 		DestroyItemLogic:runningGameItemActionWitchBomb(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Honey_Bottle_increase then
@@ -123,6 +133,175 @@ function DestroyItemLogic:runLogicAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runGameItemMagicStoneActive(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Monster_Jump then
 		DestroyItemLogic:runningGameItemActionMonsterJump(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItemSpecial_CrystalStone_Destroy then
+		DestroyItemLogic:runningGameItemActionCrystalStoneDestroy(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Totems_Change then
+		DestroyItemLogic:runingGameItemTotemsChangeAction(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperTotems_Bomb_By_Match then
+		DestroyItemLogic:runingGameItemTotemsBombByMatch(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_Decrease_Lotus then
+		DestroyItemLogic:runningGameItemActionDecreaseLotus(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Inactive then
+		DestroyItemLogic:runningGameItemActionInactiveSuperCute(mainLogic, theAction, actid)
+	end
+end
+
+function DestroyItemLogic:runGameItemActionInactiveSuperCute(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		theAction.actionTick = 1
+
+		local function callback()
+			-- theAction.addInfo = "over"
+		end
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playSuperCuteInactive(callback)
+	end
+end
+
+
+function DestroyItemLogic:runningGameItemActionInactiveSuperCute(mainLogic, theAction, actid)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		-- tick
+		theAction.actionTick = theAction.actionTick + 1
+		if theAction.actionTick == GamePlayConfig_SuperCute_InactiveTick then
+			local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+
+			local board = mainLogic.boardmap[r][c]
+			local item = mainLogic.gameItemMap[r][c]
+
+			board.superCuteState = GameItemSuperCuteBallState.kInactive
+			board.superCuteInHit = false
+			item.beEffectBySuperCute = false
+
+			mainLogic:checkItemBlock(r, c)
+			mainLogic:addNeedCheckMatchPoint(r, c)
+			mainLogic:setNeedCheckFalling()
+
+			mainLogic.destroyActionList[actid] = nil
+		end
+	end
+end
+
+function DestroyItemLogic:runingGameItemTotemsBombByMatch(mainLogic, theAction, actid)
+	mainLogic:tryBombSuperTotems()
+	mainLogic.destroyActionList[actid] = nil
+end
+function DestroyItemLogic:runningGameItemActionDecreaseLotus(mainLogic, theAction, actid)
+	--print("RRR   DestroyItemLogic:runningGameItemActionDecreaseLotus   " , actid)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		local r1 = theAction.ItemPos1.x
+		local c1 = theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r1][c1]
+		local board = mainLogic.boardmap[r1][c1]
+
+		if theAction.addInfo == "start" then
+			
+			--theAction.originLotusLevel
+			if board.lotusLevel <= 0 then
+				theAction.addInfo = "over"
+			else
+				theAction.addInfo = "playAnimation"
+				theAction.viewJSQ = 0
+				theAction.viewJSQTarget = 0
+				theAction.currLotusLevel = board.lotusLevel
+
+				local addScore = 0
+				if board.lotusLevel == 3 then
+					theAction.viewJSQTarget = 17
+					addScore = GamePlayConfigScore.LotusLevel3
+				elseif board.lotusLevel == 2 then
+					theAction.viewJSQTarget = 13
+					addScore = GamePlayConfigScore.LotusLevel2
+				elseif board.lotusLevel == 1 then
+					theAction.viewJSQTarget = 10
+					addScore = GamePlayConfigScore.LotusLevel1
+				end
+
+				board.lotusLevel = board.lotusLevel - 1
+				item.lotusLevel = board.lotusLevel
+
+				mainLogic.lotusEliminationNum = mainLogic.lotusEliminationNum + 1
+
+				----[[
+				ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+				local ScoreAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItemScore_Get,
+					IntCoord:create(r1,c1),				
+					nil,				
+					1)
+				ScoreAction.addInt = addScore
+				mainLogic:addGameAction(ScoreAction)
+				--]]
+			end
+			
+
+		elseif theAction.addInfo == "playing" then
+
+			if theAction.viewJSQ == 0 then
+				
+				if board.lotusLevel == 0 and theAction.currLotusLevel == 1 then
+					board.isBlock = false
+
+					mainLogic.currLotusNum = mainLogic.currLotusNum - 1
+
+					local pos = mainLogic:getGameItemPosInView(r1, c1)
+					mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.currLotusNum, pos)
+				end
+				board.isNeedUpdate = true
+				item.isNeedUpdate = true
+				mainLogic:checkItemBlock(r1, c1)
+			end
+
+			theAction.viewJSQ = theAction.viewJSQ + 1
+			if theAction.viewJSQ >= theAction.viewJSQTarget then
+				theAction.addInfo = "over"
+			end
+		elseif theAction.addInfo == "over" then
+			if board.lotusLevel > 0 and board.lotusLevel <= 2 then
+				mainLogic:addNeedCheckMatchPoint(r1, c1)
+				mainLogic:setNeedCheckFalling()
+			end
+			mainLogic.destroyActionList[actid] = nil
+		end
+	end
+	
+end
+
+function DestroyItemLogic:runningGameItemActionCrystalStoneDestroy(mainLogic, theAction, actid)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		if not theAction.hasBreakedLightUp then
+			local r1 = theAction.ItemPos1.x
+			local c1 = theAction.ItemPos1.y
+			SpecialCoverLogic:effectLightUpAtCrystalStone(mainLogic, r1, c1, 5)
+			-- SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r1, c1, 5)
+			theAction.hasBreakedLightUp = true
+		end
+
+		if theAction.actionDuring == 0 
+			or (theAction.isSpecial and theAction.actionDuring == GamePlayConfig_SpecialBomb_CrystalStone_Destory_Time2) 
+			then
+			local r1 = theAction.ItemPos1.x
+			local c1 = theAction.ItemPos1.y
+			local gameItem = mainLogic.gameItemMap[r1][c1]
+
+			if gameItem.ItemType == GameItemType.kCrystalStone then	 -----动物
+				gameItem:cleanAnimalLikeData()
+				mainLogic:setNeedCheckFalling()
+				if mainLogic.boardmap[r1][c1] and mainLogic.boardmap[r1][c1].lotusLevel and mainLogic.boardmap[r1][c1].lotusLevel > 0 then
+					GameExtandPlayLogic:decreaseLotus( mainLogic, r1, c1 , 1)
+				end
+
+				if theAction.isSpecial then -- 消除一层冰
+					SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r1, c1, 1, false)
+				end
+			end
+
+			mainLogic.destroyActionList[actid] = nil
+		end
 	end
 end
 
@@ -182,6 +361,7 @@ function DestroyItemLogic:runningGameItemActionHoneyDec(mainLogic, theAction, ac
 		theAction.hasMatch = true
 		local r,c  = theAction.ItemPos1.x, theAction.ItemPos1.y
 		mainLogic.gameItemMap[r][c].isNeedUpdate = true
+		mainLogic.gameItemMap[r][c].digBlockCanbeDelete = true
 		mainLogic:checkItemBlock(r, c)
 		mainLogic:addNeedCheckMatchPoint(r, c)
 	elseif theAction.actionStatus == GameActionStatus.kWaitingForDeath then
@@ -244,6 +424,8 @@ function DestroyItemLogic:runningGameItemActionHoneyBottleIncrease(mainLogic, th
 	end
 
 end
+
+
 
 function DestroyItemLogic:runningGameItemActionMagicLampCharging(mainLogic, theAction, actid, actByView)
 	local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
@@ -316,6 +498,8 @@ function DestroyItemLogic:runningGameItemAction(mainLogic, theAction, actid)
 		DestroyItemLogic:runningGameItem_CollectIngredient(mainLogic, theAction, actid)
 	elseif theAction.actionType == GameItemActionType.kItem_Mimosa_back then
 		DestroyItemLogic:runningGameItemActionMimosaBack(mainLogic, theAction, actid)
+	elseif theAction.actionType == GameItemActionType.kItem_KindMimosa_back then
+		DestroyItemLogic:runningGameItemActionKindMimosaBack(mainLogic, theAction, actid)
 	end
 end
 
@@ -391,8 +575,12 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		end
 	elseif theAction.actionType == GameItemActionType.kItem_Mimosa_back then
 		DestroyItemLogic:runGameItemActionMimosaBack(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_KindMimosa_back then
+		DestroyItemLogic:runGameItemActionKindMimosaBack(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Mayday_Boss_Loss_Blood then
 		DestroyItemLogic:runGameItemActionBossLossBlood(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Charging then
+		DestroyItemLogic:runGameItemViewActionWukongCharging(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Charging then
 		theAction.actionStatus = GameActionStatus.kRunning
 	elseif theAction.actionType == GameItemActionType.kItem_WitchBomb then
@@ -407,6 +595,194 @@ function DestroyItemLogic:runViewAction(boardView, theAction)
 		DestroyItemLogic:runGameItemActionIceDec(boardView, theAction)	
 	elseif theAction.actionType == GameItemActionType.kItem_Monster_Jump then
 		DestroyItemLogic:runGameItemActionMonsterJump( boardView, theAction )
+	elseif theAction.actionType == GameItemActionType.kItemSpecial_CrystalStone_Destroy then
+		DestroyItemLogic:runGameItemActionCrystalStoneDestroy( boardView, theAction )
+	elseif theAction.actionType == GameItemActionType.kItem_Totems_Change then
+		DestroyItemLogic:runGameItemTotemsChangeAction(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperTotems_Bomb_By_Match then
+	elseif theAction.actionType == GameItemActionType.kItem_Decrease_Lotus then
+		DestroyItemLogic:runGameItemDecreaseLotusAction(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Inactive then
+		DestroyItemLogic:runGameItemActionInactiveSuperCute(boardView, theAction)
+	end
+end
+
+function DestroyItemLogic:runGameItemDecreaseLotusAction(boardView, theAction)
+	--print("RRR  DestroyItemLogic:runGameItemDecreaseLotusAction  " , theAction.actionStatus , theAction.addInfo)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		theAction.addInfo = "start"
+	elseif theAction.addInfo == "playAnimation" then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+
+		if itemView then
+			itemView:playLotusAnimation( theAction.currLotusLevel , "out" )
+		end
+		theAction.addInfo = "playing"
+	end
+end
+
+function DestroyItemLogic:runGameItemTotemsChangeAction(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+
+		itemView:playTotemsChangeToActive()
+	end
+end
+
+function DestroyItemLogic:runingGameItemTotemsChangeAction(mainLogic, theAction, actid)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+
+		if item and item.ItemType == GameItemType.kTotems then
+			item.totemsState = GameItemTotemsState.kActive
+			mainLogic:checkItemBlock(r, c)
+			
+			mainLogic:addNewSuperTotemPos(IntCoord:create(r, c))
+
+			if theAction.isSpecialCover then
+				mainLogic:tryBombSuperTotems()
+			end
+		end
+	elseif theAction.actionStatus == GameActionStatus.kRunning then
+		mainLogic.destroyActionList[actid] = nil
+	end
+end
+
+function DestroyItemLogic:runGameItemViewActionWukongCharging( boardView, theAction )
+
+	if not theAction.viewJSQ then theAction.viewJSQ = 0 end
+	theAction.viewJSQ = theAction.viewJSQ + 1
+	local r = theAction.ItemPos1.x
+	local c = theAction.ItemPos1.y
+	local itemView = boardView.baseMap[r][c]
+
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		theAction.addInfo = "start"
+		itemView:changeWukongState(TileWukongState.kOnHit)
+	elseif theAction.actionStatus == GameActionStatus.kRunning then
+
+		if theAction.addInfo == "playAnimation" then
+			
+			local fromPositions = theAction.fromPosition
+			if fromPositions and #fromPositions > 0 then
+
+				for k,v in pairs(fromPositions) do
+					
+					local localPosition = v
+					local targetPosition = ccp(0,0)
+					if itemView.itemSprite[ItemSpriteType.kItemShow] then
+						targetPosition = itemView.itemSprite[ItemSpriteType.kItemShow]:convertToWorldSpace(ccp(0,0))
+					end
+					local sprite = Sprite:createWithSpriteFrameName("wukong_charging_eff")
+					sprite:setAnchorPoint(ccp(0.5, 0.5))
+					sprite:setPosition(ccp(localPosition.x, localPosition.y))
+					--sprite:setScale(math.random()*0.6 + 0.7)
+					sprite:setOpacity(80)
+					local moveTime = 0.45 + math.random() * 0.64
+					local moveTo = CCMoveTo:create(moveTime, ccp(targetPosition.x, targetPosition.y - 28 ))
+					local function onMoveFinished( ) sprite:removeFromParentAndCleanup(true) end
+					--local moveIn = CCEaseElasticOut:create(CCMoveTo:create(0.25, ccp(x, y)))
+					local array = CCArray:create()
+					--array:addObject(CCSpawn:createWithTwoActions(moveIn, CCFadeIn:create(0.25)))
+					array:addObject(CCEaseSineOut:create(moveTo))
+					array:addObject(CCCallFunc:create(onMoveFinished))
+					array:addObject(CCFadeTo:create(0.25 , 0))
+					sprite:runAction(CCSequence:create(array))
+					sprite:runAction(CCFadeTo:create(0.2 , 255))
+
+					local scene = Director:sharedDirector():getRunningScene()
+					scene:addChild(sprite)
+				end
+			end
+			
+			theAction.addInfo = "wait"
+		end
+
+		if theAction.viewJSQ == 50 then
+			itemView:setWukongProgress( theAction.wukongProgressCurr ,  theAction.wukongProgressTotal )
+		end
+
+		if theAction.viewJSQ == 100 then
+			theAction.addInfo = "onFin"
+		end
+		if theAction.addInfo == "onChangeState" then
+			if theAction.viewState == TileWukongState.kOnActive then
+				itemView:changeWukongState(TileWukongState.kOnActive)
+			else
+				itemView:changeWukongState(TileWukongState.kNormal)
+			end
+
+			theAction.addInfo = "over"
+		end
+	end
+end
+
+function DestroyItemLogic:runningGameItemActionWukongCharging(mainLogic, theAction, actid, actByView)
+
+	if theAction.actionStatus == GameActionStatus.kRunning then
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+
+		if theAction.addInfo == "start" then
+			item.wukongState = TileWukongState.kOnHit
+
+			local newValue = item.wukongProgressCurr + baseWukongChargingValue + theAction.count
+			if newValue > item.wukongProgressTotal then
+				newValue = item.wukongProgressTotal
+			end
+
+			theAction.wukongProgressCurr = newValue
+			theAction.wukongProgressTotal = item.wukongProgressTotal
+
+			item.wukongProgressCurr = newValue
+
+			theAction.addInfo = "playAnimation"
+
+		elseif theAction.addInfo == "onFin" then
+			
+			--item.wukongProgressCurr = item.wukongProgressCurr + baseWukongChargingValue + theAction.count
+			if item.wukongProgressCurr == item.wukongProgressTotal then
+				--item.wukongProgressCurr = item.wukongProgressTotal
+				theAction.viewState = TileWukongState.kOnActive
+				item.wukongState = TileWukongState.kOnActive
+			else
+				theAction.viewState = item.wukongState
+				item.wukongState = TileWukongState.kNormal
+			end
+			
+			theAction.addInfo = "onChangeState"
+		elseif theAction.addInfo == "over" then
+			-- 加上匹配检查点， 防止出现不三消的情况
+			mainLogic:checkItemBlock(r,c)
+			mainLogic:setNeedCheckFalling()
+			mainLogic:addNeedCheckMatchPoint(r, c)
+			mainLogic.destroyActionList[actid] = nil
+		end
+	end
+end
+
+function DestroyItemLogic:runGameItemActionCrystalStoneDestroy( boardView, theAction )
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+		local function finishCallback()
+			-- theAction.addInfo = "over"
+		end
+
+		local color = theAction.addInt
+		local isSpecial = theAction.isSpecial
+		itemView:playCrystalStoneDisappear(isSpecial, finishCallback)
 	end
 end
 
@@ -519,7 +895,7 @@ function DestroyItemLogic:runGameItemActionBossLossBlood(boardView, theAction)
 		local r = theAction.ItemPos1.x
 		local c = theAction.ItemPos1.y
 		local itemView = boardView.baseMap[r][c]
-		itemView:updateBossBlood(theAction.addInt, true)
+		itemView:updateBossBlood(theAction.addInt, true, theAction.debug_string)
 		itemView:playBossHit(boardView)
 		callback()
 	end
@@ -538,7 +914,9 @@ function DestroyItemLogic:runGameItemDeletedByMatch(mainLogic, theAction, actid)
 		local r1 = theAction.ItemPos1.x
 		local c1 = theAction.ItemPos1.y
 		local gameItem = mainLogic.gameItemMap[r1][c1]
-		gameItem:cleanAnimalLikeData()
+		if gameItem.ItemType ~= GameItemType.kDrip then
+			gameItem:cleanAnimalLikeData()
+		end
 		mainLogic:setNeedCheckFalling()
 		mainLogic.destroyActionList[actid] = nil
 	end
@@ -919,17 +1297,31 @@ function DestroyItemLogic:runGameItemBottleBlockerDecLogic( mainLogic,  theActio
 
 		local bottleRow = item.y
 		local bottleCol = item.x
-		if item.bottleState == BottleBlockerState.HitAndChanging then
+
+		if item.ItemType ~= GameItemType.kBottleBlocker then
+			mainLogic.destroyActionList[actid] = nil
+		end
+
+		if theAction.addInfo == "start" then
+			theAction.addInfo = ""
+			if not item.bottleActionRunningCount then item.bottleActionRunningCount = 0 end
+			item.bottleActionRunningCount = item.bottleActionRunningCount + 1
+		end
+
+		if theAction.oldState == BottleBlockerState.HitAndChanging then
 			if theAction.actionDuring == GamePlayConfig_MaxAction_time - 60 then
 				--瓶子消掉一层
 				-- print("RRR *********************   " , item.ItemColorType , theAction.newColor)
 				item.ItemColorType = theAction.newColor
-				item.bottleState = BottleBlockerState.Waiting
+				--item.bottleState = BottleBlockerState.Waiting
+				if item.bottleActionRunningCount then item.bottleActionRunningCount = item.bottleActionRunningCount - 1 end
+				item.isNeedUpdate = true
+				
 				mainLogic:addNeedCheckMatchPoint(bottleRow, bottleCol)
 				mainLogic:setNeedCheckFalling()
 				theAction.actionStatus = GameActionStatus.kWaitingForDeath
 			end
-		elseif item.bottleState == BottleBlockerState.ReleaseSpirit then
+		elseif theAction.oldState == BottleBlockerState.ReleaseSpirit then
 			-- if theAction.actionDuring == GamePlayConfig_MaxAction_time - 16 then
 			--瓶子完全碎掉，释放十字特效
 			local destroyAroundAction = GameBoardActionDataSet:createAs(
@@ -942,7 +1334,7 @@ function DestroyItemLogic:runGameItemBottleBlockerDecLogic( mainLogic,  theActio
 			theAction.actionStatus = GameActionStatus.kWaitingForDeath
 			-- end
 		else
-			assert(false, "unexcept bottle state:"..tostring(item.bottleState))
+			--assert(false, "unexcept bottle state:"..tostring(item.bottleState))
 			theAction.actionStatus = GameActionStatus.kWaitingForDeath
 		end
 	end
@@ -961,6 +1353,10 @@ function DestroyItemLogic:runGameItemViewBottleBlockerDec( boardView, theAction 
 		local item = boardView.baseMap[r][c]
 
 		theAction.newColor = GameExtandPlayLogic:randomBottleBlockerColor(boardView.gameBoardLogic, r, c)
+		theAction.addInfo = "start"
+		
+		--boardView.gameBoardLogic.gameItemMap[r][c].bottleBlockerNewColor = theAction.newColor
+		--boardView.gameBoardLogic.gameItemMap[r][c].ItemColorType = AnimalTypeConfig.kNone
 
 		item:playBottleBlockerHitAnimation(boardView , theAction.newBottleLevel , theAction.newColor)
 	end
@@ -1039,7 +1435,34 @@ function DestroyItemLogic:runGameItemActionMimosaBack(boardView, theAction)
 			local r, c = list[k].x, list[k].y
 			local itemView = boardView.baseMap[r][c]
 			local call_func = k==#list and callback or nil
-			itemView:playMimosaEffectAnimation(theAction.direction, time * (#list - k),  call_func, false)
+			itemView:playMimosaEffectAnimation(theAction.itemType,theAction.direction, time * (#list - k),  call_func, false)
+		end
+
+		local r = theAction.ItemPos1.x
+		local c = theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+		itemView:playMimosaBackAnimation(time)
+	end 
+
+end
+
+function DestroyItemLogic:runGameItemActionKindMimosaBack(boardView, theAction)
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		theAction.addInfo = "start"
+		local function callback( ... )
+			-- body
+			theAction.addInfo = "over"
+		end
+
+		local list = theAction.list
+		local time = 0
+		for k = 1, #list do 
+			local r, c = list[k].x, list[k].y
+			local itemView = boardView.baseMap[r][c]
+			local call_func = k==#list and callback or nil
+			itemView:playMimosaEffectAnimation(theAction.itemType,theAction.direction, time * (#list - k),  call_func, false)
 		end
 
 		local r = theAction.ItemPos1.x
@@ -1047,7 +1470,6 @@ function DestroyItemLogic:runGameItemActionMimosaBack(boardView, theAction)
 		local itemView = boardView.baseMap[r][c]
 		itemView:playMimosaBackAnimation(time)
 	end
-
 end
 
 function DestroyItemLogic:runningGameItemActionMimosaBack(mainLogic, theAction, actid)
@@ -1058,13 +1480,14 @@ function DestroyItemLogic:runningGameItemActionMimosaBack(mainLogic, theAction, 
 		local list = item.mimosaHoldGrid
 		for k, v in pairs(list) do 
 			local item_grid = mainLogic.gameItemMap[v.x][v.y]
-			item_grid.beEffectByMimosa = false
+			item_grid.beEffectByMimosa = 0
 			item_grid.mimosaDirection = 0
 			mainLogic:checkItemBlock(v.x, v.y)
 			mainLogic:addNeedCheckMatchPoint(v.x, v.y)
 		end
 		FallingItemLogic:preUpdateHelpMap(mainLogic)
 		item.mimosaHoldGrid = {}
+		item.isBackAllMimosa = nil
 		if theAction.completeCallback then
 			theAction.completeCallback()
 		end
@@ -1074,6 +1497,29 @@ function DestroyItemLogic:runningGameItemActionMimosaBack(mainLogic, theAction, 
 
 end
 
+function DestroyItemLogic:runningGameItemActionKindMimosaBack(mainLogic, theAction, actid)
+	-- body
+	if theAction.addInfo == "start" then
+		theAction.addInfo = "wait"
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+		local list = theAction.list
+		for k, v in pairs(list) do 
+			local item_grid = mainLogic.gameItemMap[v.x][v.y]
+			item_grid.beEffectByMimosa = 0
+			item_grid.mimosaDirection = 0
+			mainLogic:checkItemBlock(v.x, v.y)
+			mainLogic:addNeedCheckMatchPoint(v.x, v.y)
+		end
+		FallingItemLogic:preUpdateHelpMap(mainLogic)
+	elseif theAction.addInfo == "over" then
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+
+		mainLogic.destroyActionList[actid] = nil
+	end
+end
 
 function DestroyItemLogic:getItemPosition(itemPos)
 	local x = (itemPos.y - 0.5 ) * GamePlayConfig_Tile_Width

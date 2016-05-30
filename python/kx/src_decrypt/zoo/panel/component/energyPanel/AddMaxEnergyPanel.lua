@@ -126,12 +126,11 @@ function AddMaxEnergyPanel:startBuyAndUseAddMaxEnergyLogic(...)
 			self:playFlyingEnergyAnim(ccp(self.flyEnergyTargetPosInWorldSpaceX, self.flyEnergyTargetPosInWorldSpaceY), onFlyingEnergyAnimFinished)
 		end
 
-		local function onAddMaxFailed(event)
+		local function onAddMaxFailed(errCode, errMsg)
 			self.isStartBuyAndUseAddMaxEnergyLogicCalled = false
 
-			if event and event.data == 730330 then
+			if errCode and errCode == 730330 then
 				-- Not Has Enough Money
-
 				local function createGoldPanel()
 					local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
 					if index ~= 0 then
@@ -139,17 +138,14 @@ function AddMaxEnergyPanel:startBuyAndUseAddMaxEnergyLogic(...)
 						panel:popout()
 					end
 				end
-				-- local text = {
-				-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-				-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-				-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-				-- }
-				-- CommonTipWithBtn:setShowFreeFCash(true)
-				-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
-				GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
+				GoldlNotEnoughPanel:create(createGoldPanel, nil):popout()
 
-			elseif event and event.data then
-				CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+			elseif errCode then
+				if __ANDROID then
+					CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
+				else
+					CommonTip:showTip(Localization:getInstance():getText("error.tip."..errCode), "negative")
+				end
 			else
 				CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
 			end
@@ -168,7 +164,6 @@ function AddMaxEnergyPanel:startBuyAndUseAddMaxEnergyLogic(...)
 
 		local timeType 		= AddMaxEnergyTimeType.PERMANENT
 		local energyType	= AddMaxEnergyType.MAX_ENERGY_40
-		--local logic = BuyAndUseAddMaxEnergyLogic:create(timeType, energyType)
 		if __ANDROID then -- ANDROID, no sync allowed 'cause no network
 			local logic	= BuyAndUseAddMaxEnergyLogic:create(timeType, energyType)
 			logic:start(onAddMaxSuccess, onAddMaxFailed, onAddMaxCanceled)

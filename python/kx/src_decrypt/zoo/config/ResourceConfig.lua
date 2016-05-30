@@ -1,5 +1,48 @@
 ResourceConfig = {
 	plist={
+		-- "flash/bear.plist", 	
+		-- "flash/fox.plist", 		
+		-- "flash/horse.plist", 	
+		-- "flash/frog.plist", 	
+		-- "flash/cat.plist", 		
+		-- "flash/chicken.plist", 	
+		-- "flash/bird.plist", 	
+		-- "flash/bird_ext.plist",
+		-- "flash/game_props.plist",
+		-- "flash/TileEffect.plist",
+		-- "flash/mapTiles.plist",
+		-- "flash/explode.plist",
+		-- "flash/mapBaseItem.plist",
+		-- "flash/destroy_effect.plist",		
+		-- "flash/tile_select.plist",
+
+		-- "materials/game_bg.plist",
+		-- "materials/game_bg_activity.plist",
+
+		"materials/head_images.plist",
+		"materials/intermediate.plist",
+		"materials/trunk.plist",
+		"materials/trunkRoot.plist",
+		"materials/trunkRootBackCloud.plist",
+		"materials/anniversary_two_years.plist",
+
+		-- "materials/home_color.plist",
+		-- "materials/fruitTree.plist",
+		
+		"flash/scenes/homeScene/lockedCloud.plist",
+		"flash/scenes/flowers/home_effects.plist",
+		"flash/scenes/flowers/title_text.plist",
+		"flash/scenes/flowers/branch_mask.plist",
+		"flash/scenes/flowers/branch.plist",
+		"flash/scenes/flowers/flower_effects.plist",
+		"flash/scenes/flowers/target_icon.plist",
+
+		"flash/gameguide/guidespanImage.plist",
+		"flash/ladybug.plist",
+	},
+
+	asyncPlist={
+		-- GamePlayScene
 		"flash/bear.plist", 	
 		"flash/fox.plist", 		
 		"flash/horse.plist", 	
@@ -17,27 +60,14 @@ ResourceConfig = {
 		"flash/tile_select.plist",
 
 		"materials/game_bg.plist",
-		"materials/head_images.plist",
-		"materials/intermediate.plist",
-		"materials/trunk.plist",
-		"materials/trunkRoot.plist",
-		"materials/trunkRootBackCloud.plist",
-		"materials/home_color.plist",
+		"materials/game_bg_activity.plist",
+		"materials/game_bg_AnniversaryTwoYears.plist",
+		-- "materials/game_bg_weekly.plist",
+		
+		-- FruitScene
 		"materials/fruitTree.plist",
-		
-		"flash/scenes/homeScene/lockedCloud.plist",
-		"flash/scenes/flowers/home_effects.plist",
-		"flash/scenes/flowers/title_text.plist",
-		"flash/scenes/flowers/branch_mask.plist",
-		"flash/scenes/flowers/branch.plist",
-		"flash/scenes/flowers/flower_effects.plist",
-		"flash/scenes/flowers/target_icon.plist",
-
-		"flash/gameguide/guidespanImage.plist",
-		"flash/quick_select_level.plist",
-		"flash/quick_select_animation.plist",
-		
 	},
+	
 	json={
 		"flash/scenes/homeScene/home.json",		
 		"flash/gameguide/guideelem.json",
@@ -48,10 +78,12 @@ ResourceConfig = {
 		"flash/common/properties.json",
 		"flash/scenes/homeScene/homeScene.json",
 		"flash/scenes/homeScene/home_icon.json",
+
 		"flash/scenes/gamePlaySceneUI/gamePlaySceneUI.json",
 	},
 	skeleton={
 		"skeleton/energy_animation",
+		"skeleton/energy_animation_spring2016",
 	},
 	image={
 
@@ -106,14 +138,32 @@ ResourceConfig = {
 		"music/sound.tileBlocker.turn.mp3",
 		"music/sound.fireworks.mp3",
 		"music/sound.blessing.mp3",
+		"music/sound.weekly.boss.hit.mp3",
+		"music/sound.hedgehogbox.open.mp3",
+		"music/sound.hedgehog.crazy.mp3",
+		"music/sound.hedgehog.crazymove.mp3",
+
+		--春节相关音效 用于1.30版本 之后版本可删
+		"music/sound.spring_firework1.mp3",
+		"music/sound.spring_firework2.mp3",
+		"music/sound.spring_firework3.mp3",
+		"music/sound.spring_firework4.mp3",
+		"music/sound.spring_firework5.mp3",
+		"music/sound.wukong.casting.mp3",
+		-- "music/sound.spring_firework_triple.mp3",
+
 	},
 	mp3={
 		"music/sound.WorldSceneBGM.mp3",
+		
+		--春节相关音效 用于1.30版本 之后版本可删
+		"music/sound.spring_bg_music.mp3",
 	}
 }
 
 ResourceConfigPixelFormat = {}
 ResourceConfigPixelFormat["materials/game_bg.plist"] = kCCTexture2DPixelFormat_RGB565
+ResourceConfigPixelFormat["materials/game_bg_qixi.plist"] = kCCTexture2DPixelFormat_RGBA8888
 ResourceConfigPixelFormat["materials/trunkRoot.plist"] = kCCTexture2DPixelFormat_RGB565
 ResourceConfigPixelFormat["materials/logo.plist"] = kCCTexture2DPixelFormat_RGB565
 ResourceConfigPixelFormat["materials/trunkRootBackCloud.plist"] = kCCTexture2DPixelFormat_RGBA4444
@@ -131,6 +181,7 @@ ResourceConfigPixelFormat["flash/destroy_effect.plist"] = kCCTexture2DPixelForma
 
 ResourceFntPixelFormat = {}
 ResourceFntPixelFormat["fnt/tutorial.fnt"] = kCCTexture2DPixelFormat_RGBA4444
+ResourceFntPixelFormat["fnt/tutorial_white.fnt"] = kCCTexture2DPixelFormat_RGBA4444
 ResourceFntPixelFormat["fnt/green_button.fnt"] = kCCTexture2DPixelFormat_RGBA4444
 ResourceFntPixelFormat["fnt/zh_tw/green_button.fnt"] = kCCTexture2DPixelFormat_RGBA4444
 ResourceFntPixelFormat["fnt/titles.fnt"] = kCCTexture2DPixelFormat_RGBA4444
@@ -140,7 +191,7 @@ ResourceArmaturePixelFormat = {}
 ResourceArmaturePixelFormat["skeleton/timeback_animation"] = kCCTexture2DPixelFormat_RGBA4444
 
 ResourceConfigTextureParam = {}
-ResourceConfigTextureParam["materials/home_color.plist"] = true
+-- ResourceConfigTextureParam["materials/home_color.plist"] = true
 
 PanelConfigFiles = {}
 PanelConfigFiles.common_ui = "ui/common_ui.json"
@@ -158,7 +209,7 @@ PanelConfigFiles.invite_friend_reward_panel = "ui/invite_friend_reward_panel.jso
 PanelConfigFiles.request_message_panel = "ui/request_message_panel.json"
 PanelConfigFiles.panel_buy_prop = "ui/panel_buy_prop.json"
 PanelConfigFiles.panel_buy_gold = "ui/panel_buy_gold.json"
-PanelConfigFiles.buy_gold_items = "ui/buy_gold_items.json"
+PanelConfigFiles.buy_gold_items = "ui/BuyGoldItem.json"
 PanelConfigFiles.panel_mark = "ui/panel_mark.json"
 PanelConfigFiles.panel_energy_bubble = "ui/panel_energy_bubble.json"
 PanelConfigFiles.panel_add_step = "ui/panel_add_step.json"
@@ -188,4 +239,25 @@ PanelConfigFiles.qr_code_panel = "ui/qr_code_panel.json"
 PanelConfigFiles.third_pay_guide_panel = "ui/third_pay_guide_panel.json"
 PanelConfigFiles.ios_pay_cartoon_panel = "ui/ios_pay_guide_help.json"
 PanelConfigFiles.two_choice_panel = "ui/TwoChoicePanel.json"
+PanelConfigFiles.four_star_guid = "ui/four_star_guid.json"
+PanelConfigFiles.star_achevement = "ui/star_achievement.json"
 PanelConfigFiles.third_pay_show_priority_panel = "ui/third_pay_show_priority_panel.json"
+PanelConfigFiles.mark_energy_remind_panel = "ui/MarkEnergyRemindPanel.json"
+PanelConfigFiles.coin_info_panel = "ui/coin_info_panel.json"
+PanelConfigFiles.unlock_guide_panel = "ui/unlock_guide_panel.json"
+PanelConfigFiles.mission = "ui/mission_panel.json"
+PanelConfigFiles.mission_1 = "ui/mission_panel_1.json"
+PanelConfigFiles.mission_2 = "ui/mission_panel_2.json"
+PanelConfigFiles.mission_manga = "ui/mission_manga.json"
+PanelConfigFiles.mission_bugtips = "ui/mission_bugtips.json"
+PanelConfigFiles.mission_rules = "ui/mission_rules.json"
+PanelConfigFiles.panel_season_weekly_share = "ui/panel_season_weekly_share.json"
+PanelConfigFiles.cd_key_exchange_panel = "ui/cd_key_exchange_panel.json"
+PanelConfigFiles.jump_level_panel = "ui/jump_level_panel.json"
+PanelConfigFiles.more_ingredient_panel = 'ui/more_ingredient_panel.json'
+PanelConfigFiles.personal_center_panel = 'ui/personal_center_panel.json'
+PanelConfigFiles.panel_game_start_activity = "ui/panel_game_start_spring2016.json"
+PanelConfigFiles.panel_apple_paycode = "ui/panel_apple_paycode.json"
+PanelConfigFiles.panel_confirm_buy_full_energy = "ui/panel_confirm_buy_full_energy.json"
+PanelConfigFiles.two_years_gift_enegy = "ui/TwoYearsGiftEnegy.json"
+PanelConfigFiles.weekly_race_promotion_panel = "ui/weekly_race_promotion_panel.json"

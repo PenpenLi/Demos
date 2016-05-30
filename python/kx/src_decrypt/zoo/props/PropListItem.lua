@@ -110,8 +110,15 @@ function PropListItem:getItemCenterPosition()
   local x = iconSize.x + iconSize.width/2
   local y = iconSize.y - iconSize.height/2
   local position = ccp(x, y)
-  position = item:convertToWorldSpace(position)
-  return item:getParent():convertToNodeSpace(position)
+  if self.isPlayShowAnimation then -- show动画时是从scale0开始的,转换后的位置不正确,直接计算
+    local itemPos = item:getPosition()
+    position = ccp(itemPos.x + x, itemPos.y + y)
+    position = item:getParent():convertToWorldSpace(position)
+  else
+    position = item:convertToWorldSpace(position)
+  end
+  return position
+  -- return item:getParent():convertToNodeSpace(position)
 end
 
 function PropListItem:hide()
@@ -489,8 +496,9 @@ function PropListItem:increaseTemporaryItemNumber( itemId, itemNum )
 end
 
 function PropListItem:explode( animationTime, usedPositionGlobal )
-
+  self.isPlayExplodeAnimation = true
   local function onAnimationFinished()
+    self.isPlayExplodeAnimation = false
     if self.isAnimateHint then 
       self:stopHint() 
     end
@@ -506,7 +514,11 @@ function PropListItem:explode( animationTime, usedPositionGlobal )
   end
 
   self.animator:explode(animationTime, usedPositionGlobal, onAnimationFinished)
-  
+end
+
+function PropListItem:isPlayingAnimation()
+  if self.disabled then return false end
+  return self.isPlayShowAnimation or self.isPlayExplodeAnimation
 end
 
 function PropListItem:bubble(delayTime)

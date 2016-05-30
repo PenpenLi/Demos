@@ -7,8 +7,7 @@ end
 
 function ShareFinalPassLevelPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey)
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self.shareMessage = Localization:getInstance():getText("show_off_wx_share_70")
 	--加载动画资源
@@ -19,6 +18,10 @@ function ShareFinalPassLevelPanel:init()
 	self:runCircleLightAction()
 	self:runFireworkAction()
 	self:runStarParticle()
+end
+
+function ShareFinalPassLevelPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey)
 end
 
 function ShareFinalPassLevelPanel:runCloudAction()
@@ -132,7 +135,7 @@ function ShareFinalPassLevelPanel:runFireworkAction()
 	end
 	local fireworkIndex = 1
 	local function playFireWork()
-		if fireworkIndex>5 then 
+		if self.isDisposed or fireworkIndex>5 then 
 			if timerId then 
 				CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(timerId)
 			end
@@ -169,14 +172,11 @@ function ShareFinalPassLevelPanel:dispose()
 	end
 end
 
-function ShareFinalPassLevelPanel:create(shareId, shareType, shareLink, shareTitleKey)
+function ShareFinalPassLevelPanel:create(shareId)
 	local panel = ShareFinalPassLevelPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareFinalPassLevelPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareLink = shareLink
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

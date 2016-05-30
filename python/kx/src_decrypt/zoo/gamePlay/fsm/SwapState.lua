@@ -70,6 +70,11 @@ function SwapState:runSwapActionLogic(mainLogic, theAction, actid)
 					GamePlayConfig_SwapAction_Failed_CD					----失败动画时间
 				)
 				mainLogic.swapActionList[actid] = swapActionFailed
+
+				local runningScene = Director.sharedDirector():getRunningSceneLua()
+				if runningScene and runningScene.isCheckReplayScene then
+					runningScene:dp(Event.new("replay_error", {msg="swap_fail"}))
+				end
 			end
 		end
 	elseif theAction.actionType == GameBoardActionType.kStartTrySwapItemFailed then

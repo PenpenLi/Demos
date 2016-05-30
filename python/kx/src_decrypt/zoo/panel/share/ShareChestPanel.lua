@@ -7,9 +7,7 @@ function ShareChestPanel:ctor()
 end
 
 function ShareChestPanel:init()
-	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self:initChest()
 	self:runChestAction()
@@ -22,6 +20,11 @@ function ShareChestPanel:init()
 	self:runStarParticle()
 	self:runStarGroup3Action()
 end
+
+function ShareChestPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey,{})
+end
+
 
 function ShareChestPanel:initChest()
 	self.chestUI = self.ui:getChildByName("chest")
@@ -209,14 +212,11 @@ function ShareChestPanel:runStarParticle()
 	end
 end
 
-function ShareChestPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
+function ShareChestPanel:create(shareId)
 	local panel = ShareChestPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareChestPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

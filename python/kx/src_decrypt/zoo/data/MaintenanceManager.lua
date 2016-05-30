@@ -9,6 +9,7 @@ end
 function MaintenanceFeature:fromXML( src )
 	if not src then return end
 	self.enable = tostring(src.enable) == "true"
+	self.value = src.value
 	self.id = src.id
 	self.name = src.name
 	self.version = src.version
@@ -26,6 +27,7 @@ end
 function MaintenanceFeature:encode()
 	local ret = {}
 	ret.enable = self.enable
+	ret.value = self.value
 	ret.id = self.id
 	ret.name = self.name
 	ret.version = self.version
@@ -39,7 +41,8 @@ end
 function MaintenanceFeature:fromLua(src)
 	if not src then return end
 	self.enable = tostring(src.enable) == "true"
-	self.id = tonumber(src.id)
+	self.value = src.value
+	self.id = src.id
 	self.name = src.name
 	self.version = src.version
 	self.beginDate = src.beginDate
@@ -52,12 +55,17 @@ local instance = nil
 MaintenanceManager = {}
 
 function MaintenanceManager:getInstance()
-	if not instance then instance = MaintenanceManager end
+	if not instance then
+		instance = MaintenanceManager
+		while #instance > 0 do
+			table.remove(instance, 1)
+		end
+		instance:readFromStorage()
+	end
 	return instance
 end
 
 function MaintenanceManager:initialize(onFinish)
-	self:readFromStorage()
 	if PrepackageUtil:isPreNoNetWork() then return end
 	self:onlineLoad(onFinish)
 end
@@ -132,7 +140,6 @@ end
 function MaintenanceManager:fromLua(src)
 	print("MaintenanceManager:fromLua")
 	if not src then return end
-	self.version = src.version
 	for k,v in pairs(src) do	
 		if type(v) == "table" then
 			local feature = MaintenanceFeature.new()
@@ -142,23 +149,61 @@ function MaintenanceManager:fromLua(src)
 	end
 end
 
-function MaintenanceManager:isEnabled(key)
+function MaintenanceManager:getMaintenanceByKey(key)
 	local keys = {}
 	for k, v in ipairs(MaintenanceManager) do
 		if v.name == key then table.insert(keys, v) end
 	end
 	for k, v in ipairs(keys) do
 		for i, j in ipairs(v.platform) do
-			if StartupConfig:getInstance():getPlatformName() == j and v.version == _G.bundleVersion then return v.enable end
+			if StartupConfig:getInstance():getPlatformName() == j and v.version == _G.bundleVersion then return v end
 		end
 	end
 	for k, v in ipairs(keys) do
 		for i, j in ipairs(v.platform) do
-			if StartupConfig:getInstance():getPlatformName() == j and v.version == "default" then return v.enable end
+			if StartupConfig:getInstance():getPlatformName() == j and v.version == "default" then return v end
 		end
 	end
 	for k, v in ipairs(keys) do
-		if v.platformStr == "default" and v.version == "default" then return v.enable end
+		if v.platformStr == "default" and v.version == "default" then return v end
+	end
+	return nil
+end
+
+function MaintenanceManager:isEnabled(key)
+	local maintenance = self:getMaintenanceByKey(key)
+	if maintenance then
+		return maintenance.enable
+	else
+		return false
+	end
+end
+
+function MaintenanceManager:getValue(key)
+	local maintenance = self:getMaintenanceByKey(key)
+	if maintenance then
+		return maintenance.value
+	else
+		return nil
+	end
+end
+
+-- since version 1.30, value = [0, 10000]
+function MaintenanceManager:isAvailbleForUid(key, uid, threshold)
+	local maintenance = self:getMaintenanceByKey(key)
+	if maintenance and maintenance.enable then -- 开关已打开
+		local uidEndWith = nil
+		if maintenance.value ~= nil then 
+			uidEndWith = tonumber(maintenance.value)
+		end
+
+		if uidEndWith == nil then -- uid无限制
+			return true
+		else -- 在灰度范围内
+			uid = tonumber(uid) or 0
+			threshold = tonumber(threshold) or 100
+			return (uid % threshold) < uidEndWith
+		end
 	end
 	return false
 end

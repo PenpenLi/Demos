@@ -56,14 +56,40 @@ function convertToInvokeCallback(callback)
     })
 end
 
+function SnsProxy:configQQWallet()
+    print("configQQWallet >>>>> ",MaintenanceManager:getInstance():isEnabled("QqWalletFeature"))
+    local needRemove = not MaintenanceManager:getInstance():isEnabled("QqWalletFeature")
+
+    local function isSupportQQWalletPay()
+       local qqWalletPayment = luajava.bindClass("com.happyelements.android.qq.QQWalletPaymentDelegate")
+       return qqWalletPayment:IsMqqInstalled() and qqWalletPayment:IsMqqSupportPay()
+    end
+    
+    local status,result = pcall(isSupportQQWalletPay)
+
+    needRemove = needRemove and result
+
+    local wallet_index = table.indexOf(PlatformConfig.paymentConfig.thirdPartyPayment, Payments.QQ_WALLET)
+
+    if wallet_index and needRemove then
+        table.remove(PlatformConfig.paymentConfig.thirdPartyPayment, wallet_index)
+    end
+end
+
 function SnsProxy:initPlatformConfig()
     print("initPlatformConfig:"..PlatformConfig.name)
 
     require "hecore.sns.aps.AndroidPayment"
     require "hecore.sns.aps.AndroidAuthorize"
     require "hecore.sns.aps.AndroidShare"
+
     AndroidAuthorize.getInstance():initAuthorizeConfig(PlatformConfig.authConfig)
     AndroidAuthorize.getInstance():initAuthorizeConfig(PlatformConfig.mergeToAuthConfig)
+
+    if PlatformConfig:isBaiduPlatform() then
+        table.insert(PlatformConfig.paymentConfig.thirdPartyPayment, Payments.QQ_WALLET)
+    end
+
     AndroidPayment.getInstance():initPaymentConfig(PlatformConfig.paymentConfig)
     AndroidShare.getInstance():initShareConfig(PlatformConfig.shareConfig)
 
@@ -76,6 +102,10 @@ function SnsProxy:initPlatformConfig()
         config:setBoolForKey("game.disable.background.music", not isMusicEnabled)
         config:setBoolForKey("game.disable.sound.effect", not isMusicEnabled)
         config:flush()
+    end
+
+    if PlatformConfig:isPlatform(PlatformNameEnum.kHuaWei) then 
+        SnsProxy:huaweiAsyncLogin()
     end
     
     if AndroidPayment.getInstance():isPaymentTypeSupported(Payments.QIHOO) then -- 设置支付回调地址，方便修改和测试。默认为线上值
@@ -118,6 +148,16 @@ function SnsProxy:isLogin()
     end
     return false
 end
+
+function SnsProxy:getAccountInfo()
+    local loginCacheTable = {}
+    local loginCacheMap = authorProxy:getAccountInfo()
+    if loginCacheMap then 
+        loginCacheTable = luaJavaConvert.map2Table(loginCacheMap)
+    end
+    return loginCacheTable
+end
+
 -- login
 function SnsProxy:login(callback) 
     local authorDelegate = authorProxy:getAuthorizeDelegate()
@@ -224,6 +264,7 @@ function SnsProxy:syncSnsFriend(sns_token)
     end
     print("SnsProxy:syncSnsFriend")
     if authorProxy:isLogin() then
+        local authorType = authorProxy:getAuthorizeType()
         local callback = {
             onSuccess=function( result )
                 local userList = luaJavaConvert.list2Table(result)
@@ -237,10 +278,13 @@ function SnsProxy:syncSnsFriend(sns_token)
                 if count > 0 then
                     local function onRequestError( evt )
                         evt.target:removeAllEventListeners()
+                        --GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncFailed))
+                        
                         print("onPreQzoneError callback")
                     end
                     local function onRequestFinish( evt )
                         evt.target:removeAllEventListeners()
+                        --GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncSuccess))
                         print("onRequestFinish callback")
                     end 
 
@@ -248,10 +292,10 @@ function SnsProxy:syncSnsFriend(sns_token)
                     http:addEventListener(Events.kComplete, onRequestFinish)
                     http:addEventListener(Events.kError, onRequestError)
 
-                    http:load(friendOpenIds)
+                    http:load(friendOpenIds,nil,nil,authorType)
                 else
                     --即使没获取到也得切换好友
-                    SyncSnsFriendHttp.new():load({})           
+                    SyncSnsFriendHttp.new():load({},nil,nil,authorType)           
                 end
             end,
             onError = function( err, msg )
@@ -264,19 +308,22 @@ function SnsProxy:syncSnsFriend(sns_token)
         local function qqSyncSnsFriend( ... )
             local function onRequestError(evt)
                 print("syncSnsFriend onPreQzoneError callback")
+                GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncFailed))
             end
 
             local function onRequestFinish(evt)
-                print("syncSnsFriend onRequestFinish callback")
                 FriendManager.getInstance().lastSyncTime = os.time()
+                FriendManager.getInstance():setQQFriendsSynced()
                 HomeScene:sharedInstance().worldScene:buildFriendPicture()
+                GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncSuccess))
+                print("syncSnsFriend onRequestFinish callback")
             end
 
             local http = SyncSnsFriendHttp.new()
             http:addEventListener(Events.kComplete, onRequestFinish)
             http:addEventListener(Events.kError, onRequestError)
             if sns_token and sns_token.openId and sns_token.accessToken then
-                http:load(nil, sns_token.openId, sns_token.accessToken)
+                http:load(nil, sns_token.openId, sns_token.accessToken,authorType)
             end
         end
 
@@ -309,4 +356,32 @@ function SnsProxy:getUserProfile(successCallback,errorCallback,cancelCallback)
     else
         cancelCallback()
     end
+end
+
+function SnsProxy:huaweiAsyncLogin()
+    local huaweiProxy = luajava.bindClass("com.happyelements.android.platform.huawei.HuaweiProxy"):getInstance()
+    huaweiProxy:asyncLogin()
+end
+
+function SnsProxy:huaweiIngameLogin(successCallback, errorCallback, cancelCallback)
+    if not PlatformConfig:isPlatform(PlatformNameEnum.kHuaWei) then
+        if cancelCallback then cancelCallback() end
+        return 
+    end
+    local callback = {
+        onSuccess=function(result)
+           local resultTable = luaJavaConvert.map2Table(result)
+            print("huawei login accesstoken=", table.tostring(resultTable.accesstoken))
+            successCallback(resultTable)
+        end,
+        onError=function(err,msg)
+            print("huawei login onError=", msg)
+            errorCallback(err,msg)
+        end,
+        onCancel=function()
+            cancelCallback()
+        end
+    }
+    local huaweiProxy = luajava.bindClass("com.happyelements.android.platform.huawei.HuaweiProxy"):getInstance()
+    huaweiProxy:login(convertToInvokeCallback(callback))
 end

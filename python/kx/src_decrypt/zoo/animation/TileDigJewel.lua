@@ -10,6 +10,12 @@ local JewelType =
 	kRedbag = 4,
 	kBlueJewel = 5,
 	kGoldZongZi = 6,
+	kQiXi2015 = 7,
+	kCupcake = 8,
+	kHalloween2015 = 9,
+	kWukong = 10,
+	kIceCream = 11,
+	kChildrensDay = 12,
 }
 
 TileDigJewel.JewelTypeConfig = JewelType
@@ -20,10 +26,14 @@ function TileDigJewel:create(level, texture, levelType)
 	local node = TileDigJewel.new(sprite)
 	node.parentTexture = texture
 
+	--print('RRR  ++++++++++++++++++++++++ TileDigJewel:create   levelType = ', levelType)
+
 	if levelType == GameLevelType.kSummerWeekly then
-		node.jewelType = JewelType.kBlueJewel
+		node.jewelType = JewelType.kIceCream
 	elseif levelType == GameLevelType.kMayDay then
-		node.jewelType = JewelType.kBell
+		node.jewelType = JewelType.kChildrensDay
+	elseif levelType == GameLevelType.kWukong then
+		node.jewelType = JewelType.kWukong
 	else
 		node.jewelType = JewelType.kJewel
 	end
@@ -34,7 +44,7 @@ function TileDigJewel:create(level, texture, levelType)
 	return node
 end
 ------添加抖动动画
-local function addJewAction( sprite )
+local function addJewAction( sprite, durationTime )
 	-- body
 	if sprite then sprite:stopAllActions() end
 
@@ -44,8 +54,8 @@ local function addJewAction( sprite )
 	local action_rotation_4 = CCRotateTo:create(0.05, 8)
 	local action_rotation_5 = CCRotateTo:create(0.01, 0)
 
-	
-	local action_delay = CCDelayTime:create(3)
+	durationTime = durationTime or 3
+	local action_delay = CCDelayTime:create(durationTime)
 	local array = CCArray:create()
 	array:addObject(action_delay)
 	array:addObject(action_rotation_1)
@@ -83,7 +93,7 @@ function TileDigJewel:createSprite( level )
 	-- body
 	if level < 1 or level > 3 then return end
 	local lightCircleOffsetX, lightCircleOffsetY = 0, 0
-	if self.jewelType == JewelType.kBlueJewel then
+	if self.jewelType == JewelType.kIceCream then
 		lightCircleOffsetX = -2
 		lightCircleOffsetY = -8
 	end
@@ -101,45 +111,33 @@ function TileDigJewel:createSprite( level )
 	self:addChild(self.light_cirlce)
 	self.light_cirlce:setVisible(false)
 
-	if _isQixiLevel then 
-		self.jewel = Sprite:createWithSpriteFrameName("qixi_magpie_0000")
-		local frames = SpriteUtil:buildFrames("qixi_magpie_%04d", 0, 29)
-		local animate = SpriteUtil:buildAnimate(frames, kCharacterAnimationTime)
-		self.jewel:play(animate)
-	else
-		if self.jewelType == JewelType.kJewel then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_0000")
-		elseif self.jewelType == JewelType.kCake then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_cake_0000")
-			self.jewel:setPosition(ccp(0, -3))                             --产品说调两个像素，so……
-		elseif self.jewelType == JewelType.kHolycup then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_holycup_0000")
-			self.jewel:setPosition(ccp(0, 5))    
-		elseif self.jewelType == JewelType.kBell then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_zongzi")
-			self.jewel:setPosition(ccp(0, 2))    
-		elseif self.jewelType == JewelType.kRedbag then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_redbag_0000")
-			self.jewel:setPosition(ccp(0, 5))   
-		elseif self.jewelType == JewelType.kBlueJewel then
-			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_blue_0000")
-			self.jewel:setPosition(ccp(-2, 4)) 
-		elseif self.jewelType == JewelType.kGoldZongZi then  
-			self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_blue_0000")
-			self.jewel:setPosition(ccp(-2, 4))
-		end
+	local jewelActionDurationTime = 3
+	if self.jewelType == JewelType.kJewel then
+		self.jewel = Sprite:createWithSpriteFrameName("dig_jewel_0000") 
+	elseif self.jewelType == JewelType.kIceCream then
+		jewelActionDurationTime = 6
+		self.jewel = Sprite:createWithSpriteFrameName("dig_icecream_0000")
+		self.jewel:setPosition(ccp(2, 1)) 
+	elseif self.jewelType == JewelType.kCupcake then
+		self.jewel = Sprite:createWithSpriteFrameName("dig_cupcake_0000")
+		self.jewel:setScale(0.9)
+		self.jewel:setPositionY(self.jewel:getPositionY()+5)
+	elseif self.jewelType == JewelType.kWukong then
+		self.jewel = Sprite:createWithSpriteFrameName("dig_wukong_peach")
+	elseif self.jewelType == JewelType.kChildrensDay then
+		self.jewel = Sprite:createWithSpriteFrameName("dig_childrens_day")
+		self.jewel:setPositionY(5)
 	end
 	self:addChild(self.jewel)
-	if not _isQixiLevel then -- qixi
-		addJewAction(self.jewel)
-	end
+	addJewAction(self.jewel, jewelActionDurationTime)
 
 	self.star_1 = getStars()
 	self:addChild(self.star_1)
-	self.star_1:setPosition(ccp(-GamePlayConfig_Tile_Width/4, GamePlayConfig_Tile_Width/4))
-
-	
-
+	local starOffset = ccp(0,0)
+	if self.jewelType == JewelType.kIceCream then
+		starOffset = ccp(-7, 0)
+	end
+	self.star_1:setPosition(ccp(-GamePlayConfig_Tile_Width/4+starOffset.x, GamePlayConfig_Tile_Width/4+starOffset.y))
 end
 
 function TileDigJewel:initLevel( level )
@@ -153,13 +151,12 @@ function TileDigJewel:initLevel( level )
 			nameStr = "dig_jewel_front_0002"
 		end
 		self.frontCloud = Sprite:createWithSpriteFrameName(nameStr)
-		if self.jewelType == JewelType.kBell and level > 1 then
+		if (self.jewelType == JewelType.kBell or self.jewelType == JewelType.kCupcake) and level > 1 then
 			if leve == 2 then
-				self.frontCloud:setScaleY(0.9)
-				self.frontCloud:setPosition(ccp(0, -5))
+				self.frontCloud:setScaleY(0.95)
 			else
 				self.frontCloud:setScaleY(0.8)
-				self.frontCloud:setPosition(ccp(0, -10))
+				self.frontCloud:setPosition(ccp(0, -5))
 			end
 		end
 		self:addChild(self.frontCloud)
@@ -185,11 +182,10 @@ function TileDigJewel:changeLevel( level, callback )
 		self.frontCloud = Sprite:createWithSpriteFrameName(nameStr)
 		if self.jewelType == JewelType.kBell and level > 1 then
 			if leve == 2 then
-				self.frontCloud:setScaleY(0.9)
-				self.frontCloud:setPosition(ccp(0, -5))
+				self.frontCloud:setScaleY(0.95)
 			else
 				self.frontCloud:setScaleY(0.8)
-				self.frontCloud:setPosition(ccp(0, -10))
+				self.frontCloud:setPosition(ccp(0, -5))
 			end
 		end
 		if index > 0 then
@@ -212,9 +208,7 @@ end
 
 function TileDigJewel:playLightCircleAnimation( ... )
 	-- body
-	if not _isQixiLevel then  -- qixi
-		self.light_cirlce:setVisible(true)
-	end
+	self.light_cirlce:setVisible(true)
 	local time = 0.5
 	local action_fadein = CCFadeIn:create(time)
 	local action_rotateby = CCRotateBy:create(3 * time, 180)

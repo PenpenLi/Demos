@@ -74,7 +74,13 @@ function InterfaceBuilder:unloadAsset(filePath)
 	end
 	
 end
+
+function InterfaceBuilder:getRealResourceName(filePath)
+	return filePath
+end
+
 function InterfaceBuilder:createWithContentsOfFile(filePath)
+	filePath = InterfaceBuilder:getRealResourceName(filePath)
 	local builder = builderCached[filePath]
 
 	if builder then InterfaceBuilder:preloadAsset(filePath)
@@ -279,6 +285,7 @@ function InterfaceBuilder:buildGroup( groupName, imageSuffix )
 	imageSuffix = imageSuffix or "0000"
 	local groupLayer = Layer:create()
 	groupLayer.name = groupName
+	groupLayer.symbolName = groupName
 	table.sort(group, sortByIndex)
 	for k,symbol in ipairs(group) do
 		if symbol.type == kInterfaceGroupLayoutType.kImage then

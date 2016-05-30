@@ -23,6 +23,11 @@ end
 
 -----检查是否需要弹出预装包联网提示
 function PrepackageUtil:prePackageCheck(callback)
+	--防破解
+	if __ANDROID and HeGame then
+    	HeGame:setValid(true)
+    end
+
 	PrepackageUtil:setPrePackageValue()
 	
 	if _G.isPrePackage and not _G.noMoreTipsForPrePackageNetWork then
@@ -61,16 +66,16 @@ end
 function PrepackageUtil:showBeforeLoadingDialog(callback)
 	local prepackageUtil
 	local onButton1Click = function(isSaveOption)
-		CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", true)
-		local value = isSaveOption and PrepackageNetWorkDialogState.NEVER_SHOW or PrepackageNetWorkDialogState.NEXT_SHOW
-		CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
-		_G.isPrePackageNoNetworkMode = false
-		if prepackageUtil then
-			prepackageUtil:getInstance():setPrePackageNoNetworkMode(false)
+		if isSaveOption then
+			CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", true)
+			local value = PrepackageNetWorkDialogState.NEVER_SHOW
+			CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
+			if prepackageUtil then
+				prepackageUtil:getInstance():setPrePackageNoNetworkMode(false)
+			end
 		end
-
+		_G.isPrePackageNoNetworkMode = false
 		callback()
-
 	end
 
 	local onButton2Click = function(isSaveOption) 
@@ -95,10 +100,23 @@ end
 
 function PrepackageUtil:showSettingNetWorkDialog()
 	local onButton1Click = function(isSaveOption)
-		CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", true)
-		local value = isSaveOption and PrepackageNetWorkDialogState.NEVER_SHOW or PrepackageNetWorkDialogState.ONLY_NEXT_NO_SHOW
-		CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
-		PrepackageUtil:restart()
+		local prepackageUtil = luajava.bindClass("com.happyelements.android.utils.PrepackageUtils")
+		if isSaveOption then
+			CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", true)
+			local value =  PrepackageNetWorkDialogState.NEVER_SHOW
+			CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", value)
+			if prepackageUtil then
+				prepackageUtil:getInstance():setPrePackageNoNetworkMode(false)
+			end
+			PrepackageUtil:restart()
+		else
+			CCUserDefault:sharedUserDefault():setBoolForKey("isPrePackageNetworkOpen", false)
+			CCUserDefault:sharedUserDefault():setIntegerForKey("PrepackageNetWorkDialogState", PrepackageNetWorkDialogState.NEXT_SHOW)
+			if prepackageUtil then
+				prepackageUtil:getInstance():setPrePackageNoNetworkMode(true)
+			end
+			_G.isPrePackageNoNetworkMode = false
+		end
 
 	end
 

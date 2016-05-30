@@ -17,6 +17,12 @@ LevelConstans = table.const{
 	TASK_FOR_UNLOCK_AREA_END = 209999,
 	SUMMER_MATCH_LEVEL_ID_START = 230000,
 	SUMMER_MATCH_LEVEL_ID_END = 239999,
+	QIXI2015_LEVEL_ID_START = 250000,
+	QIXI2015_LEVEL_ID_END = 259999,
+	NATIONAL_DAY_LEVEL_ID_START = 260000,
+	NATIONAL_DAY_LEVEL_ID_END = 269999,
+	WUKONG_LEVEL_ID_START = 270000,
+	WUKONG_LEVEL_ID_END = 279999,
 }
 
 StageModeConstans = table.const{
@@ -37,6 +43,7 @@ GameLevelType = {
 	kTaskForRecall  = 8,
 	kTaskForUnlockArea = 9,
 	kSummerWeekly 	= 10,
+	kWukong 	= 11,
 }
 
 LevelType = class()
@@ -71,6 +78,18 @@ function LevelType:isRecallTaskLevel( levelId )
 	else return false end
 end
 
+function LevelType:isQixi2015Level( levelId )
+	if levelId > LevelConstans.QIXI2015_LEVEL_ID_START and levelId <= LevelConstans.QIXI2015_LEVEL_ID_END then return true
+	else return false end
+end
+
+function LevelType:isNationalDayLevel(levelId)
+	if levelId > LevelConstans.NATIONAL_DAY_LEVEL_ID_START and levelId <= LevelConstans.NATIONAL_DAY_LEVEL_ID_END then
+		return true
+	end
+	return false
+end
+
 function LevelType:isUnlockAreaTaskLevel( levelId )
 	-- body
 	if levelId > LevelConstans.TASK_FOR_UNLOCK_AREA_START and levelId <= LevelConstans.TASK_FOR_UNLOCK_AREA_END then
@@ -80,8 +99,14 @@ function LevelType:isUnlockAreaTaskLevel( levelId )
 	end
 end
 
+
+
 function LevelType:isSummerMatchLevel( levelId )
 	return levelId > LevelConstans.SUMMER_MATCH_LEVEL_ID_START and levelId <= LevelConstans.SUMMER_MATCH_LEVEL_ID_END 
+end
+
+function LevelType:isWukongLevel( levelId )
+	return levelId > LevelConstans.WUKONG_LEVEL_ID_START and levelId <= LevelConstans.WUKONG_LEVEL_ID_END 
 end
 
 function LevelType:getLevelTypeByLevelId( levelId )
@@ -101,6 +126,12 @@ function LevelType:getLevelTypeByLevelId( levelId )
 		return GameLevelType.kTaskForUnlockArea
 	elseif LevelType:isSummerMatchLevel(levelId) then
 		return GameLevelType.kSummerWeekly
+	elseif LevelType:isQixi2015Level(levelId) then
+		return GameLevelType.kMayDay
+	elseif LevelType:isNationalDayLevel(levelId) then
+		return GameLevelType.kMayDay
+	elseif LevelType:isWukongLevel(levelId) then
+		return GameLevelType.kWukong
 	else
 		assert(false, 'unknown level type:levelId='..tostring(levelId))
 	end
@@ -108,14 +139,21 @@ end
 
 function LevelType.isShowRankList( levelType )
 	if _isQixiLevel then return false end
-	if levelType == GameLevelType.kMayDay or levelType == GameLevelType.kTaskForRecall
-		or levelType == GameLevelType.kTaskForUnlockArea then
+	if levelType == GameLevelType.kMayDay 
+		or levelType == GameLevelType.kTaskForRecall
+		or levelType == GameLevelType.kTaskForUnlockArea 
+		or levelType == GameLevelType.kWukong then
 		return false
 	end
 	return true
 end
 
 function LevelType.isShareEnable( levelType )
+	return levelType == GameLevelType.kMainLevel
+		or levelType == GameLevelType.kHiddenLevel
+end
+
+function LevelType.isNeedUploadOpLog( levelType )
 	return levelType == GameLevelType.kMainLevel
 		or levelType == GameLevelType.kHiddenLevel
 end

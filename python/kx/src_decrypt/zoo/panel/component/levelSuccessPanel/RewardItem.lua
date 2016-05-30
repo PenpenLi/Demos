@@ -14,13 +14,14 @@ assert(not RewardItem)
 assert(BaseUI)
 RewardItem = class(BaseUI)
 
-function RewardItem:init(ui, rewardId, ...)
+function RewardItem:init(ui, rewardId, isInterfaceBuilder, ...)
 	assert(ui)
 	assert(rewardId ~= nil)
 	assert(#{...} == 0)
 
 	-- Init Base Class
 	BaseUI.init(self, ui)
+	self.isInterfaceBuilder = isInterfaceBuilder
 
 	-- ------------------
 	-- Get UI Resource
@@ -59,7 +60,11 @@ function RewardItem:init(ui, rewardId, ...)
 
 	self.numberLabel:removeFromParentAndCleanup(false)
 	self:addChild(self.numberLabel)
-	self.numberLabel:setString(tostring(self.number))
+	if isInterfaceBuilder then
+		self.numberLabel:setText(tostring(self.number))
+	else
+		self.numberLabel:setString(tostring(self.number))
+	end
 	self.numberLabel:setToParentCenterHorizontal()
 end
 
@@ -112,16 +117,20 @@ function RewardItem:addNumber(deltaNumber, ...)
 	if newNumber < 0 then newNumber = 0 end
 
 	self.number = newNumber
-	self.numberLabel:setString(tostring(self.number))
+	if self.isInterfaceBuilder then
+		self.numberLabel:setText(tostring(self.number))
+	else
+		self.numberLabel:setString(tostring(self.number))
+	end
 	self.numberLabel:setToParentCenterHorizontal()
 end
 
-function RewardItem:create(ui, rewardId, ...)
+function RewardItem:create(ui, rewardId, isInterfaceBuilder, ...)
 	assert(ui)
 	assert(rewardId ~= nil)
 	assert(#{...} == 0)
 
 	local newRewardItem = RewardItem.new()
-	newRewardItem:init(ui, rewardId)
+	newRewardItem:init(ui, rewardId, isInterfaceBuilder)
 	return newRewardItem
 end

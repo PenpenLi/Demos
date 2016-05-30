@@ -114,6 +114,7 @@ function FruitTreeBottomPanel:_init()
 	local vSize = Director:sharedDirector():getVisibleSize()
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
 	self.size = self.hitArea:getGroupBounds().size
+	self.size = {width = self.size.width, height = self.size.height}
 	self:setPosition(ccp((vSize.width - self.size.width) / 2 + vOrigin.x, self.size.height + vOrigin.y))
 	self.hitArea:removeFromParentAndCleanup(true)
 
@@ -194,6 +195,7 @@ function FruitTreeRulePanel:_init(bottomY)
 
 	self:scaleAccordingToResolutionConfig()
 	self.size = self.hitArea:getGroupBounds().size
+	self.size = {width = self.size.width, height = self.size.height}
 	self:setPosition(ccp((vSize.width - self.size.width) / 2 + vOrigin.x, bottomY))
 	self.hitArea:removeFromParentAndCleanup(true)
 	local function setMethodUI(ctrl, text)
@@ -331,6 +333,7 @@ function FruitTreeUpgradePanel:_init()
 	local vSize = Director:sharedDirector():getVisibleSize()
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
 	self.size = self.hitArea:getGroupBounds().size
+	self.size = {width = self.size.width, height = self.size.height}
 	self:setPosition(ccp((vSize.width - self.size.width) / 2 + vOrigin.x, self.size.height + vOrigin.y))
 	self.hitArea:removeFromParentAndCleanup(true)
 	self.friendBtn:setColorMode(kGroupButtonColorMode.orange)
@@ -398,6 +401,10 @@ function FruitTreeUpgradePanel:_init()
 			if scene then scene:checkDataChange() end
 			self:refresh()
 			self:dispatchEvent(Event.new(kPanelEvents.kButton, nil, self))
+
+			local button = self.panel:getChildByName("button")
+			local bounds = button:getGroupBounds()
+			self.button:playFloatAnimation('-'..tostring(coinNeed))
 		end
 		local function onFail(err)
 			if self.isDisposed then return end
@@ -588,7 +595,7 @@ function FruitTreeUpgradePanelLogic:upgrade(successCallback, failCallback, cance
 			http:addEventListener(Events.kComplete, onSuccess)
 			http:addEventListener(Events.kError, onFail)
 			http:addEventListener(Events.kCancel, onCancel)
-			http:load()
+			http:syncLoad()
 	else
 		errCode = errCode or 730232 -- coindition fail
 		if failCallback then failCallback(errCode) end

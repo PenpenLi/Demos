@@ -19,8 +19,6 @@ local noSupportPlatforms = {
 	PlatformNameEnum.k189Store,
 	PlatformNameEnum.kCMGame,
 	PlatformNameEnum.kHEMM,
-	PlatformNameEnum.kSogou,
-	PlatformNameEnum.kAnZhi,
 	PlatformNameEnum.kMobileMM,
 }
 
@@ -57,10 +55,19 @@ function UpdatePageagePanel:init(btnPosInWorldSpace,tip)
 	self.btnPosInWorldSpace = btnPosInWorldSpace
 
 	local title = self.ui:getChildByName('title')
-	title:setText(Localization:getInstance():getText('new.version.title'))--新版本更新!!!
 	local bg = self.ui:getChildByName("bg")
-	local size = title:getContentSize()
-	title:setPositionX(bg:getGroupBounds().size.width / 2 - size.width / 2)
+
+	title._setText = title.setText
+	title._bgWidth= bg:getGroupBounds().size.width
+	function title:setText( text )
+		self:_setText(text)
+		self:setPositionX(self._bgWidth/2 - self:getContentSize().width/2)
+	end 
+
+	title:setText(Localization:getInstance():getText('new.version.title'))--新版本更新!!!
+	
+	-- local size = title:getContentSize()
+	-- title:setPositionX(bg:getGroupBounds().size.width / 2 - size.width / 2)
 
 	local rewards = UserManager:getInstance().updateInfo.rewards
 	local blocks = UserManager:getInstance().updateInfo.blocks
@@ -158,6 +165,11 @@ function UpdatePageagePanel:init(btnPosInWorldSpace,tip)
 	downloadProcess.refreshCallback = function() self:refresh() end
 
 	self.showHideAnim = IconPanelShowHideAnim:create(self, self.btnPosInWorldSpace)
+	if self:isApkExist(version) then
+		downloadProcess.status = "ready"
+		downloadProcess.percentage = 0
+		downloadProcess.apkPath = self:getApkPath(version)
+	end
 	self:refresh()
 end
 
@@ -171,6 +183,8 @@ function UpdatePageagePanel:refresh()
 	local tip = self.ui:getChildByName("tip")
 	local bg = self.ui:getChildByName("bg")
 	local bg1 = self.ui:getChildByName("bg1")
+
+	local title = self.ui:getChildByName("title")
 
 	local dimension = label1:getDimensions()
 	label1:setDimensions(CCSizeMake(dimension.width, 0))
@@ -247,6 +261,17 @@ function UpdatePageagePanel:refresh()
 		end
 	end
 
+	if downloadProcess and downloadProcess.status == "ing" then
+		--新版本下载中！
+		title:setText(Localization:getInstance():getText("new.version.dynamic.title.loading"))
+	elseif downloadProcess and downloadProcess.status == "ready" then
+		--下载成功！
+		title:setText(Localization:getInstance():getText("new.version.dynamic.title.finish"))		
+	else
+		--发现新版本！
+		title:setText(Localization:getInstance():getText("new.version.title")) 
+	end
+
 	local selfScale = self:getScale()
 	local bSize = self.confirm:getGroupBounds().size
 	bSize = {width = bSize.width / selfScale, height = bSize.height / selfScale}
@@ -260,8 +285,23 @@ function UpdatePageagePanel:refresh()
 	self.pgtxt:setPositionX((bg:getGroupBounds().size.width / selfScale - self.pgtxt:getContentSize().width) / 2)
 	self.pgtxt:setPositionY(self.progress:getPositionY() - 8)
 	if not downloadProcess or downloadProcess.status ~= "ing" and downloadProcess.status ~= "ready" then
-		if self:isDownloadSupport() then self.confirm:setString(Localization:getInstance():getText("update.mew.vision.panel.yes"))
-		else self.confirm:setString(Localization:getInstance():getText("new.version.done.cancel")) end
+		if self:isDownloadSupport() then 
+			-- self.confirm:setString(Localization:getInstance():getText("update.mew.vision.panel.yes"))
+			local rewards
+			if UserManager:getInstance().updateInfo then
+				rewards = UserManager:getInstance().updateInfo.rewards
+			end
+			if type(rewards) == "table" and #rewards > 0 then
+				--更新领奖励
+				self.confirm:setString(Localization:getInstance():getText("new.version.button.download"))
+			else
+				--立即更新
+				self.confirm:setString(Localization:getInstance():getText("new.version.button.download.zero"))
+			end
+
+		else 
+			self.confirm:setString(Localization:getInstance():getText("new.version.done.cancel")) 
+		end
 		self.confirm:setVisible(true)
 		self.progress:setVisible(false)
 		self.pgtxt:setVisible(false)
@@ -271,7 +311,10 @@ function UpdatePageagePanel:refresh()
 		self.confirm:setVisible(false)
 		self.progress:setVisible(true)
 		self.pgtxt:setVisible(true)
-		local rewards = UserManager:getInstance().updateInfo.rewards
+		local rewards
+		if UserManager:getInstance().updateInfo then
+			rewards = UserManager:getInstance().updateInfo.rewards
+		end
 		if type(rewards) == "table" and #rewards > 0 then
 			tip:setString(Localization:getInstance():getText("new.version.dynamic.downloading.tip"))
 		else
@@ -399,12 +442,38 @@ function UpdatePageagePanel:getLpsChannel( ... )
 	return result
 end
 
-function UpdatePageagePanel:downloadApk(version,t,tryCount)
-	
-	tryCount = tryCount or 3
 
+function UpdatePageagePanel:getApkPath( version )
 	local FileUtils =  luajava.bindClass("com.happyelements.android.utils.FileUtils")
 	local MainActivityHolder = luajava.bindClass('com.happyelements.android.MainActivityHolder')
+
+	local androidPlatformName = StartupConfig:getInstance():getPlatformName()
+	local isMini = StartupConfig:getInstance():getSmallRes() and "mini." or ""
+	local lpsChannel = self:getLpsChannel()
+	local apkName = _G.packageName .. "." ..isMini.. tostring(version) .. "." .. androidPlatformName ..lpsChannel.. ".apk"
+
+	local apkPath = FileUtils:getApkDownloadPath(MainActivityHolder.ACTIVITY:getContext()) .. 	"/" .. apkName
+
+	return apkPath
+end
+
+function UpdatePageagePanel:isApkExist( version )
+
+	if not __ANDROID then
+		return false
+	end
+
+	local FileUtils =  luajava.bindClass("com.happyelements.android.utils.FileUtils")
+	-- local MainActivityHolder = luajava.bindClass('com.happyelements.android.MainActivityHolder')
+
+	return FileUtils:isExist(self:getApkPath(version))
+end
+
+function UpdatePageagePanel:downloadApk(version,t,tryCount)
+	local FileUtils =  luajava.bindClass("com.happyelements.android.utils.FileUtils")
+	local MainActivityHolder = luajava.bindClass('com.happyelements.android.MainActivityHolder')
+	
+	tryCount = tryCount or 3
 
 	local androidPlatformName = StartupConfig:getInstance():getPlatformName()
 	local isMini = StartupConfig:getInstance():getSmallRes() and "mini." or ""
@@ -413,6 +482,10 @@ function UpdatePageagePanel:downloadApk(version,t,tryCount)
 	local apkUrl = staticUrlRoot .. "apk/" .. apkName .. "?t=" .. t --tostring(os.date("%y%m%d%H%M", os.time() or 0))
 	if isTfApk then
 		apkUrl = apkUrl .. "&source=" .. DcUtil:getSubPlatform()
+	end
+	local updateUrl = UserManager:getInstance().updateInfo.updateUrl
+	if updateUrl then
+		apkUrl = updateUrl
 	end
 	local md5Url = apkUrl:gsub("%.apk","%.md5")
 	local apkPath = FileUtils:getApkDownloadPath(MainActivityHolder.ACTIVITY:getContext()) .. 	"/" .. apkName
@@ -434,7 +507,7 @@ function UpdatePageagePanel:downloadApk(version,t,tryCount)
 		-- 	loading = nil
 		-- end
 
-		if isTfApk or md5 == HeMathUtils:md5File(apkPath) then 
+		if isTfApk or updateUrl or md5 == HeMathUtils:md5File(apkPath) then 
 			-- local PackageUtils = luajava.bindClass("com.happyelements.android.utils.PackageUtils")
 			-- PackageUtils:installApk(MainActivityHolder.ACTIVITY:getContext(),apkPath)
 			if type(downloadProcess) == "table" then
@@ -527,23 +600,29 @@ function UpdatePageagePanel:downloadApk(version,t,tryCount)
 		homeScene.updateVersionButton:setVisible(true)
 	end
 
-	self:requestApkMd5(md5Url,function( m )
-		md5 = m
-		if md5 == "" then 
-			onError(0)
-			return
-		end
-
+	local function startDownload()
 		local downLoadCallfunc = luajava.createProxy("com.happyelements.android.utils.DownloadApkCallback", {
-			onSuccess = onSuccess,
-			onError = onError,
-			onProcess = onProcess	
-		})
+				onSuccess = onSuccess,
+				onError = onError,
+				onProcess = onProcess	
+			})
 
 		local HttpUtil = luajava.bindClass("com.happyelements.android.utils.HttpUtil")
 		HttpUtil:downloadApk(apkUrl,apkPath,downLoadCallfunc)
-		
-	end)
+	end
+
+	if isTfApk or updateUrl then 
+		startDownload()
+	else
+		self:requestApkMd5(md5Url,function( m )
+			md5 = m
+			if md5 == "" then 
+				onError(0)
+				return
+			end
+			startDownload()
+		end)
+	end
 	
 	self:onCloseBtnTapped()
 end
@@ -708,9 +787,23 @@ end
 -- 更新成功
 UpdateSuccessPanel = class(BasePanel)
 local hasPopout = false
-function UpdateSuccessPanel:popoutIfNecessary()
+function UpdateSuccessPanel:canPopout( ... )
+	if hasPopout then 
+		return false
+	end
+
+	if NewVersionUtil:hasUpdateReward() then
+		return true
+	end
+
+	return false
+end
+function UpdateSuccessPanel.popoutIfNecessary(closeCallback)
 	-- 有更新奖励，弹领取面板
 	if hasPopout then 
+		if closeCallback then
+			closeCallback()
+		end
 		return
 	end
 	
@@ -725,9 +818,17 @@ function UpdateSuccessPanel:popoutIfNecessary()
 			panel = UpdateSuccessPanel:create(rewards)
 		end
 		panel:popout()
+		panel:addEventListener(PopoutEvents.kRemoveOnce,function( ... )
+			if closeCallback then
+				closeCallback()
+			end
+		end)
 		hasPopout = true
+	else
+		if closeCallback then
+			closeCallback()
+		end
 	end
-
 end
 
 function UpdateSuccessPanel:create(rewards)
@@ -739,7 +840,15 @@ function UpdateSuccessPanel:create(rewards)
 end
 
 function UpdateSuccessPanel:init(rewards)
-	self.ui = self:buildInterfaceGroup('update_success_panel')
+	if WorldSceneShowManager:isRightGameVersion() then 
+		if __IOS then 
+			self.ui = self:buildInterfaceGroup('update_success_panel_spring_ios')
+		else
+			self.ui = self:buildInterfaceGroup('update_success_panel_spring_other')
+		end
+	else
+		self.ui = self:buildInterfaceGroup('update_success_panel')
+	end
 	BasePanel.init(self, self.ui)
 	local wSize = CCDirector:sharedDirector():getWinSize()
 	local winSize = CCDirector:sharedDirector():getVisibleSize()
@@ -757,16 +866,23 @@ function UpdateSuccessPanel:init(rewards)
 	self.confirm = confirm
 	self.items = {}
 
-	title:setText(Localization:getInstance():getText("new.version.title"))
-	title:setPositionX((bg:getGroupBounds().size.width - title:getContentSize().width) / 2)
+	-- 更新成功！
+	if not WorldSceneShowManager:isRightGameVersion() then 
+		title:setText(Localization:getInstance():getText("new.version.dynamic.title.allfinish"))
+		title:setPositionX((bg:getGroupBounds().size.width - title:getContentSize().width) / 2)
+	end
 
 	if type(rewards) ~= "table" then rewards = {} end
 
+	local successLabelKey = "new.version.success.msg.text"
+	if __IOS and  WorldSceneShowManager:isRightGameVersion() then
+		successLabelKey = "new.version.success.msg.text.apple"
+	end
 	local actualHeight = 0
 	if #rewards == 1 then
 		local dimension = label1:getDimensions()
 		label1:setDimensions(CCSizeMake(dimension.width, 0))
-		label1:setString(Localization:getInstance():getText("new.version.success.msg.text"))
+		label1:setString(Localization:getInstance():getText(successLabelKey))
 		local cSize = label1:getContentSize()
 		local newItem = UpdatePageagePanel.buildItem(self, rewards[1])
 		newItem:setPositionXY(item1:getPositionX(), item1:getPositionY())
@@ -786,7 +902,7 @@ function UpdateSuccessPanel:init(rewards)
 	else
 		local dimension = label:getDimensions()
 		label:setDimensions(CCSizeMake(dimension.width, 0))
-		label:setString(Localization:getInstance():getText("new.version.success.msg.text"))
+		label:setString(Localization:getInstance():getText(successLabelKey))
 		actualHeight = label:getPositionY() - label:getContentSize().height - 20
 		local iSize = item1:getGroupBounds().size
 		local items = {}
@@ -814,7 +930,7 @@ function UpdateSuccessPanel:init(rewards)
 	bg1:setPreferredSize(CCSizeMake(bg1Size.width, bg1:getPositionY() - actualHeight))
 	local bgSize = bg:getPreferredSize()
 	bg:setPreferredSize(CCSizeMake(bgSize.width, bg1:getPositionX() - bg1:getPositionY() + bg1:getPreferredSize().height))
-	confirm:setString(Localization:getInstance():getText("new.version.success.get.text"))
+	confirm:setString(Localization:getInstance():getText("new.version.button.download.finish"))-- 领取奖励
 	self:scaleAccordingToResolutionConfig()
 	self:setPositionForPopoutManager()
 	local vSize = Director:sharedDirector():getVisibleSize()
@@ -844,57 +960,47 @@ function UpdateSuccessPanel:onOkTapped()
 
 	local function onSuccess( evt )
 		
-		for k, v in ipairs(self.items) do
-			local config = {number=math.min(v.num,10),updateButton=true}
-			local anim = nil
-			if v.itemId == 14 then 
-				anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
-				UserManager:getInstance().user:setCash(UserManager:getInstance().user:getCash() + v.num)
-				UserService:getInstance().user:setCash(UserService:getInstance().user:getCash() + v.num)
-			elseif v.itemId == 2 then 
-				anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
-				UserManager:getInstance().user:setCoin(UserManager:getInstance().user:getCoin() + v.num)
-				UserService:getInstance().user:setCoin(UserService:getInstance().user:getCoin() + v.num)
-			else
-				config.propId = v.itemId
-				anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
-				UserManager:getInstance():addUserPropNumber(v.itemId, v.num)
-				UserService:getInstance():addUserPropNumber(v.itemId, v.num)
-			end
-			
-			local sprites = (v.itemId == 2 and {anim.sprites}) or anim.sprites
-			for k, v2 in ipairs(sprites) do
-				if v.itemId ~= 14 then 
-					v2:setAnchorPoint(ccp(0.5,0.5))
-				end
+        DcUtil:UserTrack({ category='update', sub_category='get_update_reward' })
+	    UserManager.getInstance().updateRewards = nil
 
-				local size = v:getGroupBounds().size
-				local position = ccp(v:getPositionX() + size.width / 2, v:getPositionY() - size.height / 2)
-				local position = v:getParent():convertToWorldSpace(position)
-				v2:setPosition(position)
-				Director.sharedDirector():getRunningScene():addChild(v2)
-			end
+	    if self.isDisposed then
+	    	return
+	    end
 
-			HomeScene:sharedInstance():checkDataChange()
-			anim:play()
-		end
+	    UserManager:getInstance():addRewards(self.items)
+	    UserService:getInstance():addRewards(self.items)
+	    HomeScene:sharedInstance():checkDataChange()
+
+	    for k,v in ipairs(self.items) do
+	    	local anim = FlyItemsAnimation:create({v})
+			local bounds = v:getGroupBounds()
+		    anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+		    anim:play()
+	    end
 
 		self:onCloseBtnTapped()
-	    UserManager.getInstance().updateRewards = nil
 	end
 
 	local function onFail( evt ) 
 		
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
-		self:onCloseBtnTapped()
-
 	   	UserManager.getInstance().updateRewards = nil
+
+	    if self.isDisposed then
+	    	return
+	    end
+
+		self:onCloseBtnTapped()
 	end
 
 	local function onCancel(evt)
-		self.confirm:setEnabled(true)
-
 	  	UserManager.getInstance().updateRewards = nil
+
+	    if self.isDisposed then
+	    	return
+	    end
+	    
+		self.confirm:setEnabled(true)
 	end
 
 	local http = GetUpdateRewardHttp.new(true)
@@ -902,4 +1008,56 @@ function UpdateSuccessPanel:onOkTapped()
 	http:ad(Events.kError, onFail)
 	http:ad(Events.kCancel, onCancel)
 	http:load()
+end
+
+
+-- 
+NewVersionTipPanel = class(BasePanel)
+function NewVersionTipPanel:create( tip,callback )
+	local panel = NewVersionTipPanel.new()
+	panel:loadRequiredResource(PanelConfigFiles.update_new_version_panel)
+	panel:init(tip,callback)
+	return panel
+end
+
+function NewVersionTipPanel:init( tip,callback )
+	self.ui = self:buildInterfaceGroup('NewVersionTipPanel')
+	BasePanel.init(self, self.ui)
+	self:scaleAccordingToResolutionConfig()
+	self:setPositionForPopoutManager()
+
+	local text = self.ui:getChildByName("text")
+	text:setString(tip)
+
+	local button = GroupButtonBase:create(self.ui:getChildByName("button"))
+
+	if NewVersionUtil:hasDynamicUpdate() then
+		button:setString("去更新")
+		button:addEventListener(DisplayEvents.kTouchTap,function( ... )
+			self:remove()
+			DynamicUpdatePanel:onCheckDynamicUpdate(false,callback,callback)
+		end)
+	elseif NewVersionUtil:hasPackageUpdate() and (UpdatePageagePanel:isDownloadSupport() or __WIN32) then
+		button:setString("去更新")
+		button:addEventListener(DisplayEvents.kTouchTap,function( ... )
+			self:remove()
+			local panel = UpdatePageagePanel:create(ccp(0,0))
+			panel:addEventListener(kPanelEvents.kClose, callback)
+			panel:autoPopout()
+		end)
+	else
+		button:setString("知道了")
+		button:addEventListener(DisplayEvents.kTouchTap,function( ... )
+			self:remove()
+			if callback then callback() end
+		end)		
+	end
+end
+
+function NewVersionTipPanel:remove( ... )
+	PopoutManager:sharedInstance():remove(self)
+end
+
+function NewVersionTipPanel:popout( ... )
+	PopoutQueue:sharedInstance():push(self)
 end

@@ -46,6 +46,7 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
         Payments.QIHOO,
         Payments.DUOKU,
         Payments.MDO,
+        Payments.MI,
         Payments.CHINA_MOBILE,       -- 移动mm
         Payments.CHINA_MOBILE_GAME,  -- 移动游戏基地
         Payments.CHINA_UNICOM,
@@ -118,6 +119,9 @@ function ChoosePaymentPanel:init(paymentsToShow,title)
                 btn.discount = true
             elseif k == Payments.DUOKU then 
                 btn:setContent(self.builder:buildGroup("choosePayment/duoku"))
+            elseif k == Payments.MI then 
+                btn:setContent(self.builder:buildGroup("choosePayment/mipay"))
+                btn.discount = true
 			else
 				local res = self.builder:buildGroup('OtherPaymentButton')
 				-- if k == Payments.QQ then

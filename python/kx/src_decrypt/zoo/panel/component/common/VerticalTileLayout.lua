@@ -68,7 +68,7 @@ function VerticalTileLayout:addItemBatch(itemList)
 	end
 
 	local arrayIndex = #self.items + 1
-	print('arrayIndex', arrayIndex)
+	-- print('arrayIndex', arrayIndex)
 	for key, item in pairs(itemList) do
 
 		table.insert(self.items, item)
@@ -95,7 +95,7 @@ function VerticalTileLayout:addItemAt(item, arrayIndex, playAnimation)
 	table.insert(self.items, arrayIndex, item)
 
 	for k, v in pairs(self.items) do
-		assert(type(v.setArrayIndex) == 'function', 'VerticalTileLayout:addItemAt(): item must inherits ItemInLayout')
+		-- assert(type(v.setArrayIndex) == 'function', 'VerticalTileLayout:addItemAt(): item must inherits ItemInLayout')
 		v:setArrayIndex(k)
 	end
 
@@ -302,7 +302,7 @@ function VerticalTileLayoutWithAlignment:__layout(playAnimation)
         contentHeight = contentHeight + itemHeight + self.itemVerticalMargin
     end
 
-    assert(contentHeight < self.height, 'VerticalTileLayoutWithAlignment:__layout(playAnimation): your content height is too high.')
+    -- assert(contentHeight < self.height, 'VerticalTileLayoutWithAlignment:__layout(playAnimation): your content height is too high.')
 
     local offsetY = 0 
     if self.alignment == VerticalAlignments.kTop then

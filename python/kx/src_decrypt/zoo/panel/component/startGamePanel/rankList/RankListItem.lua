@@ -60,9 +60,13 @@ function RankListItem:init(ui, ...)
 		self.headDisposed = true
 	end
 	self.userIconPlaceholder:ad(Events.kDispose, headDisposed)
+
+	-- 活动中需要修改UI，自己头像上需要加一个装饰，在此特殊处理
+	-- 搜索用关键字：useSpecialActivityUI
+	self.headDeco = self.ui:getChildByName("headdeco")
 end
 
-function RankListItem:setData(rank, userName, userScore, headUrl, ...)
+function RankListItem:setData(rank, userName, userScore, headUrl, isSelf, ...)
 	assert(type(rank) 	== "number")
 	assert(type(userName)	== "string")
 	assert(type(userScore)	== "number")
@@ -96,7 +100,11 @@ function RankListItem:setData(rank, userName, userScore, headUrl, ...)
 			self.clipping = nil
 		end
 	end
-
+	-- 活动中需要修改UI，自己头像上需要加一个装饰，在此特殊处理
+	-- 搜索用关键字：useSpecialActivityUI
+	if self.headDeco then
+		self.headDeco:setVisible(isSelf)
+	end
 
 	if rank >= 1 and rank <= 3 then
 

@@ -113,15 +113,17 @@ function CountDownAnimation:_createNetworkAnimationLayer(scene, onCloseButtonTap
 	loadingAnimation:setPosition(ccp(visibleSize.width/2,visibleSize.height/2))
 	layer:addChild(loadingAnimation)
 
-	local closeButtonSprite = Sprite:createWithSpriteFrameName("commonloadingclose instance 10000")
-	local closeButton = Layer:create()
-	closeButton:addChild(closeButtonSprite)
-	closeButton:setPosition(ccp(size.width / 2 - 20, size.height / 2 - 20))
-	closeButton:setTouchEnabled(true)
-	closeButton:setButtonMode(true)
-	closeButton:addEventListener(DisplayEvents.kTouchTap, onCloseButtonTap)
-	closeButton.name = "close"
-	loadingAnimation:addChild(closeButton)
+	if onCloseButtonTap then 
+		local closeButtonSprite = Sprite:createWithSpriteFrameName("commonloadingclose instance 10000")
+		local closeButton = Layer:create()
+		closeButton:addChild(closeButtonSprite)
+		closeButton:setPosition(ccp(size.width / 2 - 20, size.height / 2 - 20))
+		closeButton:setTouchEnabled(true)
+		closeButton:setButtonMode(true)
+		closeButton:addEventListener(DisplayEvents.kTouchTap, onCloseButtonTap)
+		closeButton.name = "close"
+		loadingAnimation:addChild(closeButton)
+	end
 
 	return layer
 end

@@ -18,8 +18,14 @@ function UrlParser:parseUrlScheme(url)
 	if #parser == 0 then return res end
 	res.para = {}
 	while #parser > 0 do
-		local a, b, key, value = string.find(parser[1], "(%w+)=(%w+)")
-		if key and value then res.para[key] = value end
+		local a, b, key, value = string.find(parser[1], "([%w_]+)=([%w-_%%.,]+)")
+		if key and value then
+			if string.find(value, ',') then
+				res.para[key] = string.split(value, ',')
+			else
+				res.para[key] = value
+			end
+		end
 		table.remove(parser, 1)
 	end
 	return res

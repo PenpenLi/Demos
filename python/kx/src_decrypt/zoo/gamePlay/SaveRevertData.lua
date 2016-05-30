@@ -37,6 +37,7 @@ function SaveRevertData:create(mainLogic)
 	ret.boardmap = cloneBoardMapForRevert
 	ret.totalScore = mainLogic.totalScore
 	ret.theCurMoves = mainLogic.theCurMoves
+	ret.bigMonsterMark = mainLogic.bigMonsterMark
 	
 	ret.blockProductRules = {}
 	for k, v in pairs(mainLogic.blockProductRules) do
@@ -48,8 +49,10 @@ function SaveRevertData:create(mainLogic)
 		tmpRule.blockShouldCome   = v.blockShouldCome
 		tmpRule.blockSpawnDensity = v.blockSpawnDensity
 		tmpRule.blockSpawned      = v.blockSpawned
+		tmpRule.needClearBlockSpawnedNextStep = v.needClearBlockSpawnedNextStep
 		tmpRule.itemType          = v.itemType
 		tmpRule.maxNum            = v.maxNum
+		tmpRule.minNum            = v.minNum
 		tmpRule.dropNumLimit      = v.dropNumLimit
 		tmpRule.totalDroppedNum   = v.totalDroppedNum
 		table.insert( ret.blockProductRules, tmpRule )
@@ -72,6 +75,8 @@ function SaveRevertData:create(mainLogic)
 	ret.snailCount = mainLogic.snailCount
 	ret.snailMoveCount = mainLogic.snailMoveCount
 	ret.questionMarkFirstBomb = mainLogic.questionMarkFirstBomb
+	ret.UFOSleepCD = mainLogic.UFOSleepCD
+	ret.oldUFOSleepCD = mainLogic.oldUFOSleepCD
 
 	mainLogic.gameMode:saveDataForRevert(ret)
 

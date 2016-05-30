@@ -36,26 +36,52 @@ function ElephantBossState:onEnter()
             local winSize = Director:sharedDirector():getWinSize()
             local propList =  self.mainLogic.PlayUIDelegate.propList
 
-            local icon = propList.controller:findSpringItemIcon()
-            if icon then
-                local worldPoint = icon:convertToWorldSpace(ccp(0, icon:getGroupBounds().size.height))
-
-                print("offset: ", worldPoint.x - winSize.width/2)
-                --move the icon to the center of the screen
-                local moveAct = CCMoveBy:create(0.3, ccp(winSize.width/2-worldPoint.x, 0))
-                local complete = CCCallFunc:create(function()
-
-                    --updated the worldPoint
-                    worldPoint = icon:convertToWorldSpace(ccp(icon:getGroupBounds().size.width, icon:getGroupBounds().size.height))
-
-                    self:playTips(function()
-                        propList.controller:forceUseSpringItem(forceUseCallback)
-                    end, worldPoint)
-
-                 end)
-                propList.content:runAction(CCSequence:createWithTwoActions(moveAct, complete))
-                --propList.content:setPositionXY(propList.content:getPositionX() +  winSize.width/2-worldPoint.x, propList.content:getPositionY())
+            local pos = propList:getSpringItemGlobalPosition()
+            local hasGuide = GameGuide:sharedInstance():onShowForceUse(pos)
+            
+            local function forceUse()
+                local scene = Director:sharedDirector():getRunningScene()
+                if scene:is(GamePlaySceneUI) then
+                    if GameGuide:sharedInstance():getHasCurrentGuide() then
+                        GameGuide:sharedInstance():onGuideComplete()
+                    end
+                    self.mainLogic.PlayUIDelegate.propList:forceUseSpringItem(forceUseCallback)
+                end
             end
+
+            if hasGuide then
+                setTimeOut(forceUse, 3)
+            else
+                forceUse()
+            end
+
+            -- local icon = propList:findSpringItemIcon()
+            -- if icon then
+            --     local worldPoint = icon:convertToWorldSpace(ccp(0, icon:getGroupBounds().size.height))
+            --                         --updated the worldPoint
+            --     worldPoint = icon:convertToWorldSpace(ccp(icon:getGroupBounds().size.width, icon:getGroupBounds().size.height))
+
+            --     self:playTips(function()
+            --         propList:forceUseSpringItem(forceUseCallback)
+            --     end, worldPoint)
+
+
+            --     print("offset: ", worldPoint.x - winSize.width/2)
+            --     --move the icon to the center of the screen
+            --     -- local moveAct = CCMoveBy:create(0.3, ccp(winSize.width/2-worldPoint.x, 0))
+            --     -- local complete = CCCallFunc:create(function()
+
+            --     --     --updated the worldPoint
+            --     --     worldPoint = icon:convertToWorldSpace(ccp(icon:getGroupBounds().size.width, icon:getGroupBounds().size.height))
+
+            --     --     self:playTips(function()
+            --     --         propList:forceUseSpringItem(forceUseCallback)
+            --     --     end, worldPoint)
+
+            --     --  end)
+            --     -- propList.content:runAction(CCSequence:createWithTwoActions(moveAct, complete))
+            --     --propList.content:setPositionXY(propList.content:getPositionX() +  winSize.width/2-worldPoint.x, propList.content:getPositionY())
+            -- end
 		else
 			self:handleComplete()
 		end
@@ -69,7 +95,8 @@ function ElephantBossState:playTips(completeCallback, worldPoint)
     local scene = Director:sharedDirector():getRunningScene()
     --local tip = CocosObject:create()
 
-    local tipPanel = GameGuideUI:panelMini("tutorial.game.text230005")
+    -- local tipPanel = GameGuideUI:panelMini("tutorial.game.text230005")
+    local tipPanel = GameGuideUI:panelMini("tutorial.game.text230010")
     tipPanel:setPositionXY((winSize.width - tipPanel:getGroupBounds().size.width)/2, tipPanel:getGroupBounds().size.height*2+30)
     scene:addChild(tipPanel)
 
@@ -94,7 +121,7 @@ function ElephantBossState:handleComplete()
 end
 
 function ElephantBossState:getNextState()
-    return self.context.gameOverState
+    return self.context.hedgehogCrazyInBonus
 end
 
 function ElephantBossState:onExit()

@@ -27,7 +27,7 @@ end
 function Processor:loginNewOAuthAccount(context)
     local authorType = SnsProxy:getAuthorizeType()
 
-    local lastData = context:logoutWithChangeAccout()
+    local lastData = context:logoutWithChangeAccount()
     local function onAccountChange(status, loginResult)
         context.requireButtons = false
         if status == SnsCallbackEvent.onSuccess and loginResult then

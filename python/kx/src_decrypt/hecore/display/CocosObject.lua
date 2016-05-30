@@ -375,7 +375,7 @@ function CocosObject:setAnchorPointWhileStayOriginalPosition(newAnchorPoint, pos
 	-- unused parameter posAdjust.
 
 	local contentSize = self:getContentSize()
-	local scale = self:getScale()
+	local scale = self:getScaleX()
 	local rotation = self:getRotation()
 	local position = self:getPosition()
 	local skewX = self:getSkewX()
@@ -732,6 +732,85 @@ function CocosObject:registerScriptHandler(handler, ...)
 	self.refCocosObj:registerScriptHandler(handler)
 end
 
+------------------------------------------------------------
+--take a photograph
+--filePtah  保存路径
+--size     截取的rect为,左下角开始（0,0,size.width, size.height）
+--isContainClippingNode 是否有child为clippingnode
+--ps:version > 1.27可以直接使用 如果小于1.27需新加
+--因为要适配所有机型，所以最终截图size 会 100<= size <= 1024
+------------------------------------------------------------
+function CocosObject:screenShot(filePath, size, isContainClippingNode)
+	local groupBounds = self:getGroupBounds()
+	if groupBounds.size.width <= 0 or groupBounds.size.height <= 0 then
+		return 
+	end
+	--限制size的最大，最小值
+	local min_size = 32
+	local max_size = 1024
+	
+	--设置
+	local o_scaleX = self:getScaleX()
+	local o_scaleY = self:getScaleX()
+
+	if groupBounds.size.width > max_size or groupBounds.size.height > max_size then
+		print("scale small "..groupBounds.size.width, groupBounds.size.height)
+		local scale_1 = max_size/groupBounds.size.width
+		local scale_2 = max_size/groupBounds.size.height
+		local scale_factor = scale_1 <= scale_2 and scale_1 or scale_2
+		self:setScaleX(scale_factor * o_scaleX)
+		self:setScaleY(scale_factor * o_scaleY)
+	elseif groupBounds.size.width < min_size or groupBounds.size.height < min_size then
+		print("scale big "..groupBounds.size.width, groupBounds.size.height)
+		local scale_1 = min_size/groupBounds.size.width
+		local scale_2 = min_size/groupBounds.size.height
+		local scale_factor = scale_1 >= scale_2 and scale_1 or scale_2
+		self:setScaleX(scale_factor * o_scaleX)
+		self:setScaleY(scale_factor * o_scaleY)
+	end
+	
+	local groupBounds = self:getGroupBounds()
+	local gSize = groupBounds.size
+	local gOrigin = groupBounds.origin
+	if self:getParent() then
+		gOrigin = self:getParent():convertToNodeSpace(ccp(gOrigin.x, gOrigin.y))
+	end
+	size = size or gSize
+
+	if size.width < min_size then
+		size.width = min_size
+	elseif size.width > max_size then
+		size.width = max_size
+	end
+
+	if size.height < min_size then
+		size.height = min_size
+	elseif size.height > max_size then
+		size.height = max_size
+	end
+
+	local o_x, o_y = self:getPositionX(), self:getPositionY()
+	self:setPositionXY(o_x - gOrigin.x, o_y - gOrigin.y)
+	--截图
+	local renderTexture
+	if isContainClippingNode then
+		local GL_DEPTH24_STENCIL8 = 0x88F0  --c++中定义的
+		renderTexture = CCRenderTexture:create(size.width, size.height, kCCTexture2DPixelFormat_RGBA8888, GL_DEPTH24_STENCIL8)
+		renderTexture:beginWithClear(0, 0, 0, 0, 0)
+	else
+		renderTexture = CCRenderTexture:create(size.width, size.height)
+		renderTexture:begin()
+	end
+	self:visit()
+	renderTexture:endToLua()
+	renderTexture:saveToFile(filePath)
+
+	print("save texture to "..filePath)
+	--恢复
+	self:setPositionXY(o_x, o_y)
+	self:setScaleX(o_scaleX)
+	self:setScaleY(o_scaleY)
+end
 
 --
 -- ClippingNode ---------------------------------------------------------

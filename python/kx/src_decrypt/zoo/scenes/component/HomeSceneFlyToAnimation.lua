@@ -66,10 +66,19 @@ function HomeSceneFlyToAnimation:coinStackAnimation(config)
 		if config.reachCallback then config.reachCallback(target) end
 	end
 	local function onFinish()
-		stack:removeFromParentAndCleanup(true)
-		for k, v in ipairs(flyingCoins) do
-			flyingCoins[1]:removeFromParentAndCleanup(true)
+		while #flyingCoins > 0 do
+			if not flyingCoins[1].isDisposed then
+				flyingCoins[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(flyingCoins, 1)
+		end
+		-- 待再检查原因的线上BUG：父对象的C++对象（在Lua中的引用）被置空，但子对象正常使用，在调用从父对象移除时报错崩溃
+		if not stack.isDisposed and stack.refCocosObj then
+			if stack:getParent() and not stack:getParent().isDisposed and stack:getParent().refCocosObj then
+				stack:removeFromParentAndCleanup(true)
+			else
+				stack:dispose()
+			end
 		end
 		if config.updateButton and not self.coinButton.isDisposed then self.coinButton:updateView() end
 		if config.finishCallback then config.finishCallback() end
@@ -140,8 +149,10 @@ function HomeSceneFlyToAnimation:energyFlyToAnimation(config)
 		if config.reachCallback then config.reachCallback(target) end
 	end
 	local function onFinish()
-		for i = 1, #energies do
-			energies[1]:removeFromParentAndCleanup(true)
+		while #energies > 0 do
+			if not energies[1].isDisposed then
+				energies[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(energies, 1)
 		end
 		if config.updateButton and not self.coinButton.isDisposed then self.energyButton:updateView() end
@@ -208,8 +219,10 @@ function HomeSceneFlyToAnimation:goldFlyToAnimation(config)
 		if config.reachCallback then config.reachCallback(target) end
 	end
 	local function onFinish()
-		for i = 1, #golds do
-			golds[1]:removeFromParentAndCleanup(true)
+		while #golds > 0 do
+			if not golds[1].isDisposed then
+				golds[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(golds, 1)
 		end
 		if config.updateButton and not self.coinButton.isDisposed then self.goldButton:updateView() end
@@ -238,6 +251,64 @@ function HomeSceneFlyToAnimation:goldFlyToAnimation(config)
 	return ret
 end
 
+function HomeSceneFlyToAnimation:playItemFlyToAnimation(config)
+	assert(config.toPos)
+
+	config.number = config.number or 1
+	config.flyDuration, config.delayTime = config.flyDuration or 0.3, config.delayTime or 0.1
+	local sprites = {}
+	for i = 1, config.number do
+		local sprite = config:createSprite()
+		sprite:setVisible(false)
+		table.insert(sprites, sprite)
+	end
+	sprites[1]:setVisible(true)
+	local function onStart(target)
+		for k, v in ipairs(sprites) do
+			if v == target and sprites[k + 1] and not sprites[k + 1].isDisposed then
+				sprites[k + 1]:setVisible(true)
+			end
+		end
+		if config.startCallback then config.startCallback(target) end
+	end
+	local function onReach(target)
+		if target and not target.isDisposed then target:setVisible(false) end
+		if config.reachCallback then config.reachCallback(target) end
+	end
+	local function onFinish()
+		while #sprites > 0 do
+			if not sprites[1].isDisposed then
+				sprites[1]:removeFromParentAndCleanup(true)
+			end
+			table.remove(sprites, 1)
+		end
+		if config.finishCallback then config.finishCallback() end
+	end
+	local flyToPos = ccp(config.toPos.x, config.toPos.y)
+	local flyToSize = CCSizeMake(config.toSize.width, config.toSize.height)
+	local flyToConfig = {
+		duration = config.flyDuration,
+		sprites = sprites,
+		dstPosition = flyToPos,
+		dstSize = flyToSize,
+		direction = true,
+		delayTime = config.delayTime,
+		startCallback = onStart,
+		reachCallback = onReach,
+		finishCallback = onFinish,
+	}
+	
+	local ret = {}
+	ret.sprites = sprites
+	ret.play = function(self)
+		if self.played then return false end
+		self.played = true
+		BezierFlyToAnimation:create(flyToConfig)
+		return true
+	end
+	return ret
+end
+
 -- config = {
 -- 	goodsId,
 -- 	propId,
@@ -259,13 +330,24 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 	config.flyDuration, config.delayTime = config.flyDuration or 0.8, config.delayTime or 0.3
 	if type(config.showIcon) ~= "boolean" then config.showIcon = true end
 	local props = {}
-	for i = 1, config.number do
-		local prop
-		if config.propId then prop = ResourceManager:sharedInstance():buildItemSprite(config.propId)
-		elseif config.goodsId then prop = ResourceManager:sharedInstance():getItemResNameFromGoodsId(config.goodsId)
-		else return end
-		prop:setVisible(false)
-		table.insert(props, prop)
+
+	if config.items then
+		for _,v in pairs(config.items) do
+			for i=1,v.num do
+				local prop = ResourceManager:sharedInstance():buildItemSprite(v.itemId)
+				prop:setVisible(false)
+				table.insert(props, prop)
+			end
+		end
+	else
+		for i = 1, config.number do
+			local prop
+			if config.propId then prop = ResourceManager:sharedInstance():buildItemSprite(config.propId)
+			elseif config.goodsId then prop = ResourceManager:sharedInstance():getItemResNameFromGoodsId(config.goodsId)
+			else return end
+			prop:setVisible(false)
+			table.insert(props, prop)
+		end
 	end
 	props[1]:setVisible(true)
 
@@ -286,21 +368,33 @@ function HomeSceneFlyToAnimation:jumpToBagAnimation(config)
 	local function onReach(target)
 		if target and not target.isDisposed then target:setVisible(false) end
 		if config.showIcon then
-			iconSprite:runAction(CCSequence:createWithTwoActions(CCScaleTo:create(0.1, 1.5), CCScaleTo:create(0.4, 1)))
+			if not iconSprite.isDisposed then
+				iconSprite:runAction(CCSequence:createWithTwoActions(CCScaleTo:create(0.1, 1.5), CCScaleTo:create(0.4, 1)))
+			end
 		end
 		if config.reachCallback then config.reachCallback(target) end
 	end
 	local function onFinish()
-		for i = 1, #props do
-			props[1]:removeFromParentAndCleanup(true)
+		while #props > 0 do
+			if not props[1].isDisposed then
+				props[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(props, 1)
 		end
 		if config.showIcon then
-			local function removeSelf() iconSprite:removeFromParentAndCleanup(true) end
-			local function onDelayOver()
-				iconSprite:runAction(CCSequence:createWithTwoActions(CCFadeOut:create(0.2), CCCallFunc:create(removeSelf)))
+			local function removeSelf()
+				if not iconSprite.isDisposed then
+					iconSprite:removeFromParentAndCleanup(true)
+				end
 			end
-			iconSprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCCallFunc:create(onDelayOver)))
+			local function onDelayOver()
+				if not iconSprite.isDisposed then
+					iconSprite:runAction(CCSequence:createWithTwoActions(CCFadeOut:create(0.2), CCCallFunc:create(removeSelf)))
+				end
+			end
+			if not iconSprite.isDisposed then
+				iconSprite:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCCallFunc:create(onDelayOver)))
+			end
 		end
 		if config.finishCallback then config.finishCallback() end
 	end
@@ -349,7 +443,7 @@ local coinConfigs = {
 	{scale = 1, dPosition = ccp(-2, 0),},
 	{scale = 1, dPosition = ccp(13, -25),},
 }
-function HomeSceneFlyToAnimation:levelNodeCoinAnimation(position, finishCallback, parent)
+function HomeSceneFlyToAnimation:levelNodeCoinAnimation(position, finishCallback, parent, reachCallback)
 	if not self.coinButton or self.coinButton.isDisposed then return false end
 	if not position then return false end
 	parent = parent or HomeScene:sharedInstance()
@@ -374,10 +468,15 @@ function HomeSceneFlyToAnimation:levelNodeCoinAnimation(position, finishCallback
 		if not self.coinButton.isDisposed and self.coinButton.playHighlightAnim then
 			self.coinButton:playHighlightAnim()
 		end
+		if reachCallback then
+			reachCallback()
+		end
 	end
 	local function onFinish()
-		for i = 1, #coins do
-			coins[1]:removeFromParentAndCleanup(true)
+		while #coins > 0 do
+			if not coins[1].isDisposed then
+				coins[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(coins, 1)
 		end
 		if finishCallback then finishCallback() end
@@ -425,7 +524,9 @@ function HomeSceneFlyToAnimation:levelNodeEnergyAnimation(position, finishCallba
 	energy:setAnchorPoint(ccp(0.5, 0.5))
 	energy:setPosition(ccp(position.x, position.y))
 	local function onFinish()
-		energy:removeFromParentAndCleanup(true)
+		if not energy.isDisposed then
+			energy:removeFromParentAndCleanup(true)
+		end
 		energy = nil
 		if not self.energyButton.isDisposed and self.energyButton.playHighlightAnim then
 			self.energyButton:playHighlightAnim()
@@ -497,8 +598,10 @@ function HomeSceneFlyToAnimation:levelNodeJumpToBagAnimation(props, position, fi
 		GamePlayMusicPlayer:playEffect(GameMusicType.kGetRewardProp)	
 	end
 	local function onFinish()
-		for i = 1, #icons do
-			icons[1]:removeFromParentAndCleanup(true)
+		while #icons > 0 do
+			if not icons[1].isDisposed then
+				icons[1]:removeFromParentAndCleanup(true)
+			end
 			table.remove(icons, 1)
 		end
 		local function removeSelf() iconSprite:removeFromParentAndCleanup(true) end

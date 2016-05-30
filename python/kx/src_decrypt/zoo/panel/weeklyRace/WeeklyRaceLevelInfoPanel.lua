@@ -544,7 +544,7 @@ end
 
 function WeeklyRaceLevelInfoPanel:onWillEnterPlayScene( ... )
     -- play count++, remaining play count--
-    WeeklyRaceManager:sharedInstance():addPlayCount()
+    -- WeeklyRaceManager:sharedInstance():addPlayCount()
 
     if self.parentPanel and not self.parentPanel.isDisposed then
         print("onWillEnterPlayScene remove parentPanel")

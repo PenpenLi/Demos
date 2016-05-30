@@ -3,7 +3,7 @@ require "zoo.net.UserLocalLogic"
 
 local NO_DIFF = 0
 
-ItemConstans = table.const{
+ItemConstans = create_encrypt_const_integer_table("ItemConstans", {
 	ITEM_COIN = 2, --金币
 	ITEM_POINT = 3, --积分
 	ITEM_ENERGY = 4, --精力值
@@ -26,7 +26,8 @@ ItemConstans = table.const{
 
 	ITEM_ID_LEVEL_AREA_MIN = 40001, --Q点购买区域解锁时 id的最小值,表示第1个区域
 	ITEM_ID_LEVEL_AREA_MAX = 40200, --Q点购买区域解锁时 id的最大值,表示第200个区域
-}
+})
+
 PropRewardType = table.const{
 	PROP_REWARD_TYPE_NONE = 0,
 	PROP_REWARD_TYPE_MOVE = 1,

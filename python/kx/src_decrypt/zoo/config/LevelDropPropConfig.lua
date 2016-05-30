@@ -22,8 +22,24 @@ function LevelDropPropConfig:init(config)
 		if totalWeight > 0 then
 			for _, prop in pairs(config) do
 				local weight = math.floor(tonumber(prop.v) / totalWeight * 10000)
-				self.totalWeight = self.totalWeight + weight
-				table.insert(self.propList, {propId = tonumber(prop.k), weight = weight})
+				
+				local propid = tonumber(prop.k)
+				if not propid then
+					--"3_1"
+					local str = tostring(prop.k)
+					local findIndex1 , finIndex2 = string.find( str , "_")
+					if finIndex2 and finIndex2 > 0 then
+						local str1 = string.sub( str , 1 , finIndex2 - 1 ) 
+						local str2 = string.sub( str , finIndex2 + 1) 
+						if str1 == "4" then
+							propid = tonumber(str2)
+						end
+					end
+				end
+				if propid then
+					self.totalWeight = self.totalWeight + weight
+					table.insert(self.propList, {propId = propid, weight = weight})
+				end
 			end
 		end
 	end

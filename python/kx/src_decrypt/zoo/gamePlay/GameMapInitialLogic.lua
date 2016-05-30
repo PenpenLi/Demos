@@ -7,18 +7,21 @@ function GameMapInitialLogic:init(mainLogic, config)
 	self:initTileData(mainLogic, config)	
 	self:initSnailRoadData(mainLogic, config)
 
-	self:initColorAndSpecialData(mainLogic, config.animalMap,  config.numberOfColors)	
+	self:initColorAndSpecialData(mainLogic, config)	
 	self:initColorType(mainLogic, config.numberOfColors)
 	self:initDropBuff(mainLogic)
 	self:initDigTileMap(mainLogic, config)
 	self:initMagicLamp(mainLogic)  -- 在计算随机颜色前就初始化神灯
 	self:initBottleBlocker(mainLogic)
+	self:initWukong(mainLogic)
+	self:initCrystalStone(mainLogic)
 	self:calculateItemColors(mainLogic, config)
 	self:initPortal(mainLogic, config.portals)
 	self:checkItemBlock(mainLogic)
 	self:initIngredientProducer(mainLogic)
 
 	self:initTransmission(mainLogic, config)
+	self:initDrip(mainLogic)
 end
 
 --生成地图基础信息
@@ -60,18 +63,23 @@ function GameMapInitialLogic:initSnailRoadData( mainLogic, config )
 	local tileMap = config.routeRawData
 	if not tileMap then  return end
 	local initSnailNum = config.snailInitNum
-
+	local roadType = TileRoadShowType.kSnail
+	if config.gameMode == 'HedgehogDigEndless' then
+		roadType = TileRoadShowType.kHedgehog
+	end
+	
 	for r = 1, #tileMap do 
 		if tileMap[r] then
 			for c = 1, #tileMap[r] do
 				local tileDef = tileMap[r][c]
 				if tileDef then
 					local item, board = mainLogic.gameItemMap[r][c], mainLogic.boardmap[r][c]
-					board:initSnailRoadDataByConfig(tileDef)
+					board:initSnailRoadDataByConfig(tileDef, roadType)
 					item:initSnailRoadType(mainLogic.boardmap[r][c])
 					if item.isSnail then 
 						mainLogic.snailCount = mainLogic.snailCount + 1
 					end
+					mainLogic.snailMark = true
 				end
 			end
 		end
@@ -114,7 +122,13 @@ function GameMapInitialLogic:setPreSnailRoads( mainLogic , r, c)
 end
 
 --为动物添加颜色、特效信息
-function GameMapInitialLogic:initColorAndSpecialData(mainLogic, animalMap, numberOfColors)
+function GameMapInitialLogic:initColorAndSpecialData(mainLogic, config)
+	-- 限定了掉落染色宝宝的颜色
+	mainLogic.dropCrystalStoneColors = config.dropCrystalStoneTypes
+
+	local animalMap = config.animalMap
+	local numberOfColors = config.numberOfColors
+
 	for r = 1, #mainLogic.gameItemMap do
 		if mainLogic.gameItemMap[r] == nil then
 			mainLogic.gameItemMap[r] = {}
@@ -123,11 +137,15 @@ function GameMapInitialLogic:initColorAndSpecialData(mainLogic, animalMap, numbe
 			local animalDef = animalMap[r][c]
 			local item = mainLogic.gameItemMap[r][c]
 			item:initByAnimalDef(animalDef)
-			if item.ItemType == GameItemType.kAnimal then
-				if mainLogic.colortypes[item.ItemColorType] == nil then			--辅助统计颜色
+			if item.ItemType == GameItemType.kAnimal 
+				or item.ItemType == GameItemType.kCrystalStone 
+				or item.ItemType == GameItemType.kTotems 
+				or item.ItemType == GameItemType.kRocket then
+				local originColor = AnimalTypeConfig.getOriginColorValue(item.ItemColorType)
+				if mainLogic.colortypes[originColor] == nil then			--辅助统计颜色
 					-- 当统计到的物体颜色数量超过了指定颜色数量后，其他的指定颜色不再被统计，并且不会自动生成其他颜色的物体
 					if item.ItemColorType ~= 0 and table.size(mainLogic.colortypes) < numberOfColors then
-						mainLogic.colortypes[item.ItemColorType] = true
+						mainLogic.colortypes[originColor] = true
 					end
 				end
 			end
@@ -162,6 +180,8 @@ end
 
 --统计存在的颜色类型
 function GameMapInitialLogic:initColorType(mainLogic, numColorsFromConfig)
+	local colorTypeList = AnimalTypeConfig.colorTypeList
+
 	if numColorsFromConfig then
 		mainLogic.numberOfColors = numColorsFromConfig
 	end
@@ -175,7 +195,8 @@ function GameMapInitialLogic:initColorType(mainLogic, numColorsFromConfig)
 	if colorsize < mainLogic.numberOfColors then	--颜色数量不够，进行补充
 		local ts = mainLogic.numberOfColors - colorsize
 		repeat
-			local trycolor = mainLogic.randFactory:rand(1,6)
+			local tryIndex = mainLogic.randFactory:rand(1, #colorTypeList)
+			local trycolor = colorTypeList[tryIndex]
 			if mainLogic.colortypes[trycolor] == nil then
 				mainLogic.colortypes[trycolor] = true
 				ts = ts - 1
@@ -183,18 +204,29 @@ function GameMapInitialLogic:initColorType(mainLogic, numColorsFromConfig)
 		until ts <= 0
 	end
 
-	for k, v in pairs(mainLogic.colortypes) do
-		table.insert(mainLogic.mapColorList, k)
+	-- 需要按照colorIndex顺序存储，避免pairs(table)迭代器访问造成顺序不稳定
+	for i, v in ipairs(colorTypeList) do
+		if mainLogic.colortypes[v] then
+			table.insert(mainLogic.mapColorList, v)
+		end
 	end
 end
 
 function GameMapInitialLogic:initDigTileMap(mainLogic, config)
+	print("RRR  ===========  GameMapInitialLogic:initDigTileMap  ===========   " , mainLogic.theGamePlayType)
 	if mainLogic.theGamePlayType == GamePlayType.kDigMove 
 		or mainLogic.theGamePlayType == GamePlayType.kDigTime 
 		or mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless
 		or mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
 		or mainLogic.theGamePlayType == GamePlayType.kHalloween
+		or mainLogic.theGamePlayType == GamePlayType.kWukongDigEndless
+		or mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless
 		then
+		local roadType = TileRoadShowType.kSnail
+		if mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless then
+			roadType = TileRoadShowType.kHedgehog
+		end
+		local tileMap = config.digExtendRouteData
 		mainLogic.digItemMap = {}
 		mainLogic.digBoardMap = {}
 		local animalMap = config.animalMap
@@ -205,6 +237,8 @@ function GameMapInitialLogic:initDigTileMap(mainLogic, config)
 			if mainLogic.boardmap[realR] == nil then mainLogic.boardmap[realR] = {} end
 			if mainLogic.digItemMap[r] == nil then mainLogic.digItemMap[r] = {} end
 			if mainLogic.digBoardMap[r] == nil then mainLogic.digBoardMap[r] = {} end
+
+
 			for c = 1, #config.digTileMap[r] do
 				local tileDef = config.digTileMap[r][c]
 				local animalDef = animalMap[realR][c]
@@ -214,6 +248,7 @@ function GameMapInitialLogic:initDigTileMap(mainLogic, config)
 				item:initBalloonConfig(mainLogic.balloonFrom)
 				item:initAddMoveConfig(mainLogic.addMoveBase)
 				item:initAddTimeConfig(mainLogic.addTime)
+				
 				mainLogic.gameItemMap[realR][c] = item
 				mainLogic.digItemMap[r][c] = item
 
@@ -221,6 +256,12 @@ function GameMapInitialLogic:initDigTileMap(mainLogic, config)
 				board:initByConfig(tileDef)
 				mainLogic.boardmap[realR][c] = board
 				mainLogic.digBoardMap[r][c] = board
+
+				if tileMap and tileMap[r] and tileMap[r][c] then
+					local tileDef = tileMap[r][c]
+					board:initSnailRoadDataByConfig(tileDef, roadType)
+					item:initSnailRoadType(board)
+				end
 			end
 		end
 	end
@@ -234,6 +275,8 @@ function GameMapInitialLogic:calculateItemColors(mainLogic, config)
 		or mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless
 		or mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
 		or mainLogic.theGamePlayType == GamePlayType.kHalloween
+		or mainLogic.theGamePlayType == GamePlayType.kWukongDigEndless
+		or mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless
 		then
 		local normalTileRow = 9
 		self:_calculateItemColors(mainLogic, config.animalMap, normalTileRow)
@@ -256,6 +299,8 @@ function GameMapInitialLogic:_calculateItemColors(mainLogic, animalMap, possible
 			for c = 1, #mainLogic.gameItemMap[r] do
 				if mainLogic.gameItemMap[r][c]:isColorful() 
 					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kMagicLamp
+					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kWukong
+					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kDrip
 					and mainLogic.gameItemMap[r][c].ItemType ~= GameItemType.kBottleBlocker then
 					mainLogic.gameItemMap[r][c].ItemColorType = AnimalTypeConfig.getType(animalMap[r][c])
 				end
@@ -499,6 +544,100 @@ end
 
 -------------------------------------------------
 
+function GameMapInitialLogic:initWukong(mainLogic)
+	for r = 1, #mainLogic.gameItemMap do 
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item then
+				if item.ItemType == GameItemType.kWukong then
+					--item.ItemColorType = AnimalTypeConfig.kBlue
+					item.ItemColorType = GameExtandPlayLogic:getRandomColorByDefaultLogic(mainLogic , r , c)
+				end
+			end
+		end
+	end
+end
+
+function GameMapInitialLogic:initDrip(mainLogic)
+	local hasDrip = false
+
+	for r = 1, #mainLogic.gameItemMap do 
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item then
+				if item.ItemType == GameItemType.kDrip then
+					item.ItemColorType = AnimalTypeConfig.kDrip
+					--hasDrip = true
+				end
+			end
+		end
+	end
+
+	--[[
+	local num = tonumber( mainLogic.level ) % 2
+	if num == 0 then
+		_G.test_DripMode = 2
+	else
+		_G.test_DripMode = 2
+	end
+
+	]]
+
+	if MaintenanceManager:getInstance():isEnabled("UseOldDripLogic") then
+		_G.test_DripMode = 1
+	end
+
+
+	--[[
+	if mainLogic.digItemMap then
+		for r = 1, #mainLogic.digItemMap do
+			for c = 1, #mainLogic.digItemMap[r] do
+				local item = mainLogic.digItemMap[r][c]
+				if item then
+					if item.ItemType == GameItemType.kDrip then
+						item.ItemColorType = AnimalTypeConfig.kDrip
+						hasDrip = true
+					end
+				end
+			end
+		end
+	end
+
+	if mainLogic.boardmap then
+		for r = 1, #mainLogic.boardmap do
+			for c = 1, #mainLogic.boardmap[r] do
+				local board = mainLogic.boardmap[r][c]
+				if board.theGameBoardFallType and 
+					#board.theGameBoardFallType > 0 and 
+					table.exist(board.theGameBoardFallType, GameBoardFallType.kCannonDrip) then
+					hasDrip = true
+					break
+				end
+			end
+		end
+	end
+	
+	--print("RRR  WTF!!!!!!!!!!!!!!!!!!!!!!!!!    GameMapInitialLogic:initDrip   2  " , mainLogic.blockProductRules , #mainLogic.blockProductRules)
+
+	if mainLogic.blockProductRules and #mainLogic.blockProductRules > 0 then
+		for i = 1 , #mainLogic.blockProductRules do
+			local blockRule = mainLogic.blockProductRules[i]
+			--print("RRR  WTF!!!!!!!!!!!!!!!!!!!!!!!!!     blockRule.itemType  " , blockRule.itemType)
+			if blockRule.itemType == GameItemType.kDrip then
+				hasDrip = true
+				break
+			end
+		end
+	end
+
+	mainLogic.hasDripOnLevel = false
+	if hasDrip then
+		mainLogic.hasDripOnLevel = true
+	end
+	]]
+end
+
+
 function GameMapInitialLogic:initBottleBlocker(mainLogic)
 	for r = 1, #mainLogic.gameItemMap do 
 		for c = 1, #mainLogic.gameItemMap[r] do
@@ -506,6 +645,20 @@ function GameMapInitialLogic:initBottleBlocker(mainLogic)
 			if item then
 				if item.ItemType == GameItemType.kBottleBlocker then
 					item.ItemColorType = GameExtandPlayLogic:randomBottleBlockerColor(mainLogic, r, c)
+				end
+			end
+		end
+	end
+end
+
+function GameMapInitialLogic:initCrystalStone(mainLogic)
+	for r = 1, #mainLogic.gameItemMap do 
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item and item.ItemType == GameItemType.kCrystalStone then
+				local hasColor = AnimalTypeConfig.isColorTypeValid(item.ItemColorType)
+				if not hasColor then
+					item.ItemColorType = mainLogic:randomColor()
 				end
 			end
 		end

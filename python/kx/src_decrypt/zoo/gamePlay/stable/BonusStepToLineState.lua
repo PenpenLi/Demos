@@ -47,8 +47,9 @@ function BonusStepToLineState:update(dt)
 	local mainLogic = self.mainLogic
 	if self.timeCount > GamePlayConfig_BonusTime_ItemFlying_CD then
 		self.timeCount = 0
-		local pos = BombItemLogic:getRandomAnimalChangeToLineSpecial(mainLogic)						----随机到一个需要变成特效的东西
+		local pos = nil						----随机到一个需要变成特效的东西
 		if mainLogic.theCurMoves > 0 then 															----每次随机一个特效，减少一个步数
+			pos = BombItemLogic:getRandomAnimalChangeToLineSpecial(mainLogic)		
 			mainLogic.theCurMoves = mainLogic.theCurMoves - 1 
 			if mainLogic.PlayUIDelegate then --------调用UI界面函数显示移动步数
 				mainLogic.PlayUIDelegate:setMoveOrTimeCountCallback(mainLogic.theCurMoves, true, true)
@@ -61,13 +62,14 @@ function BonusStepToLineState:update(dt)
 			mainLogic.gameItemMap[pos.x][pos.y]:changeItemType(mainLogic.gameItemMap[pos.x][pos.y].ItemColorType, specialTypes[mainLogic.randFactory:rand(1, 2)])
 			if mainLogic.PlayUIDelegate then
 				local function onFlyFinish()
+					local bonusTimeScore = GamePlayConfigScore.BonusTimeScore -- 2500
 					mainLogic.gameItemMap[pos.x][pos.y].isNeedUpdate = true
-					ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_BonusTime_Score);
+					ScoreCountLogic:addScoreToTotal(mainLogic, bonusTimeScore);
 					local ScoreAction = GameBoardActionDataSet:createAs(
 						GameActionTargetType.kGameItemAction,
 						GameItemActionType.kItemScore_Get,
 						pos, nil, 1)
-					ScoreAction.addInt = GamePlayConfig_BonusTime_Score;
+					ScoreAction.addInt = bonusTimeScore;
 					mainLogic:addGameAction(ScoreAction)
 
 					self.numStepToLine = self.numStepToLine - 1

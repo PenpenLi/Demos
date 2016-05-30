@@ -26,6 +26,7 @@ end
 
 --maximum particles of the system
 function ParticleBatchNode:getTotalParticles() return self.refCocosObj:getTotalParticles() end
+
 --Quantity of particles that are being simulated at the moment
 function ParticleBatchNode:getParticleCount() return self.refCocosObj:getParticleCount() end
 
@@ -89,6 +90,12 @@ function ParticleSystem:setAutoRemoveOnFinish(v) self.refCocosObj:setAutoRemoveO
 function ParticleSystem:getDuration() return self.refCocosObj:getDuration() end
 function ParticleSystem:setDuration(v) self.refCocosObj:setDuration(v) end
 
+function ParticleSystem:getAngle() return self.refCocosObj:getAngle() end
+function ParticleSystem:setAngle(v) self.refCocosObj:setAngle(v) end
+
+function ParticleSystem:getAngleVar() return self.refCocosObj:getAngleVar() end
+function ParticleSystem:setAngleVar(v) self.refCocosObj:setAngleVar(v) end
+
 function ParticleSystem:stopSystem() return self.refCocosObj:stopSystem() end
 function ParticleSystem:resetSystem() return self.refCocosObj:resetSystem() end
 
@@ -126,7 +133,9 @@ function ParticleSystem:setPosVar(v) self.refCocosObj:setPosVar(v) end
 
 --CCTexture2D, CCRect
 function ParticleSystem:setTextureWithRect(v) self.refCocosObj:setTextureWithRect(texture, rect) end
+
 function ParticleSystem:setTotalParticles(v) self.refCocosObj:setTotalParticles(v) end
+function ParticleSystem:getTotalParticles(v) return self.refCocosObj:getTotalParticles(v) end
 
 function ParticleSystemQuad:create(plistFile)
   if not plistFile then 

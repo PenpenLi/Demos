@@ -23,16 +23,25 @@ end
 
 function ShareTrophyPanel:init()
 	--初始化文案内容
-	local currentLevel = ShareManager.data.level
-	local firstLevel, lastLevel = getFirstAndLastLevel(currentLevel)
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{num = firstLevel, num1= lastLevel})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self:runTrophyAction()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runStar2Particle()
 	self:runStarGroup3Action()
+end
+
+function ShareTrophyPanel:getShareTitleName()
+	local level = self.achiManager:getData(self.achiManager.LEVEL)
+	local firstLevel, lastLevel = getFirstAndLastLevel(level)
+	local isNewBranchUnlock = self.achiManager:getData( self.achiManager.UNLOCK_HIDEN_LEVEL)
+
+	if isNewBranchUnlock then
+		self.shareTitleKey = self.config.shareTitle1
+	end
+
+	return Localization:getInstance():getText(self.shareTitleKey,{num = firstLevel, num1= lastLevel})
 end
 
 function ShareTrophyPanel:runTrophyAction()
@@ -121,9 +130,25 @@ function ShareTrophyPanel:runStar2Particle()
 			local particle = ParticleSystemQuad:create("share/star2.plist")
 			particle:setPosition(ccp(370,-440))
 			local childIndex = self.ui:getChildIndex(self.ui:getChildByName("trophy"))
-			self.ui:addChildAt(particle, childIndex)	
-		end 
-		self.ui:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCCallFunc:create(addParticle)))
+			self.ui:addChildAt(particle, childIndex)
+			self.particle = particle
+		end
+
+		local function removeParticle()
+			if self.particle and not self.particle.isDisposed then
+				self.particle:removeFromParentAndCleanup(true)
+				self.particle:dispose()
+				self.particle = nil
+			end
+		end
+
+		local arr = CCArray:create()
+		arr:addObject(CCDelayTime:create(0.2))
+		arr:addObject(CCCallFunc:create(addParticle))
+		arr:addObject(CCDelayTime:create(1.0))
+		arr:addObject(CCCallFunc:create(removeParticle))
+
+		self.ui:runAction(CCSequence:create(arr))
 	end
 end
 
@@ -189,14 +214,11 @@ function ShareTrophyPanel:runStarGroup3Action()
 	end
 end
 
-function ShareTrophyPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
+function ShareTrophyPanel:create(shareId)
 	local panel = ShareTrophyPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareTrophyPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

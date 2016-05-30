@@ -55,7 +55,27 @@ GameMusicType = table.const
 	kCoinTick = "music/sound.coin.tick.mp3",
 	kFirework = "music/sound.fireworks.mp3",
 	kBlessing = "music/sound.blessing.mp3",
-	kElephantBoss = "music/sound.elephant.boss.effect.mp3",
+	kWeeklyBossHit = "music/sound.weekly.boss.hit.mp3",
+	kWeeklyRaceProp = "music/sound.weekly.race.prop.mp3",
+	kWeeklyBossDie = "music/sound.weekly.boss.die.mp3",
+	kQiXiBoss = "music/sound.qixiboss.kiss.mp3",
+	kHedgehogCrazy = "music/sound.hedgehog.crazy.mp3",
+	kHedgehogBoxOpen = "music/sound.hedgehogbox.open.mp3",
+	kHedgehogCrazyMove = "music/sound.hedgehog.crazymove.mp3",
+
+	kSpringFirework1 = "music/sound.spring_firework1.mp3",
+	kSpringFirework2 = "music/sound.spring_firework2.mp3",
+	kSpringFirework3 = "music/sound.spring_firework3.mp3",
+	kSpringFirework4 = "music/sound.spring_firework4.mp3",
+	kSpringFirework5 = "music/sound.spring_firework5.mp3",
+	kWukongCasting = "music/sound.wukong.casting.mp3",
+	-- kSpringFireworkTriple = "music/sound.spring_firework_triple.mp3",
+	kSpringBgMusic = "music/sound.spring_bg_music.mp3",
+
+
+	kHalloweenBeeHit = "music/sound.halloween.boss.hit.mp3",
+	kHalloweenBeeDie1 = "music/sound.halloween.boss.cast1.mp3",
+	kHalloweenBeeDie2 = "music/sound.halloween.boss.cast2.mp3",
 }
 
 local instance = nil
@@ -94,9 +114,9 @@ function GamePlayMusicPlayer:enterForeground()
 		SimpleAudioEngine:sharedEngine():resumeAllEffects()
 	end
 
-	if self.iosVideoPlay then 
-		self:oncePauseBackgroundMusic() 
-	end 
+	if self.isVideoPlay then
+		self:appPause()
+	end
 end
 
 function GamePlayMusicPlayer:appPause()
@@ -110,6 +130,10 @@ function GamePlayMusicPlayer:appPause()
 end
 
 function GamePlayMusicPlayer:appResume()
+	if self.isVideoPlay then
+		return
+	end
+
 	if self.IsBackgroundMusicOPen then
 		if self.curBgMusicFile then
 			local function cb()
@@ -163,25 +187,12 @@ function GamePlayMusicPlayer:resumeBackgroundMusic(...)
 	config:flush()
 end
 
-function GamePlayMusicPlayer:oncePauseBackgroundMusic( ... )
-	if __IOS then 
-		self.iosVideoPlay = true
-	end
-	-- body
-	if self.IsBackgroundMusicOPen then 
-		SimpleAudioEngine:sharedEngine():pauseBackgroundMusic(true)
-	end
+function GamePlayMusicPlayer:startVideoPlay()
+	self.isVideoPlay = true
 end
 
-function GamePlayMusicPlayer:onceResumeBackgroundMusic( ... )
-	if __IOS then 
-		self.iosVideoPlay = false
-	end
-	-- body
-	if self.IsBackgroundMusicOPen then
-		SimpleAudioEngine:sharedEngine():resumeBackgroundMusic()
-	end
-
+function GamePlayMusicPlayer:endVideoPlay()
+	self.isVideoPlay = false
 end
 
 function GamePlayMusicPlayer:pauseSoundEffects(...)
@@ -217,6 +228,20 @@ function GamePlayMusicPlayer:playWorldSceneBgMusic(Volume, ...)
 			-- Stop Previous Background Music
 			SimpleAudioEngine:sharedEngine():stopBackgroundMusic(true)
 			SimpleAudioEngine:sharedEngine():playBackgroundMusic(GameMusicType.kWorldSceneBGM, true)
+		else
+			-- Do Nothing
+		end
+	end
+end
+
+function GamePlayMusicPlayer:playSpringBgMusic()
+	if self.curBgMusicFile ~= GameMusicType.kSpringBgMusic then
+		self.curBgMusicFile = GameMusicType.kSpringBgMusic
+
+		if self.IsBackgroundMusicOPen then
+			-- Stop Previous Background Music
+			SimpleAudioEngine:sharedEngine():stopBackgroundMusic(true)
+			SimpleAudioEngine:sharedEngine():playBackgroundMusic(GameMusicType.kSpringBgMusic, true)
 		else
 			-- Do Nothing
 		end

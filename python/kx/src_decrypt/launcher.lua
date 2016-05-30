@@ -1,10 +1,15 @@
 if jit and jit.off then print("jit.off") jit.off() end
 
+require "hecore.ClassBridge"
+
 if __WP8 then
   require "hecore.wp8.TableFunc"
 end
 
 if __WP8 or __IOS then require "bit" end
+if __IOS then
+  require "zoo.util.WaxSimpleCallback"
+end
 
 require "zoo.util.PublishActUtil"
 require "hecore.utils"
@@ -18,6 +23,7 @@ require "zoo.util.PrepackageUtil"
 require "zoo.util.GameCrashLogDevUtil"
 require "zoo.util.TimerUtil"
 
+
 ResourceLoader.init()
 
 math.randomseed( os.time() )
@@ -26,15 +32,16 @@ _G.kScreenWidthDefault = 720
 _G.kScreenHeightDefault = 1280
 _G.kDefaultSocialPlatform = "ios_all"
 _G.kUserLogin = false
-_G.isLocalDevelopMode = StartupConfig:getInstance():isLocalDevelopMode()
+_G.isLocalDevelopMode = true
 _G.bundleVersion = MetaInfo:getInstance():getApkVersion()
 _G.__use_low_effect = false
 _G.launcherVerion = 1
-_G.enableSilentDynamicUpdate = false
+_G.enableSilentDynamicUpdate = true
 _G.packageName = MetaInfo:getInstance():getPackageName() 
 _G.useSmallResConfig = false
 _G.enableMdoPayement = true
 _G.kUserSNSLogin = false
+_G.isCheckPlayModeActive = false
 
 local isEmulator = false
 
@@ -100,11 +107,13 @@ elseif __IOS then
     _G.__IOS_QQ = true
     GspEnvironment:getInstance():setGameUserId("12345")
 elseif __WIN32 then
-    _G.bundleVersion = "1.13"
+    _G.bundleVersion = "1.30"
 end
 
 HeGameDefault:setUserId("12345")
 HeGameDefault:setCheckSumFactor("t*1%7z^opd@awe2&c")
+
+-- CCDirector:sharedDirector():setDisplayStats(false)
 
 ---------------------------------------------------------------------------------  Startup
 local function startGameDirectly()

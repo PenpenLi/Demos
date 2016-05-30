@@ -10,6 +10,8 @@ end
 
 function SnailLogic:check()
 	-- print(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Snail Logic enter")
+
+
 	local function callback( ... )
 		-- body
 		self:handComplete();
@@ -17,6 +19,12 @@ function SnailLogic:check()
 
 	self.hasItemToHandle = false
 	self.completeItem = 0
+	self.totalItem = 0
+	if not self.mainLogic.snailMark then   
+		self:handComplete()
+		return self.totalItem
+	end
+
 	self.totalItem = self:checkSnailList( callback)
 	if self.totalItem == 0 then
 		self:handComplete()
@@ -83,7 +91,13 @@ function SnailLogic:checkItemCanMove( prePos, nextpos )
 		and  nextItem.ItemType ~= GameItemType.kBlackCuteBall 
 		and  nextItem.ItemType ~= GameItemType.kIngredient
 		and  nextItem.ItemType ~= GameItemType.kMagicLamp
+		and  nextItem.ItemType ~= GameItemType.kWukong
 		and  nextItem.ItemType ~= GameItemType.kHoneyBottle
+		and  nextItem.ItemType ~= GameItemType.kTotems
+		and  nextItem.ItemType ~= GameItemType.kCrystalStone
+		and  nextItem.ItemType ~= GameItemType.kDrip
+		and  nextItem.venomLevel == 0
+		and not nextItem:hasLock()
 		and not nextItem:hasFurball()
 		and not self.mainLogic:hasChainInNeighbors(prePos.x, prePos.y, nextpos.x, nextpos.y)
 		then 
@@ -216,6 +230,9 @@ function SnailLogic:canEffectSnailRoadAt( mainLogic, r, c )
 			and not item:hasLock() 
 			and item:isAvailable()
 			and item.ItemType ~= GameItemType.kMagicLamp
+			and item.ItemType ~= GameItemType.kWukong
+			and item.ItemType ~= GameItemType.kTotems
+			and not (item.ItemType == GameItemType.kBottleBlocker and item.bottleLevel > 0) -- 瓶子怪
 			-- and not item.isEmpty  
 			then
 			return true
@@ -228,14 +245,31 @@ function SnailLogic:doEffectSnailRoadAtPos( mainLogic, r, c )
 	-- body
 	local item = mainLogic.gameItemMap[r][c]
 	local board = mainLogic.boardmap[r][c]
-	if not board.isSnailRoadBright then
-		board.isSnailRoadBright = true
-		local action = GameBoardActionDataSet:createAs(
-			GameActionTargetType.kGameItemAction,
-			GameItemActionType.kItem_Snail_Road_Bright,
-			IntCoord:create(r,c),	
-			nil,	
-			GamePlayConfig_MaxAction_time)
-		mainLogic:addGameAction(action)
+
+	if mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless then
+		if board.hedgeRoadState == HedgeRoadState.kStop then
+			board:changeHedgehogRoadState(HedgeRoadState.kPass)
+			local action = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItem_Hedgehog_Road_State,
+				IntCoord:create(r,c),	
+				nil,	
+				GamePlayConfig_MaxAction_time)
+			action.hedgeRoadState = board.hedgeRoadState
+			mainLogic:addGameAction(action)
+		end
+	else
+		if not board.isSnailRoadBright then
+			board.isSnailRoadBright = true
+			local action = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItem_Snail_Road_Bright,
+				IntCoord:create(r,c),	
+				nil,	
+				GamePlayConfig_MaxAction_time)
+			mainLogic:addGameAction(action)
+		end
 	end
+
+	
 end

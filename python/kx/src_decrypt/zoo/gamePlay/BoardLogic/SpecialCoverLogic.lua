@@ -22,7 +22,6 @@ function SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, covertype, scoreSc
 			SpecialCoverLogic:tryEffectSpecialAround(mainLogic, r, c, r , c + 1, noScore)
 		end
 	end
-
 	if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
 		SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD, noScore)
 	end
@@ -91,30 +90,38 @@ end
 
 --消除流沙
 function SpecialCoverLogic:doEffectSandAtPos(mainLogic, r, c)
+	if not mainLogic:isPosValid(r, c) then 
+		return false 
+	end
+
 	local board = mainLogic.boardmap[r][c]
-	board.sandLevel = board.sandLevel - 1
-	----1-3.播放特效
-	local sandCleanAction = GameBoardActionDataSet:createAs(
-		GameActionTargetType.kGameItemAction,
-		GameItemActionType.kItem_Sand_Clean,
-		IntCoord:create(r,c),				
-		nil,				
-		GamePlayConfig_MaxAction_time)
-	mainLogic:addDestroyAction(sandCleanAction)
-	mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kSand, 1)
+	if board.sandLevel > 0 then
+		board.sandLevel = board.sandLevel - 1
+		----1-3.播放特效
+		local sandCleanAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Sand_Clean,
+			IntCoord:create(r,c),				
+			nil,				
+			GamePlayConfig_MaxAction_time)
+		mainLogic:addDestroyAction(sandCleanAction)
+		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kSand, 1)
 
-	local addScore = GamePlayConfig_Score_Sand_Clean
-	ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+		local addScore = GamePlayConfigScore.SandClean
+		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
-	local ScoreAction = GameBoardActionDataSet:createAs(
-		GameActionTargetType.kGameItemAction,
-		GameItemActionType.kItemScore_Get,
-		IntCoord:create(r,c),				
-		nil,				
-		1)
-	ScoreAction.addInt = addScore
-	ScoreAction.addInt2 = 2
-	mainLogic:addGameAction(ScoreAction)
+		local ScoreAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemScore_Get,
+			IntCoord:create(r,c),				
+			nil,				
+			1)
+		ScoreAction.addInt = addScore
+		ScoreAction.addInt2 = 2
+		mainLogic:addGameAction(ScoreAction)
+		return true
+	end
+	return false
 end
 
 function SpecialCoverLogic:canEffectLightUpAt(mainLogic, r, c, canEffectCoin)
@@ -145,27 +152,32 @@ function SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c)
 
 	local item = mainLogic.gameItemMap[r][c];
 	if item.isReverseSide then return false end
+	local board = mainLogic.boardmap[r][c];
 	if item:hasLock()
 		or item.snowLevel > 0
 		or item.venomLevel > 0
+		or board.lotusLevel > 0
 		or item.ItemType == GameItemType.kRoost
 		or item:hasFurball()
+		or item:hasActiveSuperCuteBall()
 		or item.digGroundLevel > 0
 		or item.digJewelLevel > 0 
 		or item.bigMonsterFrostingStrength > 0
 		or item.ItemType == GameItemType.kBlackCuteBall
 		or item.ItemType == GameItemType.kMimosa 
-		or item.beEffectByMimosa
+		or item.ItemType == GameItemType.kKindMimosa
+		or item.beEffectByMimosa > 0
 		or item.ItemType == GameItemType.kBoss
 		or item.ItemType == GameItemType.kHoneyBottle
 		or item.ItemType == GameItemType.kMagicLamp
+		or item.ItemType == GameItemType.kWukong
 		or item.ItemType == GameItemType.kBottleBlocker
 		or item.ItemType == GameItemType.kMagicStone
 		or item.ItemType == GameItemType.kGoldZongZi
+		or item.ItemType == GameItemType.kCrystalStone
 		then
 		return true
 	end
-
 	return false
 end
 
@@ -210,7 +222,7 @@ function SpecialCoverLogic:canBeEffectBySpecialCoverAnimalAround(mainLogic, r, c
 		or item.ItemType == GameItemType.kDigGround
 		or item.ItemType == GameItemType.kDigJewel
 		or item.ItemType == GameItemType.kGoldZongZi)
-		or item.honeyLevel > 0 
+		-- or item.honeyLevel > 0 
 		then
 		if mainLogic:hasChainInNeighbors(r, c, r1, c1) then -- 两者之间有冰柱
 			return false
@@ -234,7 +246,7 @@ function SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
 		board.iceLevel = board.iceLevel - 1
 
 		----1-2.分数统计
-		local addScore = scoreScale * GamePlayConfig_Score_MatchAt_Ice
+		local addScore = scoreScale * GamePlayConfigScore.MatchAtIce
 		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 		local ScoreAction = GameBoardActionDataSet:createAs(
@@ -284,6 +296,42 @@ function SpecialCoverLogic:canEffectSandAtPos(mainLogic, r, c, canEffectCoin)
 	return false
 end
 
+function SpecialCoverLogic:effectLightUpAtCrystalStone(mainLogic, r, c, scoreScale)
+	if r<=0 or r>#mainLogic.boardmap or c<=0 or c>#mainLogic.boardmap[r] then return false end
+
+	local item = mainLogic.gameItemMap[r][c]
+	local board = mainLogic.boardmap[r][c]
+	if item.ItemType == GameItemType.kCrystalStone and item:isCrystalStoneActive() then
+		if board.iceLevel > 0 then
+			SpecialCoverLogic:doEffectLightUpAtPos(mainLogic, r, c, scoreScale)
+		end
+		if board.sandLevel > 0 then
+			SpecialCoverLogic:doEffectSandAtPos(mainLogic, r, c)
+		end
+	end
+end
+
+function SpecialCoverLogic:effectTotemsAt(mainLogic, r, c, scoreScale)
+	local item = mainLogic.gameItemMap[r][c]
+	if item and item:isAvailable() and not item:hasLock() then
+		if item.ItemType == GameItemType.kTotems and item.totemsState == GameItemTotemsState.kNone then
+			item.totemsState = GameItemTotemsState.kWattingActive
+
+			scoreScale = scoreScale or 1
+			GameExtandPlayLogic:addScoreToTotal(mainLogic, r, c, GamePlayConfigScore.NormalTotems * scoreScale)
+
+			local action = GameBoardActionDataSet:createAs(
+	                        GameActionTargetType.kGameItemAction,
+	                        GameItemActionType.kItem_Totems_Change,
+	                        IntCoord:create(r, c),
+	                        nil,
+	                        GamePlayConfig_MaxAction_time)
+			action.isSpecialCover = true
+		    mainLogic:addDestroyAction(action)
+		end
+	end
+end
+
 function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, noCD, noScore)
 	if r<=0 or r>#mainLogic.boardmap or c<=0 or c>#mainLogic.boardmap[r] then return false end;
 
@@ -291,8 +339,44 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 	local board = mainLogic.boardmap[r][c];
 	local hasLockOrigin = item:hasLock()
 
+	if board.superCuteState == GameItemSuperCuteBallState.kActive and not board.superCuteInHit then
+		board.superCuteInHit = true
+		if not mainLogic.isInStep then
+			board.superCuteAddInt = GamePlayConfig_SuperCute_InactiveRound_UseProp
+		else
+			board.superCuteAddInt = GamePlayConfig_SuperCute_InactiveRound_UseMove
+		end
+		
+		local action = GameBoardActionDataSet:createAs(
+                        GameActionTargetType.kGameItemAction,
+                        GameItemActionType.kItem_SuperCute_Inactive,
+                        IntCoord:create(r, c),
+                        nil,
+                        GamePlayConfig_MaxAction_time)
+	    mainLogic:addDestroyAction(action)
+		return
+	end
+
 	if item.questionMarkProduct > 0 then  ------------从问号障碍生成，需要保护一段时间
 		return 
+	end
+
+	local passLotusDecrease = false
+	if item.isEmpty 
+		or not item:isAvailable()
+		or item.ItemType == GameItemType.kCoin 
+		or item.ItemType == GameItemType.kCrystalStone 
+		or item.ItemType == GameItemType.kVenom 
+		or item.ItemType == GameItemType.kSnow 
+		or item.ItemType == GameItemType.kBlackCuteBall
+		or item.ItemType == GameItemType.kHoneyBottle
+		or item.honeyLevel > 0
+		or item.cageLevel > 0
+		or item.beEffectByMimosa > 0
+		or item.furballLevel > 0
+		or board.isReverseSide
+		then
+		passLotusDecrease = true
 	end
 
 	scoreScale = scoreScale or 1
@@ -303,7 +387,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 
 		-----1-2.分数变化
 		if not noScore then
-			local addScore = GamePlayConfig_Score_MatchAt_Lock * scoreScale
+			local addScore = GamePlayConfigScore.MatchAtLock * scoreScale
 			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
@@ -341,7 +425,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 
 		if not noScore then
 			----1-2.分数统计
-			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			local addScore = scoreScale * GamePlayConfigScore.MatchBySnow
 			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
@@ -368,7 +452,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kVenom, 1) -------记录消除
 
 		if not noScore then
-			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			local addScore = scoreScale * GamePlayConfigScore.MatchBySnow
 			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -396,7 +480,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 		if times > 0 then
 
 			if not noScore then
-				local scoreTotal = times * GamePlayConfig_Score_Roost
+				local scoreTotal = times * GamePlayConfigScore.Roost
 				ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)
 
 				local ScoreAction = GameBoardActionDataSet:createAs(
@@ -436,12 +520,12 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 		item.digBlockCanbeDelete = false
 		GameExtandPlayLogic:decreaseDigGoldZongZi(mainLogic, r, c)
 	elseif item.ItemType == GameItemType.kBottleBlocker and item.bottleLevel > 0 and item:isAvailable() then
-		if item.bottleState == BottleBlockerState.Waiting then
+		--if item.bottleState == BottleBlockerState.Waiting then
 			GameExtandPlayLogic:decreaseBottleBlocker(mainLogic, r, c , scoreScale , noScore)
-		end
+		--end
 	elseif item.bigMonsterFrostingType > 0 then 
 		if not noScore then
-			local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+			local addScore = scoreScale * GamePlayConfigScore.MatchBySnow
 			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -474,14 +558,15 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 			end
 			
 			if not noScore then
-				ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_BlackCuteBall)
+				local addScore = GamePlayConfigScore.MatchAt_BlackCuteBall
+				ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 				local ScoreAction = GameBoardActionDataSet:createAs(
 					GameActionTargetType.kGameItemAction,
 					GameItemActionType.kItemScore_Get,
 					IntCoord:create(r, c),
 					nil,
 					1)
-				ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
+				ScoreAction.addInt = addScore
 				mainLogic:addGameAction(ScoreAction)
 			end
 			--add todo
@@ -499,8 +584,10 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 			blackCuteAction.blackCuteStrength = item.blackCuteStrength
 			mainLogic:addDestroyAction(blackCuteAction)
 		end
-	elseif item.ItemType == GameItemType.kMimosa or item.beEffectByMimosa then
-		GameExtandPlayLogic:backMimosa(mainLogic, r, c )
+	elseif item.ItemType == GameItemType.kMimosa or item.beEffectByMimosa == GameItemType.kMimosa then
+		GameExtandPlayLogic:backMimosa( mainLogic, r, c )
+	elseif item.ItemType == GameItemType.kKindMimosa or item.beEffectByMimosa == GameItemType.kKindMimosa then
+		GameExtandPlayLogic:backMimosa( mainLogic, r, c )
 	elseif item.ItemType == GameItemType.kBoss  then
 		GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, false, actId)
 	elseif item.honeyBottleLevel > 0 and item.honeyBottleLevel <= 3 then
@@ -515,6 +602,21 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
                     )
 		action.count = 1
 	    mainLogic:addDestroyAction(action)
+
+	elseif item.ItemType == GameItemType.kWukong 
+    		and item.wukongProgressCurr < item.wukongProgressTotal 
+    		and ( item.wukongState == TileWukongState.kNormal or item.wukongState == TileWukongState.kOnHit )
+    		and not hasLockOrigin and not mainLogic.isBonusTime then
+		local action = GameBoardActionDataSet:createAs(
+                    GameActionTargetType.kGameItemAction,
+                    GameItemActionType.kItem_Wukong_Charging,
+                    IntCoord:create(r, c),
+                    nil,
+                    GamePlayConfig_MaxAction_time
+                )
+		action.count = 3
+	    mainLogic:addDestroyAction(action)
+
     elseif item.ItemType == GameItemType.kMagicStone and item:canMagicStoneBeActive() then
     	local stoneActiveAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -536,6 +638,10 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 			stoneActiveAction.targetPos = GameExtandPlayLogic:calcMagicStoneEffectPositions(mainLogic, r, c)
 		end
 		mainLogic:addDestroyAction(stoneActiveAction)
+	elseif item.ItemType == GameItemType.kCrystalStone and not hasLockOrigin then -- 水晶石没有被锁住
+		if not item:isCrystalStoneActive() then -- 充满的水晶石被特效打到不会触发，被锤子砸时单独处理
+			GameExtandPlayLogic:specialCoverInactiveCrystalStone(mainLogic, r, c, scoreScale)
+		end
 	end
 
 	--毛球
@@ -544,7 +650,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 			item.furballLevel = 0
 			item.furballType = GameItemFurballType.kNone
 
-			local scoreAdd = GamePlayConfig_Score_Furball * scoreScale
+			local scoreAdd = GamePlayConfigScore.Furball * scoreScale
 
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd)
 
@@ -576,7 +682,7 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 					1)
 				mainLogic:addGameAction(FurballAction)	
 
-				local scoreAdd = GamePlayConfig_Score_Furball * scoreScale
+				local scoreAdd = GamePlayConfigScore.Furball * scoreScale
 				ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd)
 				local ScoreAction = GameBoardActionDataSet:createAs(
 					GameActionTargetType.kGameItemAction,
@@ -590,4 +696,9 @@ function SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, scoreScale, actId, n
 			end
 		end
 	end
+
+	if not passLotusDecrease and board.lotusLevel > 0 then
+		GameExtandPlayLogic:decreaseLotus(mainLogic, r, c , 1 , false)
+	end
+
 end

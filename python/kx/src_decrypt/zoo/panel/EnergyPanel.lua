@@ -24,6 +24,11 @@ require "zoo.panel.PushActivityPanel"
 require "zoo.panel.RemindAskingEnergyPanel"
 require "zoo.panelBusLogic.IapBuyPropLogic"
 require "zoo.panel.component.energyPanel.IapBuyMiddleEnergyPanel"
+require "zoo.panel.ConfirmBuyFullEnergyPanel"
+require "zoo.panel.TwoYearsGiftEnegy"
+require "zoo.panel.TwoYearsEnergyPanel"
+require "zoo.panel.component.energyPanel.WeeklyRacePromotionPanel"
+
 
 local kPanelShowChance = {
 	kAddMaxEnergy = 0,
@@ -45,6 +50,9 @@ function EnergyPanel:init(continueCallback, ...)
 	assert(continueCallback == false or type(continueCallback) == "function")
 	assert(#{...} == 0)
 
+	self.suspendUpdateEnergy = false
+
+	self.energyQueue = {}
 	-- -----------------
 	-- Get UI Resource
 	-- ----------------
@@ -74,10 +82,12 @@ function EnergyPanel:init(continueCallback, ...)
 
 	self.titleLabelPlaceholder	= self.ui:getChildByName("titleLabelPlaceholder")
 	-- Fade Area
-	self.energyIcon			= self.fadeArea:getChildByName("energyIcon")
+	self.energyIcon			    = self.fadeArea:getChildByName("energyIcon")
 	self.energyBrightness		= self.fadeArea:getChildByName("energyBrightness")
 	self.energyNumberCounterRes	= self.fadeArea:getChildByName("energyCounter")
+	self.energyHighlight	    = self.fadeArea:getChildByName("highlight")
 
+	self.energyHighlight:setVisible(false)
 	--self.energyNumberLabel		= self.fadeArea:getChildByName("energyNumberLabel")
 	self.timeToRecoverLabel		= self.fadeArea:getChildByName("timeToRecoverLabel")
 
@@ -94,9 +104,6 @@ function EnergyPanel:init(continueCallback, ...)
 	self.buyBtn			= self.clippingAreaBelow:getChildByName("buyBtn")
 	self.goldBuyMidBtn	= GroupButtonBase:create(self.clippingAreaBelow:getChildByName("goldBuyMidBtn"))
 
-	local buyBtnBG = self.buyBtn:getChildByName("btnWithoutShadow"):getChildByName("_bg"):getChildByName("bg")
-	buyBtnBG:adjustColor(kColorBlueConfig[1],kColorBlueConfig[2],kColorBlueConfig[3],kColorBlueConfig[4])
-	buyBtnBG:applyAdjustColorShader()
 
 	-- Close Btn
 	self.bg			= self.ui:getChildByName("bg")
@@ -156,6 +163,9 @@ function EnergyPanel:init(continueCallback, ...)
 	-- Init UI Component
 	-- -------------------
 	-- self.askFriendBtn:setVisible(false)
+	self.askFriendBtn = GroupButtonBase:create(self.askFriendBtn)
+	self.buyBtn = GroupButtonBase:create(self.buyBtn)
+	self.buyBtn:setColorMode(kGroupButtonColorMode.blue)
 	self.buyBtn:setVisible(false)
 	self.titleLabelPlaceholder:setVisible(false)
 
@@ -203,22 +213,17 @@ function EnergyPanel:init(continueCallback, ...)
 	-- ------------
 
 	-- Ask friend button
-	local label = self.askFriendBtn:getChildByName("Label")
-	if label then label:setString(Localization:getInstance():getText("energy.panel.askFriend")) end
-
-	-- Update Buy Btn Label
-	local btnWithShadow = self.buyBtn:getChildByName("btnWithoutShadow")
-	assert(btnWithShadow)
-	local label = btnWithShadow:getChildByName("label")
+	self.askFriendBtn:setString(Localization:getInstance():getText("energy.panel.askFriend"))
 
 	local buyBtnLabelkey	= "energy.panel.buyBtn"
 	local buyBtnLabelValue	= Localization:getInstance():getText(buyBtnLabelkey, {}) 
-	label:setString(buyBtnLabelValue)
+	self.buyBtn:setString(buyBtnLabelValue)
 
 	----------------------
 	-- Get Data About UI
 	-- -------------------
-	self.energyIconSize = self.energyIcon:getGroupBounds().size
+	local rectSize = self.energyIcon:getGroupBounds().size
+	self.energyIconSize = {width = rectSize.width, height = rectSize.height}
 	
 	-- Get Energy Icon Center Pos In Self Space
 	local fadeAreaNodeToParentTrans = self.fadeArea:nodeToParentTransform()
@@ -412,8 +417,6 @@ function EnergyPanel:init(continueCallback, ...)
 		self:onAskFriendBtnTapped()
 		GamePlayMusicPlayer:playEffect(GameMusicType.kClickCommonButton)
 	end
-	self.askFriendBtn:setTouchEnabled(true)
-	self.askFriendBtn:setButtonMode(true)
 	self.askFriendBtn:addEventListener(DisplayEvents.kTouchTap, onAskFriendBtnTapped)
 	self.askFriendBtn:setVisible(not PrepackageUtil:isPreNoNetWork())
 
@@ -425,8 +428,6 @@ function EnergyPanel:init(continueCallback, ...)
 		GamePlayMusicPlayer:playEffect(GameMusicType.kClickCommonButton)
 	end
 
-	self.buyBtn:setTouchEnabled(true)
-	self.buyBtn:setButtonMode(true)
 	self.buyBtn:addEventListener(DisplayEvents.kTouchTap, onBuyBtnTapped)
 
 	-- ------------------------
@@ -488,7 +489,6 @@ function EnergyPanel:init(continueCallback, ...)
 	if __IOS then
 		local userExtend = UserManager:getInstance().userExtend
 		self.goldBuyMidBtn:setColorMode(kGroupButtonColorMode.blue)
-		self.goldBuyMidBtn:useStaticLabel(44, nil, ccc3(255, 255, 255))
 		self.goldBuyMidBtn:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
 
 		local function onBoughtCallback()
@@ -497,9 +497,8 @@ function EnergyPanel:init(continueCallback, ...)
 			HomeScene:sharedInstance().goldButton:updateView()
 		end
 		local function onGoldButton()
-			local panel = BuyPropPanel:create(17)
-			panel:setBoughtCallback(onBoughtCallback)
-			panel:popout()
+			local panel = PayPanelWindMill:create(17, onBoughtCallback)
+			if panel then panel:popout() end
 		end
 		self.goldBuyMidBtn:addEventListener(DisplayEvents.kTouchTap, onGoldButton)
 
@@ -516,50 +515,8 @@ function EnergyPanel:init(continueCallback, ...)
 		self.item2:registerItemNumberChangeCallback(onChange)
 	else
 		self.goldBuyMidBtn:setVisible(false)
-	-- 	if self.item2:getItemNumber() <= 0 then
-	-- 		self.goldBuyMidBtn:setVisible(true)
-	-- 		self.goldBuyMidBtn:setColorMode(kGroupButtonColorMode.blue)
-	-- 		self.goldBuyMidBtn:useStaticLabel(44, nil, ccc3(255, 255, 255))
-	-- 		self.goldBuyMidBtn:setString(Localization:getInstance():getText("buy.prop.panel.btn.buy.txt"))
-	-- 		self.goldBuyMidBtn:ad(DisplayEvents.kTouchTap, function () self:onAndroidBuyMidEnergy() end)
-	-- 		self.goldBuyMidBtn:setEnabled(true)
-	-- 	else
-	-- 		self.goldBuyMidBtn:setVisible(false)
-	-- 		self.goldBuyMidBtn:setEnabled(false)
-	-- 	end
 	end
 end
-
--- function EnergyPanel:onAndroidBuyMidEnergy()
--- 	print('onAndroidBuyMidEnergy')
--- 	local function onSuccess()
--- 		print('onAndroidBuyMidEnergy onSuccess')
--- 		if self.isDisposed then return end
--- 		self.item2:updateItemNumber()
--- 		HomeScene:sharedInstance().goldButton:updateView()
--- 	end
--- 	local function onFail()
--- 		print('onAndroidBuyMidEnergy onFail')
--- 		--没什么需要做的
--- 	end
--- 	local function onCancel()
--- 		print('onAndroidBuyMidEnergy onCancel')
--- 		--没什么需要做的
--- 	end
--- 	local buyLogic = BuyLogic:create(17, 2)
--- 	local price = buyLogic:getPrice()
--- 	local userCash = UserManager:getInstance().user:getCash()
--- 	if userCash < price then
--- 		local ingame = IngamePaymentLogic:create(17, 1)
--- 		if ingame:tryThirdPayPromotion(onSuccess, onFail, onCancel) then
--- 			return
--- 		end
--- 	end
--- 	local buyPropPanel = BuyPropPanel:create(17)
--- 	buyPropPanel:setBoughtCallback(onSuccess)
--- 	buyPropPanel:setExitCallback(onCancel)
--- 	buyPropPanel:popout()
--- end
 
 function EnergyPanel:onCloseBtnTapped()
 	if self.tappedState == self.TAPPED_STATE_NONE then
@@ -631,6 +588,21 @@ function EnergyPanel:onItemTapped(event, ...)
 
 
 	if tappedItem:getItemNumber() == 0 then
+		if event.context == self.item1 then
+			self:onAskFriendBtnTapped()
+		elseif event.context == self.item2 then
+			if __IOS then
+				local function onBoughtCallback()
+					if self.isDisposed then return end
+					self.item2:updateItemNumber()
+					HomeScene:sharedInstance().goldButton:updateView()
+				end
+				local panel = PayPanelWindMill:create(17, onBoughtCallback)
+				if panel then panel:popout() end
+			end
+		elseif event.context == self.item3 then
+			self:onBuyBtnTapped()
+		end
 		return
 	end
 
@@ -641,6 +613,7 @@ function EnergyPanel:onItemTapped(event, ...)
 	local maxEnergy	= UserEnergyRecoverManager:sharedInstance():getMaxEnergy()
 
 	if curEnergy == maxEnergy then
+		CommonTip:showTip(Localization:getInstance():getText("energy.panel.full.tip"), "positive")
 		return
 	end
 
@@ -673,12 +646,36 @@ function EnergyPanel:onItemTapped(event, ...)
 			return
 		end
 
+		-- 飞完了 再改 界面上 显示 的 精力数字
+		self.suspendUpdateEnergy = true
+
 		local function animComplete()
 			GamePlayMusicPlayer:playEffect(GameMusicType.kAddEnergy)
 			finishCallback()
 		end
 
-		tappedItem:playFlyingEnergyAnimation(animComplete)
+		local function flyComplete()
+			self:playHighligthAnim()
+			setTimeOut(
+				function()
+					if self.isDisposed==false then
+						self:showEnergyAddedText(tappedEnergyNumber)
+					end
+				end,
+				6/24
+			)
+			setTimeOut(
+				function()
+					if self.isDisposed==false and #self.energyQueue > 0 then
+						self:setEnergy(table.remove(self.energyQueue, 1))
+					end
+					self.suspendUpdateEnergy = false
+				end,
+				6/24
+			)
+		end
+
+		tappedItem:playFlyingEnergyAnimation(animComplete, flyComplete)
 	end
 	
 	-- Send Server Msg
@@ -686,6 +683,7 @@ function EnergyPanel:onItemTapped(event, ...)
 
 		local function onSuccess()
 
+			table.insert(self.energyQueue, UserEnergyRecoverManager:sharedInstance():getEnergy())
 			self.energyPointWaitServerToConfirm = self.energyPointWaitServerToConfirm - tappedEnergyNumber
 
 			HomeScene:sharedInstance():checkDataChange()
@@ -693,7 +691,12 @@ function EnergyPanel:onItemTapped(event, ...)
 			successCallback()
 		end
 
-		self:sendUseEnergyBottleMessage(itemType, onSuccess)
+		local function onFail(evt)
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
+			self.energyPointWaitServerToConfirm	= self.energyPointWaitServerToConfirm - tappedEnergyNumber
+		end
+
+		self:sendUseEnergyBottleMessage(itemType, onSuccess, onFail)
 	end
 
 	-- Add The Energy
@@ -707,19 +710,20 @@ function EnergyPanel:onItemTapped(event, ...)
 	end
 
 	local chain = CallbackChain:create()
-	chain:appendFunc(playFlyingEnergyAnimWrapper)
 	chain:appendFunc(sendUseEnergyBottleMessageWrapper)
+	chain:appendFunc(playFlyingEnergyAnimWrapper)
 	chain:appendFunc(updateItemNumber)
 	chain:call()
 end
 
-function EnergyPanel:sendUseEnergyBottleMessage(itemType, successCallback, ...)
+function EnergyPanel:sendUseEnergyBottleMessage(itemType, successCallback, failCallback, ...)
 	assert(type(itemType) == "number")
 	assert(type(successCallback) == "function")
 	assert(#{...} == 0)
 	
 	local logic = UseEnergyBottleLogic:create(itemType)
 	logic:setSuccessCallback(successCallback)
+	logic:setFailCallback(failCallback)
 	logic:start(true)
 end
 
@@ -732,84 +736,15 @@ function EnergyPanel:onBuyAndContinueBtnTapped(event, ...)
 	assert(#{...} == 0)
 
 	local function startBuyLogic()
-		--local logic = BuyLogic:create()
-		-- Need Energy To Max
-		--local maxEnergy 	= self.maxEnergy
-		--local newEnergy 	= UserManager.getInstance().user:getEnergy()
-		local maxEnergy		= UserEnergyRecoverManager:sharedInstance():getMaxEnergy()
-		local newEnergy		= UserEnergyRecoverManager:sharedInstance():getEnergy()
-
-		local neededEnergy	= maxEnergy - newEnergy
-
-		local curCash		= UserManager:getInstance().user:getCash()
-		local neededCash	= self.goldPriceToBuyAEnergy * neededEnergy
-
-		if curCash < neededCash then
-			-- Not Has Enough Gold
-			-- Pop Out The Buy Gold Panel
-
-			local function createGoldPanel()
-				local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
-				if index ~= 0 then
-					local panel = createMarketPanel(index)
-					panel:popout()
+		local panel = ConfirmBuyFullEnergyPanel:create(self.continueCallback ~= false)
+		panel:addEventListener(kPanelEvents.kClose, function(evt)
+				if evt.data == true then
+					self:onCloseBtnTapped()
+				else
+					self.energyRecoverTutorialLayer = self:checkDoEnergyBottleTutorial()
 				end
-			end
-			-- local text = {
-			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			-- }
-			-- CommonTipWithBtn:setShowFreeFCash(true)
-			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
-			GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
-			-- CommonTip:showTip(Localization:getInstance():getText("buy.prop.panel.err.no.gold"), "negative", createGoldPanel)
-		else
-
-			local function onBuyEnergySuccessCallback()
-				HomeScene:sharedInstance():checkDataChange()
-				HomeScene:sharedInstance().energyButton:updateView()
-				HomeScene:sharedInstance().goldButton:updateView()
-			-- 	if not self.continueCallback then
-			-- 		-- local text = Localization:getInstance():getText("energy.panel.buy.button.label")
-			-- 		-- self.continueBtn:setString(text)
-			-- 		local buyBtnLabelTxtKey 	= "energy.panel.buy.button.label"
-			-- 		local buyBtnLabelTxtValue	= Localization:getInstance():getText(buyBtnLabelTxtKey)
-			-- 		self.continueBtn:setString(buyBtnLabelTxtValue)
-			-- 	else
-			-- 		local buyBtnLabelTxtKey 	= "energy.panel.continue.button.label"
-			-- 		local buyBtnLabelTxtValue	= Localization:getInstance():getText(buyBtnLabelTxtKey)
-			-- 		self.continueBtn:setString(buyBtnLabelTxtValue)
-			-- 	end
-				if not self.continueCallback then
-					self.continueBtn.ui:setButtonMode(false)
-				end
-				self.continueBtn.ui:setVisible(true)
-				self.buyAndContinueBtn.ui:setVisible(false)
-				self.discountTag:setVisible(false)
-				GamePlayMusicPlayer:playEffect(GameMusicType.kAddEnergy)
-			end
-
-			local function onBuyEnergyFailCallback(evt)
-				if evt and evt.data then 
-					CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
-				else 
-					local networkType = MetaInfo:getInstance():getNetworkInfo();
-					local errorCode = "-2";
-					if networkType and networkType==-1 then 
-						errorCode = "-6";
-					end
-					CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
-				end
-			end
-
-			local function onBuyEnergyExceptionCallback(evt)
-				CommonTip:showTip(Localization:getInstance():getText("energy.panel.buy.energy.exception"), "negative")
-			end
-
-			local logic = BuyEnergyLogic:create(neededEnergy)
-			logic:start(true, onBuyEnergySuccessCallback, onBuyEnergyFailCallback)
-		end
+			end)
+		panel:popout()
 	end
 
 	if PrepackageUtil:isPreNoNetWork() then
@@ -817,7 +752,7 @@ function EnergyPanel:onBuyAndContinueBtnTapped(event, ...)
 		return 
 	end
 	
-	RequireNetworkAlert:callFuncWithLogged(startBuyLogic)
+	startBuyLogic()
 end
 
 function EnergyPanel:onContinueBtnTapped(event, ...)
@@ -856,6 +791,53 @@ function EnergyPanel:onContinueBtnTapped(event, ...)
 	end
 end
 
+-- function EnergyPanel:playTextFloatAnim()
+-- 	local delay = CCDelayTime:create(6/24)
+
+-- 	local function __showEnergyAddedText()
+-- 		self:showEnergyAddedText()
+-- 	end
+-- 	local showText = CCCallFunc:create(__showEnergyAddedText)
+
+-- 	local seq = CCSequence:createWithTwoActions(delay, showText)
+
+-- 	self.energyIcon:runAction(seq)
+-- end	
+
+function EnergyPanel:showEnergyAddedText(energyAdded)
+	local text = '+'..energyAdded
+	local fntFile = "fnt/star_entrance.fnt"
+	local label = BitmapText:create('', fntFile)
+	label:setPreferredSize(100, 100)
+	local parent = self.energyNumberCounter:getParent()
+	local pos = self.energyNumberCounter:getPosition()
+	local size = self.energyNumberCounter:getGroupBounds().size
+	label:setString(text)
+	parent:addChild(label)
+
+	label:setAnchorPoint(ccp(0.5, 0.5))
+	label:setPositionY(pos.y - 20)
+	label:setPositionX(pos.x + 45)
+	label:setScale(2)
+
+	local moveBy = CCMoveBy:create(16/24, ccp(0, 50))
+	local delay = CCDelayTime:create(10/24)
+	local fadeOut = CCFadeOut:create(6/24)
+
+	local seq = CCSequence:createWithTwoActions(delay, fadeOut)
+	local spawn = CCSpawn:createWithTwoActions(seq, moveBy)
+
+	local function __finish()
+		label:removeFromParentAndCleanup(true)
+	end
+
+	local finish = CCCallFunc:create(__finish)
+
+	local action = CCSequence:createWithTwoActions(spawn, finish)
+	label:runAction(action)
+
+end
+
 -- function EnergyPanel:onBuyAndContinueBtnTapped(event, ...)
 -- 	assert(event)
 -- 	assert(#{...} == 0)
@@ -885,6 +867,7 @@ function EnergyPanel:positionEnergyNumberLabel(...)
 end
 
 function EnergyPanel:setEnergy(newEnergy, ...)
+
 	assert(newEnergy)
 	assert(#{...} == 0)
 
@@ -1008,7 +991,10 @@ function EnergyPanel:checkEnergyChange(...)
 		-- Check Energy
 		--local newEnergy = UserManager.getInstance().user:getEnergy()
 		local newEnergy = UserEnergyRecoverManager:sharedInstance():getEnergy()
-		self:setEnergy(newEnergy)
+
+		if self.suspendUpdateEnergy == false then
+			self:setEnergy(newEnergy)
+		end
 
 		-- If Have Enough Energy To Play, Show The Continue Sub Panel
 		-- he_log_warning("Hard Coded 5 Energy Required To Start A Level !")
@@ -1059,9 +1045,7 @@ end
 
 function EnergyPanel:registerCheckEnergyChangeFunc(...)
 	assert(#{...} == 0)
-
 	assert(not self.checkEnergyChangeFunc)
-
 	local function checkEnergyChange()
 		self:checkEnergyChange()
 	end
@@ -1072,7 +1056,6 @@ end
 
 function EnergyPanel:unregisterCheckEnergyChangeFunc(...)
 	assert(#{...} == 0)
-
 	assert(self.checkEnergyChangeFunc)
 	CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.checkEnergyChangeFunc)
 	self.checkEnergyChangeFunc = nil
@@ -1143,6 +1126,7 @@ end
 
 function EnergyPanel:chekPopoutBottomBubbleWindow(...)
 	assert(#{...} == 0)
+
 	if self.curEnergy < 10 then
 		-- copy
 		local addMaxChance = kPanelShowChance.kAddMaxEnergy
@@ -1221,6 +1205,22 @@ function EnergyPanel:popoutSocialNetworkFollowPanel(pnlType)
 	end
 	if self.bottomBubblePanel then self.bottomBubblePanel:popout() end
 end
+
+function EnergyPanel:popoutTwoYearsEnergyPanel( onGetRewardTapped , toPos )
+	print("EnergyPanel:popoutRemindAskingEnergyPanel")
+	local count = FriendManager:getInstance():getFriendCount()
+	local popoutPos = self.panelExchangeAnim:getPopShowPos()
+	local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
+	local energyPanelBottomPosY = popoutPos.y - selfSize.height
+	local selfParent = self:getParent()
+	local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
+	posInWorldSpace.y = posInWorldSpace.y - 40
+	self.bottomBubblePanel = TwoYearsEnergyPanel:create(self, posInWorldSpace.y , onGetRewardTapped , toPos)
+	if self.bottomBubblePanel then
+		self.bottomBubblePanel:popout()
+	end
+end
+
 
 function EnergyPanel:popoutRemindAskingEnergyPanel()
 	print("EnergyPanel:popoutRemindAskingEnergyPanel")
@@ -1340,6 +1340,41 @@ function EnergyPanel:playAddEnergyAnim(animFinishCallback, ...)
 	self.energyClipping:runAction(seq)
 end
 
+function EnergyPanel:playHighligthAnim(animFinishCallback)
+	local highlight = self.energyHighlight
+
+	-- Init 
+	local function initActionFunc()
+		highlight:setVisible(true)
+	end
+	local initAction = CCCallFunc:create(initActionFunc)
+	
+	-- Move Clipping Up
+	local fadeIn 		= CCFadeIn:create(4/24)
+	local fadeOut 		= CCFadeOut:create(4/24)
+
+	-- Anim Finished
+	local function animFinishedFunc()
+		highlight:setVisible(false)
+
+		if animFinishCallback then
+			animFinishCallback()
+		end
+	end
+	local animFinishedAction = CCCallFunc:create(animFinishedFunc)
+
+	-- Action Array
+	local actionArray = CCArray:create()
+	actionArray:addObject(initAction)
+	actionArray:addObject(fadeIn)
+	actionArray:addObject(fadeOut)
+	actionArray:addObject(animFinishedAction)
+
+	-- Seq
+	local seq = CCSequence:create(actionArray)
+	highlight:runAction(seq)
+end
+
 function EnergyPanel:updateAfterMaxEnergyChange(...)
 	assert(#{...} == 0)
 
@@ -1363,6 +1398,10 @@ function EnergyPanel:remove(animFinishCallbck, ...)
 
 	assert(self.showed == true)
 
+	if __ANDROID then 
+		PaymentManager.getInstance():setCurrentEnergyPanel(nil)
+	end
+
 	local function onAnimFinish()
 		if animFinishCallbck then
 			print("EnergyPanel:remove onAnimFinished Called !")
@@ -1376,6 +1415,11 @@ function EnergyPanel:remove(animFinishCallbck, ...)
 	if self.bottomBubblePanel then
 		self.bottomBubblePanel:remove()
 	end
+
+	if self.energyRecoverTutorialLayer then
+		self.energyRecoverTutorialLayer:removeFromParentAndCleanup(true)
+		self.energyRecoverTutorialLayer = nil
+	end
 end
 
 function EnergyPanel:onAskFriendBtnTapped()
@@ -1384,80 +1428,16 @@ function EnergyPanel:onAskFriendBtnTapped()
 		CommonTip:showTip(Localization:getInstance():getText("error.tip.facebook.login"),nil,nil,2)
 		return
 	end
-	local level = UserManager:getInstance().user:getTopLevelId()
-	local meta = MetaManager:getInstance():getFreegift(level)
-	local function onUpdateFriend(result, evt)
+
+	local todayWants = UserManager:getInstance():getWantIds()
+	local todayWantsCount = #todayWants
+	local function onRequestSuccess()
 		if not self or self.isDisposed then return end
-		if result == "success" then
-			local function confirmAskFriend(selectedFriendsID)
-				if #selectedFriendsID > 0 then
-					local todayWants = UserManager:getInstance():getWantIds()
-					local todayWantsCount = #todayWants
-
-					local function onRequestSuccess()
-						local home = HomeScene:sharedInstance()
-						DcUtil:requestEnergy(#selectedFriendsID,level)
-						if not self or self.isDisposed then return end
-						if not __IOS_FB and home and todayWants and todayWantsCount < 1 then
-							local sprite = home:createFlyToBagAnimation(10013, 1)
-							local size = self.askFriendBtn:getGroupBounds().size
-							local pos = self.askFriendBtn:getPosition()
-							-- pos.x = pos.x + size.width / 2
-							-- pos.y = pos.y - size.height / 2
-							local parent = self.askFriendBtn:getParent()
-							pos = parent:convertToWorldSpace(ccp(pos.x, pos.y))
-							sprite:setPosition(ccp(pos.x + size.width / 2, pos.y - size.height / 2))
-							sprite:playFlyToAnim(false, false)
-
-							self.item1:updateItemNumber()
-							self.item2:updateItemNumber()
-							self.item3:updateItemNumber()
-						end
-						CommonTip:showTip(Localization:getInstance():getText("energy.panel.ask.energy.success"), "positive")
-					end
-					local function onFail(evt)
-						if not self or self.isDisposed then return end
-						CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative")
-					end
-					if __IOS_FB then
-						if SnsProxy:isShareAvailable() then
-							local callback = {
-								onSuccess = function(result)
-									print("result="..table.tostring(result))
-									FreegiftManager:sharedInstance():requestGift(selectedFriendsID, meta.itemId, onRequestSuccess, onFail)
-								end,
-								onError = function(err)
-									print("err="..err)
-								end
-							}
-							-- friendIds
-							local profile = UserManager.getInstance().profile
-							local userName = ""
-							if profile and profile:haveName() then
-								userName = profile:getDisplayName()
-							end
-
-							local title = Localization:getInstance():getText("facebook.request.asking.freegift.title", {user=userName, item="精力瓶"})
-							local message = Localization:getInstance():getText("facebook.request.asking.freegift.message",  {user=userName, item="精力瓶"})
-
-							local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(selectedFriendsID)
-							SnsProxy:sendRequest(snsIds, title, message, false, FBRequestObject.ENERGY, callback)
-						end
-					else 
-						FreegiftManager:sharedInstance():requestGift(selectedFriendsID, meta.itemId, onRequestSuccess, onFail)
-					end
-				end
-			end
-			local panel = AskForEnergyPanel:create(confirmAskFriend)
-			if panel then panel:popout() end
-		else
-			local message = ''
-			local err_code = tonumber(evt.data)
-			if err_code then message = Localization:getInstance():getText("error.tip."..err_code) end
-			CommonTip:showTip(message, "negative")
-		end
+		self.item1:updateItemNumber()
+		self.item2:updateItemNumber()
+		self.item3:updateItemNumber()
 	end
-	FreegiftManager:sharedInstance():updateFriendInfos(true, onUpdateFriend)
+	AskForEnergyPanel:popoutPanel(onRequestSuccess)
 end
 
 function EnergyPanel:onBuyBtnTapped(...)
@@ -1466,31 +1446,31 @@ function EnergyPanel:onBuyBtnTapped(...)
 
 	---- If Has No Energy Bottle
 	--if tappedItem:getItemNumber() == 0 then
-		
-		local function enableClick()
-			if self.isDisposed then return end
-			-- self.buyBtn:setTouchEnabled(true)
-			-- self.buyBtn:setButtonMode(true)
-			self.onEnterForeGroundCallback = nil
-		end
-
 		local function onBoughtCallback()
 			if self.isDisposed then return end
-			enableClick()
 			self.item3:updateItemNumber()
 			HomeScene:sharedInstance().goldButton:updateView()
 		end
 
+		local function onFailCallback(errCode, errMsg)
+			if errCode == 730241 or errCode == 730247 then
+				CommonTip:showTip(errMsg, "negative")
+			else
+				CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
+			end
+		end
+
+		local function onCancelCallback()
+		end
+
+
 		if __ANDROID then -- ANDROID
-			-- self.buyBtn:setTouchEnabled(false)
-			-- self.buyBtn:setButtonMode(false)
+			PaymentManager.getInstance():setCurrentEnergyPanel(self)
 			local logic = IngamePaymentLogic:create(18)
-			self.onEnterForeGroundCallback = enableClick  --微信未登录取消时无回调，所以加此逻辑
-			logic:buy(onBoughtCallback, enableClick, enableClick)
+			logic:buy(onBoughtCallback, onFailCallback, onCancelCallback)
 		else -- else, on IOS and PC we use gold!
-			local panel = BuyPropPanel:create(18)
-			panel:setBoughtCallback(onBoughtCallback)
-			panel:popout()
+			local panel = PayPanelWindMill:create(18, onBoughtCallback)
+			if panel then panel:popout() end
 			return
 		end
 	--end
@@ -1524,7 +1504,34 @@ function EnergyPanel:create(continueCallback, ...)
 
 	local newEnergyPanel = EnergyPanel.new()
 	newEnergyPanel:init(continueCallback)
+
 	return newEnergyPanel
+end
+
+function EnergyPanel:tryPopoutWeeklyRacePushPanel()
+	local user = UserManager:getInstance():getUserRef()
+	local energyUnit = MetaManager:getInstance().global.user_energy_level_consume or 5
+	local now = Localhost:time()
+	local create = UserManager:getInstance().mark.createTime
+	local todayStart = math.floor((now - create) / 86400000) * 86400000 + create
+	
+	if SeasonWeeklyRaceManager:getInstance():isLevelReached(user:getTopLevelId()) and
+		user:getEnergy() < energyUnit and SeasonWeeklyRaceManager:getInstance():getUpdateTime() < todayStart and
+		SeasonWeeklyRaceManager:getInstance():getLeftPlay() > 0 then
+		local popoutPos = self.panelExchangeAnim:getPopShowPos()
+		local selfSize = self.ui:getChildByName("hit_area"):getGroupBounds().size
+		local energyPanelBottomPosY = popoutPos.y - selfSize.height
+		local panel = WeeklyRacePromotionPanel:create(function()
+				self:remove(function()
+						SeasonWeeklyRaceManager:getInstance():pocessSeasonWeeklyDecision()
+					end)
+			end)
+		panel:popout(self, energyPanelBottomPosY)
+		self.bottomBubblePanel = panel
+		return true
+	end
+
+	return false
 end
 
 function EnergyPanel:tryPopoutIapBuyMidEnergy()
@@ -1551,6 +1558,112 @@ function EnergyPanel:tryPopoutIapBuyMidEnergy()
 		end
 	end
 	return false
+end
+
+function EnergyPanel:checkDoEnergyBottleTutorial()
+	local _, __, maxEnergy = UserManager:getInstance():refreshEnergy()
+	local energy = UserManager:getInstance():getUserRef():getEnergy()
+	local consume = MetaManager:getInstance().global.user_energy_level_consume
+
+	if energy == maxEnergy or self.continueCallback and energy >= consume then return end
+	if self.item1:getItemNumber() == 0 and self.item2:getItemNumber() == 0 and self.item3:getItemNumber() == 0 then
+		return
+	end
+	if CCUserDefault:sharedUserDefault():getBoolForKey("energy.full.energy.recoever.tutorial") then return end
+	if self.bottomBubblePanel then return end
+
+	local vSize = Director:sharedDirector():getVisibleSize()
+	local vOrigin = Director:sharedDirector():getVisibleOrigin()
+	local layer = LayerColor:create()
+	layer:setOpacity(150)
+	layer:setContentSize(CCSizeMake(vSize.width / self:getScale(), vSize.height / self:getScale()))
+	layer:ignoreAnchorPointForPosition(false)
+	layer:setAnchorPoint(ccp(0, 1))
+	layer:setPosition(ccp(-self:getPositionX() / self:getScale(), -self:getPositionY() / self:getScale()))
+	layer:setTouchEnabled(true, 0, true)
+	self:addChild(layer)
+
+	local items = {}
+	for i = 1, 3 do
+		if self["item"..tostring(i)]:getItemNumber() > 0 then
+			local item = EnergyItem:create(self.resourceManager:buildGroup("common/bubbleItem"),
+				self["item"..tostring(i)].itemType, layer, ccp(0, 0))
+			local position = self["item"..tostring(i)]:getPosition()
+			local parent = self["item"..tostring(i)]:getParent()
+			local size = item:getGroupBounds().size
+			item:setScale(self["item"..tostring(i)]:getGroupBounds(self).size.width / size.width)
+			item:setPosition(layer:convertToNodeSpace(parent:convertToWorldSpace(position)))
+			item:setPositionX(item:getPositionX() - 4)
+			item:setPositionY(item:getPositionY() + 5)
+			layer:addChild(item)
+			table.insert(items, item)
+		end
+	end
+
+	local panel = GameGuideUI:panelMini()
+	local label = TextField:create(Localization:getInstance():getText("tutorial.refill.energy.text1", {n = '\n'}), nil, 36)
+	label:setColor(ccc3(0, 0, 0))
+	local size = label:getContentSize()
+	local pSize = panel:getGroupBounds().size
+	label:setAnchorPoint(ccp(0, 1))
+	label:setScale(math.min((pSize.width - 50) / size.width, (pSize.height - 50) / size.height))
+	-- 注意：这里属于已知文案之后的硬编码对齐
+	label:setPositionXY((pSize.width - size.width * label:getScale()) / 2 + size.width / 44, -(pSize.height - size.height * label:getScale()) / 2)
+	panel:addChild(label)
+	panel.text:removeFromParentAndCleanup()
+	panel.text = label
+	layer:addChild(panel)
+
+	local animation = CommonSkeletonAnimation:createTutorialMoveIn2()
+	local animFromLeft = true
+	if self.item1:getItemNumber() == 0 and self.item3:getItemNumber() > 0 then
+		animFromLeft = false
+	end
+	if animFromLeft then
+		animation:setScaleX(-1)
+		animation:setPositionX(math.min(-self:getPositionX() / self:getScale() + 220, items[1]:getPositionX()))
+		panel:setPositionXY(math.min(-self:getPositionX() / self:getScale() + 260, items[1]:getPositionX()), items[1]:getPositionY() - 200)
+		panel:setPositionX(panel:getPositionX() - 1000)
+		panel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCEaseBackOut:create(CCMoveBy:create(0.2, ccp(1000, 0)))))
+	else
+		animation:setPositionX(math.max(-self:getPositionX() / self:getScale() + vSize.width / self:getScale() - 190, items[#items]:getPositionX() + 130))
+		local size = panel:getGroupBounds(layer).size
+		panel:setPositionXY(math.max(-self:getPositionX() / self:getScale() + vSize.width / self:getScale() - 170 - size.width), items[1]:getPositionY() - 200)
+		panel:setPositionX(panel:getPositionX() + 1000)
+		panel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(1), CCEaseBackOut:create(CCMoveBy:create(0.2, ccp(-1000, 0)))))
+	end
+	animation:update(0.01)
+	animation:stop()
+	animation:setVisible(false)
+	animation:setPositionY(items[1]:getPositionY())
+	local arr = CCArray:create()
+	arr:addObject(CCDelayTime:create(0.5))
+	arr:addObject(CCCallFunc:create(function()
+			if layer.isDisposed then return end
+			animation:setVisible(true)
+			animation:playByIndex(0)
+		end))
+	arr:addObject(CCDelayTime:create(1.5))
+	arr:addObject(CCCallFunc:create(function()
+			if layer.isDisposed then return end
+			animation:stop()
+			layer:addEventListener(DisplayEvents.kTouchTap, function()
+				layer:removeFromParentAndCleanup(true)
+				CCUserDefault:sharedUserDefault():setBoolForKey("energy.full.energy.recoever.tutorial", true)
+				CCUserDefault:sharedUserDefault():flush()
+			end)
+		end))
+	arr:addObject(CCDelayTime:create(2))
+	arr:addObject(CCCallFunc:create(function()
+			if layer.isDisposed then return end
+			layer:removeFromParentAndCleanup(true)
+			CCUserDefault:sharedUserDefault():setBoolForKey("energy.full.energy.recoever.tutorial", true)
+			CCUserDefault:sharedUserDefault():flush()
+		end))
+	animation:runAction(CCSequence:create(arr))
+	layer:addChild(animation)
+
+	return layer
 end
 
 function EnergyPanel:tryPopPushActivityPanel()
@@ -1586,6 +1699,7 @@ end
 popoutSequence = {
 	EnergyPanel.tryPopoutIapBuyMidEnergy,
 	EnergyPanel.tryPopPushActivityPanel,
+	EnergyPanel.tryPopoutWeeklyRacePushPanel,
 	EnergyPanel.chekPopoutBottomBubbleWindow,
 }
 

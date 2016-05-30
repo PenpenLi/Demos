@@ -7,6 +7,7 @@ local AnimalEditTextHelper = luajava.bindClass("com.happyelements.AndroidAnimal.
 kTextInputEvents.kGotFocus = "gotFocus"
 kTextInputEvents.kLostFocus = "lostFocus"
 
+
 local EditBox = class(CocosObject)
 
 function EditBox:create( size,normal9SpriteBg )
@@ -73,6 +74,21 @@ function EditBox:init( size,normal9SpriteBg )
 	end
 	self.refCocosObj:registerScriptTouchHandler(onTouch,false,-99999,false)
 	self.refCocosObj:setTouchEnabled(true)
+end
+
+local lastKeyboardHeight = nil
+function EditBox:getKeyboardHeight( ... )
+	local keyboardHeight = AnimalEditTextHelper:getKeyboardHeight()
+
+	if keyboardHeight <= 0 and lastKeyboardHeight then
+		keyboardHeight = lastKeyboardHeight 
+	end
+
+	lastKeyboardHeight = keyboardHeight
+
+	local scaleY = CCDirector:sharedDirector():getOpenGLView():getScaleY()
+	
+	return keyboardHeight / scaleY
 end
 
 function EditBox:isTouhIn( worldPoint )
@@ -168,6 +184,18 @@ end
 
 function EditBox:showClearButton( ... )
 	AnimalEditTextHelper:showClearButton(self.viewTag)
+end
+
+function EditBox:hideClearButton( ... )
+	AnimalEditTextHelper:hideClearButton(self.viewTag)
+end
+
+function EditBox:setClearButtonBG(style)
+	AnimalEditTextHelper:setClearButtonBG(self.viewTag, style)
+end
+
+function EditBox:setEnabled(enabled)
+	AnimalEditTextHelper:setInputEnabled(self.viewTag, enabled)
 end
 
 return EditBox

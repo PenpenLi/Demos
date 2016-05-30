@@ -69,11 +69,17 @@ end
 function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 	-- body
 	local count = 0
+	if not mainLogic.bigMonsterMark then
+		return count
+	end
+	
 	---------------------雪怪消除
+	local hasBigmonster = false
 	for r = 1,  #mainLogic.gameItemMap do
 		for c = 1, #mainLogic.gameItemMap[r] do 
 			local item = mainLogic.gameItemMap[r][c]
 			if item and item.ItemType == GameItemType.kBigMonster then 
+				hasBigmonster = true
 				local totalStrength = item.bigMonsterFrostingStrength 
 									+ mainLogic.gameItemMap[r][c+1].bigMonsterFrostingStrength
 									+ mainLogic.gameItemMap[r+1][c].bigMonsterFrostingStrength
@@ -82,7 +88,7 @@ function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 					
 					count = count + 1
 
-					ScoreCountLogic:addScoreToTotal(mainLogic,100)
+					ScoreCountLogic:addScoreToTotal(mainLogic,GamePlayConfigScore.BigMonster)
 
 					local ScoreAction = GameBoardActionDataSet:createAs(
 						GameActionTargetType.kGameItemAction,
@@ -90,7 +96,7 @@ function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 						IntCoord:create(r, c),
 						nil,
 						1)
-					ScoreAction.addInt = 100
+					ScoreAction.addInt = GamePlayConfigScore.BigMonster
 					mainLogic:addGameAction(ScoreAction)
 
 					local action = GameBoardActionDataSet:createAs(
@@ -106,6 +112,10 @@ function BigMonsterLogic:checkMonsterList( mainLogic, callback )
 				end
 			end
 		end 
+	end
+ 
+	if not hasBigmonster then                  --雪怪只会出现在地图配置中
+		mainLogic.bigMonsterMark = false
 	end
 	
 	if count == 0 then return 0 end                     ----------------------没有雪怪需要处理

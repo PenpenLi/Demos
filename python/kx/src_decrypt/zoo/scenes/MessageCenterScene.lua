@@ -10,6 +10,7 @@ end
 function MessageCenterScene:onInit()
 	local panel = RequestMessagePanel:create()
 	self:addChild(panel)
+    self.panel = panel
 end
 
 function MessageCenterScene:onKeyBackClicked()

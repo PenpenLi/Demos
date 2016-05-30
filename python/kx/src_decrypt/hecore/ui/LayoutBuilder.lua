@@ -259,9 +259,9 @@ function LayoutBuilder:buildBatchGroup_version1(batchMode, groupName, imageSuffi
 
 	-- Create A Batch Sprite As The Root Layer
 	assert(self.imageFilePath)
-	self.imageFilePath = SpriteUtil:getRealResourceName(self.imageFilePath)
-
-	local texture = CCTextureCache:sharedTextureCache():addImage(self.imageFilePath)
+	-- self.imageFilePath = SpriteUtil:getRealResourceName(self.imageFilePath)
+	local _imageFile = SpriteUtil:getRealResourceName(self.imageFilePath)
+	local texture = CCTextureCache:sharedTextureCache():addImage(_imageFile)
 	assert(texture)
 
 	local batchNode = false
@@ -271,6 +271,8 @@ function LayoutBuilder:buildBatchGroup_version1(batchMode, groupName, imageSuffi
 		batchNode = Sprite:createEmpty()
 		batchNode:setTexture(texture)
 	end
+
+ 	batchNode.symbolName = groupName
 
 	table.sort(group, sortBoneDepthList);
 
@@ -298,11 +300,11 @@ function LayoutBuilder:buildBatchGroup_version1(batchMode, groupName, imageSuffi
 		elseif symbol.type == kGroupLayoutType.kText then
 				local assertFalseMsg = "build batch group not support CCLabel*  yet ! \n"
 				assertFalseMsg = assertFalseMsg .. "in group: " .. groupName .. " component: " .. symbol.id
-				assert(false, assertFalseMsg)
+				-- assert(false, assertFalseMsg)
 
 		elseif symbol.type == kGroupLayoutType.kGroup then
 
-			local layout = self:buildBatchGroup_version1(symbol.image, imageSuffix, "sprite")
+			local layout = self:buildBatchGroup_version1("sprite", symbol.image, imageSuffix )
 			if layout then
 				setBasicTransformation(layout, symbol, batchNode)
 			end
@@ -329,8 +331,9 @@ function LayoutBuilder:buildBatchGroup_version2(batchMode, groupName, imageSuffi
 
 	-- Get The Texture
 	assert(self.imageFilePath)
-	self.imageFilePath = SpriteUtil:getRealResourceName(self.imageFilePath)
-	local texture = CCTextureCache:sharedTextureCache():addImage(self.imageFilePath)
+	-- self.imageFilePath = SpriteUtil:getRealResourceName(self.imageFilePath)
+	local _imageFile = SpriteUtil:getRealResourceName(self.imageFilePath)
+	local texture = CCTextureCache:sharedTextureCache():addImage(self._imageFile)
 	assert(texture)
 
 	local batchNode = false
@@ -342,6 +345,7 @@ function LayoutBuilder:buildBatchGroup_version2(batchMode, groupName, imageSuffi
 	end
 
 	batchNode.name = groupName
+ 	batchNode.symbolName = groupName
 
 	table.sort(group, sortBoneDepthList);
 
@@ -438,6 +442,7 @@ function LayoutBuilder:build_version2(groupName, imageSuffix, cascade, ...)
 		cascadeEnabled = false
 	end	
 	groupLayer.name = groupName
+ 	groupLayer.symbolName = groupName
 
 	table.sort(group, sortBoneDepthList);
 
@@ -541,6 +546,7 @@ function LayoutBuilder:buildWithCustomeProperty(groupName, imageSuffix, customPr
 	end
 
   groupLayer.name = groupName
+  groupLayer.symbolName = groupName
 
   table.sort(group, sortBoneDepthList);
   for k, symbol in ipairs(group) do
@@ -640,6 +646,7 @@ function LayoutBuilder:build_version1(groupName, imageSuffix)
 	end	
 
   groupLayer.name = groupName
+  groupLayer.symbolName = groupName
 
   table.sort(group, sortBoneDepthList);
   for k, symbol in ipairs(group) do

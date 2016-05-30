@@ -59,8 +59,8 @@ function InviteRulePanel:init(...)
 	local desLabelKey	= "invite.friend.panel.rule.desc"
 	if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then 
 		desLabelKey	= "invite.friend.panel.rule.mitalk.desc"
-	elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then
-		desLabelKey	= "invite.friend.panel.rule.360.desc"
+	-- elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then
+	-- 	desLabelKey	= "invite.friend.panel.rule.360.desc"
 	end
 	local desLabelValue	= Localization:getInstance():getText(desLabelKey, {n = "\n"})
 	self.desLabel:setString(desLabelValue)

@@ -1,6 +1,7 @@
 require "hecore.EventDispatcher"
 
 require "zoo.data.UserManager"
+require "zoo.data.JumpLevelManager"
 require "zoo.net.Http"
 require "zoo.net.OnlineSetterHttp"
 require "zoo.net.OnlineGetterHttp"
@@ -96,8 +97,14 @@ end
 
 --sync 
 local function onCachedHttpDataResponse(endpoint, resp, err)
-	if err then he_log_warning("onCachedHttpDataResponse data fail, err: " .. err)
-	else he_log_warning("onCachedHttpDataResponse data success") end
+	if err then 
+		if not table.exist(ExceptionErrorCodeIgnore, err) then 
+			LoginExceptionManager:getInstance():setErrorCodeCache(err)
+		end
+		he_log_warning("LoginLogic::onCachedHttpDataResponse data fail, err: " .. err)
+	else 
+		he_log_warning("LoginLogic::onCachedHttpDataResponse data success") 
+	end
 end
 
 function LoginLogic:readUserSyncDataFromLocal()
@@ -170,6 +177,10 @@ function LoginLogic:sync()
 				local errorCode = tonumber(err) or -1
 				local function onUseLocalFunc()
 					print("player choose local data (wrong data)")
+					if errorCode == 109 then
+						CCDirector:sharedDirector():endToLua()
+						return
+					end
 					context:onLoadingError()
 				end
 				local function onUseServerFunc()
@@ -181,8 +192,12 @@ function LoginLogic:sync()
 					context:sync()
 				end
 				
-				if errorCode > 10 then ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
-				else context:onLoadingError() end
+				if errorCode > 10 then 
+					local panel = ExceptionPanel:create(errorCode, onUseLocalFunc, onUseServerFunc)
+					if panel then panel:popout() end 
+				else 
+					context:onLoadingError() 
+				end
 			else
 				print("override local data with server data")
 				local status = kUserDataStatus.kOnlineServerData
@@ -241,6 +256,8 @@ function LoginLogic:sync()
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
 	-- 
 	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
+	userbody.deviceUdid = MetaInfo:getInstance():getUdid()
+	userbody.loginType = _G.kLoginType
 
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()

@@ -15,6 +15,7 @@ require "zoo.panel.component.startGamePanel.StartGameButton"
 
 require "zoo.panel.component.common.BubbleCloseBtn"
 require "zoo.util.QixiUtil"
+require "zoo.panel.jumpLevel.JumpLevelIcon"
 
 ---------------------------------------------------
 -------------- LevelInfoPanel
@@ -24,7 +25,7 @@ assert(not LevelInfoPanel)
 assert(BasePanel)
 LevelInfoPanel = class(BasePanel)
 
-function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
+function LevelInfoPanel:init(parentPanel, levelId, levelType, useSpecialActivityUI, ...)
 	assert(parentPanel)
 	assert(type(levelId) 			== "number")
 	assert(#{...} == 0)
@@ -35,8 +36,46 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 	local function setUIProperty(ui)
 		--ui:setCascadeOpacityEnabled(true)
 	end
-	self.ui	= ResourceManager:sharedInstance():buildGroupWithCustomProperty("startGamePanel/levelInfoPanel", nil, setUIProperty)
+	
+	self.useSpecialActivityUI = useSpecialActivityUI
+	if self.useSpecialActivityUI then
+		self:loadRequiredResource(PanelConfigFiles.panel_game_start_activity)
+		self.ui = self:buildInterfaceGroup("Spring2016UI/levelInfoPanel")
+	else
+		self.ui	= ResourceManager:sharedInstance():buildGroupWithCustomProperty("startGamePanel/levelInfoPanel", nil, setUIProperty)
+	end
 
+	-- -------------------
+	-- Pattern in activity version
+	-- -------------------
+	if self.useSpecialActivityUI then
+		local pattern = self.ui:getChildByName("pattern")
+		pattern:removeFromParentAndCleanup(false)
+
+		local childList = {}
+		pattern:getVisibleChildrenList(childList)
+		if #childList > 0 then
+			local batch = SpriteBatchNode:createWithTexture(childList[1]:getTexture())
+			for i,v in ipairs(childList) do
+				v:removeFromParentAndCleanup(false)
+				batch:addChild(v)
+			end
+			batch:setPositionXY(pattern:getPositionX(), pattern:getPositionY())
+			pattern:dispose()
+			pattern = batch
+		end
+		
+		local mask = self.ui:getChildByName("mask")
+		local maskPosition = {x = mask:getPositionX(), y = mask:getPositionY()}
+		local maskIndex = self.ui:getChildIndex(mask)
+		mask:removeFromParentAndCleanup(false)
+		local clip = ClippingNode.new(CCClippingNode:create(mask.refCocosObj))
+		clip:setAlphaThreshold(0.7)
+		self.ui:addChildAt(clip, maskIndex)
+		pattern:setPositionXY(pattern:getPositionX() - maskPosition.x, pattern:getPositionY())
+		clip:addChild(pattern)
+	end
+	
 	-- -----------------
 	-- Init Base Class
 	-- -------------------
@@ -162,7 +201,7 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 	--- Create UI Component 
 	---------------------------
 	-- Start Button
-	self.startButton	= StartGameButton:create(self.startButton)
+	self.startButton	= StartGameButton:create(self.startButton, self.useSpecialActivityUI)
 	self.closeBtn		= BubbleCloseBtn:create(self.closeBtnRes)
 
 	--- Panel Title
@@ -183,7 +222,8 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		else
 			levelDisplayName = LevelMapManager.getInstance():getLevelDisplayName(self.levelId)
-			panelTitle = PanelTitleLabel:create(levelDisplayName)
+			-- panelTitle = PanelTitleLabel:create(levelDisplayName)
+			panelTitle = PanelTitleLabel:create(levelDisplayName, nil, nil, nil, nil, nil, self.useSpecialActivityUI)
 		end
 	end
 
@@ -352,6 +392,8 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 		stringKey	= "level.start.dig.endless.mode"
 	elseif self.levelModeTypeId == GameModeTypeId.TASK_UNLOCK_DROP_DOWN then 
 		stringKey = "unlock.cloud.panel.play.desc"
+	elseif self.levelModeTypeId == GameModeTypeId.LOTUS_ID then
+		stringKey = "level.start.meadow.mode"
 	else 
 		print("levelModeTypeId: " .. self.levelModeTypeId)
 		assert(false)
@@ -360,6 +402,17 @@ function LevelInfoPanel:init(parentPanel, levelId, levelType, ...)
 	local targetDesLabelTxt = Localization:getInstance():getText(stringKey)
 	assert(targetDesLabelTxt)
 	self.targetDesLabel:setString(targetDesLabelTxt)
+
+	self:initJumpLevelArea()
+
+	if JumpLevelManager:getInstance():hasJumpedLevel(self.levelId) then
+		self.ui:getChildByName('jumpLevelMark'):getChildByName('text'):setText(localize('skipLevel.tips3', {n = '\n', s = ' ', replace1 = JumpLevelManager:getLevelPawnNum(self.levelId)}))
+		self.clippingAreaAbove:getChildByName('chooseItemLabel'):setVisible(false)
+		self.clippingAreaAbove:getChildByName('_dotLineLeft'):setVisible(false)
+		self.clippingAreaAbove:getChildByName('_dotLineRight'):setVisible(false)
+	else
+		self.ui:getChildByName('jumpLevelMark'):setVisible(false)
+	end
 end
 
 he_log_warning("Debug Item Scale 9 Bg Group Bounds !")
@@ -396,6 +449,7 @@ function LevelInfoPanel:onCloseBtnTapped(event, ...)
 	end
 
 	self.parentPanel:remove(onRemoveAnimFinished)
+	self:removeGuide()
 end
 
 function LevelInfoPanel:backTheCoinUsedInPreGameItem(...)
@@ -608,6 +662,7 @@ function LevelInfoPanel:onStartButtonTapped(event, ...)
 		return
 	end
 
+	self:removeGuide()
 	self:startGame()
 end
 
@@ -621,14 +676,14 @@ function LevelInfoPanel:createFlyingEnergyAction(...)
 	-- --------------------------------------------------
 	-- Get The Energy Button's Energy Icon In The HomeScene
 	-- ----------------------------------------------------
-	local runningScene = Director:sharedDirector():getRunningScene()
-	if runningScene.name == "GamePlaySceneUI" then
+	-- local runningScene = Director:sharedDirector():getRunningScene()
+	-- if runningScene.name == "GamePlaySceneUI" then
 		
-		local emptyAction = CCDelayTime:create(0)
-		return emptyAction
-	end
+	-- 	local emptyAction = CCDelayTime:create(0)
+	-- 	return emptyAction
+	-- end
 
-	local energyButton = runningScene.energyButton
+	local energyButton = HomeScene:sharedInstance().energyButton
 	assert(energyButton)
 	local energyBtnIcon = energyButton:getEnergyRes()
 	assert(energyBtnIcon)
@@ -778,46 +833,32 @@ function LevelInfoPanel:setSelectedItemAnimDestPos(selectedItemsData, ...)
 		local itemResPosInWorldSpace = itemResParent:convertToWorldSpace(ccp(itemResPos.x, itemResPos.y))
 
 		data.destXInWorldSpace = itemResPosInWorldSpace.x
-		data.destYInWorldSpace = itemResPosInWorldSpace.y + 150
+		data.destYInWorldSpace = itemResPosInWorldSpace.y --+ 150
 	end
 end
 
 
 function LevelInfoPanel:createSelectedItemFlyingAction(selectedItemsData, ...)
-	assert(type(selectedItemsData) == "table")
-	assert(#{...} == 0)
-
+	
 	local actionArray = CCArray:create()
-		
 	for k,data in pairs(selectedItemsData) do
-
 		local preGameToolItem = data.node
-		if preGameToolItem then 
-			assert(PreGameToolItem)
-
+		if preGameToolItem then
 			local itemRes = preGameToolItem:getItemRes()
-			assert(itemRes)
-
 			local nodeSpacePos = self:getNodePosInSelfSpace(itemRes)
-
-			--------------------------------------------
-			-- Remove Item From BubbleItem, Add To Self
-			-- ------------------------------------------
 			itemRes:removeFromParentAndCleanup(false)
-			itemRes:setPosition(ccp(nodeSpacePos.x, nodeSpacePos.y))
-			self:addChild(itemRes)
+			
+			local container = PrefixPropAnimation:createShineAnimation()
+			container:setPosition(nodeSpacePos)
+			itemRes:setPositionX(0)
+			itemRes:setPositionY(0)
+			container:addChild(itemRes)
 
-			-- Convert Dest Pos In World Space To Self Space
-			local destInSelfSpace = self:convertToNodeSpace(ccp(data.destXInWorldSpace, data.destYInWorldSpace))
+			self:addChild(container)
 
-			local moveTo	= CCMoveTo:create(0.1, ccp(destInSelfSpace.x, destInSelfSpace.y))
-			local ease	= CCEaseOut:create(moveTo, 1)
-			moveBy = ease
-			local target	= CCTargetedAction:create(itemRes.refCocosObj, moveBy)
-			actionArray:addObject(target)
+			actionArray:addObject(CCDelayTime:create(0.2))
 		end
 	end
-
 	-- Empty Action
 	local emptyAction = CCDelayTime:create(0)
 	actionArray:addObject(emptyAction)
@@ -890,7 +931,7 @@ function LevelInfoPanel:onStartLevelLogicSuccess()
 	if self.levelType == GameLevelType.kMainLevel 
 			or self.levelType == GameLevelType.kHiddenLevel then
 		-- RabbitWeeklyManager:sharedInstance():onStartMainLevel()
-		SummerWeeklyMatchManager:getInstance():onPlayMainLevel()
+		SeasonWeeklyRaceManager:getInstance():onPlayMainLevel()
 	end
 end
 
@@ -944,6 +985,7 @@ function LevelInfoPanel:onWillEnterPlayScene( ... )
 	if self.parentPanel and not self.parentPanel.isDisposed then
 		print("onWillEnterPlaySceneCallback remove parentPanel")
 		PopoutManager:sharedInstance():remove(self.parentPanel, true)
+		self:removeGuide()
 	end
 	--end fix
 end
@@ -989,12 +1031,13 @@ function LevelInfoPanel:getSelectedItemsData(...)
 	return result
 end
 
-function LevelInfoPanel:create(parentPanel, levelId, levelType, ...)
+function LevelInfoPanel:create(parentPanel, levelId, levelType, useSpecialActivityUI, ...)
 	assert(parentPanel)
 	assert(type(levelId) 			== "number")
 	assert(#{...} == 0)
 	local newPanel = LevelInfoPanel.new()
-	newPanel:init(parentPanel, levelId, levelType)
+	print("RRR    LevelInfoPanel:create   " , parentPanel, levelId, levelType, useSpecialActivityUI)
+	newPanel:init(parentPanel, levelId, levelType, useSpecialActivityUI)
 	return newPanel
 end
 
@@ -1040,5 +1083,110 @@ function LevelInfoPanel:afterPopout()
 		if tappedPreGameItem and not tappedPreGameItem.isDisposed then
 			tappedPreGameItem:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(-0.15 + 0.15 * i), CCCallFunc:create(playBubbleAnim)))
 		end
+	end
+
+	local gameModeName = LevelMapManager.getInstance():getMeta(self.levelId).gameData.gameModeName
+	if gameModeName == 'Drop down' then
+		self:tryIngredientGuide(self.levelId)
+	end
+
+	if self.jumpLevelIconArmature then
+		self.jumpLevelIconArmature:playByIndex(0, 1)
+	end
+end
+
+function LevelInfoPanel:initJumpLevelArea( ... )
+	-- body
+	local area = self.ui:getChildByName("jump_level_area")
+	local pos = area:getPosition()
+
+	-- isFakeIcon31-39关可见跳关按钮，但并走真正的逻辑
+	-- 只是弹出tip提示xx关开启跳关功能
+	local isFakeIcon = JumpLevelManager:shouldShowFakeIcon(self.levelId)
+	if JumpLevelManager:getInstance():shouldShowJumpLevelIcon(self.levelId) then
+		FrameLoader:loadArmature('skeleton/jump_level_btn_animation', 'jump_level_btn_animation')
+		local armature = nil
+		if not isFakeIcon then
+			armature = ArmatureNode:create('skip')
+		else
+			armature = ArmatureNode:create('skip2')
+		end
+		-- armature:setAnimationScale(0.7)
+		armature:playByIndex(0, 1)
+		armature:update(0.001)
+		armature:stop()
+		self.jumpLevelIconArmature = armature
+		local layer = Layer:create()
+		layer:addChild(armature)
+		area:getParent():addChildAt(layer, area:getZOrder())
+		layer:setPosition(ccp(pos.x, pos.y))
+		self.jumpLevelArea = JumpLevelIcon:create(layer, self.levelId, self.levelType, self, isFakeIcon)
+		area:setVisible(false)
+	else
+		area:setVisible(false)
+	end
+end
+
+
+function LevelInfoPanel:tryIngredientGuide(levelId)
+	if levelId == 13 then return end -- 13关有前置道具引导，金豆荚引导不在13关弹出
+
+	local uid = UserManager:getInstance().user.uid or "12345"
+	local key = 'jump.level.ingredient.guide'
+	if not CCUserDefault:sharedUserDefault():getBoolForKey(key, false) then
+		if self.isGuideOnScreen then return end
+	    self.isGuideOnScreen = true
+	    local pos = self.fadeArea:getParent():convertToWorldSpace(self.fadeArea:getPosition())
+	    local size = self.fadeArea:getGroupBounds().size
+	    pos = ccp(pos.x - 56, pos.y - size.height + 5)
+		local action = 
+	    {
+	        opacity = 0xCC, 
+	        text = "tutorial.props.ingredient.1",
+	        panType = "up", panAlign = "viewY", panPosY = pos.y - 300, panFlip = true,
+	        maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.3, touchDelay = 1
+	    }
+	    local panel = GameGuideUI:panelS(nil, action, false)
+	    local mask = GameGuideUI:mask(
+	        action.opacity, 
+	        action.touchDelay, 
+	        pos,
+	        1.5, 
+	        true, 
+	        size.width, 
+	        size.height, 
+	        false,
+	        true)
+	    mask.setFadeIn(action.maskDelay, action.maskFade)
+	    self.guidePanel = panel
+	    self.guideMask = mask
+	    local function newOnTouch(evt)
+	        self.isGuideOnScreen = false
+	        if panel and not panel.isDisposed then
+	            panel:removeFromParentAndCleanup(true)
+	        end
+	        if mask and not mask.isDisposed then
+	            mask:removeFromParentAndCleanup(true)
+	        end
+	        CCUserDefault:sharedUserDefault():setBoolForKey(key, true)
+	    end
+	    mask:removeEventListenerByName(DisplayEvents.kTouchTap)
+	    mask:ad(DisplayEvents.kTouchTap, newOnTouch)
+	    local scene = Director:sharedDirector():getRunningScene()
+	    if scene then
+	        scene:addChild(mask)
+	        scene:addChild(panel)
+	    end
+	end
+end
+
+function LevelInfoPanel:removeGuide()
+	if self.guidePanel and not self.guidePanel.isDisposed then
+		self.guidePanel:removeFromParentAndCleanup(true)
+		self.guidePanel = nil
+	end
+	if self.guideMask and not self.guideMask.isDisposed then
+		self.guideMask:removeFromParentAndCleanup(true)
+		self.guideMask = nil
 	end
 end

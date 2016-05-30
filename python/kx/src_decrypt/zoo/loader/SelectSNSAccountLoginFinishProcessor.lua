@@ -139,6 +139,10 @@ function Processor:weiboMergeToQQAccount( weiboOpenId,qqOpenId,qqAccessToken )
     local function onReqError(evt)
         evt.target:rma()
 
+        if evt and evt.data then 
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
+		end 
+
         -- TODO:
         self:dispatchEvent(Event.new(Processor.Events.kError, nil, self))
     end

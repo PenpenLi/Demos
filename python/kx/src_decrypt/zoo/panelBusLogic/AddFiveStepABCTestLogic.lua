@@ -45,7 +45,7 @@ function AddFiveStepABCTestLogic:needShowCountdown()
 
 	print("RRR   AddFiveStepABCTestLogic:needShowCountdown   testType = " .. tostring(self.testType) )
 
-	if __ANDROID then
+	if __ANDROID or __WP8 then
 		return true
 	end
 
@@ -58,7 +58,7 @@ end
 
 function AddFiveStepABCTestLogic:needAutoClosePanel()
 
-	if __ANDROID then
+	if __ANDROID or __WP8 then
 		return true
 	end
 

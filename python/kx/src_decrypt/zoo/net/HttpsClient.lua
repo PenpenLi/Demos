@@ -1,3 +1,4 @@
+require "zoo.net.Http"
 HttpsClient = class(HttpBase)
 
 HTTPS_ROOT_URL = "https://animalaccount.happyelements.com/"
@@ -36,8 +37,12 @@ function HttpsClient:create(endPoint, postData, onSuccess, onError)
 	return client
 end
 
+local v = _G.bundleVersion
+local pf = StartupConfig:getInstance():getPlatformName()
+
 function HttpsClient:send()
-	local request = HttpRequest:createPost(HTTPS_ROOT_URL..self.endPoint)
+
+	local request = HttpRequest:createPost(HTTPS_ROOT_URL..self.endPoint .. "?_v=" .. v .. "&pf=" .. pf)
 	request:setConnectionTimeoutMs(10 * 1000)
 	request:setTimeoutMs(30 * 1000)
 

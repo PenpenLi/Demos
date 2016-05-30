@@ -57,8 +57,8 @@ function class(super)
     class_type.new = function(...)
         local obj = { class = class_type }
         setmetatable(obj, { 
-		__index = _class[class_type]
-	})
+			__index = _class[class_type]
+		})
         
         -- deal constructor recursively
         local inherit_list = {}
@@ -74,17 +74,17 @@ function class(super)
         
         obj.class = class_type              -- must be here, because some class constructor change class property.
 
-	-------------------------
-	--- Declare Variabel Check
-	--------------------------
-	function obj:declare(variableName, value, ...)
-		assert(type(variableName) == "string", "function declare 's variableName paramter is nil !")
-		assert(value ~= nil, "function declare 's value paramter is nil !")
-		assert(#{...} == 0)
+		-------------------------
+		--- Declare Variabel Check
+		--------------------------
+		function obj:declare(variableName, value, ...)
+			assert(type(variableName) == "string", "function declare 's variableName paramter is nil !")
+			assert(value ~= nil, "function declare 's value paramter is nil !")
+			assert(#{...} == 0)
 
-		assert(not self[variableName], "variable \"" .. variableName .. "\" Already Declared !")
-		self[variableName] = value
-	end
+			assert(not self[variableName], "variable \"" .. variableName .. "\" Already Declared !")
+			self[variableName] = value
+		end
 
         return obj
     end
@@ -121,6 +121,42 @@ function class(super)
 		end
 
 		class_type.interface[interface] = true
+	end
+
+	----------------------------------------------------
+	--create a object with access control
+	--method start with "_", will be regarded as a private function
+	----------------------------------------------------
+	class_type.new_ac = function()
+		local delegate = {}
+
+		local obj = class_type.new()
+
+		local function cloneToDelegate(sourceClass)
+			for k,v in pairs(sourceClass) do
+				--print("++++++++++++++++++++++++++++++++",k, type(v))
+				local isPrivate = string.find(k, "_") == 1
+				local isInner = k == "new" or k == "new_ac"
+				if type(v) == "function" and not isPrivate and not isInner and not delegate[k] then
+					--print("delegated method: ", k)
+					delegate[k] = function(...)
+						local params = { ... } 
+						params[1] = obj
+						return obj[k](unpack(params))
+					end
+				end
+			end
+		end
+
+		cloneToDelegate(_class[class_type])
+
+		local superClass = super
+		while superClass do
+			cloneToDelegate(_class[superClass])
+			superClass = superClass.super
+		end
+
+		return delegate
 	end
 	
 	return class_type

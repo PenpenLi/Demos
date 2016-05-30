@@ -74,22 +74,18 @@ function GoldZongZiState:createSpeical(zongzi , itemList)
     		table.remove( itemList , randIndex )
 		end 
     end
-    
-    if #randList > 0 then
 
-    	local action = GameBoardActionDataSet:createAs(
-    		GameActionTargetType.kGameItemAction,
-    		GameItemActionType.kItem_Gold_ZongZi_Explode,
-    		IntCoord:create(zongzi.y, zongzi.x),
-    		nil,
-    		GamePlayConfig_MaxAction_time
-    	)
+	local action = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItem_Gold_ZongZi_Explode,
+		IntCoord:create(zongzi.y, zongzi.x),
+		nil,
+		GamePlayConfig_MaxAction_time
+	)
 
-   		action.completeCallback = actionCallback
-    	action.speicalItemPos = randList
-    	self.mainLogic:addGameAction(action)
-
-    end
+	action.completeCallback = actionCallback
+	action.speicalItemPos = randList
+	self.mainLogic:addGameAction(action)
 end
 
 function GoldZongZiState:tryExplodeGoldZongZi()
@@ -173,7 +169,7 @@ function GoldZongZiState:tryExplodeGoldZongZi()
 		local needBreak = false
 
 		if not tileData or neednum == 0 or not containerList then
-			print("RRR  !!!!!!!!!!!!!!!!!!!   randomItemAroundTile  Error !!!!!!!!!!!!!!!!!!!!!!!")
+			-- print("RRR  !!!!!!!!!!!!!!!!!!!   randomItemAroundTile  Error !!!!!!!!!!!!!!!!!!!!!!!")
 			return
 		end
 
@@ -353,7 +349,7 @@ function GoldZongZiState:tryExplodeGoldZongZi()
 	    		end
 	    	end
 
-	    	if maxAnimalNumTile then
+	    	local function createItemInMagicTile()
 	    		--如果目标地格存在
 	    		local inTileList = {}
 	    		for k, v in pairs(magixTileUnitList) do
@@ -386,7 +382,16 @@ function GoldZongZiState:tryExplodeGoldZongZi()
 				    --此时inTileList的item个数刚好等于releaseSpecialNum
 				    self:createSpeical(zv , inTileList)
 	    		end
-    			
+	    	end
+
+	    	if maxAnimalNumTile then
+				local boss = self.mainLogic:getHalloweenBoss()
+	 			if GamePlaySceneSkinManager:isHalloweenLevel() and not boss then
+	 				--2015万圣节关卡 虽然有超级地格 但是没有boss 直接在屏幕随机
+	 				self:createSpeical(zv , normalList)
+	 			else
+	 				createItemInMagicTile()
+	 			end
 	    	else
 	    		--目标地格不存在，说明画面中虽然有地格，但每个地格内部都没有可用的item
 	    		--那么等同于画面里没有地格，直接随机

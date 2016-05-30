@@ -31,7 +31,7 @@ function PropItemAnimator:explode( animationTime, usedPositionGlobal, finishCall
   --array:addObject(CCCallFunc:create(finishCallback))
   background:setScale(1.2)
   background:runAction(CCSequence:create(array))
-  setTimeOut(finishCallback , animationTime+0.3)
+  setTimeOut(finishCallback , animationTime)
 
   if self.propItem.prop and self.propItem.prop.itemId then
   	local iconAnimation = PropListAnimation:createIcon(self.propItem.prop.itemId)
@@ -55,20 +55,37 @@ function PropItemAnimator:explode( animationTime, usedPositionGlobal, finishCall
 
         local flyTime = 0.5
         local positionTo = container:convertToNodeSpace(usedPositionGlobal)
-        if useFallingStar then flyTime = 0.7 end
+
 
         local position = item:convertToWorldSpace(ccp(self.propItem.iconSize.x + self.propItem.iconSize.width/2, self.propItem.iconSize.y - self.propItem.iconSize.height/2))
         position = container:convertToNodeSpace(position)
+        
+        if useFallingStar then
+          local distance = (positionTo.x-position.x)*(positionTo.x-position.x)+(positionTo.y-position.y)*(positionTo.y-position.y)
+          flyTime = 0.7 * 1.5*math.sqrt(distance)/Director:sharedDirector():getVisibleSize().height
+        end
+
         local function onIconAnimated() if container then container:removeFromParentAndCleanup(true) end end
-        local iconSpawn = CCMoveTo:create(flyTime, positionTo)
+
+        if useFallingStar then
+          local star = BezierFallingStar:create(ccp(position.x, position.y), ccp(usedPositionGlobal.x, usedPositionGlobal.y), nil, nil, nil, nil, false)
+          container:addChild(star)
+          flyTime = star.time
+        end
+        
+        local to = positionTo
+        local from = position
+        local bezierConfig = ccBezierConfig:new() 
+        local controlPoint = ccp((from.x + to.x)/2-(to.y-from.y)/4, (from.y + to.y)/2-(-to.x+from.x)/4)
+        bezierConfig.controlPoint_1 = controlPoint
+        bezierConfig.controlPoint_2 = controlPoint
+        bezierConfig.endPosition = to
+        local iconSpawn = CCEaseSineInOut:create(CCBezierTo:create(flyTime, bezierConfig))
+
         iconAnimation:runAction(CCSequence:createWithTwoActions(iconSpawn, CCCallFunc:create(onIconAnimated)))
         iconAnimation:setPosition(position)
         container:addChild(iconAnimation)
 
-        if useFallingStar then
-          local star = FallingStar:create(ccp(position.x, position.y), ccp(usedPositionGlobal.x, usedPositionGlobal.y))
-          container:addChild(star)
-        end
       else
         local function onIconAnimated() if iconAnimation then iconAnimation:removeFromParentAndCleanup(true) end end
         local iconSpawn = CCSpawn:createWithTwoActions(CCFadeTo:create(0.6, 100), CCEaseBackIn:create(CCMoveBy:create(0.6, ccp(0, 150))))
@@ -126,11 +143,69 @@ function PropItemAnimator:playIncreaseAnimation()
   end
   local item = self.propItem.item
   local array = CCArray:create()
+
+  local runningScene = Director:sharedDirector():getRunningScene()
+
+  if runningScene and self.propItem.prop and self.propItem.prop.itemId then
+
+      local shine = item:getChildByName("bg_selected")
+      local oldOpacity = shine:getOpacity()
+      local oldVisible = shine:isVisible()
+      shine:setVisible(true)
+      shine:setOpacity(0)
+      local waitToFade = CCDelayTime:create(0.6)
+      local fadeIn = CCFadeIn:create(0.3)
+      local fadeOut = CCFadeOut:create(0.3)
+      local finishShine = CCCallFunc:create(
+        function()
+          shine:setVisible(oldVisible)
+          shine:setOpacity(oldOpacity)
+        end
+      )
+      local arrayShine = CCArray:create()
+      arrayShine:addObject(waitToFade)
+      arrayShine:addObject(fadeIn)
+      arrayShine:addObject(fadeOut)
+      arrayShine:addObject(finishShine)
+      local seqShine = CCSequence:create(arrayShine)
+      shine:runAction(seqShine)
+
+
+      local bounds = shine:getGroupBounds()
+      --接收动画
+      local spriteRecv = ResourceManager:sharedInstance():buildItemSprite(self.propItem.prop.itemId)
+      runningScene:addChild(spriteRecv)
+      spriteRecv:setAnchorPoint(ccp(0.5, 0.5))
+      spriteRecv:setPositionXY(bounds:getMidX(), bounds:getMidY())
+      spriteRecv:setVisible(false)
+      local actionArray = CCArray:create()
+      actionArray:addObject(CCCallFunc:create(
+          function()
+            spriteRecv:setVisible(true)
+          end
+        )
+      )
+      actionArray:addObject(CCScaleTo:create(3/12,1.3,1.3))
+      actionArray:addObject(CCScaleTo:create(2/12,0,0))
+      actionArray:addObject(CCCallFunc:create(
+          function()
+            spriteRecv:removeFromParentAndCleanup(true)
+          end
+        )
+      )
+      spriteRecv:runAction(CCSequence:create(actionArray))
+
+  end
   -- array:addObject(CCSpawn:createWithTwoActions(CCEaseSineIn:create(CCScaleTo:create(0.15, 0.6, 0.3)), CCMoveTo:create(0.15, ccp(self.beginPosition.x, self.beginPosition.y))))
   -- array:addObject(CCEaseBackOut:create(CCScaleTo:create(0.35, 1)))
-  array:addObject(CCScaleTo:create(0.25, 0))
-  array:addObject(CCScaleTo:create(0.25, 1))
+
+  -- array:addObject(CCScaleTo:create(0.25, 0))
+  -- array:addObject(CCScaleTo:create(0.25, 1))
   array:addObject(CCCallFunc:create(onAnimationFinished))
+
+  local icon = self.propItem.icon
+
+
   item:stopAllActions()
   item:setRotation(self.startAngle)
   item:runAction(CCSequence:create(array))

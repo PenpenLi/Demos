@@ -47,6 +47,7 @@ function GameGuide:onEnterWorldMap()
 	data:resetNumMoves()
 	data:resetSkipLevel()
 	data:resetGameFlags()
+	data:resetCurLevelGuide()
 	self:tryEndCurrentGuide()
 	return self:tryRunNewGuide()
 end
@@ -121,46 +122,81 @@ end
 function GameGuide:onHalloweenBossFirstComeout(pos)
 	local data = GameGuideData:sharedInstance()
 	data:addToGameFlags("halloweenBossFirstComeout")
-	local array = data:getGuideActionById(220001, 1).array[1]
-	data:getGuides()[220001].action[6] = nil
+	local array = data:getGuideActionById(250007, 1).array[1]
+	-- data:getGuides()[250001].appear[6] = nil
 	array.r = pos.r + 1
 	array.c = pos.c
 	self:tryEndCurrentGuide()
 	return self:tryRunNewGuide()
 end
 
+function GameGuide:onHalloweenBossDie()
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags("halloweenBossDie")
+	self:tryEndCurrentGuide()
+	return self:tryRunNewGuide()
+end
+
+function GameGuide:onHedgehogCrazy( pos )
+	-- body
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags("hedgehogCrazy")
+	self:tryEndCurrentGuide()
+	local result = self:tryRunNewGuide(pos)
+	data:removeFromGameFlags("hedgehogCrazy")
+	return result
+end
+
+function GameGuide:onHedgehogCrazyClick( paras)
+	-- body
+	local data = GameGuideData:sharedInstance()
+	self:tryEndCurrentGuide({value = "click"})
+end
+
+function GameGuide:onWukongCrazy( pos )
+	-- body
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags("wukongCrazy")
+	self:tryEndCurrentGuide()
+	local result = self:tryRunNewGuide(pos)
+	data:removeFromGameFlags("wukongCrazy")
+	return result
+end
+
+function GameGuide:onWukongCrazyClick( paras)
+	-- body
+	local data = GameGuideData:sharedInstance()
+	self:tryEndCurrentGuide({value = "click"})
+end
+
+function GameGuide:onWukongGuideJump( pos , flags )
+	-- body
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags( flags )
+	self:tryEndCurrentGuide()
+	local result = self:tryRunNewGuide(pos)
+	data:removeFromGameFlags( flags )
+	return result
+end
+
 function GameGuide:onGoldZongziAppear(pos)
 	local data = GameGuideData:sharedInstance()
 	data:addToGameFlags("goldZongziAppear")
-	local array = data:getGuideActionById(220002, 1).array[1]
-	data:getGuides()[220002].action[6] = nil
+	-- local array = data:getGuideActionById(220002, 1).array[1]
+	-- data:getGuides()[220002].action[6] = nil
+	local array = data:getGuideActionById(250008, 1).array[1]
 	array.r = pos.r
 	array.c = pos.c
 	self:tryEndCurrentGuide()
 	return self:tryRunNewGuide()
 end
 
-function GameGuide:tryFirstQuestionMark(mainLogic)
+function GameGuide:tryFirstQuestionMark(row, col)
 	local data = GameGuideData:sharedInstance()
 	data:addToGameFlags("firstQuestionMark")
-	local row, col = 0, 0
-	local found = false
-	for r = #mainLogic.gameItemMap, 1, -1  do
-		for c = 1, #mainLogic.gameItemMap[r] do 
-			local item = mainLogic.gameItemMap[r][c]
-			if item.ItemType == GameItemType.kQuestionMark then
-				row = r
-				col = c
-				found = true
-				break
-			end
-		end
-		if found == true then break end
-	end
-
-	data:getGuideActionById(210001, 1).array[1].r = row
-	data:getGuideActionById(210001, 1).array[1].c = col
-	data:getGuideActionById(210001, 1).panPosY = row - data:getGuideActionById(210001, 1).offsetY
+	data:getGuideActionById(2303312, 1).array[1].r = row
+	data:getGuideActionById(2303312, 1).array[1].c = col
+	data:getGuideActionById(2303312, 1).panPosY = row - data:getGuideActionById(2303312, 1).offsetY
 	self:tryEndCurrentGuide()
 	local guide = self:tryRunNewGuide()
 	data:removeFromGameFlags("firstQuestionMark")
@@ -170,7 +206,8 @@ end
 function GameGuide:onFirstShowFirework(pos)
 	local data = GameGuideData:sharedInstance()
 	data:addToGameFlags("firstShowFirework")
-	data:getGuideActionById(210000, 1).position = pos
+	-- data:getGuideActionById(210000, 1).position = pos
+	data:getGuideActionById(2303311, 1).position = pos
 	self:tryEndCurrentGuide()
 	local newGuide = self:tryRunNewGuide()
 	data:removeFromGameFlags("firstShowFirework")
@@ -180,17 +217,59 @@ end
 function GameGuide:tryFirstFullFirework(pos)
 	local data = GameGuideData:sharedInstance()
 	data:addToGameFlags("firstFullFirework")
-	data:getGuideActionById(210002, 1).position = pos
+	-- data:getGuideActionById(210002, 1).position = pos
+	data:getGuideActionById(2303313, 1).position = pos
 	self:tryEndCurrentGuide()
 	local newGuide = self:tryRunNewGuide()
 	data:removeFromGameFlags("firstFullFirework")
 	return newGuide
 end
 
+function GameGuide:trySwapCrystalStonesGuide(pos1, pos2)
+	if not pos1 or not pos2 then return end
+
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags("twoCrystalStones")
+
+	local action = data:getGuideActionById(7300, 1)
+	local first, second = pos1, pos2
+	if pos2.x < pos1.x or pos2.y < pos1.y then
+		first, second = pos2, pos1
+	end
+	local row = math.abs(second.x - first.x) + 1
+	local col = math.abs(second.y - first.y) + 1
+	action.array = {{r = first.x, c = first.y, countR = 1, countC = 1}, {r = second.x, c = second.y, countR = 1, countC = 1}}
+	if col > 1 then
+ 		action.allow = {r = first.x, c = first.y, countR = row, countC = col}
+ 	elseif row > 1 then
+ 		action.allow = {r = second.x, c = second.y, countR = row, countC = col}
+ 	end
+ 	action.from = ccp(first.x, first.y)
+ 	action.to = ccp(second.x, second.y)
+ 	local maxR = math.max(first.x, second.x)
+ 	if maxR <= 5 then
+	 	action.panPosY = maxR + 1
+	 	action.panType = "up"
+ 	else
+ 		local minR = math.min(first.x, second.x)
+	 	action.panPosY = minR - 4.5
+	 	action.panType = "down"
+ 	end
+
+ 	local guide = data:getGuideById(7300)
+ 	guide.disappear = nil
+ 	guide.disappear = {{type = "swap", from = ccp(first.x, first.y), to = ccp(second.x, second.y)}}
+
+	self:tryEndCurrentGuide()
+	local newGuide = self:tryRunNewGuide()
+	data:removeFromGameFlags("twoCrystalStones")
+	return newGuide
+end
+
 function GameGuide:onShowFullFireworkTip(pos)
 	local data = GameGuideData:sharedInstance()
-	if not data:containInGuidedIndex(210002) then -- 将首次引导置为不可用
-		data:addToGuidedIndex(210002)
+	if not data:containInGuidedIndex(2303314) then -- 将首次引导置为不可用
+		data:addToGuidedIndex(2303314)
 		data:writeToFile()
 	end
 
@@ -198,6 +277,16 @@ function GameGuide:onShowFullFireworkTip(pos)
 	self:tryEndCurrentGuide()
 	local newGuide = self:tryRunNewGuide()
 	data:removeFromGameFlags("showFullFireworkTip")
+	return newGuide
+end
+
+function GameGuide:onShowForceUse(pos)
+	local data = GameGuideData:sharedInstance()
+	data:addToGameFlags("forceUseFullFirework")
+	data:getGuideActionById(2303315, 1).position = pos
+	self:tryEndCurrentGuide()
+	local newGuide = self:tryRunNewGuide()
+	data:removeFromGameFlags("forceUseFullFirework")
 	return newGuide
 end
 
@@ -274,15 +363,24 @@ end
 
 -- 检查本关是否有可显示的引导
 function GameGuide:checkHaveGuide(level)
+	local data = GameGuideData:sharedInstance()
+	local scene = data:getScene()
+	local levelId = data:getLevelId()
+	data:setScene("game")
+	data:setLevelId(level)
 	for k, v in pairs(GameGuideData:sharedInstance():getGuides()) do
-		local list = {{type="scene", condition={scene="game", para=level}, force=true},
+		local list = {{type="scene", force=true},
 			{type="topLevel"},
 			{type="onceOnly"},
 			{type="curLevelGuided"}}
 		if GameGuideCheck:checkFixedAppears(v, list, nil, k) then
+			data:setScene(scene)
+			data:setLevelId(levelId)
 			return true
 		end
 	end
+	data:setScene(scene)
+	data:setLevelId(levelId)
 	return false
 end
 
@@ -314,12 +412,10 @@ function GameGuide:onGuideComplete(skipLevel)
 	end
 	local rec, success = GameGuideRunner:removeGuide(paras)
 	if skipLevel then
-		data:resetRunningGuide()
 		data:setSkipLevel(true)
-		return
 	end
 	local action = data:incRunningAction()
-	if not action then
+	if skipLevel or not action then
 		if rec then
 			if not data:containInGuidedIndex(data:getGuideIndex()) then
 				data:addToGuidedIndex(data:getGuideIndex())

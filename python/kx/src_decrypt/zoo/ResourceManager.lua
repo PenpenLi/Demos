@@ -46,6 +46,10 @@ function ResourceManager:init(...)
 	addGlobalDynamicFontMap("WenQuanYiMicroHei", filename)
 	addGlobalDynamicFontMap("文泉驿微米黑", filename)
 
+	filename = "fnt/titles_red.fnt"
+	addGlobalDynamicFontMap("Rosewood Std", filename)
+	addGlobalDynamicFontMap("Rosewood Std Regular", filename)
+
 	filename = "fnt/caption.fnt"
 	if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/caption.fnt" end
 	addGlobalDynamicFontMap("Lucida Bright", filename)
@@ -92,7 +96,7 @@ function ResourceManager:init(...)
 	addGlobalDynamicFontMap("ArialMT", "fnt/target_amount.fnt")
 	addGlobalDynamicFontMap("Arial Bold", "fnt/target_amount.fnt")
 
-
+	addGlobalDynamicFontMap("Book Antiqua", "fnt/friends_list.fnt")
 	-- Add Energy Panel
 	addGlobalDynamicFontMap("Algerian", "fnt/5_more_cd.fnt")
 
@@ -120,7 +124,8 @@ function ResourceManager:init(...)
 	addGlobalDynamicFontMap("AgencyFB-Reg", "fnt/store_title.fnt") 
 	
 	--新手引导用
-	filename = "fnt/tutorial.fnt"
+	-- filename = "fnt/tutorial.fnt"
+	filename = "fnt/tutorial_white.fnt"
 	if _G.useTraditionalChineseRes then filename = "fnt/zh_tw/tutorial.fnt" end
 	addGlobalDynamicFontMap("Broadway",filename)
 
@@ -140,6 +145,34 @@ function ResourceManager:init(...)
 	filename = "fnt/race_rank.fnt"
 	addGlobalDynamicFontMap("Lithos Pro", filename)
 	addGlobalDynamicFontMap("Lithos Pro Regular", filename)
+	addGlobalDynamicFontMap("LithosPro-Regular", filename)
+	
+	filename = "fnt/mission_1.fnt"
+	addGlobalDynamicFontMap("Wide Latin", filename)
+
+	filename = "fnt/mission_2.fnt"
+	addGlobalDynamicFontMap("Bradley Hand ITC", filename)
+
+	filename = 'fnt/skip_level.fnt'
+	addGlobalDynamicFontMap('SkipLevel', filename) -- SkipLevel字体不存在，在此占位而已
+	addGlobalDynamicFontMap('Consolas', filename)
+	
+	filename = 'fnt/skip_level_word.fnt'
+	addGlobalDynamicFontMap('Tunga', filename)
+
+	filename = 'fnt/star_reward.fnt'
+	addGlobalDynamicFontMap('Tempus Sans ITC', filename)
+	
+	filename = 'fnt/pay.fnt'
+	addGlobalDynamicFontMap('Gadugi', filename)
+	
+	addGlobalDynamicFontMap("LCD AT&T Phone Time/Date", "fnt/lcd_digital.fnt")
+
+	addGlobalDynamicFontMap('LilyUPC', 'fnt/star_entrance.fnt')
+
+	addGlobalDynamicFontMap('Raavi', "fnt/pay_discount.fnt")
+
+	addGlobalDynamicFontMap('Corbel', "fnt/discount_limited_time.fnt")
 end
 
 function ResourceManager:sharedInstance(...)
@@ -276,6 +309,8 @@ end
 function ResourceManager:buildItemGroup(itemType, ...)
 	assert(type(itemType) == "number")
 	assert(#{...} == 0)
+
+	itemType = ItemType:getRealIdByTimePropId( itemType )
 
 	local resName = self:getItemResNameFromType(itemType)
 	if _isQixiLevel and itemType == ItemType.GEM then -- qixi

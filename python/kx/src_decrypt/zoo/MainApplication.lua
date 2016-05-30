@@ -29,8 +29,12 @@ kGlobalEvents = table.const{
 	kGamecenterLogin = "global.event.gc.login",
 	kMaintenanceChange = "global.event.maintenance",
 	kConsumeComplete = "global.event.consume.complete",
-	kThirdPaySuccess = "global.event.thirdpay.success",
+	kDefaultPaymentTypeAutoChange = "global.event.defaultpayment.auto.change",
 	kEnterForeground = "global.event.enter.foreground",
+	kActivityLevelShare = "global.event.activity.level.share",
+	kShowReplayRecordPreview = "global.event.replay.preview.show",
+	kAliSignAndPayReturn = 'global.event.ali.sign.pay.return',
+	kWechatSignReturn = 'global.event.wechat.sign.return',
 }
 
 local function scheduleLocalNotification()
@@ -83,7 +87,7 @@ end
 
 
 local function onApplicationWillEnterForeground()
-	print("onApplicationWillEnterForeground")
+	print("wenkan onApplicationWillEnterForeground")
 	local scene = Director:sharedDirector():getRunningScene()
 
 	if scene then 
@@ -113,6 +117,23 @@ local function onApplicationWillEnterForeground()
 
 	GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kEnterForeground))
 
+	SupperAppManager:checkData()
+
+	-- 1秒之内收不到openUrl事件，才认为支付取消
+	local function onAppPaymentReturn()
+		if __ANDROID and AliAppSignAndPayLogic then
+			if AliAppSignAndPayLogic:getInstance():isWaitingAliApp() then
+				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kAliSignAndPayReturn, {url = 'happyanimal3://aliapp_return/redirect'}))
+			end
+		end
+		if __ANDROID and WechatQuickPayLogic then
+			if WechatQuickPayLogic:getInstance():isWaitingWechatApp() then
+				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kWechatSignReturn))
+			end
+		end
+	end
+	setTimeOut(onAppPaymentReturn, 1)
+
 	print("onApplicationWillEnterForeground: "..tostring(inBackgroundElapsedSeconds))
 end
 
@@ -121,6 +142,30 @@ local function onApplicationHandleOpenURL()
 	local sdk = UrlSchemeSDK.new()
 	local launchURL = sdk:getCurrentURL()
 	print("onApplicationHandleOpenURL:"..tostring(launchURL))
+	if launchURL and string.starts(launchURL, 'happyanimal3://aliapp_return/redirect') then
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kAliSignAndPayReturn, {url = launchURL}))
+		return
+	end
+
+	-- 周赛链接不再传递，直接处理
+	if launchURL and string.starts(launchURL, 'happyanimal3://week_match/redirect') then
+		local scene = Director:sharedDirector():getRunningScene()
+		local PreloadingScene = require("zoo.loader.PreloadingScene")
+		if scene and not scene:is(GamePlaySceneUI) and not scene:is(PreloadingScene) then
+			local res = UrlParser:parseUrlScheme(launchURL)
+			if res and res.para and type(res.para) == "table" and res.para.action then 
+				local function startLogic()
+					local function onTimeout()
+						require "zoo.panelBusLogic.SeasonWeeklyMatchHelpLogic"
+						SeasonWeeklyMatchHelpLogic:startWithConfig(res.para)
+					end
+					scene:runAction(CCCallFunc:create(onTimeout))
+				end
+				RequireNetworkAlert:callFuncWithLogged(startLogic, nil, kRequireNetworkAlertAnimation.kNoAnimation)
+				return
+			end
+		end
+	end
 	local scene = Director:sharedDirector():getRunningScene()
 	if scene and scene.onApplicationHandleOpenURL then
 		print("scene:onApplicationHandleOpenURL()")
@@ -195,6 +240,7 @@ local function onAppResume()
 	
 	if _G.kResourceLoadComplete then
 		GamePlayMusicPlayer:getInstance():appResume()
+		SupperAppManager:checkData()
 	end
 end
 
@@ -274,6 +320,11 @@ if __ANDROID then
     end
     if not PrepackageUtil:isPreNoNetWork() then
         pcall(startGcnAlarm)
+    end
+
+    --防破解
+    if HeGame:getValid() == false then
+    	LocalhostDirector:showPanel()
     end
 end
 return true

@@ -32,20 +32,46 @@ function FriendManager:decode(src)
 	self:initFromLua(src)
 end
 
-function FriendManager:syncFromLua( src, profiles, snsFriendIds )
-	self.snsFriendIds = {}
+function FriendManager:getNewAddedSnsFriendIds()
+	local resultSnsFriendIds = {}
+
+	local newAddedIds = self.newAddedSnsFriendIds or {}
+	for __,v in pairs(newAddedIds) do
+		if self.friends[v] then
+			table.insert(resultSnsFriendIds, v)
+		end
+	end
+
+	return resultSnsFriendIds
+end
+
+function FriendManager:syncFromLua( src, profiles, snsFriendIds, achievementList)
+	self.newAddedSnsFriendIds = {}
+	local newSnsFriendIds = {}
 	self.friends = {}
 	
 	if snsFriendIds then
 		for _,v in pairs(snsFriendIds) do
-			self.snsFriendIds[tostring(v)] = true
+			if not self.snsFriendIds or not self.snsFriendIds[tostring(v)] then
+				table.insert(self.newAddedSnsFriendIds, v)
+			end
+			newSnsFriendIds[tostring(v)] = true
 		end
 	end
+
+	self.snsFriendIds = newSnsFriendIds
 
 	local list = {}
 	if profiles ~= nil then
 		for i, v in ipairs(profiles) do
 			if v then list[v.uid] = ProfileRef.new(v) end
+		end
+	end
+
+	local uid2AchievementMap = {}
+	if achievementList then
+		for _,v in pairs(achievementList) do
+			uid2AchievementMap[v.uid] = v
 		end
 	end
 
@@ -57,8 +83,18 @@ function FriendManager:syncFromLua( src, profiles, snsFriendIds )
 			f.name = HeDisplayUtil:urlDecode(profile.name or "")
 			f.headUrl = profile.headUrl
 			f.snsId = profile.snsId
+			f.age = profile.age
+			f.gender = profile.gender
+			f.constellation = profile.constellation
+			f.secret = profile.secret
 			-- print("FriendManager syncFromLua:"..tostring(f.name)..","..tostring(f.headUrl)..","..tostring(f.snsId))
 		end
+
+		local achievement = uid2AchievementMap[f.uid]
+		if achievement then
+			f.achievement = achievement
+		end
+
 		self.friends[f.uid] = f
 	end	
 	-- print("user friendIds = "..table.tostring(friendIds))
@@ -69,6 +105,14 @@ function FriendManager:syncFromLua( src, profiles, snsFriendIds )
 		end
 		UserManager:getInstance().friendIds = friendIds
 	end
+end
+
+function FriendManager:isQQFriendsSynced()
+	return self.qqFriendsSynced
+end
+
+function FriendManager:setQQFriendsSynced()
+	self.qqFriendsSynced = true
 end
 
 function FriendManager:isSnsFriend( friendUid )
@@ -179,4 +223,14 @@ end
 
 function FriendManager:getMaxFriendCount()
 	return 200
+end
+
+function FriendManager:isFriendCountReachedMax()
+	return self:getFriendCount() >= self:getMaxFriendCount()
+end
+
+function FriendManager:getAppFriendsCount()
+	local count = 0
+	for k, v in pairs(self.snsFriendIds) do count = count + 1 end
+	return count
 end

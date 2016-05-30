@@ -21,7 +21,6 @@ function DropBuffLogic:init(mainLogic, config)
 	end
 	self.totalWeight = 0
 
-	self.canBeTriggered = self:checkIfCanBeTriggered(mainLogic.level)
 	self:initOrderColorList(config)
 end
 
@@ -65,19 +64,31 @@ function DropBuffLogic:setDropBuffEnable(isEnable)
 end
 
 function DropBuffLogic:checkIfCanBeTriggered(levelId)
-	if not MaintenanceManager:isEnabled("DropBuffEnable") then
+	if _G.useDropBuffByEditor ~= nil then
+		return _G.useDropBuffByEditor
+	end
+	
+	if not MaintenanceManager:isAvailbleForUid("DropBuffEnable_New", UserManager:getInstance().uid, 100) then
 		return false
 	end
+	-- if not MaintenanceManager:isEnabled("DropBuffEnable") then -- old maintenance
+	-- 	return false
+	-- end
 
 	if self.dropBuff and table.size(self.dropBuff) > 0 then -- 有神奇掉落规则
+		-- 最高关
 		local topLevelId = UserManager:getInstance().user:getTopLevelId()
 		if topLevelId == levelId then -- 最高关卡
-			local score = UserManager:getInstance():getUserScore( topLevelId )
-			if not score or score.star < 1 then -- 尚未通过此关
-				local topLevelFailCount = UserManager:getInstance().userExtend.topLevelFailCount
-				if topLevelFailCount > self.dropBuff.failTriggerNum then -- 连续失败次数达到触发条件
+			if not UserManager:getInstance():hasPassedLevel(levelId) then -- 尚未通过此关
+				local failCount = UserManager:getInstance().userExtend.topLevelFailCount
+				if failCount > self.dropBuff.failTriggerNum then -- 连续失败次数达到触发条件
 					return true
 				end	
+			end
+		elseif JumpLevelManager:getInstance():hasJumpedLevel( levelId ) then -- 跳过的关卡
+			local failCount = FUUUManager:getLevelContinuousFailNum(levelId) or 0
+			if failCount > self.dropBuff.failTriggerNum then
+				return true
 			end
 		end
 	end
@@ -112,7 +123,8 @@ function DropBuffLogic:onAnimalOrderCompleted(colors)
 
 	local dropAnimalOrder = false
 	for _, color in pairs(colors) do
-		if self:isColorInMapColorList(color) then
+		local colorType = AnimalTypeConfig.convertIndexToColorType(color)
+		if self:isColorInMapColorList(colorType) then
 			dropAnimalOrder = true
 			break
 		end
@@ -189,26 +201,24 @@ function DropBuffLogic:randomColor()
 	end
 
 	if DropBuffLogicDebugMode then
-		self:testColorStat(color)
+		local colorIdx = AnimalTypeConfig.convertColorTypeToIndex(color)
+		self:testColorStat(colorIdx)
 	end
 
 	return color
 end
 
 function DropBuffLogic:isColorInMapColorList( colorType )
-	if type(colorType) ~= "number" then
-		return false
-	end
 	for _, v in pairs(self.mainLogic.mapColorList) do
 		if v == colorType then return true end
 	end
 	return false
 end
 
-function DropBuffLogic:getOrderData(color)
-	if color and self.mainLogic.theOrderList then
+function DropBuffLogic:getOrderDataByColorIdx(colorIdx)
+	if colorIdx and self.mainLogic.theOrderList then
 		for _, v in pairs(self.mainLogic.theOrderList) do
-			if v.key1 == GameItemOrderType.kAnimal and v.key2 == color then
+			if v.key1 == GameItemOrderType.kAnimal and v.key2 == colorIdx then
 				return v
 			end
 		end
@@ -216,38 +226,38 @@ function DropBuffLogic:getOrderData(color)
 	return nil
 end
 
-function DropBuffLogic:randomTargetColors()
-	local lastChangeRateColors = self.changeRateColors or {}
+function DropBuffLogic:randomTargetColorIdxs()
+	local lastChangeRateColorIdxs = self.changeRateColorIdxs or {}
 	-- 指定消除未完成的颜色
-	local targetColors = {}
+	local targetColorIdxs = {}
 	local theOrderList = self.mainLogic.theOrderList or {}
-	for _, color in pairs(self.orderColorList) do
-		if self:isColorInMapColorList(color) then -- 过滤掉不在生成颜色中的目标颜色
-			local order = self:getOrderData(color)
+	for _, colorIdx in pairs(self.orderColorList) do
+		local colortype = AnimalTypeConfig.convertIndexToColorType(colorIdx)
+		if self:isColorInMapColorList(colortype) then -- 过滤掉不在生成颜色中的目标颜色
+			local order = self:getOrderDataByColorIdx(colorIdx)
 			if not order or (order.f1 < order.v1) then
-				table.insert(targetColors, color)
+				table.insert(targetColorIdxs, colorIdx)
 			end
 		end
 	end
-
 	local ret = {}
-	if #targetColors > 0 then -- 还有未收集完的消除目标
-		local targetColorsNotHandled = {}
+	if #targetColorIdxs > 0 then -- 还有未收集完的消除目标
+		local targetColorIdxsNotHandled = {}
 		-- 优先之前随机到的颜色
-		for _, color in pairs(targetColors) do
-			if lastChangeRateColors[color] then 
-				table.insert(ret, color)
+		for _, colorIdx in pairs(targetColorIdxs) do
+			if lastChangeRateColorIdxs[colorIdx] then 
+				table.insert(ret, colorIdx)
 			else
-				table.insert(targetColorsNotHandled, color)
+				table.insert(targetColorIdxsNotHandled, colorIdx)
 			end
 		end
 		-- 如果还有需要，从剩下的未完成目标中随机
-		local moreColors = self.dropBuff.colorNum - table.size(ret)
-		if moreColors > 0 and #targetColorsNotHandled > 0 then -- 从剩余未完成的颜色中随机
-			local randIndexs = self:randomFromList(targetColorsNotHandled, moreColors)
+		local moreColorNum = self.dropBuff.colorNum - table.size(ret)
+		if moreColorNum > 0 and #targetColorIdxsNotHandled > 0 then -- 从剩余未完成的颜色中随机
+			local randIndexs = self:randomFromList(targetColorIdxsNotHandled, moreColorNum)
 			for _, index in pairs(randIndexs) do
-				local color = targetColorsNotHandled[index]
-				table.insert(ret, color)
+				local colorIdx = targetColorIdxsNotHandled[index]
+				table.insert(ret, colorIdx)
 			end
 		end
 	end 
@@ -263,30 +273,30 @@ function DropBuffLogic:recalcColorDropWeights()
 		return
 	end
 	self.dropBuffWeights = {}
-	local changeRateColors = {}
+	local changeRateColorIdxs = {}
 
 	if self.dropBuff.toRate >= (100 / #self.mainLogic.mapColorList) then -- 只有调高概率时优先考虑消除目标
-		local randTargetColors = self:randomTargetColors()
-		for _, color in pairs(randTargetColors) do
-			changeRateColors[color] = true
+		local randTargetColorIdxs = self:randomTargetColorIdxs()
+		for _, colorIdx in pairs(randTargetColorIdxs) do
+			changeRateColorIdxs[colorIdx] = true
 		end
-		-- print("randTargetColors:", table.tostring(randTargetColors))
 	end
 
 	-- 剩余的从其他颜色中随机
-	local moreColors = self.dropBuff.colorNum - table.size(changeRateColors)
-	if moreColors > 0 then
+	local moreColorNum = self.dropBuff.colorNum - table.size(changeRateColorIdxs)
+	if moreColorNum > 0 then
 		local leftColorsWithWeight = {}
 		-- 筛选出尚未随机到的颜色
 		for _, v in pairs(self.mainLogic.mapColorList) do
-			if not changeRateColors[v] then
-				leftColorsWithWeight[v] = 1 -- weight = 1
+			local colorIdx = AnimalTypeConfig.convertColorTypeToIndex(v)
+			if not changeRateColorIdxs[colorIdx] then
+				leftColorsWithWeight[colorIdx] = 1 -- weight = 1
 			end
 		end
 		-- 从中随机n种
-		local randColors = self:randomWithWeights(leftColorsWithWeight, moreColors)
-		for _, v in pairs(randColors) do
-			changeRateColors[v] = true
+		local randColorIdxs = self:randomWithWeights(leftColorsWithWeight, moreColorNum)
+		for _, v in pairs(randColorIdxs) do
+			changeRateColorIdxs[v] = true
 		end
 	end
 
@@ -297,7 +307,8 @@ function DropBuffLogic:recalcColorDropWeights()
 
 	local totalWeight = 0
 	for i, v in ipairs(self.mainLogic.mapColorList) do
-		if changeRateColors[v] then
+		local colorIdx = AnimalTypeConfig.convertColorTypeToIndex(v)
+		if changeRateColorIdxs[colorIdx] then
 			table.insert(self.dropBuffWeights, weight)
 			totalWeight = totalWeight + weight
 		else
@@ -307,15 +318,15 @@ function DropBuffLogic:recalcColorDropWeights()
 	end
 
 	self.totalWeight = totalWeight
-	self.changeRateColors = changeRateColors
+	self.changeRateColorIdxs = changeRateColorIdxs
 
-	-- print("changeRateColors:", table.tostring(changeRateColors))
+	-- print("changeRateColorIdxs:", table.tostring(changeRateColorIdxs))
 	-- print("mapColorList:", table.tostring(self.mainLogic.mapColorList))
-	print("recalcColorDropWeights:", table.tostring(self.dropBuffWeights))
+	-- print("recalcColorDropWeights:", table.tostring(self.dropBuffWeights))
 
 	if DropBuffLogicDebugMode then
 		self:testColorStatClean()
-		self:updateDropBuffAnimals(changeRateColors)
+		self:updateDropBuffAnimals(changeRateColorIdxs)
 	end
 end
 
@@ -323,9 +334,9 @@ end
 -- 以下为调试代码
 -----------------------------------
 
-function DropBuffLogic:testColorStat(color)
+function DropBuffLogic:testColorStat(colorIdx)
 	self.colorStat = self.colorStat or {}
-	self.colorStat[color] = self.colorStat[color] and self.colorStat[color] + 1 or 1
+	self.colorStat[colorIdx] = self.colorStat[colorIdx] and self.colorStat[colorIdx] + 1 or 1
 	local totalCount = 0
 	for c, v in pairs(self.colorStat) do
 		totalCount = totalCount + v
@@ -343,7 +354,7 @@ function DropBuffLogic:testColorStat(color)
 	end
 	-- print("--------------------------------------")
 	-- for c, v in pairs(self.colorStat) do
-	-- 	print(string.format("color:%2d\t%3d\t%.2f%%", c, v, v / totalCount * 100))
+	-- 	print(string.format("colorIdx:%2d\t%3d\t%.2f%%", c, v, v / totalCount * 100))
 	-- end
 	-- print("--------------------------------------")
 end
@@ -360,12 +371,12 @@ function DropBuffLogic:testColorStatClean()
 	end
 end
 
-function DropBuffLogic:updateDropBuffAnimals(colors)
-	colors = colors or {}
+function DropBuffLogic:updateDropBuffAnimals(colorIdxs)
+	colorIdxs = colorIdxs or {}
 	if self.displayLayer and not self.displayLayer.isDisposed then
 		local colorsFlag = {}
-		for c, _ in pairs(colors) do
-			colorsFlag[c] = true
+		for colorIdx, _ in pairs(colorIdxs) do
+			colorsFlag[colorIdx] = true
 		end
 		
 		for k, v in pairs(self.displayLayer.colorPercentLabels) do
@@ -411,7 +422,8 @@ function DropBuffLogic:setDropStatDisplayLayer( displayLayer )
 	self.displayLayer.colorNumLabels = {}
 	local index = 0
 	for _, colortype in pairs(self.mainLogic.mapColorList) do
-		local char = TileCharacter:create(itemsName[colortype])
+		local colorIdx = AnimalTypeConfig.convertColorTypeToIndex(colortype)
+		local char = TileCharacter:create(itemsName[colorIdx])
 		local position = ccp(index * 110 + 60, 50)
 		char:setPosition(position)
 		char:setScale(0.7)
@@ -421,19 +433,19 @@ function DropBuffLogic:setDropStatDisplayLayer( displayLayer )
 		colorPercentLabel:setAnchorPoint(ccp(0.4, 0))
 		colorPercentLabel:setPosition(ccp(position.x, position.y - 50))
 		self.displayLayer:addChild(colorPercentLabel)
-		self.displayLayer.colorPercentLabels[colortype] = colorPercentLabel
+		self.displayLayer.colorPercentLabels[colorIdx] = colorPercentLabel
 
 		local colorNumLabel = TextField:create("", nil, 24)
 		colorNumLabel:setAnchorPoint(ccp(0, 0.5))
 		colorNumLabel:setPosition(ccp(position.x + 30, position.y))
 		self.displayLayer:addChild(colorNumLabel)
-		self.displayLayer.colorNumLabels[colortype] = colorNumLabel
+		self.displayLayer.colorNumLabels[colorIdx] = colorNumLabel
 
 		index = index + 1
 	end
 
 	if self.dropBuffEnable then
 		self:updateDropBuffLabelStatus()
-		self:updateDropBuffAnimals(self.changeRateColors)
+		self:updateDropBuffAnimals(self.changeRateColorIdxs)
 	end
 end

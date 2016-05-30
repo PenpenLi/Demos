@@ -2,8 +2,8 @@ require 'zoo.panel.component.common.VerticalScrollable'
 require 'zoo.panel.component.common.VerticalTileLayout'
 require 'zoo.panel.component.common.VerticalTileItem'
 require 'zoo.panel.component.friendRankingPanel.FriendRankingItem'
-
-
+require "zoo.panel.component.friendRankingPanel.OwnerRankingItem"
+require "zoo.PersonalCenter.PersonalCenterManager"
 
 FriendRankingPanel = class(BasePanel)
 
@@ -13,12 +13,8 @@ function createFriendRankingPanel()
 	local size = Director:sharedDirector():getVisibleSize()
 	if panel then return panel end
 	panel = FriendRankingPanel:create(size.width, size.height)
-
-
 	return panel
 end
-
-
 
 function FriendRankingPanel:create(width, height)
 	local instance = FriendRankingPanel.new()
@@ -28,36 +24,20 @@ function FriendRankingPanel:create(width, height)
 end
 
 function FriendRankingPanel:init(width, height)
-	
+	FrameLoader:loadImageWithPlist("flash/quick_select_level.plist")
 	self.name = 'FriendRankingPanel'
-	-- self.debugTag = 1
-	
 	self.width = width
 	self.height = height
-
-
 	self.items = {}
-
-
 
 	local ui = self:buildInterfaceGroup('friendRankingPanel')--ResourceManager:sharedInstance():buildGroup('friendRankingPanel')
 	BasePanel.init(self, ui)
 
 	local sourceSize = ui:getGroupBounds().size
-
 	self.panelTitle = TextField:createWithUIAdjustment(self.ui:getChildByName("panelTitleSize"), self.ui:getChildByName("panelTitle"))
 	self.ui:addChild(self.panelTitle)
-	self.panelTitle:setString(Localization:getInstance():getText("friend.ranking.panel.title"))
-	-- local title = ui:getChildByName('title')
-	-- title:setString(Localization:getInstance():getText('friend.ranking.panel.title'))
-	-- title:setColor(ccc3(213, 171,107))
-	-- title:setFontSize(40)
-	-- local title2 = TextField:createCopy(title)
-	-- title2:setColor(ccc3(168,115,46))
-	-- title2:setPositionY(title2:getPositionY()+1)
-	-- title:getParent():addChildAt(title2, title:getZOrder()-2)
+	self.panelTitle:setString(localize("friend.ranking.panel.title"))
 
-	-- auto height fitting to the screen
 	local viewReplacer = ui:getChildByName('view')
 	viewReplacer:setVisible(false)
 	local viewPosition = viewReplacer:getPosition()
@@ -65,21 +45,22 @@ function FriendRankingPanel:init(width, height)
 	local viewBgHeight = self.height - 250
 	local viewWidth = viewSize.width
 	local viewHeight = viewBgHeight - 30
-
 	local viewBg = ui:getChildByName('viewBg')
-	-- local viewBgHeight = viewHeight + 25
+	
 	local viewBgSize = viewBg:getGroupBounds().size
 	viewBg:setPreferredSize(CCSizeMake(viewBgSize.width, viewBgHeight))
 
 	local view = VerticalScrollable:create(viewWidth, viewHeight)
 	view:setPosition(ccp(viewPosition.x, viewPosition.y))
 
-	viewReplacer:getParent():addChild(view)
+	viewReplacer:getParent():addChildAt(view, ui:getChildIndex(viewReplacer))
 	viewReplacer:removeFromParentAndCleanup(true)
-	
+	viewReplacer:dispose()
+
 	self.view = view
 
 	local itemContainer = VerticalTileLayout:create(viewWidth)
+	itemContainer:setItemVerticalMargin(10)
 	self.view:setContent(itemContainer)
 	self.itemContainer = itemContainer
 
@@ -88,8 +69,6 @@ function FriendRankingPanel:init(width, height)
 	self.confirmDeleteBtn = GroupButtonBase:create(ui:getChildByName('confirmBtn'))
 	self.cancelBtn = GroupButtonBase:create(ui:getChildByName('cancelBtn'))
 
-
-	--positioning the buttons
 	local sourceLeftPos = self.addFriendBtn:getPosition()
 	local sourceRightPos = self.enterDeleteModeBtn:getPosition()
 	local leftDestX = sourceLeftPos.x
@@ -113,8 +92,6 @@ function FriendRankingPanel:init(width, height)
 	self.cancelBtn:setColorMode(kGroupButtonColorMode.green)
 	self.cancelBtn:setString(Localization:getInstance():getText("friend.ranking.panel.button.cancel"))
 
-
-
 	self.addFriendBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onAddFriendBtnTap(event) end)
 	self.enterDeleteModeBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onEnterDeleteModeBtnTap(event) end)
 	self.confirmDeleteBtn:addEventListener(DisplayEvents.kTouchTap, function(event) self:onConfirmBtnTap(event) end)
@@ -125,7 +102,6 @@ function FriendRankingPanel:init(width, height)
 	closeBtn:setButtonMode(true)
 	closeBtn:setTouchEnabled(true, 0, true)
 
-	-- gradient BG
 	local bg = ui:getChildByName('bg')
 	local gradient = LayerGradient:create()
 	gradient:setStartColor(ccc3(255, 216, 119))
@@ -134,15 +110,15 @@ function FriendRankingPanel:init(width, height)
 	gradient:setEndOpacity(255)
 	gradient:setContentSize(CCSizeMake(self.width, self.height))
 	gradient:setPosition(ccp(0, -self.height))
+
 	bg:getParent():addChildAt(gradient, bg:getZOrder())
 	bg:removeFromParentAndCleanup(true) -- bg now is useless
-
+	bg:dispose()
 
 	self:exitDeleteMode()
 
 	self.tasksWaiting = 0
 	self.synchronizer = Synchronizer.new(self)
-
 end
 
 function FriendRankingPanel:onAddFriendBtnTap(event)
@@ -152,8 +128,8 @@ function FriendRankingPanel:onAddFriendBtnTap(event)
 	else
 		local btnPosInNode = self.addFriendBtn:getPosition()
 		local posInWorld = self.addFriendBtn.groupNode:getParent():convertToWorldSpace(ccp(btnPosInNode.x, btnPosInNode.y))
-		local panel = AddFriendPanel:create(posInWorld)
-		--if panel then panel:popout() end
+		local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(posInWorld)
+		--panel:popout()
 	end
 end
 
@@ -190,10 +166,11 @@ function FriendRankingPanel:onConfirmBtnTap(event)
 		for k, v in pairs(self.items) do
 			if v.selected then
 				DcUtil:delete(v:getUser().uid)
-				self.itemContainer:removeItemAt(v:getArrayIndex(), true)
+				self.itemContainer:removeItemAt(v:getArrayIndex(), false)
 			end
 		end
 
+		--self:onAfterItemTapped()
 		self.view:updateScrollableHeight()
 
 		self.items = notSelectedItems
@@ -231,25 +208,21 @@ function FriendRankingPanel:setData(friendList)
 
 	if friendList and type(friendList) == 'table' then
 
-		-- add lock
 		self:p()
 
 		self:removeAllItems()
 
 		local myself = UserManager:getInstance().user
-
+		myself.achievement = UserManager:getInstance().achievement
 
 		self.friendList = friendList
 		-- add myself to the list
-
 		table.insert(self.friendList, myself)
 
+		PersonalCenterManager:sortDataByRanking(self.friendList)
 
-		
-		self:sortDataByRanking()
-		
 		local curIndex = 1
-		local itemsPerBatch = 3
+		local itemsPerBatch = 1
 		local numOfItems = #self.friendList
 		--print('numOfItems', numOfItems)
 		local scheduler = Director:sharedDirector():getScheduler()
@@ -282,27 +255,32 @@ function FriendRankingPanel:setData(friendList)
 					local itemData = self.friendList[curIndex]
 					if not itemData then return end
 
-					local item = FriendRankingItem:create()
+					local item
+					if itemData.uid == UserManager:getInstance().user.uid then
+						item = OwnerRankingItem:create()
+						item.parentPanel = self
+					else
+						item = FriendRankingItem:create()
+					end
+					
+					item:setView(self.view)
+					item:setIndex(curIndex)
+					item:setPanel(self.ui)
+					item:setParentView(self.view)
+					item:setFriendRankingPanel(self)
+
 					item:setData(itemData)
 					item:setRank(curIndex)
-					item:setHeight(90) -- hack: fix the headImage bounding box issue
+					item:setHeight(119) -- hack: fix the headImage bounding box issue
 					table.insert(self.items, item)
-
-					-- if it's me...
-					if itemData.uid == UserManager:getInstance().user.uid then
-						--print('myself')
-						item:setIsMyself()
-					end
-
-					-- self.itemContainer:addItem(item)
 
 					-- add item to synchronizer
 					self.synchronizer:register(item)
 
 					-- perform layout
 					table.insert(itemList, item)
-					
-
+					item:setAfterToggleCallback(function() self:onAfterItemTapped() end)
+					item:setBeforeToggleCallback(function(target) self:onBeforeItemTapped(target) end)
 					-- index++
 					curIndex = curIndex + 1
 				end
@@ -312,9 +290,24 @@ function FriendRankingPanel:setData(friendList)
 			end
 		end
 		if self.schedId_setData == nil then 
-			self.schedId_setData = scheduler:scheduleScriptFunc(addItems, 10/60, false)
+			self.schedId_setData = scheduler:scheduleScriptFunc(addItems, 0.05, false)
 		end
 	end
+
+end
+
+function FriendRankingPanel:onBeforeItemTapped(target)
+	for __,v in pairs(self.items) do
+		if v ~= target then
+			v:foldItem()
+		end
+	end
+end
+
+function FriendRankingPanel:onAfterItemTapped()
+	self.itemContainer:__layout()
+	self.view:updateScrollableHeight()
+	self.view:updateContentViewArea()
 end
 
 function FriendRankingPanel:removeAllItems()
@@ -382,7 +375,14 @@ end
 function FriendRankingPanel:dispose()
 	self.items = {}
 	self.synchronizer = nil
-	CocosObject.dispose(self)
+	-- FrameLoader:unloadImageWithPlists(
+ --    {
+ --        "flash/quick_select_level.plist"
+ --    }, true)
+	BasePanel.dispose(self)
+end
+
+function FriendRankingPanel:unloadRequiredResource()
 end
 
 function FriendRankingPanel:onCloseBtnTapped()
@@ -407,7 +407,7 @@ function FriendRankingPanel:onCloseBtnTapped()
 end
 
 function FriendRankingPanel:popout()
-
+	
 	if not self.privateScene then
 		self.privateScene = Scene:create()
 		self.privateScene.onKeyBackClicked = function ()
@@ -433,12 +433,14 @@ function FriendRankingPanel:popout()
 					local function receiveReward()
 						local logic = InvitedAndRewardLogic:create(false)
 						logic:start(res.para.invitecode, res.para.uid, onSuccess)
-					end
+				end
 					RequireNetworkAlert:callFuncWithLogged(receiveReward, nil, kRequireNetworkAlertAnimation.kNoAnimation)
 				end
 			end
 		end
 	end
+
+	
 	local drt = Director:sharedDirector()
 	drt:pushScene(self.privateScene)
 
@@ -446,6 +448,7 @@ function FriendRankingPanel:popout()
 	local vs = drt:getVisibleSize()
 	self:setPosition(ccp(vo.x, vo.y + vs.height))
 	self.privateScene:addChild(self)
+
 
 	--print('#self.items', #self.items)
 	if #self.items == 0 then
@@ -458,6 +461,24 @@ function FriendRankingPanel:popout()
 				table.insert(data, v)
 			-- end
 		end
+
+		-- for i=1,60 do
+		-- 	local fakeData = {uid = "100"..i, name = "tao.zeng"..i, 
+		-- 					 image = 0, star = 9010 - i*10, topLevelId = i + 20, coin = i*100}
+		-- 	fakeData.getTotalStar = function(self)
+		-- 		return fakeData.star
+		-- 	end
+		-- 	fakeData.getTopLevelId= function(self)
+		-- 		return fakeData.topLevelId
+		-- 	end
+
+		-- 	fakeData.getCoin= function(self)
+		-- 		return fakeData.coin
+		-- 	end
+
+		-- 	table.insert(data, fakeData)
+		-- end
+		
 		self:setData(data)
 	end
 
@@ -470,7 +491,7 @@ function FriendRankingPanel:popout()
 	                   CCCallFunc:create(__check)
 	                                                  )
 	                            )
-
+	
 end
 
 
@@ -508,6 +529,7 @@ function FriendRankingPanel:stopAnimation()
 	local scene = self.privateScene
 	if scene and not self:isBusy() and self.animation then
 		self.animation:removeFromParentAndCleanup(true)
+		self.animation:dispose()
 		self.animation = nil
 	end
 end
@@ -516,7 +538,16 @@ function FriendRankingPanel:isBusy()
 	return self.tasksWaiting > 0
 end
 
+function FriendRankingPanel:expandItem(index)
+	self.expandItemIndex = index
+end
 
+function FriendRankingPanel:fold()
+	self.expandItemIndex = nil
+end
+
+function FriendRankingPanel:unloadRequiredResource()
+end
 
 Synchronizer = class()
 
@@ -573,3 +604,4 @@ function Synchronizer:onSendFailed(object)
 		end
 	end
 end
+

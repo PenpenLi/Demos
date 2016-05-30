@@ -13,9 +13,10 @@ function EndlessTargetItem:setTargetNumber(itemId, itemNum, animate, globalPosit
             local tx, ty = position.x, position.y
             local function onIconScaleFinished()
                 cloned:removeFromParentAndCleanup(true)
+                self.animNode = nil
             end 
             local function onIconMoveFinished()         
-                self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+                self.label:setString(tostring(itemNum or 0))
                 self.context:playLeafAnimation(true)
                 self.context:playLeafAnimation(false)
                 self:shakeObject()
@@ -27,8 +28,9 @@ function EndlessTargetItem:setTargetNumber(itemId, itemNum, animate, globalPosit
             local moveOut = CCSpawn:createWithTwoActions(moveTo, CCSequence:createWithTwoActions(CCFadeIn:create(0.2), CCFadeTo:create(0.3, 150)))
             cloned:setPosition(targetPos)
             cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
+            self.animNode = cloned
         else
-            self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+            self.label:setString(tostring(itemNum or 0))
         end
     end
 end

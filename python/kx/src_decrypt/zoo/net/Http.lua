@@ -14,7 +14,6 @@ require "zoo.net.LevelType"
 require "zoo.net.UserLocalLogic"
 require "zoo.net.ItemLocalLogic"
 require "zoo.net.LoginLocalLogic"
-require "zoo.net.DailyDataLocalLogic"
 require "zoo.net.UserService"
 require "zoo.net.Localhost"
 
@@ -44,6 +43,7 @@ kHttpEndPoints = table.const {
   getMatchs = "getMatchs", confirmMatch = "confirmMatch", ackMatch = "ackMatch",
   inviteFriends = "inviteFriends",
   queryQihooOrder = "queryQihooOrder",
+  queryAliOrder = "queryAliOrder",
   updateConfigFromServer = "updateConfigFromServer",
   syncSnsFriend = "syncSnsFriend",
   getPromStatus = 'getPromStatus',
@@ -58,6 +58,8 @@ kHttpEndPoints = table.const {
   doWXPaymentOrder = "doWXPaymentOrder",
   doWXPaymentOrderV2 = "doWXPaymentOrderV2",
   doAliPaymentOrder = "doAlipayOrder",
+  doMSDKPaymentOrder = "doMSDKPaymentOrder",
+  doHuaweiPaymentOrder = "doHWPaymentOrder",
   getRewards = "getRewards",
   clickActivity = "clickActivity",
   mergeConnect  = "mergeConnect",
@@ -67,6 +69,18 @@ kHttpEndPoints = table.const {
   canSendLinkShowOff = "canSendLinkShowOff",
   getShareRankWithPosition = "getShareRankWithPosition",
   getPropsInGame = "getPropsInGame",
+  getMissionInfo = "getGeneralTaskInfo",
+  createMission = "createGeneralTask",
+  getMissionReward = "getGeneralTaskRewards",
+  sendQrCode = "sendQrCode",
+  jumpLevel = "jumpLevel",
+  getLevelPawnNum = "getLevelPawnNum",
+  getLoginInfos = "getLoginInfos",
+  loadFriendsByPhoneNumbers = "queryUidByPhoneNumbers",
+  loadProfilesByUids = "queryProfileByUids",
+  triggerAchievement = "triggerAchievement",
+  setLevelStar = "setLevelStar",
+  doQQPaymentOrder = "doQQPaymentOrder",
 
 --online mode, user data/prop/scores will sync from local to server
 	mark = "mark", --will change props.
@@ -100,7 +114,37 @@ kHttpEndPoints = table.const {
   opNotify = "opNotify",
   levelConfigUpdate = "levelConfigUpdate",
   getSummerWeekMatchInfo = "getSummerWeekMatchInfo",
-  getSummerWeekMatchReward = "getSummerWeekMatchReward",
+  getSummerWeekMatchReward = "getSummerWeekMatchReward",  
+  getAutumnWeekMatchInfo = "getAutumnWeekMatchInfo",
+  getAutumnWeekMatchReward = "getAutumnWeekMatchReward",
+  getAutumnMatchHelpRewards = "getAutumnMatchHelpRewards",
+  
+  getWinterWeekMatchInfo = "getWinterWeekMatchInfo",
+  getWinterWeekMatchReward = "getWinterWeekMatchReward",
+
+  getSpringWeekMatchInfo = "getSpringWeekMatchInfo",
+  getSpringWeekMatchReward = "getSpringWeekMatchReward",
+  getSummerWeekMatch2016Info = "getSummerWeekMatch2016Info",
+  getSummerWeekMatch2016Reward = "getSummerWeekMatch2016Reward",
+
+  getAliIngamePayment = "aliIngame",
+  getAliPaymentUnsign = "aliUnsign",
+  getAliPaymentVerify = "aliVerify",
+  getAliPaymentSign = "aliSign",
+  getIosOneYuanPromotionInitInfo = "getIosPromotionInfo",
+  triggerIosOneYuanPromotion = "triggerIosPromotion",
+  resetIosOneYuanShop = "changeIosPromotion",
+  contact = "contact",     --change address for exchange actual reward
+  getWeChatQrCodeRewards = "getWeChatQrCodeRewards",
+  getQQOpenID = "getQQOpenID",
+  getPctOfRank = "getPctOfRank",
+  getHideAreaRewards = "getHideAreaRewards",
+  getSign = "getSign",
+  maRankInfo = "maRankInfo",
+  getUserCommonRewards = "getUserCommonRewards",
+  getEasterEggReward = "getEasterEggReward",
+
+  editorRecordLevel = "editorRecordLevel",--编辑器记录试玩请求
 
 --offline mode
 	startLevel = "startlevel", 
@@ -112,6 +156,14 @@ kHttpEndPoints = table.const {
   oneplusReward = "oneplusReward",
   delCashLog = "delCashLog",
   setting = "setting",
+  updateMission = "updateGeneralTask",
+
+  wxGetContractUrl = 'wxGetContractUrl',
+  wxDeleteContract = 'wxDeleteContract',
+  wxQueryContract = 'wxQueryContract',
+  wxIngame = 'wxIngame',
+
+
 }
 
 kErrorCodeRange = 730000
@@ -184,6 +236,11 @@ function ConnectionManager:reset( userId, sessionKey )
     ConnectionManager:initialize(userId, sessionKey)
   else ConnectionManager:changeUserID(userId, sessionKey) end
 end
+
+function ConnectionManager:isInited()
+  return isConnectionManagerInitialized > 0
+end
+
 function ConnectionManager:initialize(uid, sessionKey)
 	assert(uid and sessionKey, "uid and sessionKey should not be nil")
 	local appId = StartupConfig:getInstance():getGspAppId()
@@ -347,7 +404,7 @@ function HttpBase:_startTime()
   self.layer:setTouchEnabled(true, 0, true)
   self.layer:setOpacity(0)
   --PopoutManager:sharedInstance():add(self.layer, false, false)
-  scene:addChild(self.layer)
+  if scene then scene:addChild(self.layer) end
 
   local function onTimeOut()
     self:_stopTime()
@@ -359,6 +416,9 @@ function HttpBase:_startTime()
     local scene = Director:sharedDirector():getRunningScene()
     if scene and self.animation == nil and self.isResponsed == false then 
       self.animation = CountDownAnimation:createNetworkAnimationInHttp(scene, onCloseButtonTap) 
+      self.animation.onKeyBackClicked = function(self)
+        onCloseButtonTap()
+      end
     end
   end
   self.timeoutID = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut,self.timeout,false)
@@ -394,8 +454,25 @@ function HttpBase:syncLoad(...)
   ConnectionManager:block()
   SyncManager:getInstance():flushCachedHttp()
   self:load(para[1], para[2], para[3], para[4], para[5], para[6],
-    para[7], para[8], para[9], para[10], para[11], para[12])
+    para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15])
   ConnectionManager:flush()
+end
+
+--该方法用于修复完异常数据后，继续正常的http请求。
+function HttpBase:syncLoad2(...)
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+      local para = {...}
+
+      local function onSyncError(err)
+        self:onLoadingError(err)
+      end
+
+      local function onSyncFinished()
+        self:load(para[1], para[2], para[3], para[4], para[5], para[6],
+          para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15])
+      end
+
+      SyncManager.getInstance():sync(onSyncFinished, onSyncError, kRequireNetworkAlertAnimation.kNone)
 end
 
 function HttpBase:onResponse( endpoint, data, err )

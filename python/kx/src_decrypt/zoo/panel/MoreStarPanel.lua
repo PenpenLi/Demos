@@ -1,4 +1,5 @@
 require  'zoo.panel.component.common.GridLayout'
+require "zoo.animation.FlowerNode"
 -- short hand function
 local function _text(key, replace)
     return Localization:getInstance():getText(key, replace)
@@ -60,6 +61,16 @@ function MoreStarPanel:getData()
             availableStarCount = availableStarCount + (3 - levelScore.star)
             counter = counter + 1
             if counter == 16 then break end
+        elseif JumpLevelManager.getInstance():hasJumpedLevel(levelId) then
+            if not levelScore then 
+                levelScore = ScoreRef.new()
+                levelScore.uid = UserManager:getInstance().uid
+                levelScore.levelId = levelId
+            end
+            table.insert(result, levelScore)
+            availableStarCount = availableStarCount + 3
+            counter = counter + 1
+            if counter == 16 then break end
         end
     end
 
@@ -73,30 +84,15 @@ function MoreStarPanel:setData(data)
 
 
     for k, v in pairs(data) do
-        local node = self:buildInterfaceGroup('more_star_flower_item')
-        node:getChildByName('bg'):setVisible(false)
-        local level = node:getChildByName('level')
-        level:setText(v.levelId)
-        local boundingBox = node:getChildByName('levelPos')
-        boundingBox:setVisible(false)
-        local groupBounds = boundingBox:getGroupBounds()
-        local rect = {x = boundingBox:getPositionX(), y = boundingBox:getPositionY(), width = groupBounds.size.width, height = groupBounds.size.height}
-        InterfaceBuilder:centerInterfaceInbox(level, rect)
+        local flowerType = kFlowerType.kNormal
+        if v.star == 0 then flowerType = kFlowerType.kJumped end
+        local node = FlowerNodeUtil:createWithSize(flowerType, v.levelId, v.star, CCSizeMake(152, 185))
+        node:setAnchorPoint(ccp(0, 1))
+        node:ignoreAnchorPointForPosition(false)
         local item = ItemInLayout:create()
         item:setContent(node)
         self.gridView:addItem(item)
-        local flower1 = node:getChildByName('flower1')
-        local flower2 = node:getChildByName('flower2')
-        local star1 = node:getChildByName('star1')
-        local star2 = node:getChildByName('star2')
-        flower1:setVisible(v.star == 1)
-        flower2:setVisible(v.star == 2)
-        if v.star == 1 then
-            star2:setVisible(false)
-        elseif v.star == 2 then
-            star1:setPositionX(star1:getPositionX() - 10)
-            star2:setPositionX(star2:getPositionX() + 10)
-        end
+
         node:setTouchEnabled(true)
         node:ad(DisplayEvents.kTouchTap, function () self:onItemTouched(v.levelId) end)
     end

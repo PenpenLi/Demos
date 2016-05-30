@@ -1,5 +1,9 @@
 HorizontalAlignments = {kLeft = 1, kCenter = 2, kRight = 3, kJustified = 4}
 
+LayoutEvents = {
+    kLayoutComplete = "LayoutComplete",
+}
+
 HorizontalTileLayout = class(Layer)
 
 function HorizontalTileLayout:create(height)
@@ -15,7 +19,7 @@ function HorizontalTileLayout:ctor()
 end
 
 function HorizontalTileLayout:init(height)
-    assert(height, 'HorizontalTileLayout:init(): height is not set.')
+    -- assert(height, 'HorizontalTileLayout:init(): height is not set.')
 
     self:ignoreAnchorPointForPosition(true)
     self:setAnchorPoint(ccp(0, 1))
@@ -86,7 +90,7 @@ function HorizontalTileLayout:addItemAt(item, arrayIndex, playAnimation)
     table.insert(self.items, arrayIndex, item)
 
     for k, v in pairs(self.items) do 
-        assert(type(v.setArrayIndex) == 'function', 'HorizontalTileLayout:addItemAt(): item must inherits ItemInLayout')
+        -- assert(type(v.setArrayIndex) == 'function', 'HorizontalTileLayout:addItemAt(): item must inherits ItemInLayout')
         v:setArrayIndex(k)
     end
 
@@ -109,14 +113,22 @@ function HorizontalTileLayout:removeAllItems()
     self:updateViewArea(self.visibleTop, self.visibleBottom)
 end
 
+function HorizontalTileLayout:getItemIndex(item)
+    for i,v in ipairs(self.items) do
+        if v == item then
+            return i
+        end
+    end
 
+    return -1
+end
 
 function HorizontalTileLayout:removeItem(playAnimation)
     self:removeItemAt(#self.items, playAnimation)
 end
 
-function HorizontalTileLayout:removeItemAt(arrayIndex, playAnimation)
-    if arrayIndex > #self.items then return end
+function HorizontalTileLayout:removeItemAt(arrayIndex, playAnimation, noCleanup)
+    if arrayIndex > #self.items or arrayIndex < 1 then return end
     local item = self.items[arrayIndex]
     local height = item:getHeight()
 
@@ -127,7 +139,7 @@ function HorizontalTileLayout:removeItemAt(arrayIndex, playAnimation)
     end
     local function __removeItemUI()
         if item and not item.isDisposed and item:getParent() then 
-            item:removeFromParentAndCleanup(true) 
+            item:removeFromParentAndCleanup(not noCleanup) 
             item = nil
         end
     end
@@ -143,7 +155,7 @@ function HorizontalTileLayout:removeItemAt(arrayIndex, playAnimation)
 
     self:__layout(playAnimation)
 
-    self:updateViewArea(self.visibleTop, self.visibleBottom + height)
+    --self:updateViewArea(self.visibleTop, self.visibleBottom + height)
 end
 
 function HorizontalTileLayout:getItems()
@@ -159,7 +171,7 @@ function HorizontalTileLayout:getHeight()
     local y = self.itemVerticalMargin
 
     for i, v in pairs(self.items) do 
-        assert(v:getHeight(), 'HorizontalTileLayout:getHeight(): better setHeight() for each item.')
+        -- assert(v:getHeight(), 'HorizontalTileLayout:getHeight(): better setHeight() for each item.')
         local itemHeight = v:getHeight() or v:getGroupBounds().size.height
         y = y + itemHeight + self.itemVerticalMargin
     end
@@ -296,7 +308,7 @@ function HorizontalTileLayoutWithAlignment:__layout(playAnimation)
         end
     end
 
-    assert(contentWidth <= self.width, 'HorizontalTileLayoutWithAlignment:__layout(playAnimation): your content width is too wide.')
+    -- assert(contentWidth <= self.width, 'HorizontalTileLayoutWithAlignment:__layout(playAnimation): your content width is too wide. contentWidth: '..tostring(contentWidth)..",self.width: "..tostring(self.width))
 
     local offsetX = 0 
     if self.alignment == HorizontalAlignments.kLeft then

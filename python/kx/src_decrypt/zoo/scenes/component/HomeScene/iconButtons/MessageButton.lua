@@ -20,11 +20,9 @@ function MessageButton:ctor( ... )
     self.playTipPriority = 40
 end
 function MessageButton:playHasNotificationAnim(...)
-    IconButtonManager:getInstance():addPlayTipIcon(self)
 end
 
 function MessageButton:stopHasNotificationAnim(...)
-    IconButtonManager:getInstance():removePlayTipIcon(self)
 end
 
 

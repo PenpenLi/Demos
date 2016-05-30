@@ -3,6 +3,11 @@ require 'zoo.net.Localhost'
 FUUUManager = {}
 FUUUManager.isGameRunning = false
 
+FUUUConfig = {
+	
+	oneYuanBuyContinuousFailNum = 1,
+}
+
 function FUUUManager:init()
 
 	local platform = UserManager.getInstance().platform
@@ -55,6 +60,8 @@ function FUUUManager:onGameDefiniteFinish(result , gameBoardLogic)
 	Localhost:writeToStorage( self.localData , self.fuuuFileKey )
 
 	self.isGameRunning = false
+	wukongCastingCount = 0 
+    wukongLastGuideCastingCount = -1
 end
 
 function FUUUManager:update(GameMode)
@@ -275,20 +282,20 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     			end
 				
 				progressStr = progressStr 
-    					.. tostring(v.ty) .. ":" 
-    					.. tostring(v.cv) .. ":" 
-    					.. tostring(v.tv) .. ":" 
+    					.. tostring(v.ty) .. "*" 
+    					.. tostring(v.cv) .. "*" 
+    					.. tostring(v.tv) .. "*" 
     					.. tostring(v.isFuuuDone)
 
     			if v.ty == "stage_end_fuuu_animal" or v.ty == "stage_end_fuuu_seaanimal" then
     				if v.animalList then
     					for j,k in ipairs(v.animalList) do
-    						progressStr = progressStr .. ":" .. k.animal .. "_" .. k.cv .. "_" .. k.tv
+    						progressStr = progressStr .. "*" .. k.animal .. "_" .. k.cv .. "_" .. k.tv
     					end
     				end
-    				progressStr = progressStr .. ","
+    				progressStr = progressStr .. ";"
     			else
-    				progressStr = progressStr .. ","
+    				progressStr = progressStr .. ";"
     			end    			
     		end
 
@@ -313,7 +320,7 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     			if tonumber(self.mainLogic.totalScore / self.mainLogic.scoreTargets[1]) > 0.95 then
 					result = true
 				end
-				progressStr = "stage_end_fuuu_step," .. tostring(self.mainLogic.totalScore) .. ":" .. tostring(self.mainLogic.scoreTargets[1])
+				progressStr = "stage_end_fuuu_step;" .. tostring(self.mainLogic.totalScore) .. "*" .. tostring(self.mainLogic.scoreTargets[1])
 			end
 
     	elseif gameModeType == GamePlayType.kDropDown then		----掉落模式==========
@@ -321,7 +328,7 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     		if self.mainLogic.ingredientsTotal - self.mainLogic.ingredientsCount <= 1 then
     			result = true
     		end
-    		progressStr = "stage_end_fuuu_dig," .. tostring(self.mainLogic.ingredientsCount) .. ":" .. tostring(self.mainLogic.ingredientsTotal)
+    		progressStr = "stage_end_fuuu_drop;" .. tostring(self.mainLogic.ingredientsCount) .. "*" .. tostring(self.mainLogic.ingredientsTotal)
 
     	elseif gameModeType == GamePlayType.kLightUp then			----冰层消除模式======
     		print("RRR    GamePlayType.kLightUp   kLightUpLeftCount = " .. tostring(self.mainLogic.kLightUpLeftCount))
@@ -329,17 +336,17 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     		if self.mainLogic.kLightUpLeftCount <= 2 then
     			result = true
     		end
-    		progressStr = "stage_end_fuuu_ice," .. tostring(self.mainLogic.kLightUpTotal - self.mainLogic.kLightUpLeftCount) .. ":" .. tostring(self.mainLogic.kLightUpTotal)
+    		progressStr = "stage_end_fuuu_ice;" .. tostring(self.mainLogic.kLightUpTotal - self.mainLogic.kLightUpLeftCount) .. "*" .. tostring(self.mainLogic.kLightUpTotal)
 
     	elseif gameModeType == GamePlayType.kDigMove then			----步数挖地模式======
     		
     		if self.mainLogic.digJewelLeftCount <= 3 then
     			result = true
     		end
-    		progressStr = "stage_end_fuuu_dig," .. tostring(self.mainLogic.digJewelLeftCount) .. ":" .. tostring(self.mainLogic.digJewelTotalCount)
+    		progressStr = "stage_end_fuuu_dig;" .. tostring(self.mainLogic.digJewelLeftCount) .. "*" .. tostring(self.mainLogic.digJewelTotalCount)
 
     	elseif gameModeType == GamePlayType.kOrder then  			----订单模式
-    		progressStr = "stage_end_fuuu_order,"
+    		progressStr = "stage_end_fuuu_order;"
     		result = countOrderFuuu(self.mainLogic.theOrderList)
 
     	elseif gameModeType == GamePlayType.kDigTime then     ----时间挖地模式
@@ -351,7 +358,7 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
 					result = true
 				end
 			end
-			progressStr = "stage_end_fuuu_step_time," .. tostring(self.mainLogic.totalScore) .. ":" .. tostring(self.mainLogic.scoreTargets[1])
+			progressStr = "stage_end_fuuu_step_time;" .. tostring(self.mainLogic.totalScore) .. "*" .. tostring(self.mainLogic.scoreTargets[1])
 
     	elseif gameModeType == GamePlayType.kDigMoveEndless then ----无限挖地模式
 
@@ -366,7 +373,7 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     		result = false
 
     	elseif gameModeType == GamePlayType.kSeaOrder then
-    		progressStr = "stage_end_fuuu_sea_order,"
+    		progressStr = "stage_end_fuuu_sea_order;"
     		result = countOrderFuuu(self.mainLogic.theOrderList)
 
     	elseif gameModeType == GamePlayType.kHalloween then
@@ -378,22 +385,26 @@ function FUUUManager:lastGameIsFUUU(needDCLog)
     		if self.mainLogic.ingredientsTotal - self.mainLogic.ingredientsCount <= 1 then
     			result = true
     		end
-    		progressStr = "stage_end_fuuu_dig_unlock," .. tostring(self.mainLogic.ingredientsCount) .. ":" .. tostring(self.mainLogic.ingredientsTotal)
+    		progressStr = "stage_end_fuuu_dig_unlock;" .. tostring(self.mainLogic.ingredientsCount) .. "*" .. tostring(self.mainLogic.ingredientsTotal)
     	end
 
 	end
 
-
-	print("RRR   FUUUManager:lastGameIsFUUU   gameModeType = "  .. tostring(gameModeType) 
-		.. "   result = " .. tostring(result) .. "     " .. tostring(progressStr))
-
 	local uid = UserManager.getInstance().uid
 	local ntime = os.time()
-	local fuuuLogID = tostring(ntime) .. "_" .. uid
+	local fuuuLogID = tostring(ntime) .. "_" .. tostring(uid)
 	
 	if needDCLog then
-		DcUtil:gameFailedFuuu( fuuuLogID , self.mainLogic.level , gameModeType , result , progressStr , self.mainLogic.totalScore )
-		self.lastFuuuLogID = fuuuLogID
+		print("RRR   FUUUManager:lastGameIsFUUU   fuuuLogID = " .. tostring(fuuuLogID) .. 
+			"   level = " .. tostring(self.mainLogic.level) .. 
+			"   gameModeType = "  .. tostring(gameModeType) .. 
+			"   result = " .. tostring(result) .. 
+			"      progressStr = " .. tostring(progressStr))
+
+		if not self.lastFuuuLogID then
+			DcUtil:gameFailedFuuu( fuuuLogID , self.mainLogic.level , gameModeType , result , progressStr , self.mainLogic.totalScore )
+			self.lastFuuuLogID = fuuuLogID
+		end		
 	end
 
 	if not self.localData.fuuuData[fuuuLogID] then
@@ -417,7 +428,14 @@ function FUUUManager:getLastGameFuuuID()
 end
 
 function FUUUManager:getFuuuDataByID(fuuuId)
-	return self.localData.fuuuData[fuuuId]
+	if fuuuId then
+		return self.localData.fuuuData[fuuuId]
+	end
+	return nil
+end
+
+function FUUUManager:clearLastFuuuID()
+	self.lastFuuuLogID = nil
 end
 
 function FUUUManager:getLevelContinuousFailNum(levelId)

@@ -1,11 +1,5 @@
-NetConnectPanel = class(BasePanel)
 
-local PayTextConfig = table.const {
-	{payType = 4 ,payTypeName = "豌豆荚支付"},
-	{payType = 7 ,payTypeName = "360支付"},
-	{payType = 11 ,payTypeName = "微信支付"},
-	{payType = 12 ,payTypeName = "支付宝支付"},
-}
+NetConnectPanel = class(BasePanel)
 
 function NetConnectPanel:ctor()
 	
@@ -15,28 +9,52 @@ function NetConnectPanel:init()
 	self.ui	= self:buildInterfaceGroup("NetConnectPanel") 
 	BasePanel.init(self, self.ui)
 
+	-- local title = self.ui:getChildByName("title")
+	-- title:setString(localize("payfail.choose.payment.title"))
+	self.panelTitle = TextField:createWithUIAdjustment(self.ui:getChildByName("panelTitleSize"), self.ui:getChildByName("panelTitle"))
+	self.ui:addChild(self.panelTitle)
+	self.panelTitle:setString(Localization:getInstance():getText("payfail.choose.payment.title"))
+	
 	local text1 = self.ui:getChildByName("text1")
+	local text_pre = self.ui:getChildByName("text_pre")
+	local text_mid = self.ui:getChildByName("text_mid")
+	local text_sub = self.ui:getChildByName("text_sub")
+
 	if self.isRmbPay then 
 		local defaultThirdPayType = PaymentManager.getInstance():getDefaultThirdPartPayment()
-		local payText = "联网支付"
-		for i,v in ipairs(PayTextConfig) do
-			if defaultThirdPayType == v.payType then
-				 payText = v.payTypeName
-			end
+		local btnShowConfig = PaymentManager.getInstance():getPaymentShowConfig(realThirdPayment[1])
+		local payText = btnShowConfig.name
+		if payText == nil or payText == localize("add.step.panel.buy.btn.txt") then
+			payText = "联网支付"
 		end
-		text1:setString(Localization:getInstance():getText("当前没有联网，不能使用"..payText.."哦！"))
+		--text1:setString(Localization:getInstance():getText("当前没有联网，不能使用"..payText.."哦！"))
+		text_pre:setString(localize("payfail.neednet1.1"))
+		text_mid:setString(localize("payfail.neednet1.2"))
+		text_mid:setColor(ccc3(255, 0, 0))
+		text_sub:setString(localize("payfail.neednet1.3")..payText..localize("payfail.neednet1.4"))
 	else
+		text_pre:setVisible(false)
+		text_mid:setVisible(false)
+		text_sub:setVisible(false)
 		text1:setString(Localization:getInstance():getText("panel.no.net.pay.text1"))
 	end
 	local text2 = self.ui:getChildByName("text2")
 	text2:setString(Localization:getInstance():getText("panel.no.net.pay.text2"))
+	--text2:setColor(ccc3(0, 160, 233))
 	text2:setVisible(false)
 
-	self.connectBtn = GroupButtonBase:create(self.ui:getChildByName("connectBtn"))
-	self.connectBtn:setString(Localization:getInstance():getText("panel.no.net.pay.botton1"))
-	self.connectBtn:addEventListener(DisplayEvents.kTouchTap,  function ()
-			self:onConnectBtnTap()
-		end)
+	-- self.connectBtn = GroupButtonBase:create(self.ui:getChildByName("connectBtn"))
+	-- self.connectBtn:setString(Localization:getInstance():getText("panel.no.net.pay.botton1"))
+	-- self.connectBtn:addEventListener(DisplayEvents.kTouchTap,  function ()
+	-- 		self:onConnectBtnTap()
+	-- 	end)
+
+	self.closeBtn = self.ui:getChildByName("closeBtn")
+	self.closeBtn:setTouchEnabled(true, 0 , true)
+	self.closeBtn:setButtonMode(true)
+	self.closeBtn:addEventListener(DisplayEvents.kTouchTap, function ()
+		self:onCloseBtnTapped()
+	end)
 
 	local smsPayBtnUI = self.ui:getChildByName("smsPayBtn")
 	if self.smsPayType then 
@@ -56,11 +74,6 @@ end
 
 function NetConnectPanel:onConnectBtnTap()
 	local alterList = 0
-	if self.smsPayType then 
-		local chooseTable = {self.smsPayType}
-		alterList = PaymentDCUtil.getInstance():getAlterPaymentList(chooseTable)
-	end
-	PaymentDCUtil.getInstance():sendPayChoose(-1, alterList, 0, self.uniquePayId, 0)
 	if self.connectCallback then 
 		self.connectCallback()
 	end
@@ -73,10 +86,8 @@ function NetConnectPanel:onSmsPayBtnTap()
 	local alterList = 0
 	if self.smsPayType then 
 		local chooseTable = {self.smsPayType}
-		alterList = PaymentDCUtil.getInstance():getAlterPaymentList(chooseTable)
 	end
 	if self.handleCallback then 
-		PaymentDCUtil.getInstance():sendPayChoose(-1, alterList, self.smsPayType, self.uniquePayId, 0)
 		self.handleCallback()
 	end
 	-- if self.connectCallback then 
@@ -93,12 +104,6 @@ function NetConnectPanel:popout()
 		self:setToScreenCenterVertical()		
 	end
 	self.allowBackKeyTap = true
-	local alterList = 0
-	if self.smsPayType then 
-		local chooseTable = {self.smsPayType}
-		alterList = PaymentDCUtil.getInstance():getAlterPaymentList(chooseTable)
-	end
-	PaymentDCUtil.getInstance():sendPayChoosePop(-1, alterList, self.uniquePayId, 0)
 end
 
 function NetConnectPanel:removePopout()

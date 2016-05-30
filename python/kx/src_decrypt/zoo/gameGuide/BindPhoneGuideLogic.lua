@@ -32,6 +32,8 @@ function BindPhoneGuideLogic:supportPhone()
                 return true
             end
         end
+    elseif authConfig == PlatformAuthEnum.kPhone then
+        return true
     end
     return false
 end
@@ -56,17 +58,31 @@ function BindPhoneGuideLogic:onShowLoginBtn(loginBtn)
     CCUserDefault:sharedUserDefault():setBoolForKey("bind.phone.guide.login.has.played", true)
 end
 
+function BindPhoneGuideLogic:hasPersonalGuidePlayed()
+    return CCUserDefault:sharedUserDefault():getBoolForKey("personal.center.btn.guide.has.played", false)
+            and CCUserDefault:sharedUserDefault():getBoolForKey("personal.center.panel.guide.has.played2", false)
+end
+
 function BindPhoneGuideLogic:onOpenSettingBtn(accountBtn)
-    if not self:shouldPlayGuide() then return end
+    local guide1Played = CCUserDefault:sharedUserDefault():getBoolForKey("personal.center.panel.guide.has.played", false)
+    local guide2Played = CCUserDefault:sharedUserDefault():getBoolForKey("personal.center.panel.guide.has.played2", false)
+
+    if self:hasPersonalGuidePlayed() then return end
     if self.isGuideOnScreen then return end
     self.isGuideOnScreen = true
+
+    local text = "tutorial.my.card.text1"
+
+    if guide1Played and not guide2Played then
+        text = "tutorial.achievement.text1"
+    end
 
     local pos = accountBtn:getParent():convertToWorldSpace(accountBtn:getPosition())
     local action = 
     {
         opacity = 0xCC, 
-        text = "tutorial.game.setting.2",
-        panType = "down", panAlign = "viewY", panPosY = pos.y + 400, panFlip = true,
+        text = text,
+        panType = "down", panAlign = "viewY", panPosY = pos.y + 400, panFlip = false,
         maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
     }
     local panel = GameGuideUI:panelS(nil, action, false)
@@ -92,9 +108,9 @@ function BindPhoneGuideLogic:onOpenSettingBtn(accountBtn)
             mask:removeFromParentAndCleanup(true)
         end
 
-        if accountBtn:hitTestPoint(evt.globalPosition, true) then       
+        if accountBtn:hitTestPoint(evt.globalPosition, true) then  
             local event = {name = DisplayEvents.kTouchTap}
-            accountBtn:dispatchEvent(event)
+            accountBtn.wrapper:dispatchEvent(event)
             if not self:supportPhone() then -- 如果不支持绑定手机，那么这里就是引导的最后一步，应该写下flag
                 self:writeFlag()
             end
@@ -111,27 +127,29 @@ function BindPhoneGuideLogic:onOpenSettingBtn(accountBtn)
         scene:addChild(panel)
     end
 
+    CCUserDefault:sharedUserDefault():setBoolForKey("personal.center.btn.guide.has.played", true)
+    HomeScene:sharedInstance().settingButton:updateDotTipStatus()
 end
 
-function BindPhoneGuideLogic:onShowAccountPanel(bindBtn)
+function BindPhoneGuideLogic:onShowAccountPanel(theBtn)
     if not self:shouldPlayGuide() then return end
     if self.isGuideOnScreen then return end
     self.isGuideOnScreen = true
 
-    local pos = bindBtn:getParent():convertToWorldSpace(bindBtn:getPosition())
+    local pos = theBtn:getParent():convertToWorldSpace(theBtn:getPosition())
     local action = 
     {
         opacity = 0xCC, 
         text = "tutorial.game.setting.3",
-        panType = "down", panAlign = "viewY", panPosY = pos.y + 340, panFlip = true,
+        panType = "down", panAlign = "viewY", panPosY = pos.y + 300, panFlip = true,
         maskDelay = 0.3,maskFade = 0.4 ,panDelay = 0.5, touchDelay = 1
     }
     local panel = GameGuideUI:panelS(nil, action, false)
     local mask = GameGuideUI:mask(
         action.opacity, 
         action.touchDelay, 
-        ccp(pos.x + bindBtn:getGroupBounds().size.width / 2, pos.y - bindBtn:getGroupBounds().size.height / 2),
-        1, 
+        ccp(pos.x + theBtn:getGroupBounds().size.width / 2, pos.y - theBtn:getGroupBounds().size.height / 2 + 10),
+        2, 
         false, 
         nil, 
         nil, 
@@ -149,9 +167,9 @@ function BindPhoneGuideLogic:onShowAccountPanel(bindBtn)
             mask:removeFromParentAndCleanup(true)
         end
 
-        if bindBtn:hitTestPoint(evt.globalPosition, true) then       
+        if theBtn:hitTestPoint(evt.globalPosition, true) then       
             local event = {name = DisplayEvents.kTouchTap}
-            bindBtn:dispatchEvent(event)
+            theBtn:dispatchEvent(event)
             self:writeFlag() -- 所有引导步均已结束
         else
             -- 点击别处就认为是取消了引导

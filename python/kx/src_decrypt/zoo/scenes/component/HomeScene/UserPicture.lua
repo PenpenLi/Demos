@@ -1,6 +1,6 @@
 
 -- Copyright C2009-2013 www.happyelements.com, all rights reserved.
--- Create Date:	2013��12��17�� 11:46:00
+-- Create Date:	2013Äê12ÔÂ17ÈÕ 11:46:00
 -- Author:	ZhangWan(diff)
 -- Email:	wanwan.zhang@happyelements.com
 
@@ -18,7 +18,28 @@ function UserPicture:init(...)
 	assert(#{...} == 0)
 
 	-- Get UI Resource 
-	self.ui = ResourceManager:sharedInstance():buildGroup("newUserIcon")
+
+	if true then 
+		-- 61儿童节
+		self.ui = ResourceManager:sharedInstance():buildGroup("newUserIcon_61")
+		local icon = self.ui:getChildByName("newUserIcon")
+		-- 蜻蜓动画
+		local animSprite = icon:getChildByName("1")
+		local bounds = animSprite:boundingBox()
+		animSprite:setAnchorPoint(ccp(0.5,0.5))
+		animSprite:setPositionX(bounds:getMidX())
+		animSprite:setPositionY(bounds:getMidY())
+
+		local animation = CCAnimation:create()
+		animation:addSpriteFrame(icon:getChildByName("1"):displayFrame())
+		animation:addSpriteFrame(icon:getChildByName("2"):displayFrame())
+		animation:setDelayPerUnit(2/24)
+		animSprite:runAction(CCRepeatForever:create(CCAnimate:create(animation)))
+		icon:getChildByName("2"):setVisible(false)
+	else
+		--self.ui = ResourceManager:sharedInstance():buildGroup("newUserIcon")
+		self.ui = ResourceManager:sharedInstance():buildGroup("newUserIcon_AnniversaryTwoYears")
+	end
 
 	-- ----------
 	-- Init Base
@@ -58,11 +79,12 @@ function UserPicture:updateProfile()
 		local function onImageLoadFinishCallback(clipping)
 			local clippingSize = clipping:getContentSize()
 			local iconSize = self.userIcon:getContentSize()
+			local childIndex = self.newUserIcon:getChildIndex(self.userIcon)
 			local scale = frameSize.width/clippingSize.width
 			-- clipping:setScale(scale*0.95)
 			clipping:setScale(scale)
 			clipping:setPosition(ccp(framePos.x + frameSize.width/2, framePos.y - frameSize.height/2))
-			self.newUserIcon:addChild(clipping)
+			self.newUserIcon:addChildAt(clipping, childIndex)
 			self.clipping = clipping
 			self.headUrl = profile.headUrl	
 		end

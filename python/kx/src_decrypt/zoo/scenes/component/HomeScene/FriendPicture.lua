@@ -25,13 +25,12 @@ local function checkFriendPictureAnimDirection(direction, ...)
 		direction == FriendPictureAnimDirection.RIGHT)
 end
 
-function FriendPicture:init(friendId, friendInfo,  ...)
+function FriendPicture:init(uiGroup, friendId, friendInfo,  ...)
 	assert(type(friendId) == "number")
 	assert(#{...} == 0)
 
 	-- Get UI Resource
-	ResourceManager:sharedInstance():addJsonFile("flash/scenes/homeScene/homeScene.json")
-	self.ui	= ResourceManager:sharedInstance():buildGroup("friendPicture")
+	self.ui	= uiGroup
 
 	------------
 	-- Init Base Class
@@ -96,14 +95,17 @@ function FriendPicture:init(friendId, friendInfo,  ...)
 	-- Create User Picture's Clipping
 	-- ------------------------------
 	
-	local framePos = self.defaultPic:getPosition()
-	local frameSize = self.defaultPic:getContentSize()
+
+	local framePosX = self.defaultPic:getPositionX()
+	local framePosY = self.defaultPic:getPositionY()
+	local gbSize = self.defaultPic:getGroupBounds(self.friendIcon).size -- self.defaultPic:getContentSize()
+	local frameSize = {width = gbSize.width, height = gbSize.height}
 	local function onImageLoadFinishCallback(clipping)
 		if self.isDisposed then return end
 		local clippingSize = clipping:getContentSize()
 		local scale = frameSize.width/clippingSize.width
 		clipping:setScale(scale*0.95)
-		clipping:setPosition(ccp(framePos.x + frameSize.width/2, framePos.y - frameSize.height/2))
+		clipping:setPosition(ccp(framePosX + frameSize.width/2, framePosY - frameSize.height/2))
 		self.friendIcon:addChild(clipping)
 		--self.picMask:removeFromParentAndCleanup(true)
 		self.defaultPic:removeFromParentAndCleanup(true)
@@ -198,6 +200,7 @@ function FriendPicture:getFriendIconSize(...)
 	assert(#{...} == 0)
 
 	local size = self.friendIcon:getGroupBounds().size
+	size = {width = size.width, height = size.height}
 	return size
 end
 
@@ -440,7 +443,16 @@ function FriendPicture:create(friendId, friendInfo, ...)
 	assert(type(friendId) == "number")
 	assert(#{...} == 0)
 
+	ResourceManager:sharedInstance():addJsonFile("flash/scenes/homeScene/homeScene.json")
+	local uiGroup = ResourceManager:sharedInstance():buildGroup("friendPicture")
+
+	return FriendPicture:createWithGroup(uiGroup, friendId, friendInfo)
+end
+
+function FriendPicture:createWithGroup(uiGroup, friendId, friendInfo, ...)
+	assert(uiGroup)
+
 	local newFriendPicture = FriendPicture.new()
-	newFriendPicture:init(friendId, friendInfo)
+	newFriendPicture:init(uiGroup, friendId, friendInfo)
 	return newFriendPicture
 end

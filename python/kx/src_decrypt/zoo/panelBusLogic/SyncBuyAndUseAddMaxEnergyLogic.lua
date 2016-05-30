@@ -39,11 +39,11 @@ function SyncBuyAndUseAddMaxEnergyLogic:get(onSuccessCallback, onFailCallback, o
 			if onSuccessCallback then onSuccessCallback() end
 		end
 	end
-	local function onFail(event)
+	local function onFail(errorCode)
 		if self.listening then
 			self.listening = false
 			self:removeAnimation()
-			if onFailCallback then onFailCallback(event) end
+			if onFailCallback then onFailCallback(errorCode) end
 		end
 	end
 	local function onCancel()

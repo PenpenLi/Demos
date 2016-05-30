@@ -1,6 +1,10 @@
 -------------------------------------------------------------------------
 --  Class include: SnsProxy_Android, SnsProxy_iOS, SnsProxy
 -------------------------------------------------------------------------
+SyncSnsFriendEvents = {
+	kSyncSuccess = "syncSuccess",
+	kSyncFailed = "syncFailed",
+}
 
 if __IOS_FB then
     require "hecore.sns.SnsProxyIOS"
@@ -10,6 +14,8 @@ elseif __IOS_QQ then
 	require "hecore.sns.SnsProxyIOS_Tencent"
 elseif __ANDROID then
     require "hecore.sns.SnsProxyAndroid"
+elseif __WP8 then
+	require "hecore.sns.SnsProxyWP8"
 end
 
 if __WIN32 then 
@@ -75,10 +81,38 @@ function SnsProxy:isPhoneLogin()
 end
 
 function SnsProxy:isPhoneLoginExpire( ... )
-	return Localhost:time() - Localhost:getLastLoginUserConfig().time > 365 * 24 * 60 * 60 * 1000 
+	return Localhost:time() - Localhost:getLastLoginUserConfig().time > 365 * 24 * 60 * 60 * 1000 	
+	-- return os.time() * 1000 - Localhost:getLastLoginUserConfig().time > 30 * 24 * 60 * 60 * 1000 
 end
 
+function SnsProxy:isQQLogin()
+	if not PlatformConfig:hasAuthConfig(PlatformAuthEnum.kQQ) then
+		return false
+	end
 
+	local lastLoginUser = Localhost.getInstance():getLastLoginUserConfig()
+	if not lastLoginUser then 
+		return false
+	end
+
+    local userData = Localhost.getInstance():readUserDataByUserID(lastLoginUser.uid)
+    --print("userData:"..table.tostring(userData))
+    if userData and userData.openId then
+
+        --print("userData.snsType:"..table.tostring(userData.authorType))
+        if not userData.authorType then return false end
+        self:setAuthorizeType(userData.authorType) -- 使用上次登陆的平台进行判断
+
+        if userData.authorType ~= PlatformAuthEnum.kQQ then
+        	return false
+        end
+
+        return true
+		-- return Localhost:time() - Localhost:getLastLoginUserConfig().time < 365 * 24 * 60 * 60 * 1000
+    end
+
+    return false
+end
 --
 -- SnsProxy_Android ---------------------------------------------------------
 --

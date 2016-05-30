@@ -55,13 +55,13 @@ end
 function ScoreCountLogic:getScoreWithItemBomb(item)
 	if item.ItemType == GameItemType.kAnimal then
 		if item.ItemSpecialType == AnimalTypeConfig.kLine then
-			return GamePlayConfig_Score_SpecialBomb_kLine;
+			return GamePlayConfigScore.SpecialBombkLine
 		elseif item.ItemSpecialType == AnimalTypeConfig.kColumn then
-			return GamePlayConfig_Score_SpecialBomb_kCloumn;
+			return GamePlayConfigScore.SpecialBombkColumn
 		elseif item.ItemSpecialType == AnimalTypeConfig.kWrap then
-			return GamePlayConfig_Score_SpecialBomb_kWrap;
+			return GamePlayConfigScore.SpecialBombkWrap
 		elseif item.ItemSpecialType == AnimalTypeConfig.kColor then
-			return GamePlayConfig_Score_SpecialBomb_kBird;
+			return GamePlayConfigScore.SpecialBombkBird
 		end
 	end
 	return 0;
@@ -70,13 +70,13 @@ end
 ----合成特效加分
 function ScoreCountLogic:getScoreWithSpecialTypeCombine(spType)
 	if spType == AnimalTypeConfig.kLine then
-		return GamePlayConfig_Score_SpecialCombine_kLine;
+		return GamePlayConfigScore.SpecialCombineLine;
 	elseif spType == AnimalTypeConfig.kColumn then
-		return GamePlayConfig_Score_SpecialCombine_kCloumn;
+		return GamePlayConfigScore.SpecialCombineCloumn;
 	elseif spType == AnimalTypeConfig.kWrap then
-		return GamePlayConfig_Score_SpecialCombine_kWrap;
+		return GamePlayConfigScore.SpecialCombineWrap;
 	elseif spType == AnimalTypeConfig.kColor then
-		return GamePlayConfig_Score_SpecialCombine_kBird;
+		return GamePlayConfigScore.SpecialCombineBird;
 	end
 	return 0;
 end
@@ -84,15 +84,17 @@ end
 function ScoreCountLogic:getItemDestroyBaseScore(itemType)
 	local scoreBase = 0
 	if itemType == GameItemType.kAnimal then
-		scoreBase = GamePlayConfig_Score_MatchDeleted_Base
+		scoreBase = GamePlayConfigScore.MatchDeletedBase
 	elseif itemType == GameItemType.kCrystal then 
-		scoreBase = 100
+		scoreBase = GamePlayConfigScore.MatchDeletedCrystal
 	elseif itemType == GameItemType.kCoin then
 		scoreBase = 100
 	elseif itemType == GameItemType.kBalloon then 
-		scoreBase = GamePlayConfig_Score_Balloon
+		scoreBase = GamePlayConfigScore.Balloon
 	elseif itemType == GameItemType.kRabbit then
-		scoreBase = GamePlayConfig_Score_Rabbit
+		scoreBase = GamePlayConfigScore.Rabbit
+	elseif itemType == GameItemType.kRocket then
+		scoreBase = GamePlayConfigScore.Rocket
 	end
 	
 	return scoreBase

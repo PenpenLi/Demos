@@ -1,6 +1,7 @@
 local Processor = class(EventDispatcher)
 local kStorageFileName = "levelUpdate.inf"
 local kTestDecodeFilename = "testLevelUpdate.inf"
+local kLevelUpdateVersionFileName = "levelUpdateVersion"
 local mime = require("mime.core")
 
 function Processor:hasStorageConfig()
@@ -26,6 +27,36 @@ function Processor:getStorageConfig()
 		end
 	end
     return nil
+end
+
+function Processor:writeNewConfigVersion(version)
+	version = version or ""
+
+	local filePath = HeResPathUtils:getUserDataPath() .. "/" .. kLevelUpdateVersionFileName
+	local file, err = io.open(filePath, "wb")
+    if file and not err then
+    	local success = file:write(tostring(version))
+    	if success then
+            file:flush()
+            file:close()
+            return true
+        end
+    end
+
+    assert(false, "writeNewLevelUpdateConfigVersion failed:"..tostring(version))
+
+    return false
+end
+
+function Processor:readLocalConfigVersion()
+	local filePath = HeResPathUtils:getUserDataPath() .. "/" .. kLevelUpdateVersionFileName
+	local file = io.open(filePath, "rb")
+	if file then
+		local version = file:read("*a") 
+		file:close()
+		return version
+	end
+	return nil
 end
 
 function Processor:writeNewConfigToStorage(config, isTestDecode)
@@ -82,13 +113,17 @@ function Processor:isConfigBase64Invalid(config)
 	return false
 end
 
-function Processor:handleConfigFromServer(config)
+function Processor:handleConfigFromServer(config, version)
 	local storageConfig = self:getStorageConfig()
 	local valid, jsonString = self:isConfigBase64Invalid(config)
+	local oldVersion = self:readLocalConfigVersion()
 	if valid then
-		if storageConfig ~= jsonString then
+		if storageConfig ~= jsonString or oldVersion ~= version then
 			local dst = mime.unb64(config)
-			self:writeNewConfigToStorage(dst)
+			local writeSuccess = self:writeNewConfigToStorage(dst)
+			if writeSuccess then
+				self:writeNewConfigVersion(version)
+			end
 		end
 	end
 end
@@ -103,7 +138,7 @@ function Processor:start()
 	    if evt and evt.target then evt.target:removeAllEventListeners() end
 	    print("loadLevelConfigDynamicUpdate finished")
 	    if evt.data and evt.data.config then
-	        self:handleConfigFromServer(evt.data.config)
+	        self:handleConfigFromServer(evt.data.config, evt.data.md5)
 	    end
 	end 
 

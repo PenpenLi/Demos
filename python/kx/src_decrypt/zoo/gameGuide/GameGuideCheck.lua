@@ -6,6 +6,11 @@ function GameGuideCheck:verifyGuideConditions(guides)
 	local checkList = {}
 	for k, v in pairs(guides) do
 		checkList = {}
+		if type(v.appear) ~= "table" then
+			assert(false, "Illegal appear list! index: "..tostring(k))
+			debug.debug()
+			return
+		end
 		if #v.appear <= 0 then
 			assert(false, "Empty appear list! index: "..tostring(k))
 			debug.debug()
@@ -31,7 +36,12 @@ function GameGuideCheck:verifyGuideConditions(guides)
 			checkList[v.type] = true
 		end
 		checkList = {}
-		for i, v in ipairs(v.appear) do
+		if type(v.disappear) ~= "table" then
+			assert(false, "Illegal disappear list! index: "..tostring(k))
+			debug.debug()
+			return
+		end
+		for i, v in ipairs(v.disappear) do
 			if not v.type then
 				assert(false, "Disappear condition without type! index: "..tostring(k))
 				debug.debug()
@@ -54,6 +64,7 @@ function GameGuideCheck:verifyGuideConditions(guides)
 end
 
 function GameGuideCheck:checkAppear(guide, paras, index)
+	if type(guide.appear) ~= "table" then return false end
 	for i, v in ipairs(guide.appear) do
 		if type(self[v.type]) == "function" then
 			if not self[v.type](self, index, v, paras) then
@@ -68,6 +79,7 @@ function GameGuideCheck:checkAppear(guide, paras, index)
 end
 
 function GameGuideCheck:checkDisappear(guide, paras, index)
+	if type(guide.disappear) ~= "table" then return false end
 	for i, v in ipairs(guide.disappear) do
 		if type(self[v.type]) == "function" then
 			if self[v.type](self, index, v, paras) then
@@ -91,7 +103,7 @@ function GameGuideCheck:checkFixedAppears(guide, list, paras, index)
 		if checkList[v.type] then
 			checkList[v.type].check = true
 			if type(self[v.type]) == "function" then
-				if not self[v.type](self, index, checkList[v.type].condition or v, paras) then
+				if not self[v.type](self, index, v, paras) then
 					return false
 				end
 			else
@@ -164,7 +176,7 @@ end
 
 function GameGuideCheck:curLevelGuided(index, condition, paras)
 	for k, v in ipairs(condition.guide) do
-		if not GameGuideData:sharedInstance():getCurLevelGuide(v) then return false end
+		if not GameGuideData:sharedInstance():containInCurLevelGuide(v) then return false end
 	end
 	return true
 end
@@ -186,6 +198,8 @@ function GameGuideCheck:waitSignal(index, condition, paras)
 end
 
 function GameGuideCheck:swap(index, condition, paras)
+	if type(paras) ~= "table" or table.size(paras) < 2 then return false end
+	
 	local para1, para2 = paras[1], paras[2]
 	if not condition.from or not condition.to then return true end
 	if type(para1) ~= "table" or type(para1.x) ~= "number" or type(para1.y) ~= "number" or
@@ -198,10 +212,18 @@ function GameGuideCheck:swap(index, condition, paras)
 		para1.x == condition.to.x and para1.y == condition.to.y)
 end
 
+function GameGuideCheck:click( index, condition, paras )
+	-- body
+	if paras and paras.value == "click" then
+		return true
+	end
+	return false
+end
+
 function GameGuideCheck:topPassedLevel(index, condition, paras)
 	local level = 0
 	for k, v in ipairs(UserManager:getInstance():getScoreRef()) do
-		if v.star > 0 and v.levelId < 10000 and level < v.levelId then level = v.levelId end
+		if (v.star > 0 or JumpLevelManager:getLevelPawnNum(v.levelId) > 0) and v.levelId < 10000 and level < v.levelId then level = v.levelId end
 	end
 	return condition.para == level
 end

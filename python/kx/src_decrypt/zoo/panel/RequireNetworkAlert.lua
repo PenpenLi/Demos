@@ -5,6 +5,7 @@ require "zoo.panel.CommonTip"
 --  Class include: RequireNetworkAlert
 -------------------------------------------------------------------------
 kRequireNetworkAlertAnimation = {kDefault=0, kSync=1, kNoAnimation=2}
+kRequireNetworkAlertTipType = {kDefault=0, kNoTip=1}
 
 UserLoginChecker = class()
 local checkerInstance = nil
@@ -124,8 +125,10 @@ function UserLoginChecker:needReplaceAnimation(newType)
 	return false
 end
 
-function UserLoginChecker:doLogin(scene, onCompleteFunc, onFailFunc, animationType)
+function UserLoginChecker:doLogin(scene, onCompleteFunc, onFailFunc, animationType , tipType)
 	animationType = animationType or kRequireNetworkAlertAnimation.kDefault
+	if tipType == nil then tipType = kRequireNetworkAlertTipType.kDefault end
+
 	if onCompleteFunc then table.insert(self.successCallbacks, onCompleteFunc) end
 	if onFailFunc then table.insert(self.failCallbacks, onFailFunc) end
 
@@ -146,9 +149,9 @@ function UserLoginChecker:doLogin(scene, onCompleteFunc, onFailFunc, animationTy
 		print("post register error")
 		self:removePopout()
 
-		if animationType == kRequireNetworkAlertAnimation.kDefault then
+		if animationType == kRequireNetworkAlertAnimation.kDefault and tipType == kRequireNetworkAlertTipType.kDefault then
 			if -7==evt.data then
-				CommonTip:showTip(Localization:getInstance():getText("error.tip.-7"))
+				CommonTip:showTip(Localization:getInstance():getText("error.tip.-7"), 4)
 			else
 				CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
 			end
@@ -193,8 +196,9 @@ function UserLoginChecker:doLogin(scene, onCompleteFunc, onFailFunc, animationTy
 	self.logic = logic
 end
 
-local function userLoginCheckLogic(scene, onCompleteFunc, animationType, onFailFunc)
-	UserLoginChecker.getInstance():doLogin(scene, onCompleteFunc, onFailFunc, animationType)
+local function userLoginCheckLogic(scene, onCompleteFunc, animationType, onFailFunc , tipType)
+	if tipType == nil then tipType = kRequireNetworkAlertTipType.kDefault end
+	UserLoginChecker.getInstance():doLogin(scene, onCompleteFunc, onFailFunc, animationType , tipType)
 	return false
 end
 
@@ -233,8 +237,9 @@ function RequireNetworkAlert:popout(onCompleteFunc, animationType)
 	return false
 end
 
-function RequireNetworkAlert:callFuncWithLogged(onSuccessFunc, onFailFunc, animationType)
+function RequireNetworkAlert:callFuncWithLogged(onSuccessFunc, onFailFunc, animationType , tipType)
 	if animationType == nil then animationType = kRequireNetworkAlertAnimation.kDefault end
+	if tipType == nil then tipType = kRequireNetworkAlertTipType.kDefault end
 
 	local scene = Director:sharedDirector():getRunningScene()
 	if scene then
@@ -248,7 +253,9 @@ function RequireNetworkAlert:callFuncWithLogged(onSuccessFunc, onFailFunc, anima
 					needDoLogin = true
 				else
 					if animationType == kRequireNetworkAlertAnimation.kDefault then
-						CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips")) 
+						if tipType == kRequireNetworkAlertTipType.kDefault then
+							CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips")) 
+						end
 					end
 				end
 			else
@@ -256,7 +263,7 @@ function RequireNetworkAlert:callFuncWithLogged(onSuccessFunc, onFailFunc, anima
 			end
 
 			if needDoLogin then
-				userLoginCheckLogic(scene, onSuccessFunc, animationType, onFailFunc)
+				userLoginCheckLogic(scene, onSuccessFunc, animationType, onFailFunc , tipType)
 			else
 				if onFailFunc then onFailFunc() end
 			end

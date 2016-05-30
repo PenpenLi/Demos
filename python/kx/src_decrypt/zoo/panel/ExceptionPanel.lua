@@ -1,20 +1,30 @@
+require 'zoo.data.LoginExceptionManager'
+
 ExceptionPanel = class(CocosObject)
 
-function ExceptionPanel:create(onUseLocalFunc, onUseServerFunc)
+function ExceptionPanel:create(errCode, onUseLocalFunc, onUseServerFunc)
+	if table.exist(ExceptionErrorCodeIgnore, errCode) then  
+		errCode = LoginExceptionManager:getInstance():getErrorCodeCache()
+	end
 	local winSize = CCDirector:sharedDirector():getWinSize()
 	local ret = ExceptionPanel.new(CCNode:create())
 	ret:loadRequiredResource(PanelConfigFiles.panel_game_setting)
-	ret:buildUI(onUseLocalFunc, onUseServerFunc)
+	ret:buildUI(errCode, onUseLocalFunc, onUseServerFunc)
 	return ret
 end
 
-
 function ExceptionPanel:loadRequiredResource( panelConfigFile )
 	self.panelConfigFile = panelConfigFile
-	self.builder = InterfaceBuilder:create(panelConfigFile)
+	self.builder = InterfaceBuilder:createWithContentsOfFile(panelConfigFile)
 end
 
-function ExceptionPanel:buildUI(onUseLocalFunc, onUseServerFunc)
+function ExceptionPanel:buildUI(errCode, onUseLocalFunc, onUseServerFunc)
+	self.shouldShowReportBtn = LoginExceptionManager:getInstance():getShouldShowReportBtn()
+	-- 特殊处理：封号处理用户屏蔽反馈问题按钮
+	if tostring(errCode) == "109" then
+		self.shouldShowReportBtn = false
+	end
+
 	local winSize = CCDirector:sharedDirector():getVisibleSize()
 	local origin = CCDirector:sharedDirector():getVisibleOrigin()
 
@@ -28,50 +38,84 @@ function ExceptionPanel:buildUI(onUseLocalFunc, onUseServerFunc)
 
 	local ui = self.builder:buildGroup("exceptionpanel")--ResourceManager:sharedInstance():buildGroup("exceptionpanel")
 	local contentSize = ui:getGroupBounds().size
-	local reportBtn = GroupButtonBase:create(ui:getChildByName("reportBtn"))
-	local syncBtn = GroupButtonBase:create(ui:getChildByName("syncBtn"))
 
-	if __WP8 then
-		reportBtn:setVisible(false)
-		syncBtn:setPositionX(contentSize.width / 2)
-	end
-	
 	ui:setPosition(ccp((winSize.width - contentSize.width)/2, (winSize.height + contentSize.height)/2))
 	ui:getChildByName("titleLabel"):setString(Localization:getInstance():getText("exception.panel.tittle"))
-	ui:getChildByName("infoLabel"):setString(Localization:getInstance():getText("exception.panel.text"))
 	ui:getChildByName("dataInfoLabel"):setString("")
 
-	syncBtn:useStaticLabel(32)
-	reportBtn:setColorMode(kGroupButtonColorMode.blue)
-	reportBtn:useStaticLabel(34)
-	reportBtn:setString(Localization:getInstance():getText("exception.panel.btn.email"))
-	syncBtn:setString(Localization:getInstance():getText("exception.panel.btn.commit"))
-  
-	--reportBtn:getChildByName("label"):setString(Localization:getInstance():getText("exception.panel.btn.email"))
-	--syncBtn:getChildByName("label"):setString(Localization:getInstance():getText("exception.panel.btn.commit"))
+	--刷新错误码
+	LoginExceptionManager:getInstance():updateErrorHistory(errCode)
+	--提示文案
+	self.tipLabel = LoginExceptionManager:getInstance():getLoginErrorTip(errCode, self.shouldShowReportBtn)
+	ui:getChildByName("infoLabel"):setString(self.tipLabel)
+	--关闭按钮
+	local closeBtn = ui:getChildByName('closeBtn')
+	local firstClick = true
+    closeBtn:setTouchEnabled(true, 0, true)
+    local function onCloseBtnTapped()
+    	if firstClick and tostring(errCode) ~= "109" then 
+    		firstClick = false
+    		self:alert(Localization:getInstance():getText("error.tip.desc2"))
+    	else
+	    	self:removeFromParentAndCleanup(true)
+	    	LoginExceptionManager:getInstance():setShowFunsClubWithoutUserLogin(true)
+	    	LoginExceptionManager:getInstance():setShouldShowFunsClub(false)
+	    	if onUseLocalFunc ~= nil then onUseLocalFunc() end
+	    end
+    end
+    closeBtn:ad(DisplayEvents.kTouchTap, onCloseBtnTapped)
 
-	local function onReportTouch(evt)
-		self:removeFromParentAndCleanup(true)
-		if onUseLocalFunc ~= nil then onUseLocalFunc() end
-		if __IOS and kUserLogin then GspEnvironment:getCustomerSupportAgent():ShowJiraMain() end
-		--ExceptionPanel:alert(Localization:getInstance():getText("exception.panel.email.tips"))
+    --修复按钮
+	local syncBtn = GroupButtonBase:create(ui:getChildByName("syncBtn"))
+	if tostring(errCode) == "109" then
+		syncBtn:setString("知道了")
+		local function onSyncTouch(evt)
+			if onUseLocalFunc ~= nil then onUseLocalFunc() end
+		end
+		syncBtn:ad(DisplayEvents.kTouchTap, onSyncTouch)
+	else
+		syncBtn:setString("修复问题")
+		local function onSyncTouch(evt)
+			DcUtil:loginException("click_repairs")
+			self:removeFromParentAndCleanup(true)
+			LoginExceptionManager:getInstance():setShowFunsClubWithoutUserLogin(false)
+			LoginExceptionManager:getInstance():setShouldShowFunsClub(false)
+			if onUseServerFunc ~= nil then onUseServerFunc() end
+			self:alert(Localization:getInstance():getText("exception.panel.commit.tips"))
+		end
+		syncBtn:ad(DisplayEvents.kTouchTap, onSyncTouch)
 	end
-	--reportBtn:setTouchEnabled(true)
-	--reportBtn:setButtonMode(true)
-	reportBtn:ad(DisplayEvents.kTouchTap, onReportTouch)
 
-	local function onSyncTouch(evt)
+	--反馈按钮
+    local reportBtn = GroupButtonBase:create(ui:getChildByName("reportBtn"))
+    reportBtn:setString("反馈问题")
+    reportBtn:setColorMode(kGroupButtonColorMode.blue)
+    local function onReportTouch(evt)
+    	DcUtil:loginException("click_feedback")
 		self:removeFromParentAndCleanup(true)
+		LoginExceptionManager:getInstance():setShowFunsClubWithoutUserLogin(false)
+		LoginExceptionManager:getInstance():setShouldShowFunsClub(true)
 		if onUseServerFunc ~= nil then onUseServerFunc() end
-		ExceptionPanel:alert(Localization:getInstance():getText("exception.panel.commit.tips"))
 	end
-	--syncBtn:setTouchEnabled(true)
-	--syncBtn:setButtonMode(true)
-	syncBtn:ad(DisplayEvents.kTouchTap, onSyncTouch)
+	if __WP8 or not self.shouldShowReportBtn then
+		reportBtn:setVisible(false)
 
+		local oriPos = syncBtn:getPosition()
+		syncBtn:setPosition(ccp(oriPos.x, oriPos.y - 80))
+	else
+		reportBtn:ad(DisplayEvents.kTouchTap, onReportTouch)
+	end
+
+	-- -- 显示最高关卡
+	-- self:showTopLevel(ui)
+
+	self:addChild(ui)
+	return true
+end
+
+function ExceptionPanel:showTopLevel(ui)
 	local function onGetUserFinish( evt )
 		evt.target:rma()
-		
 		if evt.data then
 			local user = evt.data.user
 			if user and ui and ui.list then
@@ -86,21 +130,18 @@ function ExceptionPanel:buildUI(onUseLocalFunc, onUseServerFunc)
 	local http = GetUserHttp.new()
 	http:addEventListener(Events.kComplete, onGetUserFinish)
 	http:load()
-	
-	self:addChild(ui)
-	return true
 end
 
 function ExceptionPanel:alert(message)
-	local scene = Director:sharedDirector():getRunningScene()
-	if scene then
-		local item = RequireNetworkAlert.new(CCNode:create())
-		item:buildUI(message)
-		scene:addChild(item)
-	end
+	CommonTip:showTip(message, 'negative', nil, 2)
 end
 
 function ExceptionPanel:popout()
 	local scene = Director:sharedDirector():getRunningScene()
 	if scene then scene:addChild(self) end
+end
+
+function ExceptionPanel:dispose()
+	LoginExceptionManager:getInstance():setErrorCodeCache(ExceptionErrorCodeIgnore.kServerUniformErrorCode_Two)
+	CocosObject.dispose(self)
 end

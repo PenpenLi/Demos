@@ -60,7 +60,7 @@ function BoardViewAction:runGameItemActionScoreGet(boardView, theAction)
 			local pos = item:getBasePosition(item.x, item.y);
 			local pos1 = boardView:getPosition();
 			local pos2 = ccp(pos1.x + pos.x, pos1.y + pos.y)
-			boardView.PlayUIDelegate.scoreProgressBar:addScore(num , pos2);
+			boardView.PlayUIDelegate:addScore(num , pos2);
 		end
 	end
 end
@@ -211,9 +211,10 @@ function BoardViewAction:runningGameItemActionFurballTransfer(boardView, theActi
 		local fr = theAction.ItemPos1.x
 		local fc = theAction.ItemPos1.y
 		local fromItem = boardView.baseMap[fr][fc]
-		fromItem.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(true)
-		fromItem.itemSprite[ItemSpriteType.kSpecial] = nil
-
+		if fromItem.itemSprite[ItemSpriteType.kSpecial] and fromItem.itemSprite[ItemSpriteType.kSpecial]:getParent() then
+			fromItem.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(true)
+			fromItem.itemSprite[ItemSpriteType.kSpecial] = nil
+		end
 	end
 end
 
@@ -546,8 +547,6 @@ end
 
 function BoardViewAction:runGameItemActionMimosaGrow(boardView, theAction)
 	-- body
-	
-
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning
 		local r = theAction.ItemPos1.x
@@ -570,9 +569,9 @@ function BoardViewAction:runGameItemActionMimosaGrow(boardView, theAction)
 			local r, c = list[k].x, list[k].y
 			local itemView = boardView.baseMap[r][c]
 			if k == #list then
-				itemView:playMimosaEffectAnimation(theAction.direction, time * k,  callback, true)
+				itemView:playMimosaEffectAnimation(theAction.itemType, theAction.direction, time * k,  callback, true)
 			else
-				itemView:playMimosaEffectAnimation(theAction.direction, time * k, nil, true)
+				itemView:playMimosaEffectAnimation(theAction.itemType, theAction.direction, time * k, nil, true)
 			end
 			
 		end
@@ -595,7 +594,7 @@ function BoardViewAction:runGameItemActionMimosaBack(boardView, theAction)
 			local r, c = list[k].x, list[k].y
 			local itemView = boardView.baseMap[r][c]
 			local call_func = k==#list and callback or nil
-			itemView:playMimosaEffectAnimation(theAction.direction, delaytime,  call_func, false)
+			itemView:playMimosaEffectAnimation(theAction.itemType, theAction.direction, delaytime,  call_func, false)
 		end
 
 		local r = theAction.ItemPos1.x
@@ -615,6 +614,17 @@ function BoardViewAction:runGameItemActionMimosaReady(boardView, theAction)
 		local r, c = theAction.ItemPos1.x,  theAction.ItemPos1.y
 		local itemView = boardView.baseMap[r][c]
 		itemView:playMimosaReadyAnimation()
+	end
+end
+
+function BoardViewAction:runGameItemActionHedgehogRoadState(boardView, theAction)
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		theAction.addInfo = "over"
+		local r, c = theAction.ItemPos1.x,  theAction.ItemPos1.y
+		local itemView = boardView.baseMap[r][c]
+		itemView:playHedgehogRoadChangeState(theAction.hedgeRoadState)
 	end
 end
 
@@ -679,6 +689,140 @@ function BoardViewAction:runGameItemActionMagicLampCasting(boardView, theAction)
 			end
 		end
 	end	
+end
+
+function BoardViewAction:runGameItemActionWukongCheckAndChangeState(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning 
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local monkey = boardView.baseMap[r][c]
+
+		local function onChangeToReadyToJumpFin()
+			theAction.addInfo = "onChangeToReadyToJumpFin"
+		end
+
+		local function onChangeToActiveFin()
+			theAction.addInfo = "onChangeToActiveFin"
+		end
+
+		if theAction.addInfo == "changeToReadyToJump" then
+			monkey:changeWukongState( TileWukongState.kReadyToJump , onChangeToReadyToJumpFin )
+		elseif theAction.addInfo == "changeToActive" then
+			monkey:changeWukongState( TileWukongState.kOnActive , onChangeToActiveFin )
+		end
+	end
+end
+
+function BoardViewAction:runGameItemActionWukongGift(boardView, theAction)
+
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning 
+		theAction.addInfo = 'animated'
+		--[[
+		local function callback()
+			theAction.addInfo = 'animated'
+		end
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playMaydayBossCast(boardView, callback)
+		GamePlayMusicPlayer:playEffect(GameMusicType.kBlessing)
+		]]
+
+	elseif theAction.addInfo == 'animated' then
+		theAction.addInfo = "waiting"
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local fromItem = boardView.baseMap[r][c]
+
+		local targetPositions = {}
+		local addStepPositions = theAction.addStepPositions
+		local lineAndColumnPositions = theAction.lineAndColumnPositions
+		local warpPositions = theAction.warpPositions
+		
+		for k, v in ipairs(addStepPositions) do 
+			table.insert( targetPositions , v )
+		end
+
+		for k, v in ipairs(lineAndColumnPositions) do 
+			table.insert( targetPositions , v )
+		end
+
+		for k, v in ipairs(warpPositions) do 
+			table.insert( targetPositions , v )
+		end
+
+		theAction.completeCount = 0
+		local function dropCallback()
+			theAction.completeCount = theAction.completeCount + 1
+			if theAction.completeCount >= #targetPositions then
+				theAction.addInfo = 'toChange'
+			end
+		end
+
+		if #targetPositions > 0 then
+			for k, v in pairs(targetPositions) do 
+				local item = boardView.baseMap[v.r][v.c]
+				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+			end
+		else
+			dropCallback()
+		end
+		
+	elseif theAction.addInfo == 'toChange' then
+		theAction.addInfo = "anim_over"
+	elseif theAction.addInfo == 'data_over' then
+		theAction.addInfo = 'over'
+	end
+end
+
+function BoardViewAction:runGameItemActionWukongReinit(boardView, theAction)
+
+	local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+	local view = boardView.baseMap[r][c]
+
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning 
+
+		theAction.addInfo = "clearTargetBorad"
+		local wukongTargets = theAction.wukongTargetsPosition
+
+		for k, v in pairs(wukongTargets) do
+            local board = boardView.baseMap[v.x][v.y]
+            board:deleteWukongTarget()
+        end
+	else
+		local function changeWukongColorFin()
+			theAction.addInfo = "changeWukongColorFin"
+		end
+
+		if theAction.addInfo == "clearTargetBoradFin" then
+        	view:changeWukongColor( theAction.color , changeWukongColorFin )
+        	--view:showMonkeyBar()
+        elseif theAction.addInfo == "over" then
+
+        end
+	end 
+end
+
+
+function BoardViewAction:runGameItemActionWukongJumping(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning 
+
+		local r , c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local tr , tc = theAction.monkeyTargetPos.y, theAction.monkeyTargetPos.x
+		local monkey = boardView.baseMap[r][c]
+		local targetItem = boardView.baseMap[tr][tc]
+		local tarPos = IntCoord:clone(theAction.monkeyTargetPos)
+
+		theAction.addInfo = "startJump"
+
+		local function onJumpFin()
+			theAction.addInfo = "jumpFin"
+		end
+		monkey:changeWukongState( TileWukongState.kJumping )
+		monkey:playWukongJumpAnimation(tarPos , onJumpFin)
+	end
 end
 
 function BoardViewAction:runGameItemActionGoldZongZi(boardView, theAction)
@@ -781,15 +925,17 @@ function BoardViewAction:runGameItemActionMaydayBossDie(boardView, theAction)
 		local fromItem = boardView.baseMap[r][c]
 		local addMoveItems = theAction.addMoveItemPos
 		local questionItems = theAction.questionItemPos
+		local dripPos = theAction.dripPos
+		if not dripPos then dripPos = {} end
 
 		local function dropCallback()
 			if not theAction.completeCount then theAction.completeCount = 0 end
 			theAction.completeCount = theAction.completeCount + 1
-			if theAction.completeCount >= #addMoveItems + #questionItems then
+			if theAction.completeCount >= #addMoveItems + #questionItems + #dripPos then
 				theAction.addInfo = 'dropped'
 			end
 		end
-		if #addMoveItems == 0 and #questionItems == 0 then
+		if #addMoveItems == 0 and #questionItems == 0 and #dripPos == 0 then
 			dropCallback()
 		else
 			for k, v in pairs(addMoveItems) do 
@@ -800,8 +946,13 @@ function BoardViewAction:runGameItemActionMaydayBossDie(boardView, theAction)
 				local item = boardView.baseMap[v.r][v.c]
 				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
 			end
+
+			for k, v in pairs(dripPos) do 
+				local item = boardView.baseMap[v.r][v.c]
+				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback)
+			end
 		end
-		GamePlayMusicPlayer:playEffect(GameMusicType.kBlessing)
+		setTimeOut(function () GamePlayMusicPlayer:playEffect(GameMusicType.kWeeklyBossDie) end, 0.40)		
 
 	elseif theAction.addInfo == 'dropped' then
 		theAction.addInfo = ""
@@ -951,7 +1102,7 @@ function BoardViewAction:runGameitemActionHoneyBottleBroken(boardView, theAction
 		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local item = boardView.baseMap[r][c]
 		local count = 0
-		local total  = #theAction.infectList
+		local total  = #theAction.infectList + 1 -- 1 - bottle broken animation
 		local function finishcallback( ... )
 			-- body
 			count = count + 1
@@ -968,7 +1119,7 @@ function BoardViewAction:runGameitemActionHoneyBottleBroken(boardView, theAction
 			end
 		end
 		brokenCallback()
-		item:playHoneyBottleBroken()
+		item:playHoneyBottleBroken(finishcallback)
 	end
 end
 
@@ -981,188 +1132,40 @@ function BoardViewAction:runGameitemActionMagicTileHit(boardView, theAction)
 		end
 
 		local scene = Director:sharedDirector():getRunningScene()
-		local boss = boardView.gameBoardLogic:getHalloweenBoss()
-		if boss then
-			boss.hit = boss.hit + theAction.count
+		local bossData = boardView.gameBoardLogic:getHalloweenBoss()
+		if not bossData or bossData.hit >= bossData.totalBlood then
+			--boss已经死了
+			theAction.bossDead = true
+			finish()
+			return
+		end
+
+		local newHit = 0
+		if bossData then
+			print('theAction.count', theAction.count)
+			bossData.hit = bossData.hit + theAction.count
 		end
 
 		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local pos = boardView.gameBoardLogic:getGameItemPosInView(r, c)
-		local bossTile = scene.halloweenBoss
-		theAction.bossPosition = bossTile:getSpriteWorldPosition()
-		if bossTile and bossTile.refCocosObj then
-			bossTile:playHit(pos, nil, theAction.count == boss.specialHit)
-			bossTile:setBloodPercent(boss.hit / boss.totalBlood, true)
-		end
-		finish()
-	end
-end
-
-function BoardViewAction:runGameitemActionHalloweenBossDie(boardView, theAction)
-	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
-		theAction.actionStatus = GameActionStatus.kRunning
-
-		local scene = Director:sharedDirector():getRunningScene()
-		local boss = scene.halloweenBoss 
-		local function finish()	
-			boss:removeFromParentAndCleanup(true)
-			scene.halloweenBoss = nil
-		end
-
-		local function onAddDrops()
-			if scene and not scene.isDisposed then
-				local dropsAnim = nil
-				local function onAnimaFinished()
-					theAction.addInfo = 'died'
-					theAction.dropsAnim = dropsAnim
-				end
-				dropsAnim = TileDragonBoss:buildBossDieDropsAnim(theAction.dropBellOnDie, theAction.dropAddMove, onAnimaFinished)
-				dropsAnim:setPosition(ccp(scene.screenWidth/2, scene.screenHeight / 2 - 110))
-				scene:addChild(dropsAnim)
-			else
-				theAction.addInfo = 'died'
+		theAction.bossPosition = ccp(0, 0)
+		local function onFlyReachCallback()
+			print('onFlyReachCallback')
+			if boardView.PlayUIDelegate and boardView.PlayUIDelegate.bossBeeController then
+				boardView.PlayUIDelegate.bossBeeController:playHit()
 			end
-		end
-		if boss then
-			theAction.diePosition = boss:getSpriteWorldPosition()
-			boss:playDie(finish, onAddDrops)
-		else
-			finish()
+			-- GamePlayMusicPlayer:playEffect(GameMusicType.kHalloweenBeeHit)
 		end
 
-	elseif theAction.addInfo == 'died_action' then
+		if boardView.PlayUIDelegate and boardView.PlayUIDelegate.bossBeeController then
 
-		theAction.addInfo = ''
-
-		local scene = Director:sharedDirector():getRunningScene()
-		local toItemPos = theAction.destPositions
-
-		local function dropCallback()
-			if not theAction.completeCount then theAction.completeCount = 0 end
-			theAction.completeCount = theAction.completeCount + 1
-			if theAction.completeCount >= #toItemPos then
-				theAction.addInfo = 'over'
-			end
-		end
-		
-		if theAction.dropsAnim then
-			local addMoves = theAction.dropsAnim.addMoves or {}
-			local index = 1
-			for k, v in pairs(toItemPos) do 
-				local addMove = addMoves[index]
-				if addMove and not addMove.isDisposed then
-					local toItem = boardView.baseMap[v.r][v.c]
-					local itemPos = toItem:getBasePosition(toItem.x, toItem.y)
-					local toPos = scene:convertToNodeSpace(boardView:convertToWorldSpace(itemPos))
-					local fromPos = scene:convertToNodeSpace(addMove:getParent():convertToWorldSpace(addMove:getPosition()))
-					local movePos = ccp(toPos.x - fromPos.x, toPos.y - fromPos.y)
-					local flyAnim = TileDragonBoss:buildAddMoveAnim(0.5, movePos, dropCallback)
-					flyAnim:setPosition(fromPos)
-					scene:addChild(flyAnim)
-					addMove:removeFromParentAndCleanup(true)
-				else
-					dropCallback()
-				end
-				index = index + 1
-			end
-			theAction.dropsAnim:removeFromParentAndCleanup(true)
-		else
-			local diePosition = theAction.diePosition
-			local fromItemPos = boardView:TouchAt(diePosition.x, diePosition.y)
-			if fromItemPos.y < 1 or fromItemPos.y > 9 then fromItemPos.y = 1 end
-			if fromItemPos.x < 1 or fromItemPos.x > 9 then fromItemPos.x = 1 end
-			-- fromItemPos.x = 1 -- 反正boss永远在第一行
-			local fromItem = boardView.baseMap[fromItemPos.x][fromItemPos.y]
-
-			for k, v in pairs(toItemPos) do 
-				local item = boardView.baseMap[v.r][v.c]
-				item:playMaydayBossChangeToAddMove(boardView, fromItem, dropCallback, true)
-			end
-		end
-	end
-end
-
-function BoardViewAction:runGameitemActionHalloweenBossComeout(boardView, theAction)
-	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
-		theAction.actionStatus = GameActionStatus.kRunning
-
-		local function finish()
-			theAction.addInfo = 'over'
+			local bossWorldPos = boardView.PlayUIDelegate.idleAnim:getParent():convertToWorldSpace(boardView.PlayUIDelegate.idleAnim:getPosition())
+			theAction.bossPosition = ccp(bossWorldPos.x + 60, bossWorldPos.y - 75)
+			boardView.PlayUIDelegate.rainbow:setPercent(bossData.hit / bossData.totalBlood)
+			boardView.PlayUIDelegate:flyHitParticle(true, pos, ccp(bossWorldPos.x + 120 + math.random(-40, 40), bossWorldPos.y - 35 + math.random(-40, 40)), onFlyReachCallback)
 		end
 
-		local scene = Director:sharedDirector():getRunningScene()
-		local scaleX, scaleY = boardView:getScaleX(), boardView:getScaleY()
-		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
-		local fromPos = boardView.gameBoardLogic:getGameItemPosInView(r, c)
-		local toPos = ccp(boardView:convertToNodeSpace(fromPos).x, 540)
-
-		local sprite = TileDragonBoss:create()
-		sprite:setBloodPercent(0, false)
-		sprite:setScale(scaleX)
-		sprite:setPosition(scene:convertToNodeSpace(boardView:convertToWorldSpace(ccp(0, 540))))
-		scene.halloweenBoss = sprite
-		sprite:setSpriteX(toPos.x)
-		if boardView.PlayUIDelegate and boardView.PlayUIDelegate.bossLayer then
-			sprite:setVisible(false)
-			boardView.PlayUIDelegate.bossLayer:addChild(sprite)
-		end
-		local bossComeWorldPos = sprite:getBossSpriteWorldPosition()
-
-		local function playBossComeout()
-			if sprite then 
-				sprite:setVisible(true)
-				sprite:playComeout(finish)
-			end
-			-- if scene and sprite then
-			-- 	scene:addChild(sprite)					
-			-- 	sprite:playComeout(finish)
-			-- end
-		end
-
-		-- local function playBossComeoutEffect()
-		-- 	if scene and sprite then
-		-- 		local effect = TileDragonBoss:buildBossComeEffect(playBossComeout)
-		-- 		effect:setPosition(scene:convertToNodeSpace(bossComeWorldPos))
-		-- 		scene:addChild(effect)	
-		-- 	end
-		-- end
-		
-		-- local icon = Sprite:createWithSpriteFrameName('xmas_boss_iconfly_0000')
-		local icon = Sprite:createEmpty()
-		boardView:addChild(icon)
-		icon:setPosition(boardView:convertToNodeSpace(fromPos))
-		local arr = CCArray:create()
-		arr:addObject(CCDelayTime:create(0.5))
-		arr:addObject(CCCallFunc:create(function() 
-				local view = boardView.baseMap[r][c]
-				if view then
-					view:clearHalloweenBoss()
-				end
-				if icon and not icon.isDisposed then
-					local star = TileDragonBoss:buildBossFlyStar()
-					star:setPosition(ccp(0, 20))
-					icon:addChild(star)
-				end
-			end))
-		arr:addObject(CCMoveTo:create(0.6, boardView:convertToNodeSpace(bossComeWorldPos)))
-		-- arr:addObject(
-		-- 	CCEaseSineIn:create(CCSpawn:createWithTwoActions(
-		-- 		CCMoveTo:create(0.5, ccp(toPos.x, toPos.y)),
-		-- 		CCFadeTo:create(0.5, 100)
-		-- 	)))
-		arr:addObject(CCCallFunc:create(
-			function() 
-				if icon and icon.refCocosObj and not icon.isDisposed then
-					icon:removeFromParentAndCleanup(true) 
-					icon = nil
-				end
-				playBossComeout()
-			end))
-		icon:runAction(CCSequence:create(arr))
-		if bossComeWorldPos.x ~= fromPos.x then
-			local rotation = math.atan((bossComeWorldPos.x - fromPos.x) / math.abs(bossComeWorldPos.y - fromPos.y)) * 180 / 3.14
-			icon:setRotation(rotation)
-		end
+		finish()		
 	end
 end
 
@@ -1181,14 +1184,14 @@ function BoardViewAction:runGameitemActionMagicTileChange(boardView, theAction)
 				item:deleteMagicTile()
 			end
 
-			for i = r, r + 1 do
-				for j = c, c + 2 do
-					if boardView.baseMap[i] then
-						local item = boardView.baseMap[i][j]
-						if item then item:removeMagicTileWater() end
-					end
-				end
-			end
+			-- for i = r, r + 1 do
+			-- 	for j = c, c + 2 do
+			-- 		if boardView.baseMap[i] then
+			-- 			local item = boardView.baseMap[i][j]
+			-- 			if item then item:removeMagicTileWater() end
+			-- 		end
+			-- 	end
+			-- end
 		elseif theAction.objective == 'color' then
 			local item = boardView.baseMap[r][c]
 			if item then
@@ -1200,28 +1203,143 @@ function BoardViewAction:runGameitemActionMagicTileChange(boardView, theAction)
 	end
 end
 
-function BoardViewAction:runGameitemActionHalloweenBossCasting(boardView, theAction)
+function BoardViewAction:runGameitemActionHalloweenBossDie(boardView, theAction)
+
 	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 		theAction.actionStatus = GameActionStatus.kRunning
-	
-		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
-		local fromItem = boardView.baseMap[r][c]
-		local scene = Director:sharedDirector():getRunningScene()
 
-		local function finish() 
+
+		theAction.frameCount = 0
+		theAction.moveCount = 0
+		theAction.addInfo = 'playAnim'
+
+	elseif theAction.addInfo == 'playAnim' then
+		theAction.addInfo = ''
+
+		local function finish()	
+			theAction.addInfo = 'clearLine'
+		end
+
+		if boardView.PlayUIDelegate then
+			boardView.PlayUIDelegate:bossBeeDie(finish)
+
+		else
+			finish()
+		end
+	end	
+end
+
+function BoardViewAction:runGameitemActionHalloweenBossComeout(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local function finish()
+			if boardView.PlayUIDelegate then
+				boardView.PlayUIDelegate:initBossBee()
+			end
+
 			theAction.addInfo = 'over'
 		end
 
-		local toItemPos = {} -- theAction.destPositions
-		for k, v in pairs(theAction.destPositions) do
-			table.insert(toItemPos, boardView.gameBoardLogic:getGameItemPosInView(v.r, v.c))
-		end
-		local boss = scene.halloweenBoss
-		if boss then
-			boss:playCasting(toItemPos, finish)
-		else 
+		local scene = Director:sharedDirector():getRunningScene()
+		local scaleX, scaleY = boardView:getScaleX(), boardView:getScaleY()
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local fromPos = boardView.gameBoardLogic:getGameItemPosInView(r, c)
+		local item = boardView.baseMap[r][c]
+		item:clearHalloweenBoss()
+
+		if boardView.PlayUIDelegate then
+			boardView.PlayUIDelegate:playBossFlyUp(ccp(fromPos.x - 35, fromPos.y + 35), finish)
+		else
 			finish()
 		end
+	end
+end
+
+function BoardViewAction:runGameitemActionHalloweenBossCasting(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		-- print('runGameitemActionHalloweenBossCasting')
+		local function playFlyParticle()
+			theAction.addInfo = 'playCastAnimFinish'
+		end
+
+		if boardView.PlayUIDelegate and boardView.PlayUIDelegate.bossBeeController then
+			boardView.PlayUIDelegate.bossBeeController:playCast(playFlyParticle)
+		else 
+			theAction.addInfo = 'over'
+		end
+	elseif theAction.addInfo == 'playCastAnimFinish' then
+		-- print('playCastAnimFinish')
+
+		theAction.frameCount = 0
+		theAction.addInfo = 'animDataInited'
+		theAction.positionIndex = 1
+
+		local jewelPositions = theAction.jewelPositions
+		local specialPositions = theAction.specialPositions
+		local goldZongziPosition = theAction.goldZongziPosition
+
+
+		local toItemPos = {} -- theAction.destPositions
+		theAction.allDestPos = {}
+		for k, v in pairs(jewelPositions) do
+			table.insert(theAction.allDestPos, v)
+		end
+		for k, v in pairs(specialPositions) do
+			table.insert(theAction.allDestPos, v)
+		end
+		if goldZongziPosition then
+			table.insert(theAction.allDestPos, goldZongziPosition)
+		end
+		for k, v in pairs(theAction.allDestPos) do
+			v.animFinished = false
+			v.dataChanged = false
+		end
+	elseif theAction.addInfo == 'animDataInited' then
+		-- print('animDataInited')
+		theAction.addInfo = 'playingAnim'
+	elseif theAction.addInfo == 'playingAnim' then
+		if theAction.frameCount > GamePlayConfig_BonusTime_ItemFlying_CD or theAction.frameCount == 0 then
+			theAction.frameCount = 1
+
+			local finishCount = 0
+			local function flyFinishCallback(posData)
+				posData.animFinished = true
+				-- for k, v in pairs(theAction.allDestPos) do
+				-- 	-- print('v.animFinished, v.dataChanged', v.animFinished, v.dataChanged)
+				-- end
+			end
+
+			if boardView.PlayUIDelegate and boardView.PlayUIDelegate then
+				if theAction.positionIndex <= #theAction.allDestPos then
+					local bossWorldPos = boardView.PlayUIDelegate.idleAnim:getParent():convertToWorldSpace(boardView.PlayUIDelegate.idleAnim:getPosition())
+					local bossPosition = ccp(bossWorldPos.x + 138, bossWorldPos.y - 103)
+					local pos = theAction.allDestPos[theAction.positionIndex]
+					local endPos = boardView.gameBoardLogic:getGameItemPosInView(pos.r, pos.c)
+					endPos.y = endPos.y + 35
+					boardView.PlayUIDelegate:flyHitParticle(false, bossPosition, endPos, flyFinishCallback, pos)
+					theAction.positionIndex = theAction.positionIndex + 1
+				end
+			else
+				theAction.addInfo = 'over'
+			end
+		end		
+		theAction.frameCount = theAction.frameCount + 1
+	end
+end
+
+function BoardViewAction:runGameitemActionHalloweenBossReadyCasting(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+	
+		local scene = Director:sharedDirector():getRunningScene()
+		local boss = scene.halloweenBoss
+
+		if boss and not boss.isDisposed then
+			boss:playReadyToCast()
+		end
+		-- theAction.actionStatus = GameActionStatus.kWaitingForDeath
 	end
 end
 
@@ -1250,6 +1368,223 @@ function BoardViewAction:runningGameItemActionSandTransfer(boardView, theAction)
 		local fromItem = boardView.baseMap[fr][fc]
 		fromItem.itemSprite[ItemSpriteType.kSandMove]:removeFromParentAndCleanup(true)
 		fromItem.itemSprite[ItemSpriteType.kSandMove] = nil
+	end
+end
+
+function BoardViewAction:runGameItemActionHedgehogBoxChange(boardView, theAction)
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		local function animCallback( ... )
+			-- body
+			theAction.addInfo = "animationOver"
+		end
+		local targetPos = boardView.gameBoardLogic:getLevelTargetGlobalPosition(1)
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playHedgehogBoxOpen(animCallback, ccp(targetPos.x, targetPos.y))
+	elseif theAction.addInfo == "effect" then
+		theAction.addInfo = ""
+		local function effectOver( ... )
+			-- body
+			theAction.current = theAction.current + 1
+			print(theAction.current, theAction.total)
+			if theAction.current >= theAction.total then
+				-- debug.debug()
+				theAction.addInfo = "effectOver"
+			end
+		end
+		theAction.total = 0
+		theAction.current = 0
+		local changeItemList = {}
+		if theAction.changeType == HedgehogBoxCfgConst.kAddMove or 
+			theAction.changeType == HedgehogBoxCfgConst.kSpecial then
+			if theAction.effectItem then
+				for k, v in pairs(theAction.effectItem) do
+					table.insert(changeItemList, v)
+				end
+			end
+		end
+		if theAction.specialItems then
+			for k, v in pairs(theAction.specialItems) do
+				table.insert(changeItemList, v)
+			end
+		end
+		if #changeItemList > 0 then
+			local r_o, c_o = theAction.ItemPos1.x, theAction.ItemPos1.y
+			local itemFrom = boardView.baseMap[r_o][c_o]
+			for k, v in pairs(changeItemList) do 
+				local item = boardView.baseMap[v.r][v.c]
+				theAction.total = theAction.total + 1
+				item:playMaydayBossChangeToAddMove(boardView,  itemFrom, effectOver)
+			end
+		else
+			effectOver()
+		end
+	elseif theAction.addInfo == "updateView" then
+		theAction.addInfo = "over"
+	end
+end
+
+function BoardViewAction:runGameItemActionHedgehogReleaseEnergy(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		local delegate = boardView.gameBoardLogic.PlayUIDelegate
+		local function animate_callback( ... )
+			-- body
+			theAction.addInfo = "change"
+		end
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c].itemSprite[ItemSpriteType.kSnail]
+		local to_pos = item:getPositionInWorldSpace()
+
+		if delegate then
+			delegate:playTargetReleaseEnergy(to_pos, animate_callback)
+		else
+			animate_callback()
+		end
+	elseif theAction.addInfo == "change" then
+		local function animate_callback_2( ... )
+			-- body
+			theAction.addInfo = "updateData"
+		end
+		theAction.addInfo = ""
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		item:playHedgehogChangeAnimation(theAction.hedgehogLevel, animate_callback_2)
+	elseif theAction.addInfo == "updateTarget" then
+		theAction.addInfo = "over"
+	end
+end
+
+function BoardViewAction:runGameItemActionCrystalStoneFlying(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local tr, tc = theAction.ItemPos2.x, theAction.ItemPos2.y
+
+		local toItem = boardView.baseMap[tr][tc]
+		local color = theAction.addInt1
+
+		toItem:playChangeColorByCrystalStone(theAction.ItemPos1, color)
+	end
+end
+
+function BoardViewAction:runGameItemActionHedgehogCleanDigGroud(boardView, theAction)
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		theAction.bombView = 0
+		local function bomb( ... )
+			-- body
+			theAction.bombView = theAction.bombView + 1
+			if theAction.bombView >= #theAction.itemlist then
+				theAction.addInfo = 'bomb'
+				theAction.bombCount = 1
+			end
+		end
+		for k = 1, #theAction.itemlist do 
+			local itemRC = theAction.itemlist[k]
+			local _item = boardView.baseMap[itemRC.r][itemRC.c]
+			_item:playMaydayBossChangeToAddMove(boardView, item, bomb)
+		end
+		-- item:playHedgehogCleanDigGround(bomb)
+	end
+end
+
+function BoardViewAction:runGameItemActionUpdateLotus(boardView, theAction)
+	--[[
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		theAction.addInfo = "update"
+	else
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		
+		if theAction.addInfo == "playAnimation" then
+			local updateType = theAction.updateType
+
+			if updateType == 1 then
+				item:playLotusAnimation(1 , "in")
+			elseif updateType == 2 then
+				item:playLotusAnimation(2 , "in")
+			else
+				item:playLotusAnimation(3 , "in")
+			end
+			theAction.addInfo = "playing"
+		end
+	end
+	]]
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = boardView.baseMap[r][c]
+		
+		local updateType = theAction.updateType
+
+		if updateType == 1 then
+			item:playLotusAnimation(1 , "in")
+		elseif updateType == 2 then
+			item:playLotusAnimation(2 , "in")
+		else
+			item:playLotusAnimation(3 , "in")
+		end
+		theAction.addInfo = "playAnimation"
+	end
+end
+
+function BoardViewAction:runGameItemActionTransferSuperCute(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local tr, tc = theAction.ItemPos2.x, theAction.ItemPos2.y
+
+		local item = boardView.baseMap[fr][fc]
+
+		local function callback()
+			theAction.addInfo = "add"
+			local toItem = boardView.baseMap[tr][tc]
+			toItem:addSuperCuteBall(GameItemSuperCuteBallState.kActive)
+			toItem.isNeedUpdate = true
+		end
+		item:playSuperCuteMove(IntCoord:create(tr - fr, tc - fc), callback)
+	elseif theAction.actionStatus == GameActionStatus.kRunning then
+		if theAction.addInfo == "add" then
+			local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+			local item = boardView.baseMap[fr][fc]
+			theAction.addInfo = "over"
+			if item.itemSprite[ItemSpriteType.kSpecial] and item.itemSprite[ItemSpriteType.kSpecial]:getParent() then
+				item.itemSprite[ItemSpriteType.kSpecial]:removeFromParentAndCleanup(true)
+			end
+			item.itemSprite[ItemSpriteType.kSpecial] = nil
+		end
+	end
+end
+
+function BoardViewAction:runGameItemActionRecoverSuperCute(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+
+		print(">>>>>>>>>>>>>>>>>runGameItemActionRecoverSuperCute", r, c)
+
+		local item = boardView.baseMap[r][c]
+
+		local function onAimationFinish()
+			theAction.addInfo = "over"
+		end
+		item:playSuperCuteRecover(onAimationFinish)
+	end
+end
+
+function BoardViewAction:runningGameItemActionCheckHasDrip(boardView, theAction)
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kRunning
 	end
 end
 
@@ -1335,6 +1670,8 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		BoardViewAction:runGameItemActionMimosaReady(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Road_Bright then
 		BoardViewAction:runGameItemActionSnailRoadBright(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Road_State then
+		BoardViewAction:runGameItemActionHedgehogRoadState(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Product then
 		BoardViewAction:runGameItemActionProductSnail(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Mayday_Boss_Die then
@@ -1351,6 +1688,14 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		theAction.actionStatus = GameActionStatus.kRunning
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Casting then
 		BoardViewAction:runGameItemActionMagicLampCasting(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_CheckAndChangeState then
+		BoardViewAction:runGameItemActionWukongCheckAndChangeState(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Gift then
+		BoardViewAction:runGameItemActionWukongGift(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Reinit then
+		BoardViewAction:runGameItemActionWukongReinit(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_JumpToTarget then
+		BoardViewAction:runGameItemActionWukongJumping(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Gold_ZongZi_Explode then
 		BoardViewAction:runGameItemActionGoldZongZi(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Reinit then
@@ -1367,6 +1712,8 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		BoardViewAction:runGameitemActionMagicTileChange(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Halloween_Boss_Casting then
 		BoardViewAction:runGameitemActionHalloweenBossCasting(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Halloween_Boss_Ready_Casting then
+		BoardViewAction:runGameitemActionHalloweenBossReadyCasting(boardView, theAction)
 	elseif theAction.actionType == GameItemActionType.kItem_Sand_Transfer then
 		if theAction.actionStatus == GameActionStatus.kWaitingForStart then
 			BoardViewAction:runGameItemActionSandTransfer(boardView, theAction)
@@ -1375,6 +1722,22 @@ function BoardViewAction:runGameItemAction(boardView, theAction)
 		end
 	elseif theAction.actionType == GameItemActionType.kItem_mayday_boss_casting then
 		BoardViewAction:runGameItemActionMaydayBossCasting(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Clean_Dig_Groud then
+		BoardViewAction:runGameItemActionHedgehogCleanDigGroud(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Box_Change then
+		BoardViewAction:runGameItemActionHedgehogBoxChange(boardView, theAction)
+	elseif  theAction.actionType == GameItemActionType.kItem_Hedgehog_Release_Energy then
+		BoardViewAction:runGameItemActionHedgehogReleaseEnergy(boardView, theAction)
+	elseif  theAction.actionType == GameItemActionType.kItemSpecial_CrystalStone_Flying then
+		BoardViewAction:runGameItemActionCrystalStoneFlying(boardView, theAction)
+	elseif  theAction.actionType == GameItemActionType.kItem_Update_Lotus then
+		BoardViewAction:runGameItemActionUpdateLotus(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Recover then
+		BoardViewAction:runGameItemActionRecoverSuperCute(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Transfer then
+		BoardViewAction:runGameItemActionTransferSuperCute(boardView, theAction)
+	elseif theAction.actionType == GameItemActionType.kItem_Check_Has_Drip then
+		BoardViewAction:runningGameItemActionCheckHasDrip(boardView, theAction)
 	end
 end
 

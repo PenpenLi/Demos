@@ -12,21 +12,23 @@ assert(not MarkButton)
 assert(IconButtonBase)
 MarkButton = class(IconButtonBase)
 
-function MarkButton:ctor( ... )
-	self.id = "MarkButton"
-    self.playTipPriority = 30
+function MarkButton:ctor()
+	self.idPre = "MarkButton"
+    self.playTipPriority = 40
 end
 function MarkButton:playHasNotificationAnim(...)
-    IconButtonManager:getInstance():addPlayTipIcon(self)
+    IconButtonManager:getInstance():addPlayTipNormalIcon(self)
 end
 function MarkButton:stopHasNotificationAnim(...)
-    IconButtonManager:getInstance():removePlayTipIcon(self)
+    IconButtonManager:getInstance():removePlayTipNormalIcon(self)
 end
 
 
 function MarkButton:init(...)
 	assert(#{...} == 0)
-
+	self.id = self.idPre .. self.tipState
+	self["tip"..IconTipState.kNormal] = Localization:getInstance():getText("mark.panel.btn.has.sign.tip")
+	
 	self.ui	= ResourceManager:sharedInstance():buildGroup("finalSignIcon")
 	self.icon = self.ui:getChildByName("wrapper")
 	self.timerText = self.ui:getChildByName("timer")
@@ -44,7 +46,7 @@ function MarkButton:init(...)
 	-- Init Base Class
 	--BaseUI.init(self, self.ui)
 	IconButtonBase.init(self, self.ui)
-	IconButtonBase.setTipString(self, Localization:getInstance():getText("mark.panel.btn.has.sign.tip"))
+	IconButtonBase.setTipString(self, self["tip"..IconTipState.kNormal])
 
 	local index, time = MarkModel:getInstance():getCurrentIndexAndTime()
 	if index ~= 0 then

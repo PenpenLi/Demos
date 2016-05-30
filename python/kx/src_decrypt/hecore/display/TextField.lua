@@ -420,6 +420,74 @@ function BitmapText:getPreferredSize(...)
 	return size
 end
 
+------------------------------------------------------------
+-- 创建时如果指定了文本的宽度，传入的字符串会被做折行的处理，
+-- 导致颜色对不上，因此最好不传入宽度
+------------------------------------------------------------
+function BitmapText:setRichText(text, defaultColor)
+  local list = {}
+  local stack = {
+    { text=text,color=defaultColor }
+  }
+  while #stack > 0 do 
+    local s2,e2 = string.find(stack[#stack].text,"%[/#%]")
+    if not s2 then 
+      s2 = #stack[#stack].text + 1
+      e2 = #stack[#stack].text - 1
+    end
+
+    local temp = string.sub(stack[#stack].text,1,s2-1)
+    local s1,e1,color = string.find(temp,"%[#([0-9A-Fa-f]-)%]")
+
+    if s1 then 
+      local text1 = string.sub(stack[#stack].text,1,s1-1)
+      local text2 = string.sub(stack[#stack].text,e1+1,#stack[#stack].text)
+
+      table.insert(list,{ text=text1,color=stack[#stack].color })
+      table.insert(stack,{ text=text2,color=color })
+    else
+      local text1 = string.sub(stack[#stack].text,1,s2-1)
+      local text2 = string.sub(stack[#stack].text,e2+1,#stack[#stack].text)
+
+      table.insert(list,{ text=text1,color=stack[#stack].color})
+      table.remove(stack,#stack)
+      if #stack > 0 then 
+        stack[#stack].text = text2
+      end
+    end
+  end
+  
+  list = table.filter(list,function(v) return string.len(v.text) > 0 end)
+  -- 计算每段颜色的开始索引和长度
+  local realText = ""
+  local charColors = {} 
+  local index = 0 -- start by 0
+  for k,v in pairs(list) do
+    for uchar in string.gfind(v.text, "[%z\1-\127\194-\244][\128-\191]*") do
+      if uchar ~= '\n' then
+        table.insert(charColors, {index=index, char=uchar, color=v.color})
+      end
+      index = index + 1
+    end
+    realText = realText..v.text
+  end
+  -- 设置文本内容
+  if self.preferredWidth and self.preferredHeight then -- 需要适应大小
+    self:setString(realText)
+  else
+    self.refCocosObj:setString(realText)
+  end
+  -- 替换颜色
+  local maxCount = self.refCocosObj:getChildren():count()
+  for i, v in ipairs(charColors) do
+    local charSprite = self.refCocosObj:getChildByTag(v.index)
+    if v.color and charSprite then
+      local sprite = tolua.cast(charSprite, "CCSprite")
+      if sprite then sprite:setColor(HeDisplayUtil:ccc3FromUInt(tonumber(v.color,16))) end
+    end
+  end
+end
+
 --
 -- TextInput ---------------------------------------------------------
 --
@@ -451,7 +519,7 @@ kKeyboardReturnType = {
 }
 
 kTextInputEvents = {
-  kBegan = "began", kEnded = "ended", kChanged = "changed", kReturn = "return"
+  kBegan = "began", kEnded = "ended", kChanged = "changed", kReturn = "return", kGotFocus = "gotFocus", kLostFocus = "lostFocus",
 } 
 
 TextInput = class(CocosObject);
@@ -569,7 +637,7 @@ function TextInputIm:init(size, pNormal9SpriteBg)
   self.textInput:setPositionY(Director:sharedDirector():getWinSize().height * 2)
   self:addChild(self.textInput)
   self.label = TextField:create()
-  self.label:setFontSize(size.height * 61 / 100)
+  self.label:setFontSize(size.height * 60 / 100)
   self.label:setDimensions(CCSizeMake(size.width - 10, size.height * 61 / 100))
   self.label:setString("")
   self.label:setColor(ccc3(255, 255, 255))
@@ -595,6 +663,7 @@ function TextInputIm:init(size, pNormal9SpriteBg)
   self.textInput:addEventListener(kTextInputEvents.kEnded, onEnd)
 
   for k,v in pairs({
+    "dispatchEvent",
     "hasEventListener",
     "hasEventListenerByName",
     "addEventListener",
@@ -735,11 +804,11 @@ end
 ---------------------------------------------------
 
 assert(not LabelBMMonospaceFont)
-LabelBMMonospaceFont = class(Layer)
+LabelBMMonospaceFont = class(BMFontLabelBatch)
 function LabelBMMonospaceFont:ctor()
   self.isInitializedLabel = false
 end
-function LabelBMMonospaceFont:init(charWidth, charHeight, charInterval, fntFile, ...)
+function LabelBMMonospaceFont:init(charWidth, charHeight, charInterval, fntFile, imageFile, capacity, ...)
 	assert(type(charWidth) == "number")
 	assert(type(charHeight) == "number")
 	assert(type(charInterval) == "number")
@@ -750,7 +819,27 @@ function LabelBMMonospaceFont:init(charWidth, charHeight, charInterval, fntFile,
 	-- Init Base UI
 	-- --------------
 	--Layer.initLayer(self)
-	Layer.initLayer(self)
+	local prefix = string.split(fntFile, ".")[1]
+  local imagePrefix
+  if imageFile then
+    imagePrefix= string.split(imageFile, ".")[1]
+  else
+    imagePrefix = prefix
+  end
+
+  local realFntFile = fntFile
+  local realImageFile = imageFile
+  if not realImageFile then
+    realImageFile = prefix .. ".png"
+  end
+
+  if __use_small_res then  
+    realFntFile = prefix .. "@2x.fnt"
+    realImageFile = imagePrefix .. "@2x.png"
+  end
+    
+  local batch = LabelBMFontBatch:create(realImageFile, realFntFile, capacity or 20)
+  self:setRefCocosObj(batch)
 
 	self:ignoreAnchorPointForPosition(false)
 
@@ -761,6 +850,8 @@ function LabelBMMonospaceFont:init(charWidth, charHeight, charInterval, fntFile,
 	self.charHeight		= charHeight
 	self.charInterval	= charInterval
 	self.fntFile		= fntFile
+  self.imageFile = imageFile
+  self.capacity = capacity or 20
 
 	self:setContentSize(CCSizeMake(self.charWidth, self.charHeight))
 end
@@ -862,10 +953,10 @@ function LabelBMMonospaceFont:setString(str, ...)
 
 		--local char = string.sub(str, index, index)
 		local char = stringChars[index]
-		local charLabel = BitmapText:create("", self.fntFile, -1, kCCTextAlignmentCenter)
+		local charLabel = self:createLabel(char)
 
-		charLabel:setPreferredSize(self.charWidth, self.charHeight)
-		charLabel:setString(char)
+		local size = charLabel:getContentSize()
+		charLabel:setScale(math.min(self.charWidth / size.width, self.charHeight / size.height))
 		self.charsLabel[index] = charLabel
 	end
 
@@ -912,7 +1003,7 @@ function LabelBMMonospaceFont:copyToCenterLayer()
   local string = self:getString()
   local newLabelBMMonospaceFont = LabelBMMonospaceFont.new()
   newLabelBMMonospaceFont.name = "label"
-  newLabelBMMonospaceFont:init(self.charWidth, self.charHeight, self.charInterval, self.fntFile)
+  newLabelBMMonospaceFont:init(self.charWidth, self.charHeight, self.charInterval, self.fntFile, self.imageFile, self.capacity)
   if string then newLabelBMMonospaceFont:setString(string) end  
   newLabelBMMonospaceFont:setAnchorPoint(ccp(anchor.x, anchor.y))
   newLabelBMMonospaceFont:setPosition(ccp(-size.width/2, size.height/2))

@@ -11,6 +11,9 @@ end
 
 function AddFriendPanelLogic:init()
 	LocationManager_All:getInstance():initLocationManager()
+end
+
+function AddFriendPanelLogic:startUpdateLocation()
 	LocationManager_All:getInstance():startUpdatingLocation()
 end
 
@@ -223,6 +226,31 @@ function AddFriendPanelLogic:sendAddMessage(code, successCallback, failCallback,
 	http:addEventListener(Events.kError, onFail)
 	http:addEventListener(Events.kCancel, onCancel)
 	http:load(code)
+end
+
+--type: 添加好友的类型， 1：添加手机好友，0：其他好友
+function AddFriendPanelLogic:sendAddPhoneMessage(uid, successCallback, failCallback, cancelCallback, context)
+	local function onSuccess(evt)
+		if self.http ~= evt.target then return end
+		if successCallback then successCallback(evt.data, context) end
+	end
+
+	local function onFail(evt)
+		if self.http ~= evt.target then return end
+		if failCallback then failCallback(evt.data, context) end
+	end
+
+	local function onCancel(evt)
+		if self.http ~= evt.target then return end
+		if cancelCallback then cancelCallback(evt.data, context) end
+	end
+
+	local http = RequestFriendHttp.new(true)
+	self.http = http
+	http:addEventListener(Events.kComplete, onSuccess)
+	http:addEventListener(Events.kError, onFail)
+	http:addEventListener(Events.kCancel, onCancel)
+	http:load(nil, uid, 1)
 end
 
 local shakeStatus = false

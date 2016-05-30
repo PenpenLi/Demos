@@ -102,7 +102,8 @@ function SpringPropListItem:getItemCenterPosition()
   local y = iconSize.y - iconSize.height/2
   local position = ccp(x, y)
   position = item:convertToWorldSpace(position)
-  return item:getParent():convertToNodeSpace(position)
+  return position
+  -- return item:getParent():convertToNodeSpace(position)
 end
 
 function SpringPropListItem:hide()
@@ -255,22 +256,13 @@ end
 
 function SpringPropListItem:playMaxUsedAnimation(tipDesc)
 end
-function SpringPropListItem:use(forceUsedCallback, dontCallback)
+function SpringPropListItem:use(forceUsedCallback, dontCallback, forceUse)
 
     local function localCallback()
         if forceUsedCallback then forceUsedCallback() end
         
-        if not dontCallback then
+        if not dontCallback and self.controller and self.controller.springItemCallback then
             self.controller.springItemCallback()
-        end
-
-        local new_icon = self:buildItemIconByStep(0)
-        new_icon:setPositionXY(self.icon:getPositionX(), self.icon:getPositionY())
-        self.item:addChildAt(new_icon, 4)
-
-        if self.icon then 
-          self.icon:removeFromParentAndCleanup(true) 
-          self.icon = new_icon
         end
 
         self.usedTimes = self.usedTimes + 1
@@ -284,7 +276,10 @@ function SpringPropListItem:use(forceUsedCallback, dontCallback)
     if percentage >= 1 then
         setTimeOut(function() playMusic() end, 0.25)
         -- （五一)使用技能
-        DcUtil:UserTrack({ category='activity', sub_category='labourday_click_skill' })
+        -- DcUtil:UserTrack({ category='activity', sub_category='labourday_click_skill' })
+        local operator = 1
+        if forceUse then operator = 2 end
+        DcUtil:UserTrack({ category='activity', sub_category='weeklyrace_summer_2016_use_skill' , level_id = self.propListAnimation.levelId, operator = operator}, true)
         
         --LaborCatEffect:playItemUseAnimation(localCallback)
         -- SpringFestivalEffect:playFireworkAnimation(localCallback)
@@ -305,7 +300,7 @@ function SpringPropListItem:use(forceUsedCallback, dontCallback)
     desc:setString(Localization:getInstance():getText("weeklyrace.summer.drink.desc", {n1 = self:getTotalEnergy() -self.energy, br = '\n'}))
 
     local tip = BubbleTip:create(content, kSpringPropItemID, 5)
-    tip:show(self.item:getGroupBounds())
+    tip:show(self.icon:getGroupBounds())
 
     -- CommonTip:showTip(Localization:getInstance():getText("activity.GuoQing.mainPanel.tip.13"), "negative")
     return false

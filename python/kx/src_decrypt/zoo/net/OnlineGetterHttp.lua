@@ -53,7 +53,7 @@ function FriendHttp:load(refresh, friendIds)
 	    else
 	    	he_log_info("get friends success")
 	    	if data.users and type(data.users) == "table" then	    		
-	    		FriendManager.getInstance():syncFromLua(data.users, data.profiles, data.snsFriendIds)
+	    		FriendManager.getInstance():syncFromLua(data.users, data.profiles, data.snsFriendIds, data.achievementList)
 	    		Localhost.getInstance():flushCurrentFriendsData() -- why? how about delete it.
 	    	end
 	    	context:onLoadingComplete(data)
@@ -165,10 +165,11 @@ RequestFriendHttp = class(HttpBase)
 -- <request>
 -- 	<property code="inviteCode" type="int" desc="好友邀请码"/>
 -- 	<property code="friendUid" type="long" desc="好友的uid"/>
+-- 	type: 1 --手机好友，0--其他方式的好友
 -- </request>
 -- <response>
 -- </response>
-function RequestFriendHttp:load(code, uid)
+function RequestFriendHttp:load(code, uid, type)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local function loadCallback(endPoint, data, err)
@@ -180,7 +181,7 @@ function RequestFriendHttp:load(code, uid)
 			context:onLoadingComplete()
 		end
 	end
-	self.transponder:call(kHttpEndPoints.requestFriend, {inviteCode = code, friendUid = uid}, loadCallback, rpc.SendingPriority.kHigh, false)
+	self.transponder:call(kHttpEndPoints.requestFriend, {inviteCode = code, friendUid = uid, type = type}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 --
@@ -544,6 +545,23 @@ function QueryQihooOrderHttp:load(orderId)
 	self.transponder:call(kHttpEndPoints.queryQihooOrder, {orderId = orderId}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
+
+QueryAliOrderHttp = class(HttpBase)
+function QueryAliOrderHttp:load(orderId)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("QueryAliOrderHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("QueryAliOrderHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.queryAliOrder, {orderId = orderId}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
 ExtraConnectHttp = class(HttpBase)
 function ExtraConnectHttp:load(openId,accessToken,snsPlatform,snsName)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
@@ -597,6 +615,7 @@ function QQConnectHttp:load(openId, accessToken,snsPlatform,snsName)
 		snsPlatform=snsPlatform,
 		-- oldSnsPlatform=oldSnsPlatform,
 		snsName = snsName,
+		deviceUdid = MetaInfo:getInstance():getUdid(),
 	}
 
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
@@ -604,7 +623,7 @@ end
 
 --rebinding
 RebindingHttp = class(HttpBase)
-function RebindingHttp:load(snsName, openId)
+function RebindingHttp:load(snsName, openId,accessToken)
 	local loadCallback = function(endpoint, data, err)
 		if err then
 			he_log_info("RebindingHttp error: " .. err)
@@ -615,7 +634,7 @@ function RebindingHttp:load(snsName, openId)
 		end
 	end
 	local connectProtocol = "reBinding"
-	self.transponder:call(connectProtocol, {snsName = snsName, openId = openId}, loadCallback, rpc.SendingPriority.kHigh, false)
+	self.transponder:call(connectProtocol, {snsName = snsName, openId = openId, accessToken=accessToken}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 -- 
@@ -650,10 +669,28 @@ function PreQQConnectHttp:load(openId,accessToken,haveSyncCache,snsPlatform,snsN
 		-- oldSnsPlatform=oldSnsPlatform,
 		hasCache=haveSyncCache,
 		snsName = snsName,
+		deviceUdid = MetaInfo:getInstance():getUdid()
 	}
 
 	self.transponder:call(connectProtocol, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
+
+-- PreQQConnectV2Http = class(PreQQConnectHttp)
+-- function PreQQConnectV2Http:syncLoad(...)
+-- 		if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+-- 	  	local para = {...}
+
+-- 	  	local function onSyncError(err)
+-- 	  		self:onLoadingError(err)
+-- 	  	end
+
+-- 	  	local function onSyncFinished()
+-- 	  		self:load(para[1], para[2], para[3], para[4], para[5], para[6],
+-- 	    		para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15])
+-- 	  	end
+
+-- 	  	SyncManager.getInstance():sync(onSyncFinished, onSyncError, kRequireNetworkAlertAnimation.kNone)
+-- end
 
 PreQQConnectV1Http = class(HttpBase)
 function PreQQConnectV1Http:load(openId, accessToken, haveSyncCache)
@@ -686,7 +723,7 @@ end
 -- SyncSnsFriendHttp ----------------------------------------------------
 -- 
 SyncSnsFriendHttp = class(HttpBase)
-function SyncSnsFriendHttp:load(friendOpenIds, openId, accessToken)
+function SyncSnsFriendHttp:load(friendOpenIds, openId, accessToken,authorType)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
@@ -705,7 +742,7 @@ function SyncSnsFriendHttp:load(friendOpenIds, openId, accessToken)
 	end
 	local params = {friendOpenIds=friendOpenIds, openId=openId, openKey=accessToken}
 	if __ANDROID and _G.sns_token then
-		params.snsPlatform = PlatformConfig:getPlatformAuthName()
+		params.snsPlatform = PlatformConfig:getPlatformAuthName(authorType)
 	end
 	self.transponder:call(kHttpEndPoints.syncSnsFriend, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
@@ -1003,16 +1040,16 @@ end
 --
 -- getShareRankWithPosition ---------------------------------------------------------
 --
-getShareRankWithPosition = class(HttpBase)
-function getShareRankWithPosition:load(levelId, score)
+GetShareRankWithPosition = class(HttpBase)
+function GetShareRankWithPosition:load(levelId, score)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
 	local context = self
 	local loadCallback = function(endpoint, data, err)
 		if err then
-			he_log_info("getShareRankWithPosition error: " .. err)
+			he_log_info("GetShareRankWithPosition error: " .. err)
 			context:onLoadingError(err)
 		else
-			he_log_info("getShareRankWithPosition success !")
+			he_log_info("GetShareRankWithPosition success !")
 			context:onLoadingComplete(data)
 		end
 	end
@@ -1060,10 +1097,15 @@ CommonRankType = table.const {
 	kLaborDay = 6,
 	kDragonBoat = 7,
 	kSummerWeeklyMatch = 8,
+	kQiXi2015 = 9,
+	kAutumnWeekMatch = 11,
+	kWinterWeekMatch = 14,
 }
 GetCommonRankListHttp = class(HttpBase)
-function GetCommonRankListHttp:load(rankType, subType, levelId)
+function GetCommonRankListHttp:load(rankType, subType, levelId, startIndex, endIndex)
 	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	startIndex = startIndex or 0
+	endIndex = endIndex or 0
 	local context = self
 	local loadCallback = function(endpoint, data, err)
 		if err then
@@ -1074,7 +1116,14 @@ function GetCommonRankListHttp:load(rankType, subType, levelId)
 			context:onLoadingComplete(data)
 		end
 	end
-	self.transponder:call(kHttpEndPoints.getCommonRankList, {rankType = rankType, subType = subType, levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
+	local params = {
+		rankType = rankType, 
+		subType = subType, 
+		levelId = levelId, 
+		startIndex = startIndex, 
+		endIndex = endIndex,
+	}
+	self.transponder:call(kHttpEndPoints.getCommonRankList, params, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
 ExchangeWeekMatchItemsHttp = class(HttpBase)
@@ -1234,6 +1283,19 @@ OpNotifyType = {
 	kWeeklyMatchShare = 10, -- 周赛分享
 	kSummerShare = 11, --夏日分享活动分享
 	kOppoSummerLottery = 12,
+	kQiXiLevel2015 = 13,
+	kNdShare2015TurnTable = 19, -- 分享得转盘次数
+	kNdShare2015Coin = 20, -- 分享得银币
+	kNdShare2015AskFriend = 21, -- 求助好友抽取小动物
+	kAutumnWeekMatchShare = 22,
+	kPassMaxNormalLevel = 24, 	-- 通过版本最高关卡
+	kRequestPushEnergy = 25,  -- 请求生成NPC免费精力推送
+	kRdefAutumnWeekMatchShare = 26, -- 此版本添加多少游戏次数由后端返回决定
+	kCheckUnlockRecord = 27,
+	kDengchaoEnergy = 28, -- 邓超送精力
+	kRdefWinterWeekMatchShare = 30, --冬季周赛分享加次数
+	kRdefSpringWeekMatchShare = 31, --冬季周赛分享加次数
+	kAndroidSalesPromotion = 32 , 	--安卓破冰促销
 }
 OpNotifyHttp = class(HttpBase)
 function OpNotifyHttp:load(opType, param)
@@ -1283,7 +1345,7 @@ function GetSummerWeekMatchInfoHttp:load( levelId )
 	self.transponder:call(kHttpEndPoints.getSummerWeekMatchInfo, {levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
 end
 
-GetSummerWeekMatchRewardType = table.const {
+GetWeeklyRaceRewardsType = table.const {
 	kDailyReward = 0,
 	kWeeklyReward = 1,
 	kLastWeekRewards = 2,
@@ -1304,4 +1366,493 @@ function GetSummerWeekMatchRewardHttp:load(levelId, type, index, day)
 		end
 	end
 	self.transponder:call(kHttpEndPoints.getSummerWeekMatchReward, {levelId = levelId, type = type, index = index, day = day}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+-- 秋季周赛
+GetAutumnWeekMatchInfoHttp = class(HttpBase)
+function GetAutumnWeekMatchInfoHttp:load( levelId )
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAutumnWeekMatchInfoHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetAutumnWeekMatchInfoHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getSummerWeekMatch2016Info, {levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetAutumnWeekMatchRewardHttp = class(HttpBase)
+function GetAutumnWeekMatchRewardHttp:load(levelId, type, index, day)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	day = day or 0
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAutumnWeekMatchRewardHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetAutumnWeekMatchRewardHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getSummerWeekMatch2016Reward, {levelId = levelId, type = type, index = index, day = day}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetMissionInfoHttp = class(HttpBase)
+function GetMissionInfoHttp:load()
+if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	day = day or 0
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetMissionInfoHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetMissionInfoHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getMissionInfo, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+CreateMissionHttp = class(HttpBase)
+function CreateMissionHttp:load(userReturnDay, positions, tasks, loginInfo)
+if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	day = day or 0
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("CreateMissionHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("CreateMissionHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.createMission, {userReturnDay = userReturnDay, positions = positions,
+		tasks = tasks, loginInfo = loginInfo}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+-- 特殊状况，道具在上层处理逻辑中添加给用户，所以是一个OnlineGetter
+GetMissionRewardHttp = class(HttpBase)
+function GetMissionRewardHttp:load(positions)
+if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	day = day or 0
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetMissionRewardHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetMissionRewardHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getMissionReward, {positions = positions}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--支付宝签约
+GetAliPaymentSign = class(HttpBase)
+function GetAliPaymentSign:load(phoneNumber, aliAccount)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAliPaymentSign error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@GetAliPaymentSign success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getAliPaymentSign, {phoneNum = phoneNumber, aliAccount = aliAccount}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+
+--支付宝签约
+GetAliPaymentVerify = class(HttpBase)
+function GetAliPaymentVerify:load(applyId, smsCode)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAliPaymentSign error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetAliPaymentSign success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	print("applyId: "..tostring(applyId), "code: "..tostring(smsCode))
+	self.transponder:call(kHttpEndPoints.getAliPaymentVerify, {applyId = applyId, code = smsCode}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--支付宝签约
+GetAliPaymentUnsign = class(HttpBase)
+function GetAliPaymentUnsign:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAliPaymentUnsign error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetAliPaymentUnsign success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getAliPaymentUnsign, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--支付宝签约
+GetAliIngamePayment = class(HttpBase)
+function GetAliIngamePayment:load(tradeId, platform, goodsId, goodsType, num, goodsName, totalFee, checkStr)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetAliIngamePayment error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetAliIngamePayment success !")
+			context:onLoadingComplete(data)
+		end
+	end
+
+	self.transponder:call(kHttpEndPoints.getAliIngamePayment, {tradeId = tradeId, platform = platform, 
+						goodsId = goodsId, goodsType = goodsType, num = num, goodsName = goodsName, 
+						totalFee = totalFee, checkStr = checkStr}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+SendQrCodeHttp = class(HttpBase)
+function SendQrCodeHttp:load(raceType, timeStamp, targetCount)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+			context:onLoadingComplete(data)
+	    end
+	end
+	self.transponder:call(kHttpEndPoints.sendQrCode, {type = raceType, timestamp = timeStamp, targetCount = targetCount},
+		loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--获取促销信息
+GetIosOneYuanPromotionInitInfo = class(HttpBase)
+function GetIosOneYuanPromotionInitInfo:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetIosOneYuanPromotionInitInfo error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetIosOneYuanPromotionInitInfo success !")
+			context:onLoadingComplete(data)
+		end
+	end
+
+	self.transponder:call(kHttpEndPoints.getIosOneYuanPromotionInitInfo, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--触发促销
+TriggerIosOneYuanPromotion = class(HttpBase)
+function TriggerIosOneYuanPromotion:load(promotionType)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("TriggerIosOneYuanPromotion error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("TriggerIosOneYuanPromotion success !")
+			context:onLoadingComplete(data)
+		end
+	end
+
+	self.transponder:call(kHttpEndPoints.triggerIosOneYuanPromotion, {type = promotionType}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+--重置道具信息
+ResetIosOneYuanShop = class(HttpBase)
+function ResetIosOneYuanShop:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("ResetIosOneYuanShop error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("ResetIosOneYuanShop success !")
+			context:onLoadingComplete(data)
+		end
+	end
+
+	self.transponder:call(kHttpEndPoints.resetIosOneYuanShop, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetLevelPawnNumHttp = class(HttpBase)
+function GetLevelPawnNumHttp:load(levelId)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetLevelPawnNumHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetLevelPawnNumHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getLevelPawnNum, {levelId = levelId}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetLoginInfosHttp = class(HttpBase)
+function GetLoginInfosHttp:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetLoginInfos error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetLoginInfos success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getLoginInfos, {deviceUdid = MetaInfo:getInstance():getUdid()}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+LoadFriendsByPhoneNumbersHttp = class(HttpBase)
+function LoadFriendsByPhoneNumbersHttp:load(phoneNumbers)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("LoadFriendsByPhoneNumbersHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("LoadFriendsByPhoneNumbersHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.loadFriendsByPhoneNumbers, {phoneNumbers = phoneNumbers}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+LoadProfilesByUidsHttp = class(HttpBase)
+function LoadProfilesByUidsHttp:load(uids)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("LoadProfilesByUidsHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("LoadProfilesByUidsHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.loadProfilesByUids, {uids = uids}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetQQOpenIDHttp = class(HttpBase)
+function GetQQOpenIDHttp:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+	local loadCallback = function(endpoint, data, err)
+		if err then
+			he_log_info("GetQQOpenIDHttp error: " .. err)
+			context:onLoadingError(err)
+		else
+			he_log_info("GetQQOpenIDHttp success !")
+			context:onLoadingComplete(data)
+		end
+	end
+	self.transponder:call(kHttpEndPoints.getQQOpenID, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetPctOfRank = class(HttpBase)
+function GetPctOfRank:load( star )
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.getPctOfRank, {star = star}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetHideAreaRewardsHttp = class(HttpBase)
+function GetHideAreaRewardsHttp:load( hideAreaId )
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.getHideAreaRewards, { id = hideAreaId }, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetSignHttp = class(HttpBase)
+function GetSignHttp:load( fileId, expired )
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.getSign, { fileId = fileId, expired = expired }, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+MaRankInfoHttp = class(HttpBase)
+function MaRankInfoHttp:load()
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.maRankInfo, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+GetUserCommonRewardsHttp = class(HttpBase)
+function GetUserCommonRewardsHttp:load(rewardType)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	-- loadCallback()
+	self.transponder:call(kHttpEndPoints.getUserCommonRewards, {type = rewardType}, loadCallback, rpc.SendingPriority.kHigh, false)	
+end
+
+ActivityRewardHttp = class(HttpBase)
+function ActivityRewardHttp:load(actId , rewardId)
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end    
+    local context = self
+    local loadCallback = function(endpoint, data, err)
+        if err then
+            he_log_info("getRewardHttp error: " .. err)
+            context:onLoadingError(err)
+        else
+            he_log_info("getRewardHttp success !")
+            context:onLoadingComplete(data)
+        end
+    end
+    self.transponder:call("activityReward", { actId = actId , rewardId = rewardId }, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+WxGetContractUrl = class(HttpBase)
+function WxGetContractUrl:load()
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end    
+    local context = self
+    local loadCallback = function(endpoint, data, err)
+        if err then
+            he_log_info("WxGetContractUrl error: " .. err)
+            context:onLoadingError(err)
+        else
+            he_log_info("WxGetContractUrl success !")
+            context:onLoadingComplete(data)
+        end
+    end
+    self.transponder:call(kHttpEndPoints.wxGetContractUrl, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+WxDeleteContract = class(HttpBase)
+function WxDeleteContract:load()
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end    
+    local context = self
+    local loadCallback = function(endpoint, data, err)
+        if err then
+            he_log_info("WxDeleteContract error: " .. err)
+            context:onLoadingError(err)
+        else
+            he_log_info("WxDeleteContract success !")
+            context:onLoadingComplete(data)
+        end
+    end
+    self.transponder:call(kHttpEndPoints.wxDeleteContract, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+WxQueryContract = class(HttpBase)
+function WxQueryContract:load()
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end    
+    local context = self
+    local loadCallback = function(endpoint, data, err)
+        if err then
+            he_log_info("WxQueryContract error: " .. err)
+            context:onLoadingError(err)
+        else
+            he_log_info("WxQueryContract success !")
+            context:onLoadingComplete(data)
+        end
+    end
+    self.transponder:call(kHttpEndPoints.wxQueryContract, {}, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+WxIngame = class(HttpBase)
+function WxIngame:load(tradeId, pf, goodsId, goodsType, num, goodsName, totalFee, checkStr)
+    if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end    
+    local context = self
+    local loadCallback = function(endpoint, data, err)
+        if err then
+            he_log_info("WxIngame error: " .. err)
+            context:onLoadingError(err)
+        else
+            he_log_info("WxIngame success !")
+            context:onLoadingComplete(data)
+        end
+    end
+    self.transponder:call(kHttpEndPoints.wxIngame, 
+    {
+    	tradeId = tradeId, platform = pf, goodsId = goodsId, goodsType = goodsType,
+    	num = num, goodsName = goodsName, totalFee = totalFee, checkStr = checkStr,
+    }, loadCallback, rpc.SendingPriority.kHigh, false)
+end
+
+getEasterEggReward = class(HttpBase)
+function getEasterEggReward:load(animalId)
+	if not kUserLogin then return self:onLoadingError(ZooErrorCode.kNotLoginError) end
+	local context = self
+
+	local loadCallback = function(endpoint, data, err)
+		if err then
+	    	context:onLoadingError(err)
+	    else
+	    	context:onLoadingComplete(data)
+	    end
+	end
+	self.transponder:call(kHttpEndPoints.getEasterEggReward, {animalId = animalId}, loadCallback, rpc.SendingPriority.kHigh, false)	
 end

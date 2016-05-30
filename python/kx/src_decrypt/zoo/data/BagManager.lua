@@ -290,16 +290,16 @@ function BagManager:buyUnlock(callback)
 		goodsId = unlock4GoodsId
 	end
 
-	local function onSuccess(event)
+	local function onSuccess(data)
 		print 'buy unlock SUCCESS'
 		UserManager:getInstance():addBagBuyCountByOne()
-		if callback then callback(true, event) end
+		if callback then callback(true) end
 	end
 
-	local function onFail(event)
+	local function onFail(errorCode)
 		print 'buy unlock FAILED'
 		-- print(table.tostring(event))
-		if callback then callback(false, event) end
+		if callback then callback(false) end
 	end
 
 	local moneyType = 2

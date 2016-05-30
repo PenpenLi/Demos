@@ -32,8 +32,24 @@ local EyesAdjustColorHSBC = {
 	[AnimalTypeConfig.kOrange] = {0.240, -0.107, 0.167, 0.287},
 }
 
+local function getColorHSBC(hbscMap, colorType)
+	assert(type(hbscMap) == "table")
+
+	if hbscMap then
+		for color, hbsc in pairs(hbscMap) do
+			if color == colorType then
+				return hbsc
+			end
+		end
+	end
+	assert(false, "missed hbsc for color:"..table.tostring(colorType))
+	return nil
+end
+
 function TileBottleBlocker:create(level, color, texture)
 	local node = TileBottleBlocker.new(CCNode:create())
+	if level < 1 then level = 1 end
+	if level > 3 then level = 3 end
 	node:init(level, color)
 	return node
 end
@@ -64,6 +80,8 @@ end
 
 function TileBottleBlocker:playBottleHitAnimation(level, newColor, onFinish)
 	assert(level >= 1 and level <= 3)
+	if level < 1 then level = 1 end
+	if level > 3 then level = 3 end
 	self.level = level - 1
 
 	local animationCount = 2
@@ -74,7 +92,7 @@ function TileBottleBlocker:playBottleHitAnimation(level, newColor, onFinish)
 				self:removeAnimal()
 				self.animal = TileBottleBlocker:createAnimalSprite(self.color)
 				self:addChildAt(self.animal, TileBottleZIndex.kAniml)
-				self:playBottleIdle()
+				-- self:playBottleIdle()
 			end
 			if onFinish then onFinish() end
 		end
@@ -203,16 +221,15 @@ end
 
 function TileBottleBlocker:adjustColor(animalSprite, color)
 	assert(animalSprite)
-	assert(type(color) == "number")
 
 	if animalSprite and animalSprite.refCocosObj then
-		local bodyAdjustColor = BodyAdjustColorHSBC[color]
+		local bodyAdjustColor = getColorHSBC(BodyAdjustColorHSBC, color)
 		if bodyAdjustColor and animalSprite.body then
 			animalSprite.body:adjustColor(bodyAdjustColor[1], bodyAdjustColor[2], bodyAdjustColor[3], bodyAdjustColor[4])
 			animalSprite.body:applyAdjustColorShader()
 		end
 
-		local eyesDodyAdjustColor = EyesAdjustColorHSBC[color]
+		local eyesDodyAdjustColor = getColorHSBC(EyesAdjustColorHSBC, color)
 		if eyesDodyAdjustColor and animalSprite.eyes then
 			animalSprite.eyes:adjustColor(eyesDodyAdjustColor[1], eyesDodyAdjustColor[2], eyesDodyAdjustColor[3], eyesDodyAdjustColor[4])
 			animalSprite.eyes:applyAdjustColorShader()
@@ -326,6 +343,10 @@ function TileBottleBlocker:playAnimalAnimation(level, newColor, onFinish)
 		end
 	end
 
+	if anim.body then
+		anim.body:stopAllActions()
+	end
+
 	if level > 1 then
 		local body = SpriteColorAdjust:createWithSpriteFrameName("bottle_animal_hit_body_0000")
 		local bodyFrames = SpriteUtil:buildFrames("bottle_animal_hit_body_%04d", 0, 18)
@@ -374,6 +395,10 @@ end
 
 function TileBottleBlocker:changeColor(newColor, onFinish)
 	self.color = newColor
+	if self.animal and self.animal.body and self.animal.face then
+		self.animal.body:stopAllActions()
+		self.animal.face:stopAllActions()
+	end
 	local function onAnimationComplete()
 		self:removeAnimal()
 		if onFinish then onFinish() end

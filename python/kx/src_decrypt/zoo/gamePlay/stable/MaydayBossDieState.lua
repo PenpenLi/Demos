@@ -35,12 +35,14 @@ function MaydayBossDieState:onEnter()
             if item.ItemType == GameItemType.kBoss 
             and item.bossLevel > 0 
             and item.blood ~= nil
-            and item.blood <= 0 then
+            and item.blood <= 0 
+            and not item.isDead then
                 count = count + 1
                 posR, posC = r, c
                 addMoveCount = item.animal_num
                 drop_sapphire = item.drop_sapphire
                 deadbuffNum = BossConfig[item.bossLevel].deadbuffNum
+                item.isDead = true
             end
         end
     end
@@ -50,7 +52,23 @@ function MaydayBossDieState:onEnter()
 
         local function bossDie()
             local addMoveItemPos = GameExtandPlayLogic:getNormalPositionsForBoss(self.mainLogic, addMoveCount, 6, 9, nil)
+            deadbuffNum = 0
             local questionItemPos = GameExtandPlayLogic:getNormalPositionsForBoss(self.mainLogic, deadbuffNum, 6, 9, addMoveItemPos)
+
+            local banlist = {}
+            for k, v in pairs(addMoveItemPos) do
+                table.insert( banlist , v )
+            end
+            for k, v in pairs(questionItemPos) do
+                table.insert( banlist , v )
+            end
+
+            local dripPos = {}
+            if self.mainLogic.hasDripOnLevel then
+                dripPos = GameExtandPlayLogic:getNormalPositionsForBoss(
+                    self.mainLogic,  self.mainLogic.randFactory:rand(2, 3) , 6, 9, banlist)
+            end
+           
 
             -- print('addMoveItemPos', table.tostring(addMoveItemPos))
             -- print('questionItemPos', table.tostring(questionItemPos))
@@ -65,6 +83,7 @@ function MaydayBossDieState:onEnter()
             action.completeCallback = callback
             action.addMoveItemPos = addMoveItemPos
             action.questionItemPos = questionItemPos
+            action.dripPos = dripPos
             self.mainLogic:addGameAction(action)
         end
 
@@ -79,7 +98,7 @@ function MaydayBossDieState:onEnter()
             end
         end        
 
-        buffCount = GameExtandPlayLogic:checkBossCasting(self.mainLogic, buffCallback)
+        buffCount = GameExtandPlayLogic:checkBossCasting(self.mainLogic, buffCallback , true)
 
         if buffCount == 0 then
             bossDie()

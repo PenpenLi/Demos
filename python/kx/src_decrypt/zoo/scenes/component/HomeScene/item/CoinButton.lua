@@ -19,8 +19,6 @@ assert(CloudButton)
 CoinButton = class(CloudButton)
 
 function CoinButton:init(belongScene, ...)
-	assert(belongScene)
-	assert(#{...} == 0)
 
 	-- Get Resource
 	self.ui			= ResourceManager:sharedInstance():buildGroup("newCoinButton")
@@ -57,8 +55,15 @@ function CoinButton:init(belongScene, ...)
 	-- ----------------------
 	local placeholderPreferredSize	= self.labelPlaceholder:getPreferredSize()
 	local placeholderPos		= self.labelPlaceholder:getPosition()
-	self.placeholderPreferredSize	= placeholderPreferredSize
-	self.placeholderPos		= placeholderPos
+	
+	self.placeholderPreferredSize = {  
+		width = placeholderPreferredSize.width,
+		height= placeholderPreferredSize.height
+	}
+	self.placeholderPos = { 
+		x = placeholderPos.x, 
+		y = placeholderPos.y 
+	}
 
 	-------------------
 	-- Create UI Component
@@ -111,7 +116,33 @@ function CoinButton:init(belongScene, ...)
 	-------------------------------
 	-- Update View Then Data Change
 	-- -------------------
-	self.belongScene:addEventListener(HomeSceneEvents.USERMANAGER_COIN_CHANGE, self.onCoinDataChange, self)
+	if self.belongScene then
+		self.belongScene:addEventListener(HomeSceneEvents.USERMANAGER_COIN_CHANGE, self.onCoinDataChange, self)
+	end
+	-- ---------------------------------
+	-- Add Event Listener
+	-- ---------------------------------
+	local function onTapped(event)
+		self:onTapped(event)
+	end
+
+	self.ui:setTouchEnabled(true, 0, true)
+	self.ui:addEventListener(DisplayEvents.kTouchTap, onTapped)
+end
+
+function CoinButton:onTapped(event, ...)
+	assert(#{...} == 0)
+
+	if self.onTappedCallback then
+		self.onTappedCallback()
+	end
+end
+
+function CoinButton:setOnTappedCallback(onTappedCallback, ...)
+	assert(type(onTappedCallback) == "function")
+	assert(#{...} == 0)
+
+	self.onTappedCallback = onTappedCallback
 end
 
 function CoinButton:playHighlightAnim(...)
@@ -132,6 +163,10 @@ function CoinButton:getFlyToSize()
 	local size = self.coinIcon:getGroupBounds().size
 	size.width, size.height = size.width, size.height
 	return size
+end
+
+function CoinButton:getBubbleItemRes( ... )
+	return self.blueBubbleItemRes
 end
 
 function CoinButton:playBubbleSkewAnim(...)
@@ -207,9 +242,6 @@ function CoinButton:setNumber(number, ...)
 end
 
 function CoinButton:create(belongScene, ...)
-	assert(belongScene)
-	assert(#{...} == 0)
-
 	local newCoinButton = CoinButton.new()
 	newCoinButton:init(belongScene)
 	return newCoinButton

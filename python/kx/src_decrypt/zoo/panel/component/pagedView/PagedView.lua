@@ -255,15 +255,15 @@ function PagedView:checkMoveStarted(x, y)
 		return true
 	else
 		if self.scrollDirection == ScrollDirection.kNone then
-			if self.startSwithPageCallback then self.startSwithPageCallback() end
+			if self.startSwitchPageCallback then self.startSwitchPageCallback() end
 		end
 		self.scrollDirection = ScrollDirection.kHorizontal
 		return true
 	end
 end
 
-function PagedView:setSwithPageCallback(callback)
-	self.startSwithPageCallback = callback
+function PagedView:setSwitchPageCallback(callback)
+	self.startSwitchPageCallback = callback
 end
 
 function PagedView:setSwitchPageFinishCallback(callback)
@@ -471,11 +471,11 @@ function PagedView:gotoPage(index)
 			if self.finishSwitchPageCallback then self.finishSwitchPageCallback() end
 		end
 		if self:canGotoPage(index) then
+			if index ~= self.pageIndex then
+				if type(self.startSwitchPageCallback) == "function" then self.startSwitchPageCallback() end
+			end
 			self.pageIndex = index
 			self:__moveTo(targetOffset, SINGLE_PAGE_ANIM_DURATION, cb)
-		end
-		if index ~= self.pageIndex then
-			if type(self.startSwitchPageCallback) == "function" then self.startSwitchPageCallback() end
 		end
 	end
 end

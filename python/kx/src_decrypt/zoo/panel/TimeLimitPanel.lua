@@ -469,19 +469,19 @@ function TimeLimitPanel:onbuyClicked( ... )
 		local goodsId = timeLimitData:getInstance():getOutgameGoodsId()
 		local ingamePaymentLogic = IngamePaymentLogic:create(goodsId)
 
-		local function successCallback( ... )
+		local function successCallback()
 			TimeLimitData:getInstance():setBought()
 			DcUtil:UserTrack({ category = 'activity', sub_category = 'buy_main_interface'})
 			self:onCloseBtnTapped()
 		end
-		local function failCallback( ... )
+		local function failCallback(errCode, errMsg)
 			CommonTip:showTip(
 				Localization:getInstance():getText("add.step.panel.buy.fail.android"), 
 				"negative"
 			)
 			self.buyButton:setEnabled(true)	
 		end
-		local function cancelCallback( ... )
+		local function cancelCallback()
 			self.buyButton:setEnabled(true)		
 		end
 
@@ -489,7 +489,7 @@ function TimeLimitPanel:onbuyClicked( ... )
 			failCallback()
 			self:onCloseBtnTapped()
 		else
-			ingamePaymentLogic:buy(successCallback, failCallback, cancelCallback, true)
+			ingamePaymentLogic:buy(successCallback, failCallback, cancelCallback)
 		end
 	end
 

@@ -78,7 +78,10 @@ function InteractionController:onInteractionComplete(result)
 
     elseif self.boardView.gamePropsType == GamePropsType.kBroom or self.boardView.gamePropsType == GamePropsType.kBroom_l then
         self.boardView:useBroom(result.itemPos)
-
+    elseif self.boardView.gamePropsType == GamePropsType.kHedgehogCrazy then
+        self.boardView:useHedgehogCrazy(result.item1Pos)
+    elseif self.boardView.gamePropsType == GamePropsType.kWukongJump then
+        self.boardView:useWukongJump(result.item1Pos)
     elseif self.boardView.gamePropsType == GamePropsType.kNone then
         assert(result.item1Pos and result.item2Pos)
         self.boardView:trySwapItem(result.item1Pos.x, result.item1Pos.y, result.item2Pos.x, result.item2Pos.y)

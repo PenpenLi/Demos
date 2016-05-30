@@ -15,8 +15,12 @@ function ArmatureNode:create( armatureName )
 	local db = DBCCFactory:getInstance():buildArmatureNode(armatureName)
 	if db then
 		local ret = ArmatureNode.new(db)
-		local function eventHandler(eventType)
-			if ret:hn(eventType) then ret:dp(Event.new(eventType, nil, ret)) end
+		-------------------------------------------------- 
+		-- eventType 	: string
+		-- evtData 		: see also dragonbones/events/EventData.h
+		-------------------------------------------------- 
+		local function eventHandler(eventType, evtData)
+			if ret:hn(eventType) then ret:dp(Event.new(eventType, evtData, ret)) end
 		end
 		db:registerArmatureEventListener(eventHandler, ArmatureEvents.START)
 		db:registerArmatureEventListener(eventHandler, ArmatureEvents.COMPLETE)
@@ -124,6 +128,10 @@ function ArmatureNode:getTotalTime()
 	end
 end
 
+function ArmatureNode:getSlot(slotName)
+	return self.refCocosObj:getCCSlot(slotName)
+end
+
 ArmatureFactory = {}
 
 --------------------------------------------------------------------
@@ -137,4 +145,22 @@ function ArmatureFactory:add(path, skeletonName, textureName)
 	local texName = textureName or skeletonName 
 	DBCCFactory:getInstance():loadDragonBonesData(path .. "/skeleton.xml", skeletonName)
 	DBCCFactory:getInstance():loadTextureAtlas(path .. "/texture.xml", texName)
+end
+
+function ArmatureFactory:getTextureDisplay(frameName)
+	local node = DBCCFactory:getInstance():getTextureDisplay(frameName)
+	node = tolua.cast(node, "CCSprite")
+	return node
+end
+
+
+--------------------------------------------------------------------
+-- @skeletonName	define in skeleton.xml, such as <dragonBones name="skeletonName" frameRate="24" version="2.3">
+-- @textureName		define in texture.xml such as <TextureAtlas name="textureName" imagePath="texture.png">
+--------------------------------------------------------------------
+function ArmatureFactory:remove(skeletonName, textureName)
+	local skeName = skeletonName or ""
+	local texName = textureName or skeletonName 
+	DBCCFactory:getInstance():removeDragonBonesData(skeName)
+	DBCCFactory:getInstance():removeTextureAtlas(texName)
 end

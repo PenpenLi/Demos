@@ -1,8 +1,8 @@
 SeaOrderTargetItem = class(LevelTargetItem)
 
-local function getAnimation(item, itemId, itemNum, globalPosition, rotation)
-	local panel = item.sprite
-	local context = item.context
+function SeaOrderTargetItem:getAnimation(itemId, itemNum, globalPosition, rotation)
+	local panel = self.sprite
+	local context = self.context
 
 	local scene = Director:sharedDirector():getRunningScene()
     if not scene then return end
@@ -66,14 +66,15 @@ local function getAnimation(item, itemId, itemNum, globalPosition, rotation)
 		if node and not node.isDisposed then
 			print('removed')
 			node:removeFromParentAndCleanup(true)
+            self.animNode = nil
 		end
 	end 
 
 	local function onIconMoveFinished()			
-		panel:getChildByName("label"):setString(tostring(itemNum or 0))
+		self.label:setString(tostring(itemNum or 0))
 		context:playLeafAnimation(true)
 		context:playLeafAnimation(false)
-		item:shakeObject()
+		self:shakeObject()
 		local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, scale * 2), CCFadeOut:create(0.3))
 		node:setOpacity(255)
 		node:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
@@ -94,7 +95,7 @@ local function getAnimation(item, itemId, itemNum, globalPosition, rotation)
 	a:addObject(CCDelayTime:create(2))
 	a:addObject(CCCallFunc:create(function () node:setAnchorPointCenterWhileStayOrigianlPosition() end))
 	-- local destPos = panel.icon:getPosition()
-    local destPos = item.icon:getParent():convertToWorldSpace(item.icon:getPosition())
+    local destPos = self.icon:getParent():convertToWorldSpace(self.icon:getPosition())
 	local b = CCArray:create()
 	b:addObject(CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(destPos.x, destPos.y))))
 	b:addObject(CCFadeTo:create(0.5, 150))
@@ -102,6 +103,7 @@ local function getAnimation(item, itemId, itemNum, globalPosition, rotation)
 	a:addObject(CCSpawn:create(b))
 	a:addObject(CCCallFunc:create(onIconMoveFinished))
 	node:runAction(CCSequence:create(a))
+    return node
 end
 
 
@@ -114,7 +116,7 @@ function SeaOrderTargetItem:setTargetNumber(itemId, itemNum, animate, globalPosi
 
 		if animate and globalPosition and self.icon then
             if rotation ~= nil then -- 目标是海洋生物
-				getAnimation(self, itemId, itemNum, globalPosition, rotation)
+				self.animNode = self:getAnimation(itemId, itemNum, globalPosition, rotation)
             else -- 目标不是海洋生物
                 local cloned = self.icon:clone(true)
                 local targetPos = self.sprite:getParent():convertToNodeSpace(globalPosition)
@@ -122,9 +124,10 @@ function SeaOrderTargetItem:setTargetNumber(itemId, itemNum, animate, globalPosi
                 local tx, ty = position.x, position.y
                 local function onIconScaleFinished()
                     cloned:removeFromParentAndCleanup(true)
+                    self.animNode = nil
                 end 
                 local function onIconMoveFinished()         
-                    self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+                    self.label:setString(tostring(itemNum or 0))
                     self.context:playLeafAnimation(true)
                     self.context:playLeafAnimation(false)
                     self:shakeObject()
@@ -136,9 +139,10 @@ function SeaOrderTargetItem:setTargetNumber(itemId, itemNum, animate, globalPosi
                 local moveOut = CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150))
                 cloned:setPosition(targetPos)
                 cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
+                self.animNode = cloned
             end
 		else
-			self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+			self.label:setString(tostring(itemNum or 0))
 		end
 	end
 end

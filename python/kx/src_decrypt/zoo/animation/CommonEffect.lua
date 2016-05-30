@@ -15,6 +15,42 @@ CommonEffect = class()
 function CommonEffect:reset()
 	numberLineParticles = 0
 end
+
+function CommonEffect:buildRainbowLineEffect(batchNode)
+	local node = Sprite:createEmpty()
+	if batchNode then 
+		node:setTexture(batchNode.refCocosObj:getTexture())
+	end
+	local line1 = Sprite:createWithSpriteFrameName('two_year_line_effect_0000')
+	line1:setAnchorPoint(ccp(0.2, 0.5))
+	line1:setRotation(-180)
+	local line2 = Sprite:createWithSpriteFrameName('two_year_line_effect_0000')
+	line2:setAnchorPoint(ccp(0.2, 0.5))
+	line2:setRotation(-90)
+	local line3 = Sprite:createWithSpriteFrameName('two_year_line_effect_0000')
+	line3:setAnchorPoint(ccp(0.2, 0.5))
+	line3:setRotation(0)
+	node:addChild(line1)
+	node:addChild(line2)
+	node:addChild(line3)
+	local center = Sprite:createWithSpriteFrameName('two_year_center_effect_0000')
+	center:setAnchorPoint(ccp(0.5, 0.5))
+
+	local function remove()
+		print('xxxxxxxxxxxxxxxxxxxx remove')
+		debug.debug()
+		if node then 
+			node:removeFromParentAndCleanup(true)
+			node = nil
+		end
+	end
+
+	line1:play(SpriteUtil:buildAnimate(SpriteUtil:buildFrames("two_year_line_effect_%04d", 0, 20), kCharacterAnimationTime), 0, 1, nil)
+	line2:play(SpriteUtil:buildAnimate(SpriteUtil:buildFrames("two_year_line_effect_%04d", 0, 20), kCharacterAnimationTime), 0, 1, nil)
+	line3:play(SpriteUtil:buildAnimate(SpriteUtil:buildFrames("two_year_line_effect_%04d", 0, 20), kCharacterAnimationTime), 0, 1, nil)
+	center:play(SpriteUtil:buildAnimate(SpriteUtil:buildFrames("two_year_center_effect_%04d", 0, 20), kCharacterAnimationTime), 0, 1, remove)
+	return node
+end
 function CommonEffect:buildLineEffect(batchNode)
 	local node = Sprite:createEmpty()
 	if batchNode then 
@@ -339,6 +375,7 @@ function CommonEffect:buildGetPropLightAnimWithoutBg()
 	anim.lightBg1 = Sprite:createWithSpriteFrameName("circleLight.png")
 	anim.lightBg1:setAnchorPoint(ccp(0.5, 0.5))
 	anim.lightBg1:setScale(0.6)
+	anim.lightBg1:setCascadeOpacityEnabled(true)
 	anim:addChild(anim.lightBg1)
 
 	anim.lightBg1:runAction(CCSpawn:createWithTwoActions(CCScaleTo:create(7 / fps, 1.08), CCFadeTo:create(7 / fps, 0.6 * 255)))
@@ -353,6 +390,7 @@ function CommonEffect:buildGetPropLightAnimWithoutBg()
 		sprite:setAnchorPoint(ccp(0.5, 0.5))
 		sprite:setScale(0.88)
 		sprite:setOpacity(0.92 * opacity)
+		sprite:setCascadeOpacityEnabled(true)
 		container:addChild(sprite)
 		
 		local seq = CCArray:create()
@@ -368,7 +406,7 @@ function CommonEffect:buildGetPropLightAnimWithoutBg()
 
 		local starLight = Sprite:createWithSpriteFrameName("star_light.png")
 		local star = Sprite:createWithSpriteFrameName("star.png")
-
+		container:setCascadeOpacityEnabled(true)
 		container:addChild(starLight)
 		container:addChild(star)
 
@@ -398,11 +436,13 @@ function CommonEffect:buildGetPropLightAnimWithoutBg()
 
 	anim.lightBg3 = createLight()
 	anim.lightBg3:setScale(0.85)
+	anim.lightBg3:setCascadeOpacityEnabled(true)
 	anim:addChild(anim.lightBg3)
 	anim.lightBg3:runAction(CCScaleTo:create(7 / fps, 1.4))
 
 	anim.lightBg2 = createLight()
 	anim.lightBg2:setScale(1.05)
+	anim.lightBg2:setCascadeOpacityEnabled(true)
 	anim:addChild(anim.lightBg2)
 	local ops = {{x=-1, y=1}, {x=1, y=1},{x=1, y=-1},{x=-1, y=-1}}
 	for i = 1, 14 do
@@ -443,6 +483,7 @@ function CommonEffect:buildGetPropLightAnimWithoutBg()
 		seq:addObject(CCMoveBy:create(9 / fps, ccp(deltaX * 4 / 7, deltaY * 4 / 7)))
 		seq:addObject(CCCallFunc:create(onAnimFinished))
 		star:runAction(CCSequence:create(seq))
+		star:setCascadeOpacityEnabled(true)
 		anim:addChild(star)
 	end
 
@@ -671,4 +712,98 @@ function Firebolt:createLightOnly( from, to, duration, animationCallbackFunc )
 	container:addChild(bird)
 	container:addChild(sprite)
 	return container
+end
+
+--
+-- BezierFallingStar 贝塞尔曲线飞星星 ---------------------------------------------------------
+--
+BezierFallingStar = class(FallingStar)
+
+function BezierFallingStar:create(from, to, animationCallbackFunc, flyFinishedCallback, useWhiteColor, isHalloween, direction)
+	local ret = BezierFallingStar.new()
+	ret:initLayer()
+	ret:buildUI(useWhiteColor)
+	ret:fly(from, to, animationCallbackFunc, flyFinishedCallback, isHalloween, direction)
+	return ret
+end
+function BezierFallingStar:createMoveAction( from, to,direction )
+	local bezierConfig = ccBezierConfig:new() 
+	local controlPoint = ccp((from.x + to.x)/2+(to.y-from.y)/4, (from.y + to.y)/2+(-to.x+from.x)/4)
+
+	if direction == false then
+		controlPoint = ccp((from.x + to.x)/2-(to.y-from.y)/4, (from.y + to.y)/2-(-to.x+from.x)/4)
+	end
+
+	bezierConfig.controlPoint_1 = controlPoint
+	bezierConfig.controlPoint_2 = controlPoint
+	bezierConfig.endPosition = to
+
+	return CCEaseSineInOut:create(CCBezierTo:create(self.time, bezierConfig))
+
+end
+
+function BezierFallingStar:fly( from, to, animationCallbackFunc, flyFinishedCallback, isHalloween, direction)
+	local dx = to.x - from.x
+	local dy = to.y - from.y
+
+	if isHalloween then
+		local distance = dx * dx + dy * dy
+		local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
+		local visibleHeight = visibleSize.height
+		local time = 1.5*math.sqrt(distance)/visibleHeight		-- 1280 as screen height
+		time = time * 3
+		self:setScale(1.5)
+
+		time = time * 0.7
+		self.time = time
+	else
+		-- 改成固定时间
+		time = 0.7
+		self.time = time
+	end
+
+	local angle = math.atan2(dy, dx) * kRad3Ang
+	local function onAnimationFinished()
+	if animationCallbackFunc ~= nil then animationCallbackFunc() end
+		self:removeFromParentAndCleanup(true)
+	end
+
+
+	local halfTime = time * 0.5
+	local fadeIn = CCSpawn:createWithTwoActions(CCScaleTo:create(halfTime * 1.5, 2, 1.3), CCFadeIn:create(halfTime))
+	local fadeOut = CCSpawn:createWithTwoActions(CCScaleTo:create(halfTime * 0.5, 0), CCFadeOut:create(halfTime * 0.5))
+	local sprite = self.sprite
+	
+	sprite:setScale(0)
+	sprite:setOpacity(0)
+
+	sprite:runAction(CCSequence:createWithTwoActions(fadeIn, fadeOut))
+	
+
+	local array = CCArray:create()
+
+	local bezierConfig = ccBezierConfig:new() 
+	local controlPoint = ccp((from.x + to.x)/2+(to.y-from.y)/4, (from.y + to.y)/2+(-to.x+from.x)/4)
+
+	if direction == false then
+		controlPoint = ccp((from.x + to.x)/2-(to.y-from.y)/4, (from.y + to.y)/2-(-to.x+from.x)/4)
+	end
+
+	bezierConfig.controlPoint_1 = controlPoint
+	bezierConfig.controlPoint_2 = controlPoint
+	bezierConfig.endPosition = to
+
+
+	local bezierMove = CCEaseSineInOut:create(CCBezierTo:create(time, bezierConfig))
+	array:addObject(bezierMove)
+	if flyFinishedCallback ~= nil then array:addObject(CCCallFunc:create(flyFinishedCallback)) end
+	array:addObject(CCDelayTime:create(0.6))
+	array:addObject(CCCallFunc:create(onAnimationFinished))
+	self:setPosition(from)
+	self:runAction(CCSequence:create(array))
+
+	local angleStart = math.atan2(controlPoint.y-from.y, controlPoint.x-from.x) * kRad3Ang - 90
+	local angleEnd = math.atan2(-controlPoint.y+to.y, -controlPoint.x+to.x) * kRad3Ang - 90
+	sprite:setRotation(angleStart)
+	sprite:runAction(CCRotateBy:create(time, angleEnd-angleStart))
 end

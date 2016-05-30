@@ -194,7 +194,7 @@ end
 function AnnouncementPanel.loadAnnouncement( callback )
 	
 	local config = readConfig()
-	if os.time() - (config.lastPopout or 0) < 24 * 3600 and false then 
+	if os.time() - (config.lastPopout or 0) < 24 * 3600 then 
 		callback(nil)
 		return
 	end
@@ -432,7 +432,7 @@ function AnnouncementPanel:buildRichText(text,width)
 		end
 
 		local start = 1
-		while start < #t do
+		while start <= #t do
 
 			local str = ""
 

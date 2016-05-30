@@ -4,19 +4,58 @@ ProductItemLogic = class{}
 --
 --产生顺序， 应包括所有可能掉落规则中存在的类型
 --有专有掉落口的 cannonType = 专有掉落类型 否则就用GameBoardFallType.kNone
+-- cannonId = 独立的掉落口id，没有的不写
 --
 local ProductRuleOrder = table.const{
+	{cannonType = GameBoardFallType.kCannonTotems, itemId = TileConst.kTotems},
 	{cannonType = GameBoardFallType.kCannonHoneyBottle, itemId = TileConst.kHoneyBottle}, 
 	{cannonType = GameBoardFallType.kCannonBalloon, itemId = TileConst.kBalloon}, 
 	{cannonType = GameBoardFallType.kNone, itemId = TileConst.kAddTime}, 
 	{cannonType = GameBoardFallType.kNone, itemId = TileConst.kAddMove}, 
 	{cannonType = GameBoardFallType.kCannonGreyCuteBall, itemId = TileConst.kGreyCute}, 
 	{cannonType = GameBoardFallType.kCannonBrownCuteBall, itemId = TileConst.kBrownCute}, 
-	{cannonType = GameBoardFallType.kCnanonBlackCuteBall, itemId = TileConst.kBlackCute}, 
+	{cannonType = GameBoardFallType.kCannonBlackCuteBall, itemId = TileConst.kBlackCute}, 
 	{cannonType = GameBoardFallType.kCannonCoin, itemId = TileConst.kCoin}, 
 	{cannonType = GameBoardFallType.kCannonCrystallBall, itemId = TileConst.kCrystal}, 
 	{cannonType = GameBoardFallType.kNone, itemId = TileConst.kQuestionMark}, 
+	{cannonType = GameBoardFallType.kCannonRocket, itemId = TileConst.kRocket}, 
+	{cannonType = GameBoardFallType.kCannonCrystalStone, itemId = TileConst.kCrystalStone},
+	{cannonType = GameBoardFallType.kCannonDrip, itemId = TileConst.kDrip},
+
 }
+
+local checkBlockCanProductReason = table.const{
+	kSuccessByNormal = 1,
+	kSuccessByMinNum = 2,
+	kFailedByMoveTarget = 3,
+	kFailedByBlockSpawnDensity = 4,
+	kFailedByMaxNum = 5,
+	kFailedByDropNumLimit = 6,
+	kFailedByUnknow = 7,
+}
+
+function ProductItemLogic:getTileFallTypes(tileDef)
+	local types = {}
+
+	if tileDef:hasProperty(TileConst.kCannonAnimal)then table.insert(types, GameBoardFallType.kCannonAnimal) end	--是否是生成口	--39
+	if tileDef:hasProperty(TileConst.kCannonIngredient)then table.insert(types, GameBoardFallType.kCannonIngredient) end	--是否是生成口	--40
+	if tileDef:hasProperty(TileConst.kCannonBlock)then table.insert(types, GameBoardFallType.kCannonBlock) end	--是否是生成口	--41
+	if tileDef:hasProperty(TileConst.kCannonCoin) then table.insert(types, GameBoardFallType.kCannonCoin) end 
+	if tileDef:hasProperty(TileConst.kCannonCrystallBall) then table.insert(types, GameBoardFallType.kCannonCrystallBall) end 
+	if tileDef:hasProperty(TileConst.kCannonBalloon) then table.insert(types, GameBoardFallType.kCannonBalloon) end 
+	if tileDef:hasProperty(TileConst.kCannonHoneyBottle) then table.insert(types, GameBoardFallType.kCannonHoneyBottle) end 
+	if tileDef:hasProperty(TileConst.kCannonGreyCuteBall) then table.insert(types, GameBoardFallType.kCannonGreyCuteBall) end 
+	if tileDef:hasProperty(TileConst.kCannonBrownCuteBall) then table.insert(types, GameBoardFallType.kCannonBrownCuteBall) end 
+	if tileDef:hasProperty(TileConst.kCannonBlackCuteBall) then table.insert(types, GameBoardFallType.kCannonBlackCuteBall) end 
+	if tileDef:hasProperty(TileConst.kCannonRocket) then table.insert(types, GameBoardFallType.kCannonRocket) end 
+	if tileDef:hasProperty(TileConst.kCannonCrystalStone) then table.insert(types, GameBoardFallType.kCannonCrystalStone) end 
+	if tileDef:hasProperty(TileConst.kCannonTotems) then table.insert(types, GameBoardFallType.kCannonTotems) end 
+	if tileDef:hasProperty(TileConst.kCannonDrip) then table.insert(types, GameBoardFallType.kCannonDrip) end 
+	if #types <= 0 and tileDef:hasProperty(TileConst.kCannon) then table.insert(types, GameBoardFallType.kCannonAll) end	--是否是生成口	--5
+	
+	return types
+end
+
 function ProductItemLogic:init(mainLogic, config)
 	mainLogic.ingredientsMoveCount = 0
 	mainLogic.ingredientSpawnDensity = config.ingredientSpawnDensity
@@ -33,7 +72,10 @@ function ProductItemLogic:init(mainLogic, config)
 
 	mainLogic.blockProductRules = {};
 
+
+
 	mainLogic.cachePool = {}
+	mainLogic.productCannonCountMap = {}
 	-------------------------------
 	--crystal, balloon, coin, black_cute_ball
 	--todo gift
@@ -60,6 +102,14 @@ function ProductItemLogic:init(mainLogic, config)
 			itemType = GameItemType.kAnimal
 		elseif v.itemID == TileConst.kAddMove - 1 then 
 			itemType = GameItemType.kAddMove
+		elseif v.itemID == TileConst.kRocket - 1 then 
+			itemType = GameItemType.kRocket
+		elseif v.itemID == TileConst.kCrystalStone - 1 then 
+			itemType = GameItemType.kCrystalStone
+		elseif v.itemID == TileConst.kTotems - 1 then 
+			itemType = GameItemType.kTotems
+		elseif v.itemID == TileConst.kDrip - 1 then 
+			itemType = GameItemType.kDrip
 		end
 		mainLogic.cachePool[v.itemID] = {}
 
@@ -69,6 +119,25 @@ function ProductItemLogic:init(mainLogic, config)
 	end
 
 	ProductItemLogic:initRabbitProducer(mainLogic)
+
+	------------------------------------------
+	local hasDrip = false
+	if mainLogic.blockProductRules and #mainLogic.blockProductRules > 0 then
+		for i = 1 , #mainLogic.blockProductRules do
+			local blockRule = mainLogic.blockProductRules[i]
+			print("RRR  WTF!!!!!!!!!!!!!!!!!!!!!!!!!     blockRule.itemType  " , blockRule.itemType)
+			if blockRule.itemType == GameItemType.kDrip then
+				hasDrip = true
+				break
+			end
+		end
+	end
+
+	mainLogic.hasDripOnLevel = false
+	if hasDrip then
+		mainLogic.hasDripOnLevel = true
+	end
+	--------------------------------------------
 end
 
 function ProductItemLogic:initRabbitProducer(mainLogic)
@@ -88,19 +157,24 @@ function ProductItemLogic:initBlock(mainLogic, config, itemType)
 	local blockRule = {}
 	blockRule.blockProductType = config.ruleType
 	blockRule.itemID = config.itemID
-	blockRule.blockMoveCount = 0
-	blockRule.blockMoveTarget = 0
+	blockRule.blockMoveCount = 0  --当前已经走了多少步，即CurrM
+	blockRule.blockMoveTarget = 0  --每走多少步触发掉落，即M
 	blockRule.blockShouldCome = false
 	blockRule.itemType = itemType
 	
 	if config.ruleType == 1 then 
 		blockRule.blockMoveTarget = config.thresholdSteps                --每移动blockMoveTarget掉落
-		blockRule.blockSpawnDensity = config.dropNum or 1                --每次最多掉落个数
-		blockRule.blockSpawned = 0--blockRule.blockSpawnDensity          --一次触发掉落已经产生的个数
+		blockRule.blockSpawnDensity = config.dropNum or 1                --每次最多掉落个数(每次触发后应该产生的个数，即N)
+		blockRule.blockSpawned = 0--blockRule.blockSpawnDensity          --一次触发掉落已经产生的个数（每次触发后实际产生的个数，即currN）
 		blockRule.maxNum = config.maxNum or 0                            --棋盘上最多存在的个数
-		blockRule.dropNumLimit = config.dropTotalNum or 0                --掉落dropNumLimit个不再掉落
-		blockRule.totalDroppedNum = 0                                    --本局已经掉落的个数
+		blockRule.minNum = config.minNum or 0 	
+		if blockRule.minNum > blockRule.maxNum and blockRule.maxNum > 0 then blockRule.minNum = blockRule.maxNum end
+		blockRule.dropNumLimit = config.dropTotalNum or 0                --掉落dropNumLimit个不再掉落（最大掉落个数，即T）
+		blockRule.totalDroppedNum = 0                                    --本局已经掉落的个数（当前掉落个数）
 	elseif config.ruleType == 2 then
+		blockRule.blockSpawned = 0
+		blockRule.maxNum = 0
+		blockRule.minNum = 0
 		blockRule.blockSpawnDensity = config.thresholdSteps
 		blockRule.dropNumLimit = config.dropTotalNum or 0
 		blockRule.totalDroppedNum = 0
@@ -114,6 +188,9 @@ function ProductItemLogic:product(mainLogic, r, c)
 	local theGameBoardFallType = mainLogic.boardmap[r][c].theGameBoardFallType
 	
 	ProductItemLogic:updateCachePool(mainLogic)
+	if not mainLogic.productCannonCountMap then
+		mainLogic.productCannonCountMap = {}
+	end
 
 	if table.exist(theGameBoardFallType, GameBoardFallType.kCannonIngredient) then
 		local res = ProductItemLogic:productIngredient(mainLogic)
@@ -123,19 +200,19 @@ function ProductItemLogic:product(mainLogic, r, c)
 	for k = 1, #ProductRuleOrder do 
 		local ruleItem = ProductRuleOrder[k]
 		if table.exist(theGameBoardFallType, ruleItem.cannonType) then 
-			local res = ProductItemLogic:productBlock(mainLogic, ruleItem.itemId - 1)
+			local res = ProductItemLogic:productBlock(mainLogic, ruleItem.itemId - 1 , r, c)
 			if res then return res end
 		end
 	end
 
 	if table.exist(theGameBoardFallType, GameBoardFallType.kCannonBlock) then
-		local res = ProductItemLogic:productBlock(mainLogic)
+		local res = ProductItemLogic:productBlock(mainLogic , nil , r, c)
 		if res then return res end 
 	end
 
 	if table.exist(theGameBoardFallType, GameBoardFallType.kCannonAll) then
 		local res = ProductItemLogic:productIngredient(mainLogic)
-		if not res then res = ProductItemLogic:productBlock(mainLogic) end
+		if not res then res = ProductItemLogic:productBlock(mainLogic , nil , r, c) end
 		if res then return res end 
 	end
 
@@ -208,6 +285,20 @@ function ProductItemLogic:buildBlockData( blockRule ,mainLogic)
 		gameItemData.ItemColorType = mainLogic:randomColor()
 		gameItemData.furballLevel = 1
 		gameItemData.furballType = GameItemFurballType.kBrown
+	elseif blockRule.itemID == TileConst.kRocket- 1 then
+		gameItemData.ItemType = GameItemType.kRocket
+		gameItemData.ItemColorType = mainLogic:randomColor()
+	elseif blockRule.itemID == TileConst.kCrystalStone - 1 then
+		gameItemData.ItemType = GameItemType.kCrystalStone
+		-- gameItemData.ItemColorType = mainLogic:randomCrystalStoneColor()
+		gameItemData.ItemColorType = mainLogic:randomSingleDropColor(TileConst.kCrystalStone)
+	elseif blockRule.itemID == TileConst.kTotems - 1 then
+		gameItemData.ItemType = GameItemType.kTotems
+		gameItemData.ItemColorType = mainLogic:randomSingleDropColor(TileConst.kTotems)
+	elseif blockRule.itemID == TileConst.kDrip - 1 then
+		gameItemData.ItemType = GameItemType.kDrip
+		gameItemData.ItemColorType = AnimalTypeConfig.kDrip
+		gameItemData.dripState = DripState.kNormal
 	end
 
 	return gameItemData
@@ -231,40 +322,132 @@ function ProductItemLogic:getItemAmountByItemType( rule , mainLogic )
 end
 
 function ProductItemLogic:isBlockCanProduct( mainLogic,rule )
-	-- body
-	if rule.blockProductType == 1 then
-		if rule.blockSpawned < rule.blockSpawnDensity and rule.blockMoveCount >= rule.blockMoveTarget then 
-			if rule.maxNum > 0 and ProductItemLogic:getItemAmountByItemType(rule, mainLogic) >= rule.maxNum 
-					or rule.dropNumLimit > 0 and rule.totalDroppedNum >= rule.dropNumLimit then
-				return false
-			else
-				return true
-			end
+	
+	local resultNum , ResultReason = self:countNeedProductBlockNum(mainLogic,rule)
+	local productResult = resultNum and resultNum > 0
+	return productResult , resultNum , ResultReason
+end
+
+function ProductItemLogic:countNeedProductBlockNum( mainLogic,rule )
+	--print("RRR   ===================ProductItemLogic:countNeedProductBlockNum===================  ")
+
+	local resultNum = 0 
+	local currAmount = ProductItemLogic:getItemAmountByItemType(rule, mainLogic)
+
+	local function getResultNum()
+		resultNum = rule.blockSpawnDensity - rule.blockSpawned
+		if rule.dropNumLimit > 0 and resultNum + rule.totalDroppedNum > rule.dropNumLimit then
+			resultNum = rule.dropNumLimit - rule.totalDroppedNum
 		end
-	elseif rule.blockProductType == 2 then 
-		if rule.blockMoveCount > rule.blockSpawnDensity or rule.blockShouldCome then 
-			if rule.dropNumLimit > 0 and rule.totalDroppedNum >= rule.dropNumLimit then
-				return false
+
+		if rule.maxNum > 0 and resultNum + currAmount > rule.maxNum then
+			resultNum = rule.maxNum - currAmount
+		end
+
+		return resultNum
+	end
+
+	if rule.blockProductType == 1 then
+		if rule.dropNumLimit > 0 and rule.totalDroppedNum >= rule.dropNumLimit  then
+			return resultNum , checkBlockCanProductReason.kFailedByDropNumLimit
+		end
+
+		local isOverMaxNum = false
+		if rule.maxNum > 0 and currAmount >= rule.maxNum then
+			isOverMaxNum = true
+		end
+
+		local isLessThenMinNum = false
+		if rule.minNum > 0 and currAmount < rule.minNum then
+			isLessThenMinNum = true
+		end
+
+		if rule.blockSpawned < rule.blockSpawnDensity then
+			if isOverMaxNum then
+				return resultNum , checkBlockCanProductReason.kFailedByMaxNum
 			else
-				return true
+				local r = checkBlockCanProductReason.kSuccessByNormal
+				if isLessThenMinNum then
+					r = checkBlockCanProductReason.kSuccessByMinNum
+				elseif rule.blockMoveCount >= rule.blockMoveTarget then
+					r = checkBlockCanProductReason.kSuccessByNormal
+				else
+					return resultNum , checkBlockCanProductReason.kFailedByMoveTarget
+				end
+
+				return getResultNum() , r
 			end
+		else
+			return resultNum , checkBlockCanProductReason.kFailedByBlockSpawnDensity
+		end
+
+	elseif rule.blockProductType == 2 then 
+
+		if rule.dropNumLimit > 0 and rule.totalDroppedNum >= rule.dropNumLimit  then
+			return resultNum , checkBlockCanProductReason.kFailedByDropNumLimit
+		end
+
+		if rule.blockMoveCount > rule.blockSpawnDensity or rule.blockShouldCome then 
+			return 1
 		end
 	end
-	return false
+
+	return resultNum , checkBlockCanProductReason.kFailedByUnknow
 end
 
 
-function ProductItemLogic:productBlock(mainLogic, ruleItmeId)
+function ProductItemLogic:productBlock(mainLogic, ruleItmeId , r , c)
+
+	local function addProductCannonCountMap()
+
+		local rst = true
+		if not mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ] then
+			mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ] = 0
+		end
+
+		mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ] = mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ] + 1
+
+		if mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ] > 2 then
+			rst = false
+		end	
+
+		--print("RRR   +++++++++++++++  addProductCannonCountMap  +++++++++++++++++  " , r , c , ruleItmeId)
+		--print("RRR   +++++++++++++++  addProductCannonCountMap  +++++++++++++++++  conut = " , mainLogic.productCannonCountMap[ tostring(r) .. "_" .. tostring(c) ])
+		return rst
+	end
+	
 	if ruleItmeId then
-		local result
+
 		if mainLogic.cachePool[ruleItmeId] and #mainLogic.cachePool[ruleItmeId] > 0  then 
-			return table.remove(mainLogic.cachePool[ruleItmeId])
+
+			if ruleItmeId == TileConst.kDrip - 1 then
+				if addProductCannonCountMap() then
+					--print("RRR   Product  Drip  111")
+					return table.remove(mainLogic.cachePool[ruleItmeId])
+				else
+					--print("RRR   Pass  Drip  111")
+					return nil
+				end
+			else
+				return table.remove(mainLogic.cachePool[ruleItmeId])
+			end
 		end
 	else
 		for k = 1, #ProductRuleOrder do 
 			local itemList = mainLogic.cachePool[ProductRuleOrder[k].itemId -1]
 			if itemList and #itemList > 0 then
-				return table.remove(itemList)
+
+				if ProductRuleOrder[k].itemId == TileConst.kDrip then
+					if addProductCannonCountMap() then
+						--print("RRR   Product  Drip  222")
+						return table.remove(itemList)
+					else
+						--print("RRR   Pass  Drip  222")
+						return nil
+					end
+				else
+					return table.remove(itemList)
+				end
 			end
 		end
 	end
@@ -273,11 +456,43 @@ end
 function ProductItemLogic:updateCachePool( mainLogic )
 	for k, v in pairs(mainLogic.blockProductRules) do
 		if mainLogic.cachePool[v.itemID] and #mainLogic.cachePool[v.itemID] == 0 then
+
+			local productResult , resultNum , ResultReason = self:isBlockCanProduct(mainLogic, v)
+			if productResult then
+				for i=1 , resultNum do
+					v.totalDroppedNum = v.totalDroppedNum + 1
+					v.blockSpawned = v.blockSpawned + 1
+					local res = ProductItemLogic:buildBlockData(v, mainLogic)
+					table.insert(mainLogic.cachePool[v.itemID], res)
+				end
+
+				v.blockMoveCount = 0
+				--v.blockSpawned = 0
+				v.blockShouldCome = false
+				v.needClearBlockSpawnedNextStep = true
+			end
+
+			--[[
 			local canProduct = false
-			while ProductItemLogic:isBlockCanProduct(mainLogic, v) do 
+			local isBlockCanProductResult = false 
+			local isBlockCanProductReason = checkBlockCanProductReason.kFailedByUnknow
+
+			local function checkIsBlockCanProduct() 
+				local r1 , r2 = ProductItemLogic:isBlockCanProduct(mainLogic, v)
+				isBlockCanProductResult = r1
+				isBlockCanProductReason = r2
+				return r1
+			end
+
+			while checkIsBlockCanProduct() do 
 				canProduct = true
 				v.blockSpawned = v.blockSpawned + 1
 				v.totalDroppedNum = v.totalDroppedNum + 1
+
+				if isBlockCanProductReason == checkBlockCanProductReason.kSuccessByMinNum then
+					v.blockMoveCount = 0
+					v.blockSpawned = 0
+				end
 				local res = ProductItemLogic:buildBlockData(v, mainLogic)
 				table.insert(mainLogic.cachePool[v.itemID], res)
 			end
@@ -287,6 +502,7 @@ function ProductItemLogic:updateCachePool( mainLogic )
 				if v.blockMoveCount >= v.blockMoveTarget then v.blockSpawned = 0 end
 				if v.blockProductType == 2 or v.blockMoveCount >= v.blockMoveTarget then v.blockMoveCount = 0 end
 			end
+			]]
 		end
 	end
 end
@@ -297,7 +513,14 @@ function ProductItemLogic:addStep(mainLogic)
 	mainLogic.snailMoveCount = mainLogic.snailMoveCount + 1
 	for k,v in pairs(mainLogic.blockProductRules) do
 		v.blockMoveCount = v.blockMoveCount + 1
+		if v.needClearBlockSpawnedNextStep then
+			v.needClearBlockSpawnedNextStep = false
+			v.blockSpawned = 0
+		end
 	end
+
+	--print("RRR   +++++++++++++++  ProductItemLogic:addStep  +++++++++++++++++  " , table.tostring(mainLogic.productCannonCountMap) )
+	mainLogic.productCannonCountMap = {}
 end
 
 function ProductItemLogic:resetStep(mainLogic, type)
@@ -315,6 +538,8 @@ function ProductItemLogic:resetStep(mainLogic, type)
 			end
 		end
 	end
+	--print("RRR   +++++++++++++++  ProductItemLogic:resetStep  +++++++++++++++++  " , table.tostring(mainLogic.productCannonCountMap) )
+	mainLogic.productCannonCountMap = {}
 end
 
 function ProductItemLogic:shoundCome(mainLogic, type)
@@ -397,7 +622,7 @@ function ProductItemLogic:productRabbit(mainLogic, count, callback, isInit)
 
 	local function getColorForRabbit(r, c)
 		local item = mainLogic.gameItemMap[r][c]
-		if item.ItemColorType and item.ItemColorType > 0 then
+		if item.ItemColorType and AnimalTypeConfig.isColorTypeValid(item.ItemColorType) then
 			return item.ItemColorType
 		else
 			local function randomColor( mainLogic, r, c )

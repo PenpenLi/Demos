@@ -54,7 +54,7 @@ function TurnTablePanel:tryCreateTurnTable(turntableIndex)
 	http:load(0, turntableIndex)
 end
 
-function TurnTablePanel:tryCreateRecallTurnTable(tableId)
+function TurnTablePanel:tryCreateRecallTurnTable(tableId, finishCallback)
 	local networkTip = Localization:getInstance():getText("wxshare.turn.table.error.network")
 	local function onSuccess(evt)
 		if type(evt.data.reward) == "table" and type(evt.data.reward.itemId) == "number" and
@@ -79,21 +79,21 @@ function TurnTablePanel:tryCreateRecallTurnTable(tableId)
 			elseif tableId == 2 then
 				DcUtil:UserTrack({category = "recall", sub_category = "recall_turmtable", id = 5})
 			end 
-			panel:popout()
+			panel:popout(finishCallback)
 			HomeScene:sharedInstance().lastTurnTableTS = Localhost:time()
 		else
-			CommonTip:showTip(networkTip, "negative", nil, 5)
+			CommonTip:showTip(networkTip, "negative", finishCallback, 5)
 		end
 	end
 	local function onError(evt)
 		if evt.data == -2 or evt.data == -3 or evt.data == -6 then
-			CommonTip:showTip(networkTip, "negative", nil, 5)
+			CommonTip:showTip(networkTip, "negative", finishCallback, 5)
 		else
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data))
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), 'negative', finishCallback)
 		end
 	end
 	local function onCancel()
-		CommonTip:showTip(networkTip, "negative", nil, 5)
+		CommonTip:showTip(networkTip, "negative", finishCallback, 5)
 	end
 	local http = TurnTableHttp.new(true)
 	http:addEventListener(Events.kComplete, onSuccess)
@@ -320,7 +320,8 @@ function TurnTablePanel:showRecallTip(tipUi)
 	tipUi:runAction(CCSequence:create(array))
 end
 
-function TurnTablePanel:popout()
+function TurnTablePanel:popout(closeCallback)
+	self.closeCallback = closeCallback
 	-- PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, false, 0.5)
 	-- local x = self:getPositionX()
 	-- self:runAction(CCEaseBackOut:create(CCMoveTo:create(0.5, ccp(x, 0))))
@@ -356,49 +357,20 @@ function TurnTablePanel:onCloseBtnTapped()
 	-- 	ccp(vOrigin.x + vSize.width, vOrigin.y * 2 - 300 - wSize.height)), CCCallFunc:create(onFinish)))
 	-- PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, nil, 0.5)
 	PopoutManager:sharedInstance():remove(self)
+	if self.closeCallback then
+		self.closeCallback() 
+	end
 end
 
 function TurnTablePanel:_getReward(reward)
 	local scene = HomeScene:sharedInstance()
 	if not scene then return end
 	scene:checkDataChange()
-	if reward.itemId == 2 then
-		local config = {updateButton = true,}
-		local anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
-		local position = self.reward:getPosition()
-		local wPosition = self.panel:convertToWorldSpace(ccp(position.x, position.y))
-		anim.sprites:setPosition(ccp(wPosition.x + 100, wPosition.y - 90))
-		scene:addChild(anim.sprites)
-		anim:play()
-	elseif reward.itemId == 14 then
-		local num = reward.num
-		if num > 10 then num = 10 end
-		local config = {number = num, updateButton = true,}
-		local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
-		local position = self.reward:getPosition()
-		local size = self.reward:getGroupBounds().size
-		local wPosition = self.panel:convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
-		for k, v2 in ipairs(anim.sprites) do
-			v2:setPosition(ccp(wPosition.x, wPosition.y))
-			v2:setScaleX(self.reward:getScaleX())
-			v2:setScaleY(self.reward:getScaleY())
-			scene:addChild(v2)
-		end
-		anim:play()
-	else
-		local num = reward.num
-		if num > 10 then num = 10 end
-		local config = {propId = reward.itemId, number = num, updateButton = true,}
-		local anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
-		local position = self.reward:getPosition()
-		local size = self.reward:getGroupBounds().size
-		local wPosition = self.panel:getParent():convertToWorldSpace(ccp(position.x + size.width / 8, position.y - size.height / 8))
-		for k, v2 in ipairs(anim.sprites) do
-			v2:setPosition(ccp(wPosition.x, wPosition.y))
-			v2:setScaleX(self.reward:getScaleX())
-			v2:setScaleY(self.reward:getScaleY())
-			scene:addChild(v2)
-		end
-		anim:play()
-	end
+
+	local anim = FlyItemsAnimation:create({reward})
+	local bounds = self.reward:getGroupBounds()
+	anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+	anim:setScaleX(self.reward:getScaleX())
+	anim:setScaleY(self.reward:getScaleY())
+	anim:play()
 end

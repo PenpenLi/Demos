@@ -60,23 +60,25 @@ function QQStarRewardPanel:init(starRewardBtnPosInWorldSpace, interfaceGroup , .
         isTimeLimit = true
     end
 
-    local itemResPosition = self.rewardItem.itemRes:getPosition()
-    local itemResLayer = Layer:create()
+    if self.rewardItem.itemRes then
+    	local itemResPosition = self.rewardItem.itemRes:getPosition()
+	    local itemResLayer = Layer:create()
 
-    self.rewardItem.itemResLayer = itemResLayer
+	    self.rewardItem.itemResLayer = itemResLayer
 
-    itemResLayer:setPosition(ccp(itemResPosition.x ,itemResPosition.y))
-    self.rewardItem.ui:addChild(itemResLayer)
-    self.rewardItem.itemRes:removeFromParentAndCleanup(false)
-    itemResLayer:addChild(self.rewardItem.itemRes)
-    self.rewardItem.itemRes:setPosition(ccp(0,0))
-    itemResLayer:setTouchEnabled(true,0)
+	    itemResLayer:setPosition(ccp(itemResPosition.x ,itemResPosition.y))
+	    self.rewardItem.ui:addChild(itemResLayer)
+	    self.rewardItem.itemRes:removeFromParentAndCleanup(false)
+	    itemResLayer:addChild(self.rewardItem.itemRes)
+	    self.rewardItem.itemRes:setPosition(ccp(0,0))
+	    itemResLayer:setTouchEnabled(true,0)
 
-    itemResLayer:ad(
-    	DisplayEvents.kTouchTap, 
-    	function () 
-    		self:onRewardItemTapped()
-		end)
+	    itemResLayer:ad(
+	    	DisplayEvents.kTouchTap, 
+	    	function () 
+	    		self:onRewardItemTapped()
+			end)
+    end
 end
 
 
@@ -100,7 +102,6 @@ function QQStarRewardPanel:showItemTip(ib, item, isTimeLimit)
 end
 
 function QQStarRewardPanel:reinit(...)
-	testTipInfo = testTipInfo .. "reinit"
 	---------
 	-- Data
 	-- --------
@@ -213,7 +214,6 @@ function QQStarRewardPanel:getRewardDesLabelString(rewardLevelToPushMeta)
 end
 
 function QQStarRewardPanel:remove(...)
-	testTipInfo = testTipInfo .. "QSP.remove \n"
 	if self.isOnCloseBtnTappedCalled then
 		StarRewardPanel.remove(self)
 	else

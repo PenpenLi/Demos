@@ -18,16 +18,25 @@ end
 function DigScrollGroundState:onEnter()
 	BaseStableState.onEnter(self)
 	self.nextState = nil
-
 	local function scrollComplete()
 		self.nextState = self:getNextState()
+		-- 刷新棋盘上block状态，重新计算掉落
+		for r = 1, #self.mainLogic.gameItemMap do
+			for c = 1, #self.mainLogic.gameItemMap[r] do
+				self.mainLogic:checkItemBlock(r,c)
+			end
+		end
+		self.mainLogic:updateFallingAndBlockStatus()
+
 		self.mainLogic:setNeedCheckFalling()
 	end
 	
 	if self.mainLogic.theGamePlayType == GamePlayType.kDigMove
 	or self.mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless 
 	or self.mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
-    or self.mainLogic.theGamePlayType == GamePlayType.kHalloween then
+    or self.mainLogic.theGamePlayType == GamePlayType.kHalloween
+    or self.mainLogic.theGamePlayType == GamePlayType.kWukongDigEndless
+    or self.mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless then
 		local digNeedScroll = self.mainLogic.gameMode:checkScrollDigGround(scrollComplete)
 		if not digNeedScroll then
 			self.nextState = self:getNextState()

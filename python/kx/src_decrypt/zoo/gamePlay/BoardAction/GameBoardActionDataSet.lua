@@ -126,6 +126,43 @@ GameItemActionType = table.const	--Item自动播放动画细节
 
 	kItem_Bottle_Blocker_Explode = 123, 	-- 妖精瓶子被消除一层
 	kItem_Bottle_Destroy_Around = 124, 	-- 妖精瓶子释放特效炸掉周围四格
+
+	kItem_Hedgehog_Road_bright = 125,   --刺猬轨迹点亮
+	kItem_Hedgehog_Move = 126,          --刺猬移动
+	kItem_Hedgehog_Crazy_Move = 127,    --刺猬疯狂移动
+	kItem_Hedgehog_Clean_Dig_Groud = 128, --清除刺猬以上的云层
+	kItem_Hedgehog_Box_Change = 129,      --刺猬礼盒打开
+	kItem_Hedgehog_Road_State = 130,      --刺猬路径变化
+	kItem_Hedgehog_Release_Energy = 131,  --刺猬变大
+	kItem_Rocket_Active = 132, 			  --火箭发射，消除动物，击中UFO
+	kItem_Halloween_Boss_Ready_Casting = 133,
+	kItem_KindMimosa_back = 134,          --新的含羞草，匹配退回
+	kItemSpecial_CrystalStone_Animal = 135,		--水晶石+动物
+	kItemSpecial_CrystalStone_Bird = 136,		--水晶石+魔力鸟
+	kItemSpecial_CrystalStone_CrystalStone = 137,		--水晶石+水晶石
+	kItemSpecial_CrystalStone_Charge = 138,		--给水晶石充能
+	kItemSpecial_CrystalStone_Destroy = 139,		--水晶石消失
+	kItemSpecial_CrystalStone_Flying = 140,		--改变目标动物颜色
+
+	kItem_Wukong_Casting = 141, 	-- 悟空释放大招
+	kItem_Wukong_Charging = 142,	-- 悟空金箍棒充能
+	kItem_Wukong_Reinit = 143,	-- 悟空重置颜色
+	kItem_Wukong_CheckAndChangeState = 144,	-- 悟空刷新自身状态
+	kItem_Wukong_JumpToTarget = 145,	-- 悟空直接飞到某个目标地格
+	kItem_Wukong_FallToClearItem = 146,	-- 悟空落到目标地格，消除该地格上的item并触发特效
+	kItem_Wukong_MonkeyBar = 147,	-- 悟空释放金箍棒，消除三排
+	kItem_Wukong_Gift = 148,	-- 悟空扔出道具和特效
+
+	kItem_SuperTotems_Explode = 149, -- 小金刚爆炸
+	kItem_SuperTotems_Bomb_By_Match = 150, -- 匹配生成的小金刚一次性爆炸
+	kItem_Decrease_Lotus = 151, -- 草地（荷叶）消除一层
+	kItem_Update_Lotus = 152, -- 草地（荷叶）升级或增生
+	kItem_Halloween_Boss_ClearLine = 153,
+	kItem_Drip_Casting = 160,
+	kItem_Check_Has_Drip = 161,
+	kItem_SuperCute_Recover = 154,
+	kItem_SuperCute_Inactive = 155,
+	kItem_SuperCute_Transfer = 156,
 }
 
 GamePropsActionType = table.const 	--游戏道具播放动画细节
@@ -138,6 +175,8 @@ GamePropsActionType = table.const 	--游戏道具播放动画细节
 	kOctopusForbid = 5, 			-- 章鱼冰
 	kRandomBird = 6, 				-- 随机魔力鸟
 	kBroom = 7,						-- 扫把
+	kHedgehogCrazy = 8,             -- 刺猬疯狂
+	kWukongJump = 9,	            -- 点击悟空触发跳跃
 }
 
 GameActionStatus = table.const

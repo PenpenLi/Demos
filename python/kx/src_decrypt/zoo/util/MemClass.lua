@@ -81,3 +81,26 @@ function decrypt_string(k)
 	--print("HeMemDataHolder::decrypt_string", k, result)
 	return result
 end
+
+function create_encrypt_const_integer_table(prefix, t)
+	local result = {}
+	setmetatable(result, { 
+    	__index = function( table, key )    
+    		local encryptKey = prefix .. "_" .. key
+    		result = decrypt_integer(encryptKey)
+    		return result
+    	end,
+    	__newindex = function(table, key, value)
+    		if type(value) ~= "function" then
+	    		local encryptKey = prefix .. "_" .. key
+				encrypt_integer(encryptKey, value)
+			else _t[key] = value end
+		end	
+    })
+
+	for k, v in pairs(t) do
+		result[k] = v
+	end
+
+	return result
+end

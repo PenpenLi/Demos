@@ -7,13 +7,17 @@ end
 
 function SharePyramidPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{num = self.shareRank})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self:runPyramidAction()
 	self:runNpcAction()
 	self:runCircleLightAction()
 	self:runStarParticle()
+end
+
+function SharePyramidPanel:getShareTitleName()
+	local highestLevel =  MetaManager.getInstance():getMaxNormalLevelByLevelArea()
+	return Localization:getInstance():getText(self.shareTitleKey,{num = highestLevel})
 end
 
 function SharePyramidPanel:runPyramidAction()
@@ -128,21 +132,11 @@ function SharePyramidPanel:runStarParticle()
 	end
 end
 
-function SharePyramidPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
-	local shareRank = ShareManager:getShareData(ShareManager.ConditionType.PASS_NUM)
-	if not shareRank then 
-		print("error=====================SharePyramidPanel.shareRank is null")
-		return nil 
-	end
-	shareRank = shareRank + 1
+function SharePyramidPanel:create(shareId)
 	local panel = SharePyramidPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('SharePyramidPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
-	panel.shareRank = shareRank
 	panel:init()
 	return panel
 end

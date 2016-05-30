@@ -3,6 +3,7 @@ require 'zoo.panelBusLogic.UsePropsLogic'
 require 'zoo.panelBusLogic.SellLogic'
 require 'zoo.panel.CommonTip'
 require 'zoo.panel.UpdateNewVersionPanel'
+require 'zoo.panel.jumpLevel.MoreIngredientPanel'
 
 
 -------------------- LOCAL FUNCTIONS --------------------
@@ -270,11 +271,49 @@ function PageRenderer:onItemTap(event)
 		else
 			CommonTip:showTip(Localization:getInstance():getText("new.version.tip.bag.1"))
 		end
+	elseif event.context.item.itemId == ItemType.INGREDIENT and UserManager:getInstance().user:getTopLevelId() >= JumpLevelManager:getLowestJumpableLevel() then
+		self:showIngredientTip(ib, event.context.item)
 	else 
 		self:showTip(ib, event.context.item)
 	end
-
 end
+
+function PageRenderer:showIngredientTip(ib, item)
+	local propsId = item.itemId
+
+	local content = self.builder:buildGroup('ingredientTipContent')--ResourceManager:sharedInstance():buildGroup('bagItemTipContent')
+	local desc = content:getChildByName('desc')
+	local title = content:getChildByName('title')
+	local btn = GroupButtonBase:create(content:getChildByName('btn'))
+	local function onIngredientBtnTapped()
+
+		local jumpedLevels = JumpLevelManager:getInstance():getJumpedLevels()
+		local moreIngredientLevels = JumpLevelManager:getMoreIngredientLevels()
+		if #jumpedLevels == 0 and #moreIngredientLevels == 0 then
+			CommonTip:showTip(localize('skipLevel.tips10', {n = '\n', s = ' '}))
+			return 
+		end
+
+		local bagPanel = PopoutManager:sharedInstance():getLastPopoutPanel()
+		if bagPanel then
+			bagPanel:onCloseBtnTapped()
+		end
+	    DcUtil:UserTrack({category = 'skipLevel', sub_category = 'open_get_pod', t1 = UserManager:getInstance().user:getTopLevelId(), t2 = JumpLevelManager:getInstance():getOwndIngredientNum(), t3 = 1})
+
+		local panel = MoreIngredientPanel:create()
+		panel:popout()
+	end
+	btn:setString(localize('skipLevel.Button6'))
+	btn:ad(DisplayEvents.kTouchTap, onIngredientBtnTapped)
+
+	title:setString(Localization:getInstance():getText("prop.name."..propsId))
+	local originSize = desc:getDimensions()
+	originSize = {width = originSize.width, height = originSize.height}
+	desc:setDimensions(CCSizeMake(originSize.width, 0))
+	desc:setString(Localization:getInstance():getText("skipLevel.tips.ingredient", {n = '\n', s = ' '}))
+	showTip(ib:getGroupBounds(), content, propsId)
+end
+
 function PageRenderer:showTip(ib, item)
 	assert(item)
 	local propsId = item.itemId
@@ -376,9 +415,9 @@ function PageRenderer:showTip(ib, item)
 	end
 
 	if canUse then
-		local boxPosition = ib:convertToWorldSpace(ccp(ib:getPosition().x, ib:getPosition().y))
-
-
+		local bounds = ib:getGroupBounds()
+		local boxPosition = ccp(bounds:getMidX(),bounds:getMidY())  
+		
 		useBtn:setVisible(true) 
 		-- useBtn:setButtonMode(true)
 		useBtn:setEnabled(true)
@@ -409,9 +448,9 @@ end
 function PageRenderer:onUnlockButtonTap(event)
 	-- print('unlock button clicked')
 
-	local function callback(success, event)
+	local function callback(success)
 		if self.buyUnlockCallbackFunc then
-			self.buyUnlockCallbackFunc(success, event)
+			self.buyUnlockCallbackFunc(success)
 		end
 	end
 
@@ -466,16 +505,23 @@ function PageRenderer:onUseBtnTapped(event)
 	local param = nil 
 	local itemLIst = {propsId}
 
+	local type = ItemType.SMALL_ENERGY_BOTTLE
+	local toAdd = 0
+
 	local function onSuccess()
-		local anim = HomeScene:sharedInstance():createFlyingEnergyAnim(false)
-		if anim then
+		local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
+		local visibleSize = Director:sharedDirector():getVisibleSize()
 
-			local visibleOrigin = Director:sharedDirector():getVisibleOrigin()
-			local visibleSize = Director:sharedDirector():getVisibleSize()
-			anim:setPosition(ccp(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height / 2))
-
-			anim:playFlyToAnim()
+		local anim
+		if type == ItemType.INFINITE_ENERGY_BOTTLE then
+			anim = FlyInfiniteEnergyAnimation:create()
+		else
+			anim = FlyGoodsEnergyAnimation:create(toAdd,type)
 		end
+		anim:setWorldPosition(position)
+		-- anim:setWorldPosition(ccp(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height / 2))
+		anim:play()
+
 		disposeTip()
 		self.useCallbackFunc(true)
 	end 
@@ -489,13 +535,19 @@ function PageRenderer:onUseBtnTapped(event)
 		disposeTip()
 		CommonTip:showTip(Localization:getInstance():getText('energy.panel.energy.is.full', {}), 1, nil)
 	else
-		local type = ItemType.SMALL_ENERGY_BOTTLE
+		local curEnergy = UserEnergyRecoverManager:sharedInstance():getEnergy()
+		local maxEnergy	= UserEnergyRecoverManager:sharedInstance():getMaxEnergy()
+		local maxToAdd = maxEnergy - curEnergy 
+
 		if propsId == 10012 then
 			type = ItemType.SMALL_ENERGY_BOTTLE
+			toAdd = math.min(1, maxToAdd)
 		elseif propsId == 10013 then
 			type = ItemType.MIDDLE_ENERGY_BOTTLE
+			toAdd = math.min(5, maxToAdd)
 		elseif propsId == 10014 then
 			type = ItemType.LARGE_ENERGY_BOTTLE
+			toAdd = math.min(30, maxToAdd)
 		elseif propsId == 10039 then
 			type = ItemType.INFINITE_ENERGY_BOTTLE
 		end

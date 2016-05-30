@@ -706,21 +706,14 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish,
         onSuccess()
     end
 
-    local function onBuyFail( evt )
-        -- print("onBuyFail")
-        if type(evt) == "table" and evt.data == 730330 then -- not enough gold
-            -- local text = {
-            --     tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-            --     yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-            --     no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-            -- }
-            -- CommonTipWithBtn:showTip(text, "negative", onCreateGoldPanel, onCancel)
-            GoldlNotEnoughPanel:create(onCreateGoldPanel, onCancel, nil):popout()
+    local function onBuyFail(errorCode)
+        if type(evt) == "table" and errorCode == 730330 then -- not enough gold
+            GoldlNotEnoughPanel:create(onCreateGoldPanel, onCancel):popout()
         else
             if __ANDROID then -- ANDROID
                 CommonTip:showTip(_text("add.step.panel.buy.fail.android"), "negative", onFail)
             else -- else, onIOS and PC we use gold!
-                CommonTip:showTip(_text("error.tip."..evt.data), "negative", onFail)
+                CommonTip:showTip(_text("error.tip."..errorCode), "negative", onFail)
             end
         end
     end
@@ -731,8 +724,6 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish,
     end
     if __ANDROID then -- ANDROID
         if PaymentManager.getInstance():checkCanWindMillPay(RabbitWeeklyManager.playCardGoodsId) then
-            local uniquePayId = PaymentDCUtil.getInstance():getNewPayID() 
-            PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, RabbitWeeklyManager.playCardGoodsId, 1, 1, 0, 1)
             local function successCallback()
                 self:addLeftPlayCount(1)
                 if onSuccess then onSuccess() end
@@ -747,10 +738,14 @@ function RabbitWeeklyManager:buyPlayCard( onSuccess, onFail, onCancel, onFinish,
                 if onFinish then onFinish() end
             end
 
+            self.dcAndroidInfo = DCWindmillObject:create()
+            self.dcAndroidInfo:setGoodsId(RabbitWeeklyManager.playCardGoodsId)
+            PaymentDCUtil.getInstance():sendAndroidWindMillPayStart(self.dcAndroidInfo)
+
             local logic = WMBBuyItemLogic:create()
             local buyLogic = BuyLogic:create(RabbitWeeklyManager.playCardGoodsId, 2)
             buyLogic:getPrice()
-            logic:buy(RabbitWeeklyManager.playCardGoodsId, 1, uniquePayId, buyLogic, successCallback, failCallback, cancelCallback, updateFunc)
+            logic:buy(RabbitWeeklyManager.playCardGoodsId, 1, self.dcAndroidInfo, buyLogic, successCallback, failCallback, cancelCallback, updateFunc)
         else 
             local logic = IngamePaymentLogic:create(RabbitWeeklyManager.playCardGoodsId)
             if ignoreSecondConfirm then

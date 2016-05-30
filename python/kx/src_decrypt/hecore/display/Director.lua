@@ -22,6 +22,8 @@ local function commonKeypadHandler()
 		local popoutPanel = PopoutManager:sharedInstance():getLastPopoutPanel()
 		if QRManager:isQRScanning() == true then
 			QRManager:onKeyBackClicked()
+		elseif __ANDROID and PersonalCenterManager:getData(PersonalCenterManager.IS_TAKE_PHOTO) == true then
+			PersonalCenterManager:onKeyBackClicked()
 		elseif popoutPanel and type(popoutPanel.onKeyBackClicked) == "function" then
 			popoutPanel:onKeyBackClicked()
 		elseif type(runningScene.onKeyBackClicked) == "function" then

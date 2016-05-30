@@ -47,9 +47,11 @@ function MagicLampReinitState:tryHandleReinit()
                 end
 
                 -- 所有的神灯都参与颜色统计
-                local color = item.ItemColorType
-                if banColors[color] == nil then banColors[color] = 0 end
-                banColors[color] = banColors[color] + 1
+                local color = AnimalTypeConfig.getOriginColorValue(item.ItemColorType)
+                if color ~= AnimalTypeConfig.kNone then
+                    if banColors[color] == nil then banColors[color] = 0 end
+                    banColors[color] = banColors[color] + 1
+                end
             end
         end
     end
@@ -60,7 +62,8 @@ function MagicLampReinitState:tryHandleReinit()
         or mainLogic.theGamePlayType == GamePlayType.kDigTime 
         or mainLogic.theGamePlayType == GamePlayType.kDigMoveEndless
         or mainLogic.theGamePlayType == GamePlayType.kMaydayEndless
-        or mainLogic.theGamePlayType == GamePlayType.kHalloween 
+        or mainLogic.theGamePlayType == GamePlayType.kHalloween
+        or mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless
         then
         local passedRow = mainLogic.passedRow
         local totalConfigRow = #mainLogic.digItemMap
@@ -71,9 +74,11 @@ function MagicLampReinitState:tryHandleReinit()
                     if item.lampLevel == 0 and item:isAvailable() then
                         table.insert(lamps, item)
                     end
-                    local color = item.ItemColorType
-                    if banColors[color] == nil then banColors[color] = 0 end
-                    banColors[color] = banColors[color] + 1
+                    local color = AnimalTypeConfig.getOriginColorValue(item.ItemColorType)
+                    if color ~= AnimalTypeConfig.kNone then
+                        if banColors[color] == nil then banColors[color] = 0 end
+                        banColors[color] = banColors[color] + 1
+                    end
                 end
             end
         end
@@ -86,7 +91,8 @@ function MagicLampReinitState:tryHandleReinit()
     end
 
     local function isColorBanned(color)
-        return banColors[color] ~= nil and banColors[color] >= 2
+        local originColor = AnimalTypeConfig.getOriginColorValue(color)
+        return banColors[originColor] ~= nil and banColors[originColor] >= 2
     end
 
 
@@ -123,8 +129,10 @@ function MagicLampReinitState:tryHandleReinit()
             newColor = targetColors[mainLogic.randFactory:rand(1, #targetColors)]
         end
 
-        if banColors[newColor] == nil then banColors[newColor] = 0 end
-        banColors[newColor] = banColors[newColor] + 1
+        local originColor = AnimalTypeConfig.getOriginColorValue(newColor)
+        if banColors[originColor] == nil then banColors[originColor] = 0 end
+        banColors[originColor] = banColors[originColor] + 1
+
         item.ItemColorType = newColor
 
         local reinitAction = GameBoardActionDataSet:createAs(
@@ -169,6 +177,7 @@ end
 
 function MagicLampReinitState:getNextState()
     return self.context.checkNeedLoopState
+    --return self.context.wukongReinitState
 end
 
 function MagicLampReinitState:onExit()

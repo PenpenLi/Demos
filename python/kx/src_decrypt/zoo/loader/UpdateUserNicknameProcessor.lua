@@ -132,6 +132,10 @@ local function requestUserDisplayName()
         end
         local function inputCallback(result, userInput)
             if result then
+                if not userInput or userInput == "" then
+                    userInput = Localization:getInstance():getText("game.setting.panel.use.device.name.default")
+                end
+
                 if userInput and userInput~="" then
                     updateUserName(userInput)
                     CCUserDefault:sharedUserDefault():setStringForKey("game.devicename.userinput", userInput)

@@ -79,7 +79,7 @@ local function parseConditionRewardList(src)
 	return result
 end
 
-local function parseIngameLimitDict( src )
+function parseIngameLimitDict( src )
 	if not src then return {} end
 	assert(type(src) == "string")
 
@@ -178,6 +178,13 @@ function GlobalServerConfig:ctor()
 	self.summer_week_match_levels = {}
 	self.ingame_limit = {}
 	self.ingame_limit_low = {}
+	self.weekRankMinNum = 50
+	self.weekSurpassLimit = 200
+	self.weekSurpassReward = {}
+	self.weekWeeklyReward = {}
+	self.failLevelNumToShowJump = 999
+	self.firstNewObstacleLevels = {}
+	self.missionAutoLaunch = 0
 end
 function GlobalServerConfig:fromLua( src )
 	if not src then
@@ -209,10 +216,26 @@ function GlobalServerConfig:fromLua( src )
 				value = parseItemList(value)
 			elseif key == 'summer_week_match_levels' then
 				value = parseItemList(value)
+			elseif key == "autumn_week_match_levels" then
+				value = parseItemList(value)
+			elseif key == "winter_week_match_levels" then
+				value = parseItemList(value)
+			elseif key == "spring_week_match_levels" then
+				value = parseItemList(value)
+			elseif key == "summer_week_match_levels_2016" then
+				value = parseItemList(value)
 			elseif key == 'ingame_limit' then 
 				value = parseIngameLimitDict(value)
 			elseif key == 'ingame_limit_low' then 
 				value = parseIngameLimitDict(value)
+			elseif key == 'weekSurpassReward' then
+				value = parseItemDict(value)
+			elseif key == "weekWeeklyReward" then
+				value = parseConditionRewardList(value)
+			elseif key == "winterWeeklyReward" then
+				value = parseConditionRewardList(value)
+			elseif key == "firstNewObstacleLevels" then
+				value = parseItemList(value)
 			else
 				value = tonumber(value)
 			end
@@ -519,6 +542,7 @@ function LevelRewardMetaRef:ctor()
 
 	self.newRewardItemsIndex = {}
 	self.defaultRewardItemsIndex = {}
+	self.skipLevel = 0    --跳关需要花费的金豆荚数
 end
 function LevelRewardMetaRef:fromLua( src )
 	if not src then
@@ -556,8 +580,14 @@ end
 function LevelRewardMetaRef:getNewStarRewards( star )
 	return self.newRewardItemsIndex[star]
 end
+
 function LevelRewardMetaRef:getDefaultStarRewards( star )
 	return self.defaultRewardItemsIndex[star]
+end
+
+function LevelRewardMetaRef:getSkipLevelSpend( ... )
+	-- body
+	return self.skipLevel
 end
 --
 -- InviteRewardMetaRef ---------------------------------------------------------
@@ -843,6 +873,7 @@ function StarRewardMetaRef:ctor()
 	self.id = 0
 	self.reward = {}
 	self.starNum = 0
+	self.delta = 0
 end
 function StarRewardMetaRef:fromLua( src )
 	if not src then
@@ -931,6 +962,7 @@ function HideAreaMetaRef:ctor()
 	self.continueLevels = {0,1}
 	self.hideAreaId = 0
 	self.hideLevelRange = {0,1}
+	self.hideReward = {}
 end
 local function parseHideAreaLevel( src )
 	if not src then return {} end
@@ -954,6 +986,8 @@ function HideAreaMetaRef:fromLua( src )
 			self.continueLevels = parseHideAreaLevel(v)
 		elseif k == "hideLevelRange" then
 			self.hideLevelRange = parseHideAreaLevel(v)
+		elseif k == "hideReward" then
+			self.hideReward = parseItemDict(v)
 		else 
 			if type(k) == "string" then
 				self[k] = tonumber(v)
@@ -1269,7 +1303,7 @@ function SummerWeeklyLevelRewardsRef:fromLua(src)
 				ret[i] = parseConditionRewardList(v)
 			end
 		end
-		print("dailyRewards:", tostring(ret))
+		-- print("dailyRewards:", tostring(ret))
 		return ret
 	end
 
@@ -1296,4 +1330,78 @@ function SummerWeeklyLevelRewardsRef:fromLua(src)
 	end
 end
 
+AutumnWeeklyLevelRewardsRef = class(MetaRef)
+function AutumnWeeklyLevelRewardsRef:ctor()
+	self.id = 0
+	self.day = 0
+	self.dailyRewards = {} 		-- 每日奖励list
+end
+
+function AutumnWeeklyLevelRewardsRef:fromLua(src)
+	for k, v in pairs(src) do
+		if k == 'id' then 
+			self.id = tonumber(v)
+		elseif k == "day" then	
+			self.day = tonumber(v)
+		elseif k == 'dailyReward' then
+			self.dailyRewards = parseConditionRewardList(v)
+		end
+	end
+end
+
 LevelStatusRef = class(MetaRef)
+
+MissionRef = class(MetaRef)
+function MissionRef:ctor()
+	self.id = 0
+	self.mType = 0
+	self.cType = {}
+	self.condition = {}
+end
+
+function MissionRef:fromLua(src)
+	for k,v in pairs(src) do
+		if k == "cType" then
+			self.cType = string.split(v, ',')
+			for i,v in ipairs(self.cType) do
+				self.cType[i] = tonumber(v)
+			end
+		elseif k == "condition" then
+			self.condition = string.split(v, ',')
+			for i,v in ipairs(self.condition) do
+				local values = string.split(v, ':')
+				self.condition[i] = {}
+				for j, w in ipairs(values) do
+					table.insert(self.condition[i], tonumber(w))
+				end
+			end
+		else
+			self[k] = tonumber(v)
+		end
+	end
+end
+
+MissionCreateInfoRef = class(MetaRef)
+function MissionCreateInfoRef:ctor()
+	self.id = 0
+	self.special = false
+	self.weekly = 0
+	self.daily = 0
+	self.minLevel = 0
+	self.maxLevel = 0
+	self.priority = 0
+	self.minLogin = 0
+	self.maxLogin = 0
+	self.maxReturn = 0
+	self.maxSignIn = 0
+end
+
+function MissionCreateInfoRef:fromLua(src)
+	for k,v in pairs(src) do
+		if k == "special" then
+			self.special = string.lower(v) == "true"
+		else
+			self[k] = tonumber(v) or 0
+		end
+	end
+end

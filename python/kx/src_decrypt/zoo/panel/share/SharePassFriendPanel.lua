@@ -9,22 +9,44 @@ end
 
 function SharePassFriendPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey)
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
-	if self.passFriendType == PassFriendType.SCORE then
-		local currentLevel = ShareManager.data.level
+	ShareBasePanel.init(self)
+
+	local shareNotiKey = self.config.notifyMessage
+	self.isScoreOverFri = self.shareId == self.achiManager.shareId.SCORE_OVER_FRIEND
+	self.isLevelOverFri = self.shareId == self.achiManager.shareId.LEVEL_OVER_FRIEND
+
+	if self.isScoreOverFri then
+		local currentLevel = self.achiManager:getData(self.achiManager.LEVEL)
+		self.currentLevel = currentLevel
 		local userName = UserManager.getInstance().profile.name
-		self.notyMessage = Localization:getInstance():getText(self.shareNotiKey,{friend = userName,num = currentLevel})
-	elseif self.passFriendType == PassFriendType.LEVEL then
+		local levelName = tostring(LevelMapManager.getInstance():getLevelDisplayName(currentLevel))
+		-- levelName = string.gsub(levelName, "+", "%%2B")
+		levelName = HeDisplayUtil:urlEncode(levelName)
+		self.notyMessage = Localization:getInstance():getText(shareNotiKey,{friend = userName,num = levelName})
+	elseif self.isLevelOverFri then
+		self.currentLevel = self.achiManager:getData(self.achiManager.LEVEL)
 		local userName = UserManager.getInstance().profile.name
-		self.notyMessage = Localization:getInstance():getText(self.shareNotiKey,{friend = userName})
+		self.notyMessage = Localization:getInstance():getText(shareNotiKey,{friend = userName})
 	end
+
+	local friendInfos = nil
+	if self.isScoreOverFri then 
+		friendInfos = self.achiManager:getData(self.achiManager.SCORE_OVER_FRIEND_TABLE)
+	elseif self.isLevelOverFri then 
+		friendInfos = self.achiManager:getData(self.achiManager.LEVEL_OVER_FRIEND_TABLE)
+	end
+
+	self.passedFriendIds = friendInfos
 	
 	self:runFlyBirdAction()
 	self:runNpcAction()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runStarGroup3Action()
+end
+
+function SharePassFriendPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey)
 end
 
 local function getDayStartTimeByTS(ts)
@@ -38,45 +60,25 @@ local function now()
 end
 --override
 function SharePassFriendPanel:onShareBtnTapped()
-	ShareBasePanel.onShareBtnTapped(self,self.shareId)
+	--ShareBasePanel.onShareBtnTapped(self,self.shareId)
 	if not __IOS_FB then 
 		local notiTypeId = LocalNotificationType.kSharePassFriendScore 
-		if self.passFriendType == PassFriendType.SCORE then
-			DcUtil:UserTrack({category = "show", sub_category = "push_show_off_button_110"})
-		elseif self.passFriendType == PassFriendType.LEVEL then
+		if self.isScoreOverFri then
+			DcUtil:UserTrack({category = "show", sub_category = "push_show_off", action = 'button', id = 110}, true)
+		elseif self.isLevelOverFri then
 			notiTypeId = LocalNotificationType.kSharePassFriendLevel
-			DcUtil:UserTrack({category = "show", sub_category = "push_show_off_button_120"})
+			DcUtil:UserTrack({category = "show", sub_category = "push_show_off", action = 'button', id = 120}, true)
 		end
 		
 		-- On Friend Choosed
 		local function onFriendChoose(friendIds)
 			if friendIds and #friendIds>0 then 
 				local function onPushSuccess(event)
-					--向后端同步
-					local function onSuccess(event)
-				        CommonTip:showTip(Localization:getInstance():getText("show_off_to_friend_success"), "positive")
-				        --打点
-				        --发银币奖励
-				        if self.rewardConfig then 
-					      	UserManager:getInstance().user:setCoin(UserManager:getInstance().user:getCoin() + self.rewardConfig.rewardNum)
-							UserService:getInstance().user:setCoin(UserService:getInstance().user:getCoin() + self.rewardConfig.rewardNum)
-						end
-						--记录炫耀次数
-        				ShareManager:increaseShareAllTime()
-				        --关闭
-				        self:removePopout()
-				    end
-
-				    local function onFail(event)
-				        self:showFaildTip("show_off_to_friend_fail")
-				        --关闭
-				        self:removePopout()
-				    end
-				    
-				    local http = OpNotifyHttp.new()
-				    http:ad(Events.kComplete, onSuccess)
-				    http:ad(Events.kError, onFail)
-				    http:load(OpNotifyType.kXuanYao)
+			        CommonTip:showTip(Localization:getInstance():getText("show_off_to_friend_success"), "positive")
+					--记录炫耀次数
+    				ShareManager:increaseShareAllTime()
+			        --关闭
+			        self:removePopout()
 				end
 				local function onPushFail()
 					self:showFaildTip("show_off_to_friend_fail")
@@ -91,7 +93,7 @@ function SharePassFriendPanel:onShareBtnTapped()
 				-- 	targetTime = dayStartTime + 10 * 3600
 				-- end
 				local http = PushNotifyHttp.new()
-				http:load(friendIds, self.notyMessage, notiTypeId, targetTime * 1000)
+				http:load(friendIds, self.notyMessage, notiTypeId, targetTime * 1000, self.currentLevel)
 				http:ad(Events.kComplete, onPushSuccess)
 			    http:ad(Events.kError, onPushFail)
 			end
@@ -104,12 +106,7 @@ function SharePassFriendPanel:onShareBtnTapped()
 end
 
 function SharePassFriendPanel:showFaildTip(strKey)
-	local scene = Director:sharedDirector():getRunningScene()
-	if scene then
-		local item = RequireNetworkAlert.new(CCNode:create())
-		item:buildUI(Localization:getInstance():getText(strKey))
-		scene:addChild(item)  
-	end
+	CommonTip:showTip(Localization:getInstance():getText(strKey), 'negative', nil, 2)
 end
 
 function SharePassFriendPanel:runFlyBirdAction()
@@ -271,31 +268,11 @@ function SharePassFriendPanel:runStarGroup3Action()
 	end
 end
 
-function SharePassFriendPanel:create(shareId, shareType, shareNotiKey, shareTitleKey, passFriendType)
-	local friendInfos = nil
-	if passFriendType==PassFriendType.SCORE then 
-		friendInfos = ShareManager:getShareData(ShareManager.ConditionType.OVER_FRIEND_TABLE)
-	elseif passFriendType==PassFriendType.LEVEL then 
-		friendInfos = ShareManager:getShareData(ShareManager.ConditionType.LEVEL_OVER_FRIEND_TABLE)
-	end
-	-- if friendInfos then
-	-- 	passedFriendIds = {}
-	-- 	for i,v in ipairs(friendInfos) do
-	-- 	 	table.insert(passedFriendIds,v.uid)
-	-- 	end 
-	-- else
-	-- 	print("error=====================SharePassFriendPanel.passedFriendIds is null") 
-	-- 	return nil
-	-- end
+function SharePassFriendPanel:create(shareId)
 	local panel = SharePassFriendPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('SharePassFriendPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareNotiKey = shareNotiKey
-	panel.shareTitleKey = shareTitleKey
-	panel.passedFriendIds = friendInfos
-	panel.passFriendType = passFriendType
 	panel:init()
 	return panel
 end

@@ -7,8 +7,7 @@ end
 
 function SharePassFiveLevelPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey)
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self.shareMessage = Localization:getInstance():getText("show_off_wx_share_60")
 
@@ -16,6 +15,10 @@ function SharePassFiveLevelPanel:init()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runStarGroup3Action()
+end
+
+function SharePassFiveLevelPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey)
 end
 
 function SharePassFiveLevelPanel:runNpcAction()
@@ -147,14 +150,11 @@ function SharePassFiveLevelPanel:runStarParticle()
 	end
 end
 
-function SharePassFiveLevelPanel:create(shareId, shareType, shareLink, shareTitleKey)
+function SharePassFiveLevelPanel:create(shareId)
 	local panel = SharePassFiveLevelPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('SharePassFiveLevelPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareLink = shareLink
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

@@ -13,10 +13,10 @@ function ActivityIconButton:ctor( ... )
 	self.playTipPriority = 0
 end
 function ActivityIconButton:playHasNotificationAnim(...)
-	IconButtonManager:getInstance():addPlayTipIcon(self)
+	IconButtonManager:getInstance():addPlayTipActivityIcon(self)
 end
 function ActivityIconButton:stopHasNotificationAnim(...)
-	IconButtonManager:getInstance():removePlayTipIcon(self)
+	IconButtonManager:getInstance():removePlayTipActivityIcon(self)
 end
 
 function ActivityIconButton:dispose( ... )
@@ -28,19 +28,36 @@ function ActivityIconButton:dispose( ... )
 		end
 	end
 
+	if self.onUserLogin then
+		GlobalEventDispatcher:getInstance():removeEventListener(
+			kGlobalEvents.kUserLogin,
+			self.onUserLogin
+		)
+	end
+
 	IconButtonBase.dispose(self)
 end
 
 function ActivityIconButton:init( source,version )
-	self.id = "ActivityIconButton_" .. source
+	self.idPre = "ActivityIconButton_" .. source
+	self.id = self.idPre .. self.tipState
 
 	self.source = source
 	self.version = version
 
 	local config = require("activity/" .. source)
 
-	self.tips = config.tips
+	self["tip"..IconTipState.kNormal] = config.tips 
+	self["tip"..IconTipState.kExtend] = config.tipsExtend 
+	self["tip"..IconTipState.kReward] = config.tipsReward 
+
+	self.leftRegionLayoutBar = config.leftRegionLayoutBar
+
+	self.playTipPriority = config.tipPriority or 999
+
 	self.clickReplaceScene = config.clickReplaceScene
+	self.playIconAnim = config.playIconAnim
+	self.notLoginPlayIconAnim = config.notLoginPlayIconAnim
 
 	self.ui = ResourceManager:sharedInstance():buildGroup("activityImageButtonIcon")
 	IconButtonBase.init(self, self.ui)
@@ -49,8 +66,7 @@ function ActivityIconButton:init( source,version )
 
 	self.wrapper:addChildAt(self:buildIcon(),0)
 
-	self.wrapper:setTouchEnabled(false)
-	self.wrapper:setTouchEnabled(true,0,false)
+	self.wrapper:setTouchEnabled(true)
 	self.wrapper:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)
@@ -66,22 +82,32 @@ function ActivityIconButton:init( source,version )
 		u:setPositionY(u:getPositionY() + 96 + manualAdjustY)
 	end
 
-	if self.tips then 
-		self:setTipString(self.tips)
-	 	self:playHasNotificationAnim()
-	end
+	-- if self.tips then 
+	-- 	self:setTipString(self.tips)
+	--  	self:playHasNotificationAnim()
+	-- end
 
 	self.wrapper:addEventListener(DisplayEvents.kTouchTap,function( ... )
 		if PopoutManager:sharedInstance():haveWindowOnScreen() then 
 			return 
 		end
-		ActivityData.new(self):start(true)
+		ActivityData.new(self):start(true,true)
 	end)
 
 	table.insert(ActivityUtil.onActivityStatusChangeCallbacks,{
 		obj = self,
 		func = self.onActivityStatusChange
 	})
+
+	if not _G.kUserLogin then
+		self.onUserLogin = function( ... )
+			self:onActivityStatusChange(self.source)
+		end
+		GlobalEventDispatcher:getInstance():addEventListener(
+			kGlobalEvents.kUserLogin,
+			self.onUserLogin
+		)
+	end
 
 	self:onActivityStatusChange(self.source)
 
@@ -135,10 +161,69 @@ function ActivityIconButton:onActivityStatusChange( source )
 		rewardIcon:setVisible(false)
 	end
 
+	local function needPlayIconAnim( ... )
+		if self.tip then --有tip动画
+			return true
+		elseif not _G.kUserLogin and self.notLoginPlayIconAnim then
+			return true
+		elseif ActivityUtil:getMsgNum(self.source) > 0 and self.playIconAnim then
+			return true
+		elseif ActivityUtil:hasRewardMark(self.source) and self.playIconAnim then
+			return true
+		else
+			return false
+		end
+	end
+
 	setMsgNum(ActivityUtil:getMsgNum( self.source ))
 	if ActivityUtil:hasRewardMark( self.source ) then 
+		self.tipState = IconTipState.kReward
+		self.id = self.idPre .. self.tipState
 		showRewardIcon()
 	else
+		self.tipState = IconTipState.kNormal
+		self.id = self.idPre .. self.tipState
 		hideRewardIcon()
+	end
+
+	if self.tipState then 
+		local tips = self["tip"..self.tipState]
+		if tips then 
+			self:setTipString(tips)
+		 	self:playHasNotificationAnim()
+		end
+	end
+
+	if needPlayIconAnim() then
+		self:playOnlyIconAnim()
+	else
+		self:stopOnlyIconAnim()
+	end
+end
+
+function ActivityIconButton:addToUi( homeScene )
+	if self.leftRegionLayoutBar then
+		self.regionLayoutBar = homeScene.leftRegionLayoutBar
+		self.regionLayoutBar:addItem(self)
+
+		self:setTipPosition(IconButtonBasePos.RIGHT)
+	else
+		self.regionLayoutBar = homeScene.rightRegionLayoutBar
+
+		local index = self.regionLayoutBar:getItemIndex(homeScene.activityButton)
+		if index then
+			self.regionLayoutBar:addItemAt(self,index)
+		else 
+			self.regionLayoutBar:addItem(self)
+		end
+
+		self:setTipPosition(IconButtonBasePos.LEFT)
+	end
+end
+
+function ActivityIconButton:removeFromUi( homeScene )
+	if self.regionLayoutBar then
+		self.regionLayoutBar:removeItem(self,true)
+		self.regionLayoutBar = nil
 	end
 end

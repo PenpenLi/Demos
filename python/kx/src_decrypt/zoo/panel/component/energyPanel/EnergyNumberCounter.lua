@@ -98,6 +98,8 @@ function EnergyNumberCounter:setCurEnergy(curEnergy, ...)
 			self.curEnergyLabel:setString(tostring(curEnergy))
 		end
 	end
+	self.curEnergyLabel:setScaleX(self.maxEnergyLabel:getScaleX())
+	self.curEnergyLabel:setScaleY(self.maxEnergyLabel:getScaleY())
 end
 
 function EnergyNumberCounter:setTotalEnergy(totalEnergy, ...)

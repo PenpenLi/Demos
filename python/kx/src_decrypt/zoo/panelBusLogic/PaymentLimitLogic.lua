@@ -18,13 +18,23 @@ require "zoo.payment.PaymentManager"
 
 PaymentLimitLogic = {}
 
+local IngameLimitCache = {}
 local function getLimitConfig()
-	local limitConfig = MetaManager:getInstance().global.ingame_limit
-	-- if PaymentManager.getInstance():checkThirdPartPaymentEabled() then 
-	-- 	--支持三方支付时 短代限额大幅下调 鼓励三方支付
-	-- 	limitConfig = MetaManager:getInstance().global.ingame_limit_low
-	-- end
-	return limitConfig
+	local ingameLimit = UserManager.getInstance().ingameLimit
+
+	if type(ingameLimit) == "string" then
+		if not IngameLimitCache[ingameLimit] then
+			IngameLimitCache[ingameLimit] = parseIngameLimitDict(ingameLimit)
+		end
+		return IngameLimitCache[ingameLimit]
+	else
+		local limitConfig = MetaManager:getInstance().global.ingame_limit
+		-- if PaymentManager.getInstance():checkThirdPartPaymentEabled() then 
+		-- 	--支持三方支付时 短代限额大幅下调 鼓励三方支付
+		-- 	limitConfig = MetaManager:getInstance().global.ingame_limit_low
+		-- end
+		return limitConfig
+	end
 end
 
 -- 当前支付方式是不是需要限额
@@ -93,6 +103,26 @@ local function getPaymentInfo( paymentType )
 
 	return paymentInfo,paymentInfos
 end
+
+function PaymentLimitLogic:getPaymentLimitInfo( paymentType )
+	local limitConfig = getLimitConfig()
+	if limitConfig[paymentType] then 
+		local paymentInfo = getPaymentInfo(paymentType)
+		local daily = {
+			used = paymentInfo.daily,
+			limit = limitConfig[paymentType].daily
+		}
+
+		local monthly = {
+			used = paymentInfo.monthly,
+			limit = limitConfig[paymentType].monthly
+		}
+		return { daily = daily,monthly = monthly}
+	else
+		return false
+	end
+end
+
 function PaymentLimitLogic:isExceedDailyLimit(paymentType)
 	local limitConfig = getLimitConfig()
 	if limitConfig[paymentType] then 

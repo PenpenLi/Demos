@@ -49,6 +49,7 @@ function BubbleItem:init(ui, itemType, ...)
 	----------------------
 	self.itemPlaceholderPos 	= self.itemPlaceholder:getPosition()
 	self.itemPlaceholderSize	= self.itemPlaceholder:getGroupBounds().size
+	self.itemPlaceholderSize	= {width = self.itemPlaceholderSize.width, height = self.itemPlaceholderSize.height}
 
 	self.bubbleOriginScaleX	= self.bubble:getScaleX()
 	self.bubbleOriginScaleY	= self.bubble:getScaleY()

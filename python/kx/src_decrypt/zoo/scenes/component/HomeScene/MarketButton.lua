@@ -5,18 +5,24 @@ MarketButton = class(IconButtonBase)
 function MarketButton:init(...)
     assert(#{...} == 0)
 
-    self.ui = ResourceManager:sharedInstance():buildGroup('marketButtonIcon')
+    local discountAnchorPoint = ccp(0.5, 0.5)
+    if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+        discountAnchorPoint = ccp(0.5, 0)
+        self.ui = ResourceManager:sharedInstance():buildGroup('marketButtonIcon_spring')
+    else
+        self.ui = ResourceManager:sharedInstance():buildGroup('marketButtonIcon')
+    end
 
     IconButtonBase.init(self, self.ui)
 
-    self.ui:setTouchEnabled(true)
+    self.ui:setTouchEnabled(true, 0, true)
     self.ui:setButtonMode(true)
 
     self.discount = self.ui:getChildByName('discount')
     self.new = self.ui:getChildByName('new')
 
     self.discount:setVisible(false)
-    self.discount:setAnchorPoint(ccp(0.5, 0.5))
+    self.discount:setAnchorPoint(discountAnchorPoint)
     self.new:setVisible(false)
     self.new:setAnchorPoint(ccp(0.5, 0.5))
     self.thirdPayPromo = self.ui:getChildByName('thirdpay_promo')
@@ -47,7 +53,11 @@ function MarketButton:showDiscount(isShow)
     if self.isDisposed then return end
     self.discount:setVisible(isShow)
     if isShow then
-        self.discount:runAction(self:buildAnimation())
+        if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+            self.discount:runAction(WorldSceneShowManager:getInstance():buildIconShockAnimation())
+        else
+            self.discount:runAction(self:buildAnimation())
+        end
     else 
         self.discount:stopAllActions()
     end

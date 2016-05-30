@@ -14,7 +14,7 @@ UpdateLevelScoreLogic = class()
 function UpdateLevelScoreLogic:ctor()
 end
 
-function UpdateLevelScoreLogic:init(levelId, levelType, score, star, ...)
+function UpdateLevelScoreLogic:init(levelId, levelType, score, star, pawnNum, ...)
 	assert(type(levelId)	== "number")
 	assert(type(score)	== "number")
 	assert(type(star)	== "number")
@@ -24,6 +24,7 @@ function UpdateLevelScoreLogic:init(levelId, levelType, score, star, ...)
 	self.levelType  = levelType
 	self.score	= score
 	self.star	= star
+	-- self.pawnNum = pawnNum
 end
 
 function UpdateLevelScoreLogic:start(...)
@@ -64,6 +65,7 @@ function UpdateLevelScoreLogic:start(...)
 	newUserScore.star	= self.star
 	newUserScore.uid = userManager.user.uid
 	newUserScore.updateTime = Localhost:time()
+	-- newUserScore.pawnNum = self.pawnNum or 0
 	he_log_warning("ScoreRef.updateTime ??")
 
 	userManager:addUserScore(newUserScore)
@@ -97,13 +99,13 @@ function UpdateLevelScoreLogic:start(...)
 	end
 end
 
-function UpdateLevelScoreLogic:create(levelId, levelType, score, star, ...)
+function UpdateLevelScoreLogic:create(levelId, levelType, score, star, pawnNum, ...)
 	assert(type(levelId)	== "number")
 	assert(type(score)	== "number")
 	assert(type(star)	== "number")
 	assert(#{...} == 0)
 
 	local newUpdateLevelScore = UpdateLevelScoreLogic.new()
-	newUpdateLevelScore:init(levelId, levelType, score, star)
+	newUpdateLevelScore:init(levelId, levelType, score, star, pawnNum)
 	return newUpdateLevelScore
 end

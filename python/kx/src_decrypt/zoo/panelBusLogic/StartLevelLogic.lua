@@ -191,6 +191,12 @@ function StartLevelLogic:sendStartLevelMessage(popWaitTip, onSuccessCallback, ..
 
 	local function onSuccess()
 		if onSuccessCallback then onSuccessCallback() end
+
+		-- 本地记录上一次进入关卡的时间
+		local uid = UserManager.getInstance().uid
+		local data = Localhost:readLocalLevelDataByLevelId(uid,levelId)
+		data.lastEnterTime = Localhost:time()
+		Localhost:writeLocalLevelDataByLevelId(uid,levelId,data)
 	end
 
 	local function onFailed(event)
@@ -223,20 +229,34 @@ function StartLevelLogic:createGamePlayScene(fileList)
 		Director:sharedDirector():popScene(true)
 	end
 
-	local selectedItemsData = self.itemList or {}
-	local gamePlayScene	= GamePlaySceneUI:create(self.levelId, self.levelType, selectedItemsData)
-	assert(gamePlayScene)
-	gamePlayScene.fileList = fileList
+	local function pushNewScene()
+		local selectedItemsData = self.itemList or {}
+		local gamePlayScene	= GamePlaySceneUI:create(self.levelId, self.levelType, selectedItemsData)
+		assert(gamePlayScene)
+		gamePlayScene.fileList = fileList
 
-	Director:sharedDirector():pushScene(gamePlayScene)
+		Director:sharedDirector():pushScene(gamePlayScene)
 
-    if self.delegate.onDidEnterPlayScene then 
-    	self.delegate:onDidEnterPlayScene(gamePlayScene)
-    end
-    --clear share data 
-    if ShareManager then
-    	ShareManager:cleanData()
-    end
+	    if self.delegate.onDidEnterPlayScene then 
+	    	self.delegate:onDidEnterPlayScene(gamePlayScene)
+	    end
+
+	    if MissionManager then
+			local triggerContext = TriggerContext:create(TriggerContextPlace.START_LEVEL_AND_CREATE_GAME_PLAY_SCENE)
+			triggerContext:addValue( "data" , self )
+			MissionManager:getInstance():checkAll(triggerContext)
+		end
+
+	    --clear share data 
+	    -- if ShareManager then
+	    -- 	ShareManager:cleanData()
+	    -- end	
+	    if AchievementManager then
+	    	AchievementManager:cleanData()
+	    	AchievementManager:setData(AchievementManager.PRE_SCORE, UserManager.getInstance():getUserScore(self.levelId))
+	    end
+	end
+	AsyncLoader:getInstance():waitingForLoadComplete(pushNewScene)
 end
 
 function StartLevelLogic:loadLevelConfig(onLoadFinish)

@@ -20,6 +20,20 @@ LocalNotificationType = {
 	kDragonBoatZongziFinish = 24,   --活动 前端包粽子直接完成
 	kSummerShowOffPassFriend = 25,  --周赛 夏日周赛超越好友炫耀
 	kSummerShareFinish = 26, 		--活动 前端冰淇淋完成推送
+	kQiXiShareFinish = 27,          --活动 前端七夕情人节装扮完成推送
+	kMidAutumnShare = 28,			--活动
+	kPushEnergy     = 29,           -- 消息中心免费精力
+	-- 30、31后端占用
+	kNdShare2015	= 32,			--活动 国庆分享、感恩节分享
+	kNdShare2015SendGift = 33,		--活动 国庆分享、感恩节分享
+	kDengchaoEnergy = 34,           -- 邓超送精力
+	kSpringShowOffPassFriend = 35,  --周赛 春季周赛超越好友炫耀
+	kSpringFestival2016 = 36, 		--2016活动关卡 中午
+	kSpringFestival2016_2 = 37,		--2016活动关卡 晚上
+	kIosSalesProp = 38,				--IOS破冰道具促销 
+	kIosSalesHappyCoin = 39,		--IOS破冰风车币促销
+	kAndroidSalesProp = 40,				--ANDROID破冰道具促销 
+	kAndroidSalesHappyCoin = 41,		--ANDROID破冰风车币促销
 }
 
 --由后端发起的推送 不需要在本地加优先级
@@ -32,6 +46,9 @@ LocalNotificationPriority = {
 	[13] = 1,
 	[15] = 41,
 	[16] = 11,
+	[29] = 61,
+	[38] = 71,
+	[39] = 72,
 }
 
 local MAX_NUM_PER_DAY = 2
@@ -346,7 +363,7 @@ function LocalNotificationManager:setMarkRewardNotification(leftDay)
 	local todayTime = getDayStartTimeByTS(os.time())
 
 	if leftDay >= 1 then
-		local tomorrowTS = todayTime + 24 * 3600 + 12 * 3600 + math.random(30 * 60) - 15 * 60
+		local tomorrowTS = todayTime + 24 * 3600 + 12 * 3600 + math.random(60 * 60) - 30 * 60
 		print("setMarkRewardNotification leftDay 1 " .. tomorrowTS)
 		if not self:getNotiByDayAndType(tomorrowTS, LocalNotificationType.kMarkFinalReward) then
 			print("addNotify leftDay 1", tomorrowTS)
@@ -357,7 +374,7 @@ function LocalNotificationManager:setMarkRewardNotification(leftDay)
 	end
 
 	if leftDay >= 2 then
-		local dayAfterTomorrowTS = todayTime + 48 * 3600 + 12 * 3600 + math.random(30 * 60) - 15 * 60
+		local dayAfterTomorrowTS = todayTime + 48 * 3600 + 12 * 3600 + math.random(60 * 60) - 30 * 60
 		print("setMarkRewardNotification leftDay 2 " .. dayAfterTomorrowTS)
 		if not self:getNotiByDayAndType(dayAfterTomorrowTS, LocalNotificationType.kMarkFinalReward) then
 			print("addNotify leftDay 2", dayAfterTomorrowTS)
@@ -407,7 +424,7 @@ function LocalNotificationManager:setWeeklyRaceRewardNotification()
 	local weekDay = getWeekDay()
 	local startTimeOnToday = getDayStartTimeByTS(now)
 	local startTimeOnThisWeek = startTimeOnToday - (weekDay - 1) * 24 * 3600
-	local targetTime = startTimeOnThisWeek + 7 * 24 * 3600 + 10 * 3600 + math.random(30 * 60) - 15 * 60
+	local targetTime = startTimeOnThisWeek + 7 * 24 * 3600 + 10 * 3600 + math.random(60 * 60) - 30 * 60
 	print("setWeeklyRaceRewardNotification " .. targetTime)
 
 	if not self:getNotiByDayAndType(targetTime, LocalNotificationType.kWeeklyRaceReward) then
@@ -430,8 +447,8 @@ function LocalNotificationManager:setTestNotification()
 	local now = os.time()
 	local ts1 = now + 20
 	local ts2 = now + 120
-	-- self:addNotify(LocalNotificationType.kMarkFinalReward, ts1, "test notification 1", "action")
-	--self:addNotify(LocalNotificationType.kWeeklyRaceReward, ts2, "testnotification2", "action")
+	self:addNotify(LocalNotificationType.kMarkFinalReward, ts1, "test notification 1", "action")
+	-- self:addNotify(LocalNotificationType.kWeeklyRaceReward, ts2, "testnotification2", "action")
 
 	-- notificationUtil = luajava.bindClass("com.happyelements.hellolua.share.NotificationUtil")
 	-- notificationUtil:addLocalNotification(15,"test","100:1246546456464")
@@ -462,65 +479,65 @@ local function now()
 	return os.time() + (__g_utcDiffSeconds or 0)
 end
 
-function LocalNotificationManager:sendBeyondFriendsNotification(levelId, friendRankList)
-	local maxNormalLevelId = MetaManager.getInstance():getMaxNormalLevelByLevelArea()
-	local friendUserVOList = FriendManager.getInstance().friends
-	local selfUId = UserManager:getInstance().user.uid
+-- function LocalNotificationManager:sendBeyondFriendsNotification(levelId, friendRankList)
+-- 	local maxNormalLevelId = MetaManager.getInstance():getMaxNormalLevelByLevelArea()
+-- 	local friendUserVOList = FriendManager.getInstance().friends
+-- 	local selfUId = UserManager:getInstance().user.uid
 
-	local friendRankMap = {}
-	local selfRankIndex = nil
-	local selfScore = nil
-	for rank, user in ipairs(friendRankList) do
-		if user.uid == selfUId then 
-			selfRankIndex = rank 
-			selfScore = user.score
-		end
-		friendRankMap[user.uid] = rank
-	end
+-- 	local friendRankMap = {}
+-- 	local selfRankIndex = nil
+-- 	local selfScore = nil
+-- 	for rank, user in ipairs(friendRankList) do
+-- 		if user.uid == selfUId then 
+-- 			selfRankIndex = rank 
+-- 			selfScore = user.score
+-- 		end
+-- 		friendRankMap[user.uid] = rank
+-- 	end
 
-	if passLevelCache and (passLevelCache.levelId ~= levelId or passLevelCache.score ~= selfScore) then
-		passLevelCache = {}
-		return
-	end
-	passLevelCache = {}
-	if not selfRankIndex then return end
+-- 	if passLevelCache and (passLevelCache.levelId ~= levelId or passLevelCache.score ~= selfScore) then
+-- 		passLevelCache = {}
+-- 		return
+-- 	end
+-- 	passLevelCache = {}
+-- 	if not selfRankIndex then return end
 
-	local friendsAtTopLevel = {}
-	for uid, vo in pairs(friendUserVOList) do
-		if vo:getTopLevelId() == maxNormalLevelId then
-			table.insert(friendsAtTopLevel, vo)
-		end
-	end
+-- 	local friendsAtTopLevel = {}
+-- 	for uid, vo in pairs(friendUserVOList) do
+-- 		if vo:getTopLevelId() == maxNormalLevelId then
+-- 			table.insert(friendsAtTopLevel, vo)
+-- 		end
+-- 	end
 
-	if #friendsAtTopLevel > 0 then
-		local result = {}
-		for i, v in ipairs(friendsAtTopLevel) do
-			local friendRank = friendRankMap[v.uid]
-			if friendRank and type(friendRank) == "number" and friendRank > selfRankIndex then
-				table.insert(result, v.uid)
-			end
-		end
+-- 	if #friendsAtTopLevel > 0 then
+-- 		local result = {}
+-- 		for i, v in ipairs(friendsAtTopLevel) do
+-- 			local friendRank = friendRankMap[v.uid]
+-- 			if friendRank and type(friendRank) == "number" and friendRank > selfRankIndex then
+-- 				table.insert(result, v.uid)
+-- 			end
+-- 		end
 
-		if #result > 0 then
-			local msg = Localization:getInstance():getText("push.surpass.text", {num = levelId})
-			local targetTime = now()
-			-- local now = os.time()
-			-- local dayStartTime = getDayStartTimeByTS(now)
-			-- if now > dayStartTime + 10 * 3600 then
-			-- 	targetTime = dayStartTime + 24 * 3600 + 10 * 3600
-			-- else
-			-- 	targetTime = dayStartTime + 10 * 3600
-			-- end
-			local http = PushNotifyHttp.new()
-			http:load(result, msg, LocalNotificationType.kBeyondFriendAtTopLevel, targetTime * 1000)
-		end
-	end
-end
+-- 		if #result > 0 then
+-- 			local msg = Localization:getInstance():getText("push.surpass.text", {num = levelId})
+-- 			local targetTime = now()
+-- 			-- local now = os.time()
+-- 			-- local dayStartTime = getDayStartTimeByTS(now)
+-- 			-- if now > dayStartTime + 10 * 3600 then
+-- 			-- 	targetTime = dayStartTime + 24 * 3600 + 10 * 3600
+-- 			-- else
+-- 			-- 	targetTime = dayStartTime + 10 * 3600
+-- 			-- end
+-- 			local http = PushNotifyHttp.new()
+-- 			http:load(result, msg, LocalNotificationType.kBeyondFriendAtTopLevel, targetTime * 1000)
+-- 		end
+-- 	end
+-- end
 
 function LocalNotificationManager:setLeaveNotification(leaveType)
 	if RecallManager.getInstance():getLevelStayState() then 
 		local todayTime = getDayStartTimeByTS(os.time())
-		local timeDelta = 12 * 3600 + math.random(30 * 60) - 15 * 60
+		local timeDelta = 12 * 3600 + math.random(60 * 60) - 30 * 60
 		local timeForOneDay = 24 * 3600
 		local timeStamp = nil
 		local textToShow = nil
@@ -530,7 +547,7 @@ function LocalNotificationManager:setLeaveNotification(leaveType)
 		if currentStayLevel%15==0 then 
 			local scoreOfLevel = UserManager.getInstance():getUserScore(currentStayLevel)
 			if scoreOfLevel then
-				if scoreOfLevel.star ~= 0 then 
+				if scoreOfLevel.star ~= 0 or JumpLevelManager:getLevelPawnNum(currentStayLevel) > 0 then 
 					stayForLevel = false
 				end
 			end
@@ -625,8 +642,8 @@ function LocalNotificationManager:setLadyBugMissionNotification(startTime, taskN
 	startTime = getDayStartTimeByTS(startTime / 1000)
 	
 	for i = 1, taskNum do
-		local start = startTime + (i - 1) * 86400 + 9 * 3600 + math.random(30 * 60)
-		local finish = startTime + (i - 1) * 86400 + 20 * 3600 + math.random(30 * 60) - 15 * 60
+		local start = startTime + (i - 1) * 86400 + 9 * 3600 + math.random(60 * 60)
+		local finish = startTime + (i - 1) * 86400 + 20 * 3600 + math.random(60 * 60) - 30 * 60
 		if i ~= 1 then
 			if not self:getNotiByDayAndType(start, LocalNotificationType.kLadyBugMissionStart) then
 				self:addNotify(LocalNotificationType.kLadyBugMissionStart, start, 
@@ -653,6 +670,78 @@ function LocalNotificationManager:cancelLadyBugMissionNotificationToday()
 	vo = self:getNotiByDayAndType(now, LocalNotificationType.kLadyBugMissionEnd)
 	if vo then
 		self:deleteNotify(vo)
+		self:flushToStorage()
+	end
+end
+
+function LocalNotificationManager:setIosSalesPromotionNoti(promotionType, notiTime)
+	if type(notiTime) ~= "number" then return end
+
+	if promotionType == IosOneYuanPromotionType.OneYuanFCash then 
+		if not self:getNotiByDayAndType(notiTime, LocalNotificationType.kIosSalesHappyCoin) then
+			self:addNotify(LocalNotificationType.kIosSalesHappyCoin, notiTime, 
+				Localization:getInstance():getText("ios.special.offer.happy.coin.notification"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
+		end
+	else
+		if not self:getNotiByDayAndType(notiTime, LocalNotificationType.kIosSalesProp) then
+			self:addNotify(LocalNotificationType.kIosSalesProp, notiTime, 
+				Localization:getInstance():getText("ios.special.offer.prop.notification"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
+		end
+	end
+end
+
+function LocalNotificationManager:cancelAllIosSalesPromotion()
+	local sameTypeNoti = self:getNotiByType(LocalNotificationType.kIosSalesProp)
+	if #sameTypeNoti > 0 then
+		for i,v in ipairs(sameTypeNoti) do
+			self:deleteNotify(v)
+		end
+		self:flushToStorage()
+	end
+
+	sameTypeNoti = self:getNotiByType(LocalNotificationType.kIosSalesHappyCoin)
+	if #sameTypeNoti > 0 then
+		for i,v in ipairs(sameTypeNoti) do
+			self:deleteNotify(v)
+		end
+		self:flushToStorage()
+	end
+end
+
+function LocalNotificationManager:setAndroidSalesPromotionNoti(promotionType, notiTime)
+	if type(notiTime) ~= "number" then return end
+
+	if promotionType == AndroidSalesPromotionType.GoldSales then 
+		if not self:getNotiByDayAndType(notiTime, LocalNotificationType.kAndroidSalesHappyCoin) then
+			self:addNotify(LocalNotificationType.kAndroidSalesHappyCoin, notiTime, 
+				Localization:getInstance():getText("ios.special.offer.happy.coin.notification"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
+		end
+	else
+		if not self:getNotiByDayAndType(notiTime, LocalNotificationType.kAndroidSalesProp) then
+			self:addNotify(LocalNotificationType.kAndroidSalesProp, notiTime, 
+				Localization:getInstance():getText("ios.special.offer.prop.notification"), 
+				Localization:getInstance():getText("push.prompt.view.details"))
+		end
+	end
+end
+
+function LocalNotificationManager:cancelAllAndroidSalesPromotion()
+	local sameTypeNoti = self:getNotiByType(LocalNotificationType.kAndroidSalesProp)
+	if #sameTypeNoti > 0 then
+		for i,v in ipairs(sameTypeNoti) do
+			self:deleteNotify(v)
+		end
+		self:flushToStorage()
+	end
+
+	sameTypeNoti = self:getNotiByType(LocalNotificationType.kAndroidSalesHappyCoin)
+	if #sameTypeNoti > 0 then
+		for i,v in ipairs(sameTypeNoti) do
+			self:deleteNotify(v)
+		end
 		self:flushToStorage()
 	end
 end

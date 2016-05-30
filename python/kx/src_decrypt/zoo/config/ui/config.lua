@@ -34,12 +34,14 @@ setConfig
 	
 	-- Parallax
 	worldScene_backgroundParallax		= 0.01869,
+	worldScene_backItemParallax		= 1,
 	worldScene_cloudLayer1Parallax		= 0.01585,
 	worldScene_cloudLayer2Parallax		= 0.09738,
 	worldScene_cloudParallax		= 0.19382,
 	--worldScene_
 	-- Tree Layer Parallax = 1
 	worldScene_foregroundParallax		= 1.5,
+	worldScene_frontItemParallax		= 1,
 
 	worldScene_cloudsYInterval		= 1800,
 

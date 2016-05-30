@@ -90,6 +90,13 @@ function Trunks:buildTrunk(...)
 	self.branchRoot = branchRoot
 	self:addChild(branchRoot)
 	
+	--------------2016春节烟花----------------
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		local clickedFirework = ClickedFireworkAnimation:create()
+		self.branchRoot.clickedFirework = clickedFirework
+		self.branchRoot:addChild(clickedFirework)
+	end
+
 	---------------------------------------
 	-- Intermediate Bwtween Root And Trunk
 	-- ----------------------------------
@@ -188,7 +195,7 @@ function Trunks:getPosInfoForOneTrunk(...)
 	local path = CCFileUtils:sharedFileUtils():fullPathForFilename(filePath)    
 	local t, fsize = lua_read_file(path)
 	local simplejson = require("cjson")
-	config = simplejson.decode(t)
+	local config = simplejson.decode(t)
 	assert(config.groups)
 	local flowerPosGroup = config.groups["flowerPos"]
 	assert(flowerPosGroup)

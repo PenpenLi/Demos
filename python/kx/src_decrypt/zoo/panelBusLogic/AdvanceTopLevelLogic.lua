@@ -33,7 +33,11 @@ function AdvanceTopLevelLogic:start(...)
 
 	-- Check if really passed the level
 	local score = UserManager:getInstance():getUserScore(self.levelPassedId)
-	if not score or not score.star or score.star < 1 then return end
+	local jumpPawnNum = JumpLevelManager:getInstance():getLevelPawnNum(self.levelPassedId) 
+	if jumpPawnNum > 0 then   --跳关
+	else
+		if not score or not score.star or score.star < 1 then return end
+	end
 
 	-- -- Check if it's the top level
 	local topLevel = UserManager:getInstance().user:getTopLevelId()

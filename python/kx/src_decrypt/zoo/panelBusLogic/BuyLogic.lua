@@ -126,59 +126,48 @@ function BuyLogic:start(num, successCallback, failCallback, load, price)
 	if price then self.price = price end
 	print("self.price, self.num", self.price, self.num)
 	if not self:energyLimitItem(self.goodsId) and money < self.price * self.num then
-		if self.moneyType == 1 then event.data = 730321		-- 银币不够
-		elseif self.moneyType == 2 then event.data = 730330 end		-- 金币不够
-		if failCallback then failCallback(event) end
+		local errorCode = nil
+		if self.moneyType == 1 then 
+			errorCode = 730321		-- 银币不够
+		elseif self.moneyType == 2 then 
+			errorCode = 730330 
+		end		-- 金币不够
+		if failCallback then failCallback(errorCode) end
 		return
 	end
 
 	local list
 	local function onSuccess(evt)
-		if __WP8 then
-			if list and #list > 0 then
-				UserService:getInstance():clearUsedHttpCache(list)
-			end
-		end
+		evt.target:removeAllEventListeners()
 		self:updatePropCount()
 		if self.moneyType == 1 then
-			DcUtil:logBuyItem(self.goodsId, self.price, self.num, self.user:getCoin(), self.levelId)
+			DcUtil:logSilverCoinBuy(self.goodsId, self.price, self.num, self.user:getCoin(), self.levelId)
 		elseif self.moneyType == 2 then
-			DcUtil:logBuyCashItem(self.goodsId, self.price, self.num, self.user:getCash(), self.levelId)
+			DcUtil:logHappyCoinBuy(self.goodsId, self.price, self.num, self.user:getCash(), self.levelId)
 		end
 		if successCallback then
-			successCallback(evt)
+			successCallback(evt.data)
 		end
 	end
 	local function onFail(evt)
+		evt.target:removeAllEventListeners()
 		if failCallback then
-			failCallback(evt)
+			failCallback(evt.data)
 		end
 	end
 	local function onCancel(evt)
+		evt.target:removeAllEventListeners()
 		if self.cancelCallback then
-			self.cancelCallback(evt)
+			self.cancelCallback()
 		end
 	end
 	if load ~= false then load = true end
-	if __WP8 then
-		ConnectionManager:block()
-		list = UserService:getInstance():getCachedIngameHttpData()
-		local function onCachedResponse(endpoint, resp, err)
-			if err then he_log_warning("onCachedHttpDataResponse data fail, err: " .. err)
-			else he_log_warning("onCachedHttpDataResponse data success") end
-		end
-		for i,element in ipairs(list) do
-			ConnectionManager:sendRequest(element.endpoint, element.body, onCachedResponse)
-		end
-	end
+	
 	local http = BuyHttp.new(load)
 	http:ad(Events.kComplete, onSuccess)
 	http:ad(Events.kCancel, onCancel)
 	http:ad(Events.kError, onFail)
 	http:load(self.goodsId, self.num, self.moneyType, self.targetId)
-	if __WP8 then
-		ConnectionManager:flush()
-	end
 end
 
 function BuyLogic:energyLimitItem(goodsId)

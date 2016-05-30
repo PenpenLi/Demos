@@ -21,6 +21,7 @@ function WorldSceneTrunkInteractionController.onSceneTouchBegan(event, ...)
 	self.touchedLockedCloud = false
 	self.touchedNode = false
 	self.touchedBranch = nil
+	self.touchedFloatIcon = nil
 
 	--local touchedFriendStack = self:getTouchedFriendStack(globalPos)
 	self.touchedFriendStack = self:getTouchedFriendStack(globalPos)
@@ -36,6 +37,7 @@ function WorldSceneTrunkInteractionController.onSceneTouchBegan(event, ...)
 	local touchedLockedCloud = self:getTouchedLockedCloud(globalPos)
 	local touchedNode = self:getTouchedNode(globalPos)
 	local touchedBranch = self:getTouchedBranch(globalPos)
+	local touchedFloatIcon = self:getTouchedFloatIcon(globalPos)
 
 	if touchedLockedCloud then
 		self.touchState = WorldSceneScrollerTouchState.SOME_THING_ABOVE_SCROLLER_TOUCHED
@@ -46,6 +48,10 @@ function WorldSceneTrunkInteractionController.onSceneTouchBegan(event, ...)
 	elseif touchedBranch then
 		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
 		self.touchedBranch = touchedBranch
+		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED))
+	elseif touchedFloatIcon then
+		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
+		self.touchedFloatIcon = touchedFloatIcon
 		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED))
 	else
 		self.touchState = WorldSceneScrollerTouchState.VERTICAL_SCROLLER_TOUCHED
@@ -106,6 +112,16 @@ function WorldSceneTrunkInteractionController.onSceneTouchMoved(event, ...)
 				horizontalDistance = math.max(-self:getHorizontalScrollRange(), horizontalDistance)
 			end
 			self:horizontalScrollTo(horizontalDistance)
+		elseif self.touchedFloatIcon then
+			local horizontalDistance = globalPos.x - self.initialTouchPos.x
+			if self.touchedFloatIcon:getFloatType() == FloatIconType.kLeft then
+				horizontalDistance = math.max(0, horizontalDistance)
+				horizontalDistance = math.min(self:getHorizontalScrollRange(), horizontalDistance)
+			elseif self.touchedFloatIcon:getFloatType() == FloatIconType.kRight then
+				horizontalDistance = math.min(0, horizontalDistance)
+				horizontalDistance = math.max(-self:getHorizontalScrollRange(), horizontalDistance)
+			end
+			self:horizontalScrollTo(horizontalDistance)
 		end
 	end
 end
@@ -135,6 +151,8 @@ function WorldSceneTrunkInteractionController.onSceneTouchEnded(event, ...)
 	elseif self.touchState == WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED then
 		if self.touchedBranch then
 			self.touchedBranch:dispatchEvent(Event.new(DisplayEvents.kTouchTap))
+		elseif self.touchedFloatIcon then
+			self.touchedFloatIcon:dispatchEvent(Event.new(DisplayEvents.kTouchTap))
 		end
 	end
 end

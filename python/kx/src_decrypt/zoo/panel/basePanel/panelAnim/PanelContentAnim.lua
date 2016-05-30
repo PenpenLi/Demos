@@ -46,7 +46,9 @@ function PanelContentAnim:init(panelToControl, ...)
 	-- Get Data About UI
 	-- ------------------
 	self.areaAboveSize	= self.clippingAreaAbove:getGroupBounds().size
+	self.areaAboveSize	= {width = self.areaAboveSize.width, height = self.areaAboveSize.height}
 	self.areaBelowSize	= self.clippingAreaBelow:getGroupBounds().size
+	self.areaBelowSize	= {width = self.areaBelowSize.width, height = self.areaBelowSize.height}
 
 	--self.greenBarSize	= self.greenBar:getGroupBounds().size
 

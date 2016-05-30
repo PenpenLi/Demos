@@ -31,10 +31,30 @@ function HeadImageLoader:initialize(userId, headImageUrl, onImageLoadFinishCallb
 	        container:setAnchorPoint(ccp(0, 0))
 	        container:setContentSize(CCSizeMake(100, 100))
 	        self:createHeadWithSprite(container)
+	        self.headSprite = sprite
+	        self.headPath = data["realPath"]
+	        self.isSns = true
 	    	if onImageLoadFinishCallback then onImageLoadFinishCallback(self) end
 	    end
 	    ResUtils:getResFromUrls({self.headImageUrl},onCallBack)
+	elseif string.find(self.headImageUrl, "head") ~= nil then
+		if self.isDisposed then return end
+        local sprite = Sprite:create( self.headImageUrl )
+        if sprite.refCocosObj then
+	        local size = sprite:getContentSize()
+	        sprite:setScaleX(100 / size.width)
+	        sprite:setScaleY(100 / size.height)
+        end
+        local container = Sprite:createEmpty()
+        container:addChild(sprite)
+        container:setAnchorPoint(ccp(0, 0))
+        container:setContentSize(CCSizeMake(100, 100))
+        self:createHeadWithSprite(container)
+        self.headSprite = sprite
+        self.headPath = self.headImageUrl
+        if onImageLoadFinishCallback then onImageLoadFinishCallback(self) end
 	else
+		self.headPath = self.headImageUrl
 		imageID = self.headImageUrl
 		local kMaxHeadImages = UserManager.getInstance().kMaxHeadImages
 		local headImage = tonumber(imageID)
@@ -52,7 +72,120 @@ function HeadImageLoader:createHeadWithSprite(sprite)
 	if self.isDisposed then return end
 	local contentSize = sprite:getContentSize()
 	self:addChild(sprite)
+	self.headSprite = sprite
 	self:setContentSize(CCSizeMake(contentSize.width, contentSize.height))
+end
+
+function HeadImageLoader:getHeadTextureAndRect()
+	return self.headSprite:getTexture(), self.headSprite:getTextureRect()
+end
+
+--take head photo
+HeadPhotoTaker = {}
+
+local win32_test_index = 0
+
+local function GetWin32Path()
+	win32_test_index = win32_test_index + 1
+	return "F:\\picTest\\"..win32_test_index..".png"
+end
+
+function HeadPhotoTaker:takePicture(cb)
+	local function _takePicture()
+		if __ANDROID then
+			self:androidTakePicture(cb)
+		elseif __IOS then
+			self:iosTakePicture(cb)
+		elseif __WIN32 then
+			cb.onSuccess(GetWin32Path())
+		end
+	end
+	
+	pcall(_takePicture)
+end
+
+function HeadPhotoTaker:iosTakePicture( cb )
+	waxClass{"PhotoCallbackImpl",NSObject,protocols={"PhotoCallback"}}
+	function PhotoCallbackImpl:onSuccess(path)
+		if cb then cb.onSuccess(path) end
+	end
+
+	function PhotoCallbackImpl:onError_msg(code, errMsg)
+		if cb then cb.onError(code, errMsg) end
+	end
+
+	function PhotoCallbackImpl:onCancel()
+		if cb then cb.onCancel() end
+	end
+
+	PhotoController:takePicture(PhotoCallbackImpl:init())
+end
+
+function HeadPhotoTaker:androidTakePicture( cb )
+	local photoManager = luajava.bindClass("com.happyelements.android.photo.PhotoManager"):get()
+    
+    local callback = luajava.createProxy("com.happyelements.android.InvokeCallback", {
+            onSuccess = function (result)
+                if cb then cb.onSuccess(result) end
+            end,
+            onError = function (code, errMsg)
+               if cb then cb.onError(code, errMsg) end
+            end,
+            onCancel = function ()
+               if cb then cb.onCancel() end
+            end
+        });
+
+    photoManager:takePicture(callback)
+end
+
+function HeadPhotoTaker:selectPicture( cb )
+	local function _selectPicture()
+		if __ANDROID then
+			self:androidSelectPicture(cb)
+		elseif __IOS then
+			self:iosSelectPicture(cb)
+		elseif __WIN32 then
+			cb.onSuccess(GetWin32Path())
+		end
+	end
+	
+	pcall(_selectPicture)
+end
+
+function HeadPhotoTaker:iosSelectPicture( cb )
+	waxClass{"PhotoCallbackImpl",NSObject,protocols={"PhotoCallback"}}
+	function PhotoCallbackImpl:onSuccess(path)
+		if cb then cb.onSuccess(path) end
+	end
+
+	function PhotoCallbackImpl:onError_msg(code, errMsg)
+		if cb then cb.onError(code, errMsg) end
+	end
+
+	function PhotoCallbackImpl:onCancel()
+		if cb then cb.onCancel() end
+	end
+
+	PhotoController:selectPicture(PhotoCallbackImpl:init())
+end
+
+function HeadPhotoTaker:androidSelectPicture( cb )
+	local photoManager = luajava.bindClass("com.happyelements.android.photo.PhotoManager"):get()
+    
+    local callback = luajava.createProxy("com.happyelements.android.InvokeCallback", {
+            onSuccess = function (result)
+                if cb then cb.onSuccess(result) end
+            end,
+            onError = function (code, errMsg)
+               if cb then cb.onError(code, errMsg) end
+            end,
+            onCancel = function ()
+               if cb then cb.onCancel() end
+            end
+        });
+
+    photoManager:selectPicture(callback)
 end
 
 -- function HeadImageLoader:createFrameImage( imageID )

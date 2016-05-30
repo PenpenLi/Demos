@@ -15,12 +15,13 @@ require "zoo.data.WeeklyRaceManager"
 assert(not PassLevelLogic)
 PassLevelLogic = class()
 
-function PassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, onSuccessCallback, ...)
+function PassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, costMove, onSuccessCallback, ...)
 	assert(type(levelId)		== "number")
 	assert(type(score)		== "number")
 	assert(type(star)		== "number")
 	assert(type(stageTime)		== "number")
 	assert(type(coin)		== "number")
+	assert(type(costMove)		== "number")
 	-- assert(type(onSuccessCallback)	== "function")
 	assert(#{...} == 0)
 
@@ -31,6 +32,7 @@ function PassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount,
 	self.coin	= coin
 	self.targetCount = targetCount
 	self.opLog = opLog
+	self.costMove = costMove
 
 	self.levelType = levelType
 
@@ -73,7 +75,7 @@ function PassLevelLogic:start(...)
 		elseif self.levelType == GameLevelType.kRabbitWeekly then
 			-- RabbitWeeklyManager:sharedInstance():onPassLevel(self.targetCount, self.levelId)
 		elseif self.levelType == GameLevelType.kSummerWeekly then
-			SummerWeeklyMatchManager:getInstance():onPassLevel(self.levelId, self.targetCount)
+			SeasonWeeklyRaceManager:getInstance():onPassLevel(self.levelId, self.targetCount)
 		end
 
 		--------------
@@ -82,9 +84,16 @@ function PassLevelLogic:start(...)
 		if self.onSuccessCallback then
 			self.onSuccessCallback(self.levelId, self.score, rewardItems)
 		end
+
 		SyncManager:getInstance():sync()
+
+		--触发通过版本最高关卡
+		if self.levelId == MetaManager:getInstance():getMaxNormalLevelByLevelArea()
+		and UserManager:getInstance().user:getTopLevelId() >= 60 then
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(MessageCenterPushEvents.kPassMaxNormalLevel))
+		end
 		
-		ShareManager:onPassLevel(self.levelId, self.score, self.levelType)
+		ShareManager:onPassLevel(self.levelId, self.score, self.levelType, self.star)
 
 		LocalNotificationManager.getInstance():setPassLevelFlag(self.levelId, self.star, self.score)
 	end
@@ -103,6 +112,7 @@ function PassLevelLogic:sendPassLevelMessage(onSuccessCallback, ...)
 	local coin	= self.coin
 	local targetCount = self.targetCount
 	local opLog = self.opLog
+	local costMove = self.costMove or 0
 
 	local function onPassLevelMsgSuccess(event)
 		assert(event)
@@ -126,19 +136,31 @@ function PassLevelLogic:sendPassLevelMessage(onSuccessCallback, ...)
 	local http = PassLevelHttp.new()
 	http:addEventListener(Events.kComplete, onPassLevelMsgSuccess)
 	http:addEventListener(Events.kError, onPassLevelMsgFailed)
-	http:load(levelId, score, star, stageTime, coin, targetCount, opLog, self.levelType)
+	http:load(levelId, score, star, stageTime, coin, targetCount, opLog, self.levelType, costMove)
 end
 
-function PassLevelLogic:create(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, onSuccessCallback, ...)
+function PassLevelLogic:create(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, costMove, onSuccessCallback, ...)
 	assert(type(levelId)	== "number")
 	assert(type(score)	== "number")
 	assert(type(star)	== "number")
 	assert(type(stageTime)	== "number")
 	assert(type(coin)	== "number")
+	assert(type(costMove)	== "number")
 	-- assert(type(onSuccessCallback)	== "function")
 	assert(#{...} == 0)
 
 	local newPassLevelLogic = PassLevelLogic.new()
-	newPassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, onSuccessCallback)
+	newPassLevelLogic:init(levelId, score, star, stageTime, coin, targetCount, opLog, levelType, costMove, onSuccessCallback)
 	return newPassLevelLogic
+end
+
+function PassLevelLogic:sendPassLevelMessageOnly(levelId, levelType, stageTime, costMove)
+	local http = PassLevelHttp.new()
+	local function onPassLevelMsgSuccess(event)
+	end
+	local function onPassLevelMsgFailed(event)
+	end
+	http:addEventListener(Events.kComplete, onPassLevelMsgSuccess)
+	http:addEventListener(Events.kError, onPassLevelMsgFailed)
+	http:load(levelId, 0, 0, stageTime, 0, 0, nil, levelType, costMove)
 end

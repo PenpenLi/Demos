@@ -48,7 +48,7 @@ function NetworkCheckBean:check(successCallback, failCallback)
 						else
 							PaymentNetworkCheck.getInstance():setIsChecking(false)
 							PaymentNetworkCheck.getInstance():setNetworkState(true)
-							animation:removeFromParentAndCleanup(true)
+							PopoutManager:sharedInstance():remove(animation)
 							if successCallback then 
 								successCallback()
 							end						
@@ -59,7 +59,7 @@ function NetworkCheckBean:check(successCallback, failCallback)
 						else
 							PaymentNetworkCheck.getInstance():setIsChecking(false)
 							PaymentNetworkCheck.getInstance():setNetworkState(false)
-							animation:removeFromParentAndCleanup(true)
+							PopoutManager:sharedInstance():remove(animation)
 							if failCallback then 
 								failCallback()
 							end			 		
@@ -72,15 +72,18 @@ function NetworkCheckBean:check(successCallback, failCallback)
 
 	local function onCloseButtonTap()
 		self.forceShutDown = true
-        animation:removeFromParentAndCleanup(true)
+		PaymentNetworkCheck.getInstance():setIsChecking(false)
+        PopoutManager:sharedInstance():remove(animation)
 		if failCallback then 
 			failCallback()
 		end		
     end
 
 	local scene = Director:sharedDirector():getRunningScene()
-    animation = CountDownAnimation:createNetworkAnimation(scene, onCloseButtonTap)
-    -- scene:addChild(animation)
+    animation = CountDownAnimation:createNetworkAnimationInHttp(scene, onCloseButtonTap)
+    animation.onKeyBackClicked = function(self)
+		onCloseButtonTap()
+	end
 
 	requestList[1]()
 end
