@@ -1,0 +1,29 @@
+<!-- 
+sta_insectBuff:
+
+
+id:
+picture:图片名称
+descr:描述
+type:作用类型
+numerical:作用数值
+rare:稀有度
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_insectBuff id="1" picture="0" descr="遇见常见精灵机率增加30%" type="1" numerical="1.3" rare="0"/>
+<sta_insectBuff id="2" picture="0" descr="遇见稀有精灵机率增加30%" type="1" numerical="1.3" rare="2"/>
+<sta_insectBuff id="3" picture="0" descr="遇见较稀有精灵机率增加30%" type="1" numerical="1.3" rare="1"/>
+<sta_insectBuff id="4" picture="0" descr="遇见史诗精灵机率增加30%" type="1" numerical="1.3" rare="3"/>
+<sta_insectBuff id="5" picture="0" descr="遇见传说精灵机率增加30%" type="1" numerical="1.3" rare="4"/>
+<sta_insectBuff id="6" picture="0" descr="不遇见常见精灵" type="2" numerical="0" rare="0"/>
+<sta_insectBuff id="7" picture="0" descr="不遇见稀有精灵" type="2" numerical="0" rare="2"/>
+<sta_insectBuff id="8" picture="0" descr="不遇见较稀有精灵" type="2" numerical="0" rare="1"/>
+<sta_insectBuff id="9" picture="0" descr="不遇见史诗精灵" type="2" numerical="0" rare="3"/>
+<sta_insectBuff id="10" picture="0" descr="不遇见传说精灵" type="2" numerical="0" rare="4"/>
+<sta_insectBuff id="11" picture="0" descr="遇见常见精灵机率增加80%" type="1" numerical="1.8" rare="0"/>
+<sta_insectBuff id="12" picture="0" descr="遇见稀有精灵机率增加80%" type="1" numerical="1.8" rare="2"/>
+<sta_insectBuff id="13" picture="0" descr="遇见较稀有精灵机率增加80%" type="1" numerical="1.8" rare="1"/>
+<sta_insectBuff id="14" picture="0" descr="遇见史诗精灵机率增加80%" type="1" numerical="1.8" rare="3"/>
+<sta_insectBuff id="15" picture="0" descr="遇见传说精灵机率增加80%" type="1" numerical="1.8" rare="4"/>
+</root>

@@ -1,0 +1,24 @@
+<!-- 
+sta_megaConsumption:
+
+
+id:mega突破数
+pokeLv:要求等级
+gold:所需金币
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_megaConsumption id="1" pokeLv="1" gold="1000000"/>
+<sta_megaConsumption id="2" pokeLv="8" gold="2800000"/>
+<sta_megaConsumption id="3" pokeLv="15" gold="5240000"/>
+<sta_megaConsumption id="4" pokeLv="22" gold="8120000"/>
+<sta_megaConsumption id="5" pokeLv="29" gold="11400000"/>
+<sta_megaConsumption id="6" pokeLv="36" gold="15000000"/>
+<sta_megaConsumption id="7" pokeLv="43" gold="19000000"/>
+<sta_megaConsumption id="8" pokeLv="50" gold="23200000"/>
+<sta_megaConsumption id="9" pokeLv="57" gold="27800000"/>
+<sta_megaConsumption id="10" pokeLv="64" gold="32600000"/>
+<sta_megaConsumption id="11" pokeLv="71" gold="37700000"/>
+<sta_megaConsumption id="12" pokeLv="78" gold="43100000"/>
+<sta_megaConsumption id="13" pokeLv="85" gold="48700000"/>
+</root>

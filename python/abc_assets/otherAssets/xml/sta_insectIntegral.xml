@@ -1,0 +1,18 @@
+<!-- 
+sta_insectIntegral:
+
+
+id:
+interal:积分数量
+rewardJNS:对应积分的奖励
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_insectIntegral id="1" interal="6000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:102000,&apos;num&apos;:2},{&apos;pId&apos;:105000,&apos;num&apos;:2}],&apos;diamond&apos;:{&apos;num&apos;:50},&apos;silver&apos;:{&apos;num&apos;:20000}}"/>
+<sta_insectIntegral id="2" interal="40000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:5},{&apos;pId&apos;:110000,&apos;num&apos;:2}],&apos;silver&apos;:{&apos;num&apos;:30000},&apos;diamond&apos;:{&apos;num&apos;:70}}"/>
+<sta_insectIntegral id="3" interal="90000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:3}],&apos;diamond&apos;:{&apos;num&apos;:90},&apos;silver&apos;:{&apos;num&apos;:40000}}"/>
+<sta_insectIntegral id="4" interal="120000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}],&apos;diamond&apos;:{&apos;num&apos;:120},&apos;silver&apos;:{&apos;num&apos;:50000}}"/>
+<sta_insectIntegral id="5" interal="150000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:2},{&apos;pId&apos;:110000,&apos;num&apos;:2}],&apos;diamond&apos;:{&apos;num&apos;:150},&apos;silver&apos;:{&apos;num&apos;:60000}}"/>
+<sta_insectIntegral id="6" interal="180000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:50}],&apos;diamond&apos;:{&apos;num&apos;:180},&apos;silver&apos;:{&apos;num&apos;:80000}}"/>
+<sta_insectIntegral id="7" interal="210000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:112000,&apos;num&apos;:2},{&apos;pId&apos;:748,&apos;num&apos;:2}],&apos;diamond&apos;:{&apos;num&apos;:200},&apos;silver&apos;:{&apos;num&apos;:100000}}"/>
+</root>

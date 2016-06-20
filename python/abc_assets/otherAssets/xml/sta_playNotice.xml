@@ -1,0 +1,39 @@
+<!-- 
+sta_playNotice:
+
+
+id:id
+playInfo:玩法信息
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_playNotice id="1" playInfo="注意您的体力，体力消耗完了您就不能进行冒险和战斗了"/>
+<sta_playNotice id="2" playInfo="精灵的属性会影响战斗的效果，例如火系对战草系会有明显的伤害加成哦"/>
+<sta_playNotice id="3" playInfo="精灵中心可以为您治疗精灵的伤势。"/>
+<sta_playNotice id="4" playInfo="野生的精灵会袭击您，尽量带上足够的精灵进行冒险"/>
+<sta_playNotice id="5" playInfo="部分特殊的地区有稀有的精灵等待着您捕抓哦~"/>
+<sta_playNotice id="6" playInfo="某些地图需要特定的条件才能开启，例如要让精灵学习一字斩技能"/>
+<sta_playNotice id="7" playInfo="受伤的精灵更容易被捕抓到哦~"/>
+<sta_playNotice id="8" playInfo="利用特定的精灵球可以提高某类精灵捕抓的成功率哦"/>
+<sta_playNotice id="9" playInfo="合理的使用技能可以方便您提前结束战斗"/>
+<sta_playNotice id="10" playInfo="饲养屋可以提升精灵的等级，将性别不同的精灵放进去可以获得小精灵哦"/>
+<sta_playNotice id="11" playInfo="游戏总共有8个道馆，打败了道馆馆主之后才能到达下一个城市哦"/>
+<sta_playNotice id="12" playInfo="您最多只能带6只精灵进行冒险/战斗，合理的选择您的精灵组建您的精灵战队吧"/>
+<sta_playNotice id="13" playInfo="小精灵扭蛋机可以让您抽取精灵，当您身上的空间不足时，精灵会自动存到您的家中哦~"/>
+<sta_playNotice id="14" playInfo="在打倒所有的馆长之后，您将面对联盟四天王，努力打败他们成为冠军训练师吧"/>
+<sta_playNotice id="15" playInfo="商店可以购买你需要的药品，在战斗中使用可以使精灵持续战斗"/>
+<sta_playNotice id="16" playInfo="捕抓精灵之后，精灵图鉴将会记录精灵的信息，收服所有的精灵填满你的精灵图鉴吧"/>
+<sta_playNotice id="17" playInfo="完成每日任务可以获得大量经验和金币哦"/>
+<sta_playNotice id="18" playInfo="您可以在世界展示您的精灵，让其他人仰望您的精灵吧"/>
+<sta_playNotice id="19" playInfo="每个精灵的属性都不相同，挑选属性最好的进行培养吧"/>
+<sta_playNotice id="20" playInfo="在王者之路上以前的敌人将会再次出现，他们的目的就是阻止你登上冠军的宝座！"/>
+<sta_playNotice id="21" playInfo="精灵的技能是有限制的,当技能的PP值用完的时候，精灵就不能使用技能了。"/>
+<sta_playNotice id="22" playInfo="部分精灵的进化需要消耗数量不等的各系进化石哦~"/>
+<sta_playNotice id="23" playInfo="战斗中要留意精灵的状态，如果进入负面状态要及时解除。"/>
+<sta_playNotice id="24" playInfo="一些特殊的精灵只有在特定的时间才会出现哦~"/>
+<sta_playNotice id="25" playInfo="城市周边的特殊地点里可能会遇到稀有的精灵。"/>
+<sta_playNotice id="26" playInfo="进行冒险之前记得带上足够的精灵球，稀有的精灵不会等着你去捕抓哦。"/>
+<sta_playNotice id="27" playInfo="您可以在商店中买到精灵技能的学习机，以供您的精灵学习更强的技能。"/>
+<sta_playNotice id="28" playInfo="精灵最多可以拥有四个技能，想要学习其他技能先要选择忘记一个技能。"/>
+<sta_playNotice id="29" playInfo="战斗不是一帆风顺的，背包带上的药品可以让你更的战斗更持久。"/>
+</root>

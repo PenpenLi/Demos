@@ -1,0 +1,23 @@
+<!-- 
+sta_specialMails:
+
+
+id:编号
+title:标题
+desc:内容描述
+sender:邮件发送者
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_specialMails id="10001" title="竞技场每日排名奖励" desc="你在竞技场的优异表现令大家都十分敬佩，截至今天21：00，你的竞技场排名为X名，精灵联盟决定给予你以下奖励：" sender="联盟大赛军需官"/>
+<sta_specialMails id="10002" title="竞技场历史最高排名奖励" desc="你刚刚的完美表现又一次刷新了你在竞技场里的最好成绩！现在你的最高排名是X名，比之前提升了Y名。精灵联盟大赛授予你以下奖励：" sender="联盟大赛军需官"/>
+<sta_specialMails id="10003" title="挑战赛每周排名奖励" desc="联盟挑战赛每周排名奖励发放！截至今天22：00，你的挑战积分排名为X名，挑战联盟决定给予你以下奖励：" sender="PVP挑战赛军需官"/>
+<sta_specialMails id="10004" title="恭喜你成功加入公会" desc="你的公会申请已通过[X]公会的审核！还不赶快去查看一下！大伙都在等着你呢！" sender="公会管理员"/>
+<sta_specialMails id="10005" title="公会申请信息" desc="很抱歉！你的入会申请被[X]公会拒绝，请不要灰心哦，可以尝试一下申请其他公会哦！" sender="公会管理员"/>
+<sta_specialMails id="10006" title="拍卖所信息" desc="亲爱的玩家，恭喜您在拍卖所以高价竟得X，请签收！" sender="拍卖所负责人"/>
+<sta_specialMails id="10007" title="月卡奖励领取" desc="亲爱的玩家，这是精灵联盟给予月卡玩家的每日奖励！请签收！你的月卡每日奖励还剩下X天哦！" sender="月卡管理员"/>
+<sta_specialMails id="10008" title="首充奖励" desc="敬爱的玩家，感谢玩家对口袋妖怪复刻的大力支持！以下是价值2999的首充奖励！请签收！！" sender="充值管理员"/>
+<sta_specialMails id="10009" title="删档内测钻石返利" desc="亲爱的内测玩家，感谢您一直对《口袋妖怪：复刻》的支持，以下是删档内测时的钻石充值返利，再次感谢您的支持，我们会更加努力，把游戏做得更好！" sender="复刻运营团队"/>
+<sta_specialMails id="10010" title="限时神兽活动奖励" desc="亲爱的玩家，恭喜您在限时神兽活动中取第X名的优秀成绩！以下是您的排名奖励哦！请签收！" sender="活动管理员"/>
+<sta_specialMails id="10011" title="充值翻倍" desc="亲爱的玩家您好，根据您的充值，现赠送钻石如下，祝您游戏愉快~" sender="充值管理员"/>
+</root>

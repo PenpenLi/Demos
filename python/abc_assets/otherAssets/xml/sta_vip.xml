@@ -1,0 +1,39 @@
+<!-- 
+sta_vip:
+
+
+id:
+vipLv:VIP等级
+diamond:充值钻石
+sweep:每天领取扫荡次数
+buyAcFr:每天可购买体力次数
+goldFinger:每天可使用金手指次数
+alliance:每天精灵联盟大赛次数
+kingRoad:每天挑战王者之路的次数
+pmCenter:每天精灵医院免费次数
+flash:孵化出闪光精灵概率加成
+friendLimit:好友上限
+freeSay:免费聊天次数
+locked:解锁功能
+npcVenture:每天重置特殊npc挑战次数的次数
+skill:购买技能次数
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_vip id="0" vipLv="0" diamond="0" sweep="20" buyAcFr="2" goldFinger="5" alliance="5" kingRoad="1" pmCenter="8" flash="0" friendLimit="20" freeSay="10" locked="0" npcVenture="1" skill="1"/>
+<sta_vip id="1" vipLv="1" diamond="10" sweep="30" buyAcFr="2" goldFinger="5" alliance="5" kingRoad="1" pmCenter="11" flash="0" friendLimit="25" freeSay="10" locked="1" npcVenture="2" skill="2"/>
+<sta_vip id="2" vipLv="2" diamond="100" sweep="40" buyAcFr="3" goldFinger="20" alliance="5" kingRoad="1" pmCenter="14" flash="0" friendLimit="30" freeSay="10" locked="2" npcVenture="2" skill="3"/>
+<sta_vip id="3" vipLv="3" diamond="300" sweep="50" buyAcFr="4" goldFinger="30" alliance="5" kingRoad="1" pmCenter="17" flash="0" friendLimit="35" freeSay="10" locked="3" npcVenture="2" skill="4"/>
+<sta_vip id="4" vipLv="4" diamond="500" sweep="60" buyAcFr="5" goldFinger="40" alliance="5" kingRoad="1" pmCenter="20" flash="0" friendLimit="40" freeSay="10" locked="4" npcVenture="2" skill="5"/>
+<sta_vip id="5" vipLv="5" diamond="1000" sweep="70" buyAcFr="6" goldFinger="50" alliance="5" kingRoad="1" pmCenter="23" flash="0" friendLimit="45" freeSay="10" locked="0" npcVenture="3" skill="6"/>
+<sta_vip id="6" vipLv="6" diamond="2000" sweep="80" buyAcFr="7" goldFinger="60" alliance="5" kingRoad="1" pmCenter="26" flash="1" friendLimit="50" freeSay="10" locked="0" npcVenture="3" skill="7"/>
+<sta_vip id="7" vipLv="7" diamond="3000" sweep="90" buyAcFr="8" goldFinger="70" alliance="5" kingRoad="1" pmCenter="29" flash="1" friendLimit="55" freeSay="10" locked="0" npcVenture="3" skill="8"/>
+<sta_vip id="8" vipLv="8" diamond="5000" sweep="100" buyAcFr="9" goldFinger="80" alliance="5" kingRoad="1" pmCenter="32" flash="1" friendLimit="60" freeSay="10" locked="0" npcVenture="3" skill="9"/>
+<sta_vip id="9" vipLv="9" diamond="7000" sweep="110" buyAcFr="10" goldFinger="90" alliance="5" kingRoad="1" pmCenter="35" flash="2" friendLimit="65" freeSay="10" locked="0" npcVenture="3" skill="10"/>
+<sta_vip id="10" vipLv="10" diamond="10000" sweep="120" buyAcFr="11" goldFinger="100" alliance="5" kingRoad="2" pmCenter="38" flash="2" friendLimit="70" freeSay="10" locked="0" npcVenture="3" skill="10"/>
+<sta_vip id="11" vipLv="11" diamond="15000" sweep="130" buyAcFr="12" goldFinger="120" alliance="5" kingRoad="2" pmCenter="41" flash="3" friendLimit="75" freeSay="10" locked="0" npcVenture="4" skill="10"/>
+<sta_vip id="12" vipLv="12" diamond="20000" sweep="140" buyAcFr="13" goldFinger="150" alliance="5" kingRoad="2" pmCenter="44" flash="3" friendLimit="80" freeSay="10" locked="0" npcVenture="4" skill="10"/>
+<sta_vip id="13" vipLv="13" diamond="40000" sweep="150" buyAcFr="14" goldFinger="200" alliance="5" kingRoad="2" pmCenter="47" flash="3" friendLimit="85" freeSay="10" locked="0" npcVenture="4" skill="10"/>
+<sta_vip id="14" vipLv="14" diamond="80000" sweep="160" buyAcFr="15" goldFinger="250" alliance="5" kingRoad="2" pmCenter="50" flash="4" friendLimit="90" freeSay="10" locked="0" npcVenture="4" skill="10"/>
+<sta_vip id="15" vipLv="15" diamond="150000" sweep="170" buyAcFr="16" goldFinger="300" alliance="5" kingRoad="2" pmCenter="53" flash="4" friendLimit="95" freeSay="10" locked="0" npcVenture="4" skill="10"/>
+</root>

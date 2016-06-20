@@ -1,0 +1,59 @@
+<!-- 
+sta_smallNode:
+
+
+id:小地图节点id
+name:节点名称
+openCondJNS:开启条件toml
+endNode:城市结束节点 0:不是  1:是
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_smallNode id="1" name="1号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="2" name="2号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="3" name="尼比市道馆" openCondJNS="" endNode="1"/>
+<sta_smallNode id="4" name="3号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="5" name="4号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="6" name="华蓝市道馆" openCondJNS="" endNode="1"/>
+<sta_smallNode id="7" name="18号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="8" name="华蓝洞" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:72}" endNode="1"/>
+<sta_smallNode id="9" name="5号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="10" name="6号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="11" name="枯叶市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:20}" endNode="1"/>
+<sta_smallNode id="12" name="7号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="13" name="港口" openCondJNS="" endNode="0"/>
+<sta_smallNode id="14" name="紫苑镇" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:25}" endNode="1"/>
+<sta_smallNode id="15" name="8号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="16" name="无人发电所" openCondJNS="{&apos;eventType&apos;:1,&apos;skillId&apos;:148}" endNode="1"/>
+<sta_smallNode id="17" name="小精灵塔" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:26}" endNode="0"/>
+<sta_smallNode id="18" name="9号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="19" name="单车道" openCondJNS="" endNode="0"/>
+<sta_smallNode id="20" name="彩虹市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:35}" endNode="1"/>
+<sta_smallNode id="21" name="火箭队地下基地" openCondJNS="" endNode="0"/>
+<sta_smallNode id="22" name="10号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="23" name="金黄市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:39}" endNode="1"/>
+<sta_smallNode id="24" name="11号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="25" name="浅红市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:46}" endNode="1"/>
+<sta_smallNode id="26" name="12号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="27" name="13号航道" openCondJNS="" endNode="0"/>
+<sta_smallNode id="28" name="红莲岛道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:52}" endNode="1"/>
+<sta_smallNode id="29" name="14号航道" openCondJNS="" endNode="0"/>
+<sta_smallNode id="30" name="双子岛" openCondJNS="{&apos;eventType&apos;:1,&apos;skillId&apos;:15}" endNode="1"/>
+<sta_smallNode id="31" name="15号航道" openCondJNS="" endNode="0"/>
+<sta_smallNode id="32" name="16号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="33" name="常磐市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:58}" endNode="1"/>
+<sta_smallNode id="34" name="17号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="35" name="冠军之路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="36" name="石英高原" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:65}" endNode="1"/>
+<sta_smallNode id="37" name="真新路" openCondJNS="" endNode="1"/>
+<sta_smallNode id="38" name="19号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="39" name="14号航道2" openCondJNS="" endNode="0"/>
+<sta_smallNode id="40" name="若叶镇" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:70}" endNode="0"/>
+<sta_smallNode id="41" name="29号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="42" name="46号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="43" name="暗黑洞穴" openCondJNS="" endNode="1"/>
+<sta_smallNode id="44" name="29号路2" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:75}" endNode="0"/>
+<sta_smallNode id="45" name="吉野市" openCondJNS="" endNode="0"/>
+<sta_smallNode id="46" name="29号水路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="47" name="30号路" openCondJNS="" endNode="0"/>
+</root>

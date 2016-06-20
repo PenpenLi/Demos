@@ -1,0 +1,627 @@
+{
+	"otherAssets": [
+	{
+		"assetsName": "activities",
+		"assetsType": "1",
+		"assetsSever": "http://update.mlwed.com/updatefile/1.3.7activities",
+		"assetsFile": "assets/otherAssets/activities",
+		"assetsVersion": "1.3.7",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "cityScene",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/cityScene",
+		"assetsFile": "assets/otherAssets/cityScene",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfBack",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfBack",
+		"assetsFile": "assets/otherAssets/elfBack",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfFront",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfFront",
+		"assetsFile": "assets/otherAssets/elfFront",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "fightScene",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/fightScene",
+		"assetsFile": "assets/otherAssets/fightScene",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "loginOther",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/loginOther",
+		"assetsFile": "assets/otherAssets/loginOther",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "NPCImage",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/NPCImage",
+		"assetsFile": "assets/otherAssets/NPCImage",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "music",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/music",
+		"assetsFile": "assets/otherAssets/music",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "pageLoadingBgs",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/pageLoadingBgs",
+		"assetsFile": "assets/otherAssets/pageLoadingBgs",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "themes",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/themes",
+		"assetsFile": "assets/otherAssets/themes",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "xml",
+		"assetsType": "1",
+		"assetsSever": "http://update.mlwed.com/updatefile/1.5.5xml",
+		"assetsFile": "assets/otherAssets/xml",
+		"assetsVersion": "1.5.5",
+		"bigVersion": []
+	}],
+	"ui": [
+	{
+		"assetsName": "activity",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/activity",
+		"assetsFile": "assets/ui/andriod/activity",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "startBg.jpg",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/0.0.1startBg",
+		"assetsFile": "assets/otherAssets",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "amuse",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/amuse",
+		"assetsFile": "assets/ui/andriod/amuse",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "amuseMc",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/amuseMc",
+		"assetsFile": "assets/ui/andriod/amuseMc",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "auction",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/auction",
+		"assetsFile": "assets/ui/andriod/auction",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "badgeMc",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/badgeMc",
+		"assetsFile": "assets/ui/andriod/badgeMc",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "bag",
+		"assetsType": "1",
+		"assetsSever": "http://update.mlwed.com/updatefile/1.5.5bag",
+		"assetsFile": "assets/ui/andriod/bag",
+		"assetsVersion": "1.6.7",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "chat",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/chat",
+		"assetsFile": "assets/ui/andriod/chat",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "cityMap",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/cityMap",
+		"assetsFile": "assets/ui/andriod/cityMap",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "common",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/common",
+		"assetsFile": "assets/ui/andriod/common",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "dayRecharge",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/dayRecharge",
+		"assetsFile": "assets/ui/andriod/dayRecharge",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "diamondUp",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/diamondUp",
+		"assetsFile": "assets/ui/andriod/diamondUp",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elf_m",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elf_m",
+		"assetsFile": "assets/ui/andriod/elf_m",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+		{
+		"assetsName": "elf_m2",
+		"assetsType": "1",
+		"assetsSever": "http://update.mlwed.com/updatefile/1.5.1elf_m2",
+		"assetsFile": "assets/ui/andriod/elf_m2",
+		"assetsVersion": "1.5.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfBallAct",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfBallAct",
+		"assetsFile": "assets/ui/andriod/elfBallAct",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfCenter",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfCenter",
+		"assetsFile": "assets/ui/andriod/elfCenter",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfEvolveMc",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfEvolveMc",
+		"assetsFile": "assets/ui/andriod/elfEvolveMc",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfPanel",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfPanel",
+		"assetsFile": "assets/ui/andriod/elfPanel",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "elfSeries",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/elfSeries",
+		"assetsFile": "assets/ui/andriod/elfSeries",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "exChange",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/exChange",
+		"assetsFile": "assets/ui/andriod/exChange",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "fightFail",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/fightFail",
+		"assetsFile": "assets/ui/andriod/fightFail",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "fighting",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/fighting",
+		"assetsFile": "assets/ui/andriod/fighting",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "fightVS",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/fightVS",
+		"assetsFile": "assets/ui/andriod/fightVS",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "firstRecharge",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/firstRecharge",
+		"assetsFile": "assets/ui/andriod/firstRecharge",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "friend",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/friend",
+		"assetsFile": "assets/ui/andriod/friend",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "growthPlan",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/growthPlan",
+		"assetsFile": "assets/ui/andriod/growthPlan",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "home",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/home",
+		"assetsFile": "assets/ui/andriod/home",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "hunting",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/hunting",
+		"assetsFile": "assets/ui/andriod/hunting",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "Illustrations",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/Illustrations",
+		"assetsFile": "assets/ui/andriod/Illustrations",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "information",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/information",
+		"assetsFile": "assets/ui/andriod/information",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "kingKwan",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/kingKwan",
+		"assetsFile": "assets/ui/andriod/kingKwan",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "laboratory",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/laboratory",
+		"assetsFile": "assets/ui/andriod/laboratory",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "limitSpecialElf",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/limitSpecialElf",
+		"assetsFile": "assets/ui/andriod/limitSpecialElf",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "loading",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/loading",
+		"assetsFile": "assets/ui/andriod/loading",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "login",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/login",
+		"assetsFile": "assets/ui/andriod/login",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "mainCity",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/mainCity",
+		"assetsFile": "assets/ui/andriod/mainCity",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "mining",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/mining",
+		"assetsFile": "assets/ui/andriod/miraclemining",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "miracle",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/miracle",
+		"assetsFile": "assets/ui/andriod/miracle",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "miracleMc",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/miracleMc",
+		"assetsFile": "assets/ui/andriod/miracleMc",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "npcMin",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/npcMin",
+		"assetsFile": "assets/ui/andriod/npcMin",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "personalInfo",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/1.5.1personalInfo",
+		"assetsFile": "assets/ui/andriod/personalInfo",
+		"assetsVersion": "1.5.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player1Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player1Act",
+		"assetsFile": "assets/ui/andriod/player1Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player1Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player1Act",
+		"assetsFile": "assets/ui/andriod/player1Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player2Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player2Act",
+		"assetsFile": "assets/ui/andriod/player2Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player3Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player3Act",
+		"assetsFile": "assets/ui/andriod/player3Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player4Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player4Act",
+		"assetsFile": "assets/ui/andriod/player4Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player5Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player5Act",
+		"assetsFile": "assets/ui/andriod/player5Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "player6Act",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/player6Act",
+		"assetsFile": "assets/ui/andriod/player6Act",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "prop",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/prop",
+		"assetsFile": "assets/ui/andriod/prop",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "pvp",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/pvp",
+		"assetsFile": "assets/ui/andriod/pvp",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "ranklist",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/ranklist",
+		"assetsFile": "assets/ui/andriod/ranklist",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "scoreShop",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/scoreShop",
+		"assetsFile": "assets/ui/andriod/scoreShop",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "shop",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/shop",
+		"assetsFile": "assets/ui/andriod/shop",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "sign",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/sign",
+		"assetsFile": "assets/ui/andriod/sign",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "skill",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/skill",
+		"assetsFile": "assets/ui/andriod/skill",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "startChat",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/startChat",
+		"assetsFile": "assets/ui/andriod/startChat",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "task",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/task",
+		"assetsFile": "assets/ui/andriod/task",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "train",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/train",
+		"assetsFile": "assets/ui/andriod/train",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "trial",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/trial",
+		"assetsFile": "assets/ui/andriod/trial",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "union",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/union",
+		"assetsFile": "assets/ui/andriod/union",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "unionHall",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/unionHall",
+		"assetsFile": "assets/ui/andriod/unionHall",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "unionStudy",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/unionStudy",
+		"assetsFile": "assets/ui/andriod/unionStudy",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "unionTrain",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/unionTrain",
+		"assetsFile": "assets/ui/andriod/unionTrain",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "unionWorld",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/unionWorld",
+		"assetsFile": "assets/ui/andriod/unionWorld",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "worldMap",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/worldMap",
+		"assetsFile": "assets/ui/andriod/worldMap",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	},
+	{
+		"assetsName": "unionMedal",
+		"assetsType": "0",
+		"assetsSever": "http://update.mlwed.com/updatefile/0.0.1unionMedal",
+		"assetsFile": "assets/ui/andriod/unionMedal",
+		"assetsVersion": "0.0.1",
+		"bigVersion": []
+	}
+	],
+	"swfSever": "http://update.mlwed.com/updatefile/2.1.2",
+	"swfType": "1",
+	"swfVersion": "2.1.2",
+	"swfFile": "assets/Pocketmon.swf",
+	"bigVersion": ["1.5.0"],
+	"totalVersion": "1.5.7.0"
+}

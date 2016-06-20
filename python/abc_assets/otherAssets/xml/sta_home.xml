@@ -1,0 +1,23 @@
+<!-- 
+sta_home:
+
+
+id:
+capacity:容纳量
+playerLv:玩家等级
+money:金钱
+diamond:钻石
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_home id="1" capacity="30" playerLv="0" money="0" diamond="0"/>
+<sta_home id="2" capacity="60" playerLv="15" money="10000" diamond="50"/>
+<sta_home id="3" capacity="100" playerLv="25" money="30000" diamond="100"/>
+<sta_home id="4" capacity="140" playerLv="35" money="50000" diamond="150"/>
+<sta_home id="5" capacity="180" playerLv="45" money="70000" diamond="200"/>
+<sta_home id="6" capacity="220" playerLv="55" money="90000" diamond="250"/>
+<sta_home id="7" capacity="260" playerLv="65" money="100000" diamond="300"/>
+<sta_home id="8" capacity="320" playerLv="70" money="500000" diamond="450"/>
+<sta_home id="9" capacity="380" playerLv="75" money="1000000" diamond="550"/>
+<sta_home id="10" capacity="440" playerLv="80" money="5000000" diamond="700"/>
+</root>

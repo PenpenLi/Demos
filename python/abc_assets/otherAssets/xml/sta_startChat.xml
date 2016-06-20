@@ -1,0 +1,49 @@
+<!-- 
+sta_startChat:
+
+
+id:
+speaker:
+content:
+markStr:
+picId:发言者图片id
+voice:对话配音
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_startChat id="1" speaker="博士" content="欢迎来到口袋妖怪的世界！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_0"/>
+<sta_startChat id="2" speaker="博士" content="我是大木博士" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_1"/>
+<sta_startChat id="3" speaker="博士" content="首先，让我来为你介绍一下这个世界的事吧！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_2"/>
+<sta_startChat id="4" speaker="博士" content="这个世界上，到处生活着口袋妖怪，又名精灵。这是一种不可思议的生物。bomb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_3"/>
+<sta_startChat id="5" speaker="博士" content="我们人类和精灵友好融洽地生活在一起。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_4"/>
+<sta_startChat id="6" speaker="博士" content="一起玩耍，协力工作。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_5"/>
+<sta_startChat id="7" speaker="博士" content="在与精灵同伴合作的对战中，建立起深刻的羁绊……bomb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_6"/>
+<sta_startChat id="8" speaker="博士" content="有部分精灵能通过不断地训练，进化成更强大的形态！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_7"/>
+<sta_startChat id="9" speaker="博士" content="而我为了更详细地了解精灵们的情况，每天都在进行这样的研究哦！bombb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_8"/>
+<sta_startChat id="10" speaker="博士" content="那么，快告诉我，你一些事情吧。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_9"/>
+<sta_startChat id="11" speaker="博士" content="你是男生呢，还是女生呢？bomb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_10"/>
+<sta_startChat id="12" speaker="博士" content="那么请告诉我，你的名字。bomb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_11"/>
+<sta_startChat id="13" speaker="博士" content="那么就开始你的旅途吧！bomb" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_12"/>
+<sta_startChat id="14" speaker="小茂" content="#playername#！你准备好没有！" markStr="#playername#" picId="xiao3mao4" voice="beginDiaVoice_13"/>
+<sta_startChat id="15" speaker="小茂" content="真是的，别磨磨蹭蹭啦！今天可是大日子啊。" markStr="" picId="xiao3mao4" voice="beginDiaVoice_14"/>
+<sta_startChat id="16" speaker="小茂" content="我们终于可以去拿属于自己的小精灵了。" markStr="" picId="xiao3mao4" voice="beginDiaVoice_15"/>
+<sta_startChat id="17" speaker="小茂" content="所以我们赶紧去精灵研究所吧。" markStr="" picId="xiao3mao4" voice="beginDiaVoice_16"/>
+<sta_startChat id="18" speaker="博士" content="你们来了啊，小茂、#playername#bomb" markStr="#playername#" picId="da4mu4bo2shi4" voice="beginDiaVoice_17"/>
+<sta_startChat id="19" speaker="小茂" content="我们的精灵在哪里?" markStr="" picId="xiao3mao4" voice="beginDiaVoice_18"/>
+<sta_startChat id="20" speaker="博士" content="就在那边。你们挑选自己喜欢的精灵吧。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_19"/>
+<sta_startChat id="21" speaker="小茂" content="哇！三只精灵我都很喜欢。嗯……怎么办呢？" markStr="" picId="xiao3mao4" voice="beginDiaVoice_20"/>
+<sta_startChat id="22" speaker="小茂" content="那么，#playername#先选吧。看了你选什么之后，我再决定好了。bomb" markStr="#playername#" picId="xiao3mao4" voice="beginDiaVoice_21"/>
+<sta_startChat id="23" speaker="小茂" content="好，那么我选择#poke#，与你的属性相克的精灵。" markStr="#poke#" picId="xiao3mao4" voice="beginDiaVoice_22"/>
+<sta_startChat id="24" speaker="小茂" content="#playername#！接下来，让我们检验一下各自的精灵吧！bomb" markStr="#playername#" picId="xiao3mao4" voice="beginDiaVoice_23"/>
+<sta_startChat id="25" speaker="小茂" content="哈哈！果然还是我比较强&amp;哼！竟然输了，看来这只精灵还需要再锻炼锻炼！" markStr="" picId="xiao3mao4" voice="beginDiaVoice_24"/>
+<sta_startChat id="26" speaker="博士" content="真是精彩的战斗！我也放心把小精灵图鉴交给你们。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_25"/>
+<sta_startChat id="27" speaker="博士" content="它能自动记录你见过或收服过的精灵" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_26"/>
+<sta_startChat id="28" speaker="博士" content="就像一部高科技的百科全书！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_27"/>
+<sta_startChat id="29" speaker="博士" content="收集所有精灵的资料，完成小精灵图鉴一直是我的梦想。" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_28"/>
+<sta_startChat id="30" speaker="博士" content="但是我已经老了，已经无法实现这个梦想了" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_29"/>
+<sta_startChat id="31" speaker="博士" content="希望你们能实现我的梦想！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_30"/>
+<sta_startChat id="32" speaker="博士" content="出发吧！这是精灵史上最伟大的事业！" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_31"/>
+<sta_startChat id="33" speaker="小茂" content="好吧！爷爷，全都交给我吧！我马上出发" markStr="" picId="xiao3mao4" voice="beginDiaVoice_32"/>
+<sta_startChat id="34" speaker="博士" content="真的急性子，就这样就走了" markStr="" picId="da4mu4bo2shi4" voice="beginDiaVoice_33"/>
+<sta_startChat id="35" speaker="博士" content="#playername#，马上就开始冒险了，让我来给你介绍一下冒险方法吧！bomb" markStr="#playername#" picId="da4mu4bo2shi4" voice="beginDiaVoice_34"/>
+</root>

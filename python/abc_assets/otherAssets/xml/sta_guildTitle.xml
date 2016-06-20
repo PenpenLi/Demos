@@ -1,0 +1,47 @@
+<!-- 
+sta_guildTitle:
+
+
+id:
+name:称号名称
+titleExp:所需经验
+rewardJNS:奖励
+pic:图片
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildTitle id="1" name="新手训练师" titleExp="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:15},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="2" name="新手训练师" titleExp="1500" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:15},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="3" name="新手训练师" titleExp="3000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:15},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="4" name="新手训练师" titleExp="7000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:15},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="5" name="见习训练师" titleExp="10000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:17},&apos;silver&apos;:{&apos;num&apos;:60000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="6" name="见习训练师" titleExp="15000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:17},&apos;silver&apos;:{&apos;num&apos;:60000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="7" name="见习训练师" titleExp="35000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:17},&apos;silver&apos;:{&apos;num&apos;:60000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="8" name="见习训练师" titleExp="50000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:17},&apos;silver&apos;:{&apos;num&apos;:60000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="9" name="初级训练师" titleExp="60000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:19},&apos;silver&apos;:{&apos;num&apos;:70000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="10" name="初级训练师" titleExp="70000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:19},&apos;silver&apos;:{&apos;num&apos;:70000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="11" name="初级训练师" titleExp="90000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:19},&apos;silver&apos;:{&apos;num&apos;:70000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="12" name="初级训练师" titleExp="110000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:19},&apos;silver&apos;:{&apos;num&apos;:70000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:5}]}" pic=""/>
+<sta_guildTitle id="13" name="中级训练师" titleExp="120000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:21},&apos;silver&apos;:{&apos;num&apos;:80000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="14" name="中级训练师" titleExp="165000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:21},&apos;silver&apos;:{&apos;num&apos;:80000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="15" name="中级训练师" titleExp="182500" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:21},&apos;silver&apos;:{&apos;num&apos;:80000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="16" name="中级训练师" titleExp="200000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:21},&apos;silver&apos;:{&apos;num&apos;:80000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:7}]}" pic=""/>
+<sta_guildTitle id="17" name="高级训练师" titleExp="215000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:23},&apos;silver&apos;:{&apos;num&apos;:90000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:9}]}" pic=""/>
+<sta_guildTitle id="18" name="高级训练师" titleExp="230000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:23},&apos;silver&apos;:{&apos;num&apos;:90000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:9}]}" pic=""/>
+<sta_guildTitle id="19" name="高级训练师" titleExp="265000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:23},&apos;silver&apos;:{&apos;num&apos;:90000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:9}]}" pic=""/>
+<sta_guildTitle id="20" name="高级训练师" titleExp="305000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:23},&apos;silver&apos;:{&apos;num&apos;:90000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:9}]}" pic=""/>
+<sta_guildTitle id="21" name="特级训练师" titleExp="325000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:25},&apos;silver&apos;:{&apos;num&apos;:100000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:11}]}" pic=""/>
+<sta_guildTitle id="22" name="特级训练师" titleExp="345000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:25},&apos;silver&apos;:{&apos;num&apos;:100000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:11}]}" pic=""/>
+<sta_guildTitle id="23" name="特级训练师" titleExp="395000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:25},&apos;silver&apos;:{&apos;num&apos;:100000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:11}]}" pic=""/>
+<sta_guildTitle id="24" name="特级训练师" titleExp="450000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:25},&apos;silver&apos;:{&apos;num&apos;:100000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:11}]}" pic=""/>
+<sta_guildTitle id="25" name="馆长级训练师" titleExp="550000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:28},&apos;silver&apos;:{&apos;num&apos;:110000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:13}]}" pic=""/>
+<sta_guildTitle id="26" name="馆长级训练师" titleExp="625000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:28},&apos;silver&apos;:{&apos;num&apos;:110000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:13}]}" pic=""/>
+<sta_guildTitle id="27" name="准天王级训练师" titleExp="760000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:30},&apos;silver&apos;:{&apos;num&apos;:120000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:15}]}" pic=""/>
+<sta_guildTitle id="28" name="准天王级训练师" titleExp="850000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:30},&apos;silver&apos;:{&apos;num&apos;:120000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:15}]}" pic=""/>
+<sta_guildTitle id="29" name="天王级训练师" titleExp="1150000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:32},&apos;silver&apos;:{&apos;num&apos;:130000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:17}]}" pic=""/>
+<sta_guildTitle id="30" name="天王级训练师" titleExp="1550000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:32},&apos;silver&apos;:{&apos;num&apos;:130000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:17}]}" pic=""/>
+<sta_guildTitle id="31" name="准大师级训练师" titleExp="1850000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:34},&apos;silver&apos;:{&apos;num&apos;:140000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:19}]}" pic=""/>
+<sta_guildTitle id="32" name="准大师级训练师" titleExp="2250000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:34},&apos;silver&apos;:{&apos;num&apos;:140000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:19}]}" pic=""/>
+<sta_guildTitle id="33" name="大师级训练师" titleExp="2750000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:36},&apos;silver&apos;:{&apos;num&apos;:200000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:25}]}" pic=""/>
+<sta_guildTitle id="34" name="大师级训练师" titleExp="3250000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:36},&apos;silver&apos;:{&apos;num&apos;:200000},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:25}]}" pic=""/>
+</root>

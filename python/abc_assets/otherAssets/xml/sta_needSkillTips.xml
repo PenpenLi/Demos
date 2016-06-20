@@ -1,0 +1,21 @@
+<!-- 
+sta_needSkillTips:
+
+
+id:技能
+name:技能名称
+prompt:提示1
+prompt2:提示2
+prompt3:提示3
+prompt4:提示4
+nodename:地点
+pokelist:
+nodeId:节点id
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_needSkillTips id="15" name="一字斩" prompt="前面有颗大树挡路了" prompt2="砍下这棵树。" prompt3="该技能在商店能购买" prompt4="在xxxx的以下精灵" nodename="华蓝市的4号路山洞" pokelist="27" nodeId="10008"/>
+<sta_needSkillTips id="57" name="冲浪" prompt="湍急的河水阻挡了去路" prompt2="渡河。" prompt3="该技能在通关华蓝市道" prompt4="在xxxx的以下精灵" nodename="尼比市的1号路水域" pokelist="117|118|116" nodeId="0"/>
+<sta_needSkillTips id="148" name="闪光" prompt="漆黑使人迷失方向" prompt2="照亮四周。" prompt3="该技能在商店能购买" prompt4="在xxxx的以下精灵" nodename="尼比市的1号草地" pokelist="43" nodeId="10001"/>
+<sta_needSkillTips id="70" name="劲力" prompt="巨石挡住了去路" prompt2="移走障碍物。" prompt3="该技能在通关尼比市道" prompt4="在xxxx的以下精灵" nodename="华蓝市的4号路山洞" pokelist="50|27" nodeId="0"/>
+</root>

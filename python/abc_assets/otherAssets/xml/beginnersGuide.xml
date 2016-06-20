@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+isIntroduction   是否介绍性指导
+targetName       箭头所指对象的名称
+target           目标页面(用于判断该页面是否还存在引导)
+targetPgae       判断当前页面的引导是否已经完成
+description      提示框的位置以及提示语
+-->
+<root>
+<!--
+战斗
+-->
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="" description ='' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="FightingMedia" description ='小精灵战斗是精灵之间的战斗，把对方的HP削弱到0就可以赢得战斗' voice= "guide_1"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='true' targetName="statusBar" targetPgae="FightingMedia" description ='状态栏可以查看精灵的状态信息' voice= "guide_2"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='true' targetName="skillBtnContainer" targetPgae="FightingMedia" description ='这里是你的精灵的技能，点击就可以释放技能' voice= "guide_3"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='true' targetName="ppTf" targetPgae="FightingMedia" description ='每项技能都有一个PP值' voice= "guide_4"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='true' targetName="eleBtn" targetPgae="FightingMedia" description ='如果你有更多的精灵，这里可以更换出战的精灵哦' voice= "guide_5"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='true' targetName="backPackBtn" targetPgae="FightingMedia" description ='背包里面的物品，可以更好地辅助你的战斗' voice= "guide_6"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="FightingMedia" description ='要记住，每使用一次技能损耗一点PP值，当PP值耗尽后，技能就不能使用了，可以通过精灵中心或者药剂回复技能PP。' voice= "guide_7"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="FightingMedia" description ='接下来就开始你的第一场战斗吧！' voice= "guide_8"></sta_BeginnersGuide>
+
+<!--
+精灵中心
+-->
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="" description ='欢迎来到口袋妖怪世界！' voice= "guide_9"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="" description ='在口袋妖怪世界里面，战斗后，体力是不会自动恢复的，需要到小精灵中心恢复精灵体力和其他状态' voice= "guide_10"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="eleCenterBtn" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_Recover" targetPgae="" description = '' voice= "guide_42"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="elfContain" targetPgae="" description = '等待恢复' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_close" targetPgae="" description = '' voice= "guide_43"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="elfCenter" description ='从小精灵中心出来后,所有精灵都萌萌哒！' voice= "guide_12"></sta_BeginnersGuide>
+<!--
+玩家的家
+-->
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="home" description ='可以进入家里,对拥有的精灵进行管理哦' voice= "guide_13"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="homeBtn" targetPgae="home" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="bag0" targetPgae="home" description = '选中精灵可以查看信息' voice= "guide_14"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_pkhead" targetPgae="home" description = '点击这里就可以查看详细信息啦！' voice= "guide_15"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="info_close" targetPgae="home" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="home" description = '当背包位置满的时候，捕捉到的精灵会自动存入电脑' voice= "guide_16"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_close" targetPgae="home" description = '' voice= ""></sta_BeginnersGuide>
+<!--
+游乐场
+-->
+<sta_BeginnersGuide isIntroduction='' targetName="playgroundBtn" targetPgae="playground" description = '可以试试手气呢' voice= "guide_17"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_extractionOne1" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_sePetName" targetPgae="" description = '快给你的小精灵取一个个性的名字吧' voice= "guide_18"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="sureBtn" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="btn_close" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="" description ='得到了一只萌萌哒精灵啦！' voice= "guide_19"></sta_BeginnersGuide>
+
+<!--
+冒险地图
+-->
+<sta_BeginnersGuide isIntroduction='' targetName="" targetPgae="" description ='外面的世界很精彩，去看看吧！' voice= "guide_20"></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="advanceBtn" targetPgae="mainCity" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="nameTF" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="advanceBtn" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+<sta_BeginnersGuide isIntroduction='' targetName="fightingBtn" targetPgae="" description = '' voice= ""></sta_BeginnersGuide>
+
+<sta_BeginnersGuide2 isIntroduction='' targetName="nameTF2" targetPgae="" description = '' voice= ""></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='true' targetName="normalModeBtn" targetPgae="" description = '关卡有普通关卡，精英关卡之分' voice= "guide_21"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='true' targetName="hardModeBtn" targetPgae="" description = '精英关卡的敌人更强大，同时掉落更加稀有的道具！' voice= "guide_22"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="changeBtn" targetPgae="" description = '现在先挑战普通关卡吧' voice= "guide_23"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="" targetPgae="" description = '' voice= ""></sta_BeginnersGuide2>
+
+
+<sta_BeginnersGuide2 isIntroduction='' targetName="" targetPgae="" description = '' voice= ""></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="btn_elf" targetPgae="" description = '点击这里可以观察背包里面的精灵' voice= "guide_32"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='true' targetName="" targetPgae="" description = '在这里面就可以对背包里的精灵进行培养，调整位置等操作啦！' voice= "guide_24"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="btn_skill" targetPgae="" description = '可以看看精灵有哪些技能呢' voice= "guide_33"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="btn_break" targetPgae="" description = '精灵可以进行突破' voice= "guide_25"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='true' targetName="breakPropContain" targetPgae="" description = '精灵突破需要这些玩偶陪练呢' voice= "guide_26"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="propUnit0" targetPgae="" description = '可以查看玩偶的信息' voice= "guide_27"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="btn_collect" targetPgae="" description = '查看在哪里可以收集这个玩偶' voice= "guide_28"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='true' targetName="breakDropList" targetPgae="" description = '这些地方可以收集玩偶' voice= "guide_29"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="" targetPgae="" description = '你已经了解怎样去突破自己的精灵啦，你一定会成为一位伟大的训练师的。' voice= "guide_30"></sta_BeginnersGuide2>
+<sta_BeginnersGuide2 isIntroduction='' targetName="" targetPgae="" description = '现在尝试一下更换精灵的位置吧。通过长按左边的某一精灵栏，并移动，就可以交换精灵的位置。快去试试吧！' voice= "guide_31"></sta_BeginnersGuide2>
+
+
+<!--
+饲养屋
+-->
+<sta_feedHouse isIntroduction='' targetName="" targetPgae="feedHouseOutSide" description ='饲养屋功能解锁啦！饲养屋可以让精灵快速升级，当放入性能不同的精灵，还有一定的几率生蛋哦' voice= ""></sta_feedHouse>
+<sta_feedHouse isIntroduction='' targetName="feedHouseBtn" targetPgae="feedHouse" description = '' voice= ""></sta_feedHouse>
+<sta_feedHouse isIntroduction='' targetName="btn_putElf_b" targetPgae="feedHouse" description = '把背包精灵放入饲养屋' voice= ""></sta_feedHouse>
+<sta_feedHouse isIntroduction='true' targetName="selectElfUnitUI0" targetPgae="feedHouse" description = '可选择精灵进行饲养' voice= ""></sta_feedHouse>
+<sta_feedHouse isIntroduction='' targetName="" targetPgae="feedHouse" description ='饲养栏中的精灵升级时会自动学习技能。若技能已满，那么会忘记第一个技能来学习新技能。' voice= ""></sta_feedHouse>
+
+<!--
+训练
+-->
+<sta_train isIntroduction='' targetName="" targetPgae="train" description ='现在可以使用训练功能啦！' voice= ""></sta_train>
+<sta_train isIntroduction='' targetName="btn_trainBtn" targetPgae="train" description ='' voice= ""></sta_train>
+<sta_train isIntroduction='' targetName="addElfBtn_b1" targetPgae="train" description ='添加精灵进入训练位' voice= ""></sta_train>
+<sta_train isIntroduction='' targetName="seleElfTrain0" targetPgae="train" description ='选择一个精灵' voice= ""></sta_train>
+<sta_train isIntroduction='' targetName="" targetPgae="train" description ='你已经学会使用训练啦！精灵能在训练栏位获得大量的经验，是精灵获得经验的主要途径，要经常使用哦！' voice= ""></sta_train>
+
+<!--
+试炼
+-->
+<sta_trial isIntroduction='' targetName="" targetPgae="trial" description ='试炼终于开启啦!' voice= ""></sta_trial>
+<sta_trial isIntroduction='' targetName="brn_trialBtn" targetPgae="trial" description ='' voice= ""></sta_trial>
+<sta_trial isIntroduction='' targetName="" targetPgae="trial" description ='参与试炼获得的道具可以到商店售卖赚取金币哦，快去试试吧！' voice= ""></sta_trial>
+
+<!--
+奇迹交换
+-->
+<sta_miracle isIntroduction='' targetName="" targetPgae="miracle" description ='玩一下奇迹交换的功能吧' voice= ""></sta_miracle>
+<sta_miracle isIntroduction='' targetName="btn_miracleBtn" targetPgae="miracle" description ='' voice= ""></sta_miracle>
+
+<!--
+狩猎场
+-->
+<sta_hunting isIntroduction='' targetName="" targetPgae="hunting" description ='开启狩猎场啦!' voice= ""></sta_hunting>
+<sta_hunting isIntroduction='' targetName="btn_hunting" targetPgae="hunting" description ='' voice= ""></sta_hunting>
+<sta_hunting isIntroduction='' targetName="" targetPgae="hunting" description ='开始狩猎捕捉吧' voice= ""></sta_hunting>
+
+<!--
+pvp
+-->
+<sta_pvp isIntroduction='' targetName="" targetPgae="pvp" description ='是时候表演真正的技术了，与朋友一决高下吧' voice= ""></sta_pvp>
+<sta_pvp isIntroduction='' targetName="btn_elfPVP" targetPgae="pvp" description ='' voice= ""></sta_pvp>
+<sta_pvp isIntroduction='true' targetName="onlineMatchBtn" targetPgae="pvp" description ='在线匹配可以快捷找到在线玩家进行实时对战' voice= ""></sta_pvp>
+<sta_pvp isIntroduction='' targetName="practiceGameBtn" targetPgae="pvp" description ='你也可以进行练习赛' voice= ""></sta_pvp>
+<sta_pvp isIntroduction='' targetName="createRoomBtn" targetPgae="pvp" description ='创建一个房间，邀请好友一起对战' voice= ""></sta_pvp>
+<sta_pvp isIntroduction='' targetName="" targetPgae="pvp" description ='你已经了解怎样去进行pvp对战啦，激动人心的pvp对战正在等着你哦！' voice= ""></sta_pvp>
+
+<!--
+联盟大赛
+-->
+<sta_elfSeries isIntroduction='' targetName="" targetPgae="elfSeriesOutSide" description ='你已经训练多时了，看看你有多厉害吧！' voice= ""></sta_elfSeries>
+<sta_elfSeries isIntroduction='' targetName="btn_elfSeries" targetPgae="elfSeries" description = '' voice= ""></sta_elfSeries>
+<sta_elfSeries isIntroduction='' targetName="btn_chanllenge" targetPgae="elfSeries" description = '选择对手' voice= ""></sta_elfSeries>
+<sta_elfSeries isIntroduction='' targetName="" targetPgae="elfSeries" description = '选择队形进行挑战吧' voice= ""></sta_elfSeries>
+
+<!--
+王者之路
+-->
+<sta_kingKwan isIntroduction='' targetName="" targetPgae="kingKwanOutSide" description ='你终于有足够的实力踏上王者之路了！' voice= ""></sta_kingKwan>
+<sta_kingKwan isIntroduction='' targetName="btn_fourKing" targetPgae="kingKwan" description = '' voice= ""></sta_kingKwan>
+
+<!--
+公会
+-->
+<sta_union isIntroduction='' targetName="" targetPgae="unionOutSide" description ='开启公会系统啦，快跟训练师们一起并肩作战吧！' voice= ""></sta_union>
+<sta_union isIntroduction='' targetName="btn_union" targetPgae="union" description = '' voice= ""></sta_union>
+
+<!--
+属性相克
+-->
+<sta_restrain isIntroduction='true' targetName="mark" targetPgae="FightingMedia" description ='箭头表示该技能对对方精灵有克制的效果' voice= ""></sta_restrain>
+
+
+<!--
+捕捉精灵
+-->
+<sta_catchElf isIntroduction='' targetName="" targetPgae="FightingMedia" description = '现在讲解一下怎样捕捉精灵' voice= "guide_34"></sta_catchElf>
+<sta_catchElf isIntroduction='' targetName="skill0" targetPgae="FightingMedia" description = '使用技能，减少精灵的血量' voice= "guide_35"></sta_catchElf>
+<sta_catchElf isIntroduction='' targetName="" targetPgae="FightingMedia" description = '' voice= ""></sta_catchElf>
+<sta_catchElf isIntroduction='' targetName="backPackBtn" targetPgae="FightingMedia" description ='打开背包' voice= "guide_36"></sta_catchElf>
+<sta_catchElf isIntroduction='true' targetName="0" targetPgae="FightingMedia" description ='可以使用此精灵球对精灵进行捕捉' voice= "guide_37"></sta_catchElf>
+<sta_catchElf isIntroduction='true' targetName="0" targetPgae="FightingMedia" description ='捕捉精灵存在一定的概率' voice= "guide_38"></sta_catchElf>
+<sta_catchElf isIntroduction='true' targetName="0" targetPgae="FightingMedia" description ='当要捕捉的精灵HP越少，捕捉的成功率越大哦' voice= "guide_39"></sta_catchElf>
+<sta_catchElf isIntroduction='' targetName="" targetPgae="FightingMedia" description = '要记住，捕捉精灵后，如果精灵等级高于玩家等级，精灵等级会降低到玩家一样的等级哦。' voice= "guide_40"></sta_catchElf>
+<sta_catchElf isIntroduction='' targetName="" targetPgae="FightingMedia" description = '捕捉精灵就是酱紫简单，继续愉快游戏吧！' voice= "guide_41"></sta_catchElf>
+
+<!--
+更换精灵
+-->
+<sta_changeElf isIntroduction='' targetName="eleBtn" targetPgae="FightingMedia" description = '点击这里更换出战精灵哦' voice= ""></sta_changeElf>
+<sta_changeElf isIntroduction='' targetName="" targetPgae="FightingMedia" description = '选择合适的精灵上阵可以提高胜利的几率呢，继续愉快游戏吧' voice= ""></sta_changeElf>
+
+<!--
+精灵进化
+-->
+<sta_elf isIntroduction='' targetName="" targetPgae="" description = '亲爱的训练师！你知道吗，你的精灵可以进化了！快跟着我来！' voice= ""></sta_elf>
+<sta_elf isIntroduction='' targetName="btn_evolve" targetPgae="" description = '' voice= ""></sta_elf>
+<sta_elf isIntroduction='' targetName="btn_evolve1" targetPgae="" description = '' voice= ""></sta_elf>
+<sta_elf isIntroduction='' targetName="" targetPgae="" description = '只要满足进化等级，和收集到相应的进化物品，精灵就可以马上进化，变得更加强大哦！' voice= ""></sta_elf>
+<sta_elf isIntroduction='' targetName="" targetPgae="" description = '我偷偷告诉你哦！不进化的话，精灵能更快学习到新技能呢！！训练师们要想清楚哦！' voice= ""></sta_elf>
+</root>

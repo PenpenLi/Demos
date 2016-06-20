@@ -1,0 +1,137 @@
+<!-- 
+sta_vipLvInfo:
+
+
+id:
+vipLv:vip等级
+lvInfo:等级信息
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_vipLvInfo id="1" vipLv="1" lvInfo="1、累计充值&lt;font color = &quot;#F18700&quot;&gt;10&lt;/font&gt;钻石即可享受该特权
+2、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;30&lt;/font&gt;张
+3、每天可购买体力&lt;font color = '#F18700' &gt;2&lt;/font&gt;次
+4、每天可使用金手指&lt;font color = '#F18700' &gt;5&lt;/font&gt;次
+5、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;11&lt;/font&gt;次
+6、好友上限增至为&lt;font color = '#F18700' &gt;25&lt;/font&gt;
+7、每天可重置精英关卡次数&lt;font color = '#F18700' &gt;2&lt;/font&gt;次
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;2&lt;/font&gt;次"/>
+<sta_vipLvInfo id="2" vipLv="2" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;100&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip1&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;40&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;3&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;20&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;14&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;30&lt;/font&gt;
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;3&lt;/font&gt;次"/>
+<sta_vipLvInfo id="3" vipLv="3" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;300&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip2&lt;/font&gt;所有特权
+3、解锁立刻重置精灵联盟大赛CD功能
+4、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;50&lt;/font&gt;张
+5、每天可购买体力&lt;font color = '#F18700' &gt;4&lt;/font&gt;次
+6、每天可使用金手指&lt;font color = '#F18700' &gt;30&lt;/font&gt;次
+7、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;17&lt;/font&gt;次
+8、好友上限增至为&lt;font color = '#F18700' &gt;35&lt;/font&gt;
+9、每天可购买精灵联盟大赛挑战次数&lt;font color = '#F18700' &gt;5&lt;/font&gt;次
+10、每天可购买个体值点数&lt;font color = '#F18700' &gt;4&lt;/font&gt;次"/>
+<sta_vipLvInfo id="4" vipLv="4" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;500&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip3&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;60&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;5&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;40&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;20&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;40&lt;/font&gt;
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;5&lt;/font&gt;次"/>
+<sta_vipLvInfo id="5" vipLv="5" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;1000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip4&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;70&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;6&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;50&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;23&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;45&lt;/font&gt;
+8、每天可重置精英关卡次数&lt;font color = '#F18700' &gt;3&lt;/font&gt;次
+9、每天可购买个体值点数&lt;font color = '#F18700' &gt;6&lt;/font&gt;次"/>
+<sta_vipLvInfo id="6" vipLv="6" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;2000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip5&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;80&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;7&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;60&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;26&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;50&lt;/font&gt;
+8、每天可购买联盟试练、金币试练&lt;font color = '#F18700' &gt;1&lt;/font&gt;次
+9、每天可购买个体值点数&lt;font color = '#F18700' &gt;7&lt;/font&gt;次"/>
+<sta_vipLvInfo id="7" vipLv="7" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;3000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip6&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;90&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;8&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;70&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;29&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;55&lt;/font&gt;
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;8&lt;/font&gt;次"/>
+<sta_vipLvInfo id="8" vipLv="8" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;5000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip7&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;100&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;9&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;80&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;32&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;60&lt;/font&gt;
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;9&lt;/font&gt;次"/>
+<sta_vipLvInfo id="9" vipLv="9" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;7000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip8&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;110&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;10&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;90&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;35&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;65&lt;/font&gt;
+8、每天可购买个体值点数&lt;font color = '#F18700' &gt;10&lt;/font&gt;次"/>
+<sta_vipLvInfo id="10" vipLv="10" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;10000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip9&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;120&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;11&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;100&lt;/font&gt;次
+6、每天可以挑战王者之路&lt;font color = '#F18700' &gt;2&lt;/font&gt;次
+7、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;38&lt;/font&gt;次
+8、好友上限增至为&lt;font color = '#F18700' &gt;70&lt;/font&gt;
+9、解锁王者之路扫荡功能"/>
+<sta_vipLvInfo id="11" vipLv="11" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;15000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip10&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;130&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;12&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;120&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;41&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;75&lt;/font&gt;
+8、每天可重置精英关卡次数&lt;font color = '#F18700' &gt;4&lt;/font&gt;次
+9、解锁火力全开扭蛋机功能"/>
+<sta_vipLvInfo id="12" vipLv="12" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;20000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip11&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;140&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;13&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;150&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;44&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;80&lt;/font&gt;
+8、每天可购买联盟试练、金币试练&lt;font color = '#F18700' &gt;2&lt;/font&gt;次"/>
+<sta_vipLvInfo id="13" vipLv="13" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;40000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip12&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;150&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;14&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;200&lt;/font&gt;次
+6、王者之路的随机道具和金钱奖励翻倍
+（钻石/宠物/进化石除外）
+7、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;47&lt;/font&gt;次
+8、好友上限增至为&lt;font color = '#F18700' &gt;85&lt;/font&gt;"/>
+<sta_vipLvInfo id="14" vipLv="14" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;80000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip13&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;160&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;15&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;250&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;50&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;90&lt;/font&gt;"/>
+<sta_vipLvInfo id="15" vipLv="15" lvInfo="1、累计充值&lt;font color = '#F18700' &gt;150000&lt;/font&gt;钻石即可享受该特权
+2、包含&lt;font color = '#F18700' &gt;vip14&lt;/font&gt;所有特权
+3、每天可免费领取扫荡券&lt;font color = '#F18700' &gt;170&lt;/font&gt;张
+4、每天可购买体力&lt;font color = '#F18700' &gt;16&lt;/font&gt;次
+5、每天可使用金手指&lt;font color = '#F18700' &gt;300&lt;/font&gt;次
+6、每天可以在小精灵中心免费恢复&lt;font color = '#F18700' &gt;53&lt;/font&gt;次
+7、好友上限增至为&lt;font color = '#F18700' &gt;95&lt;/font&gt;
+8、每天可购买联盟试练、金币试练&lt;font color = '#F18700' &gt;3&lt;/font&gt;次"/>
+</root>
