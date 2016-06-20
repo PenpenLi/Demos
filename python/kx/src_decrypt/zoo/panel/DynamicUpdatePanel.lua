@@ -26,7 +26,7 @@ local function parseDynamicUserData( userdata )
 	end
 	return result
 end
-local function onResourcePrompt( data )
+local function onResourcePrompt( data,notUsePopoutQueue )
 	local function onCancelLoad() data.resultHandler(0) end
 	local function onConfirmLoad() data.resultHandler(1) end
 	--local needsize = data.status.needDownloadSize
@@ -45,77 +45,102 @@ local function onResourcePrompt( data )
 
 	-- 以updateinfo.type为准 
 	-- if needsize > 0 then
-		local button = HomeScene:sharedInstance().updateVersionButton
-		local panel = DynamicUpdatePanel:create(onConfirmLoad, onCancelLoad, needsize,force)
-		if panel then 
+	local panel = DynamicUpdatePanel:create(onConfirmLoad, onCancelLoad, needsize,force)
+	
+	if panel then 
+		if notUsePopoutQueue then
+			local button = HomeScene:sharedInstance().updateVersionButton
 			if button and not button.isDisposed then
 				button.wrapper:setTouchEnabled(false)
 			end
-			panel:popout()
+			panel:popout(notUsePopoutQueue)
+		else
+			HomeScene:sharedInstance():runAction(CCCallFunc:create(function( ... )
+				local button = HomeScene:sharedInstance().updateVersionButton
+				if button and not button.isDisposed then
+					button.wrapper:setTouchEnabled(false)
+				end
+				panel:popout(notUsePopoutQueue)
+			end))
 		end
-		return panel
+	end
+	return panel
 	-- else data.resultHandler(0) end
 	-- return nil
 end
 
-function DynamicUpdatePanel:onCheckDynamicUpdate(isAutoPopout)
+-- notUsePopoutQueue 活动里弹动更面板不能加到队列里
+function DynamicUpdatePanel:onCheckDynamicUpdate(isAutoPopout,successCallback,failCallback,notUsePopoutQueue)
 	-- local now = os.time()
 	-- local kMinTime = 10 * 60 * 1000 -- each 10 minutes check new update.
 	local scene = Director:sharedDirector():getRunningScene()
 	-- local user = UserManager.getInstance().user
 	-- if user and user:getTopLevelId() < 20 then return end
-	if not NewVersionUtil:hasDynamicUpdate() then 
+	if not NewVersionUtil:hasDynamicUpdate() or not scene then 
+		if failCallback then
+			failCallback()
+		end
 		return 
 	end
 	
-	-- if scene and now - lastCheckUpdateTime > kMinTime and currentPanel == nil then
-	-- 	lastCheckUpdateTime = now
-	if scene then
-		local function onResourceLoaderCallback( event, data )
-			print("event:", event, table.tostring(data))
-			if event == ResCallbackEvent.onPrompt then
-				if not currentPanel then
-					currentPanel = onResourcePrompt(data)
-				end
-			elseif event == ResCallbackEvent.onSuccess then 
-				if currentPanel then 
-					currentPanel:onSuccess() 
-				end
-			elseif event == ResCallbackEvent.onProcess then
-				local progress = 0
-		    	if data.totalSize > 0 then progress = data.curSize / data.totalSize end
-		    	if currentPanel then currentPanel:setProgress(progress) end
-		    elseif event == ResCallbackEvent.onError then 
-		    	if data.errorCode == 2014 then 
-		    		he_log_info("load required res cancel")
+	local function onResourceLoaderCallback( event, data )
+		print("event:", event, table.tostring(data))
+		if event == ResCallbackEvent.onPrompt then
+			if not currentPanel then
+				currentPanel = onResourcePrompt(data,notUsePopoutQueue)
+			end
+		elseif event == ResCallbackEvent.onSuccess then 
+			if currentPanel then 
+				currentPanel:onSuccess() 
+			end
+			if successCallback then
+				successCallback()
+			end
+		elseif event == ResCallbackEvent.onProcess then
+			local progress = 0
+	    	if data.totalSize > 0 then progress = data.curSize / data.totalSize end
+	    	if currentPanel then currentPanel:setProgress(progress) end
+	    elseif event == ResCallbackEvent.onError then 
+	    	if data.errorCode == 2014 then 
+	    		he_log_info("load required res cancel")
 
-		    	elseif not isAutoPopout then 
-		    		--这两种情况走不到 onPrompt,导致没弹面板
-			    	if data.item == "static_settings" or data.item == "static_config" then
-			    		
-			    		CommonTip:showTip(Localization:getInstance():getText("new.version.dynamic.settingfile.error"), "negative")		    		
-			    	elseif data.errorCode == 2015 then --没有文件可以下载,已经是最新版本
-
-			    		CommonTip:showTip(Localization:getInstance():getText("new.version.dynamic.isnew.error"), "negative")	
-
-						UserManager.getInstance().updateInfo = nil
-						local updateVersionButton = HomeScene:sharedInstance().updateVersionButton
-						if updateVersionButton then 
-							updateVersionButton:removeFromParentAndCleanup(true)
-							HomeScene:sharedInstance().updateVersionButton = nil
-						end
-					else
-				    	if currentPanel then currentPanel:onSuccess(data.errorCode) end
-				    	he_log_warning("load required res error, errorCode: " .. tostring(data.errorCode) .. ", item: " .. tostring(data.item))
+	    	elseif not isAutoPopout then 
+	    		--这两种情况走不到 onPrompt,导致没弹面板
+		    	if data.item == "static_settings" or data.item == "static_config" then
+		    		
+		    		CommonTip:showTip(Localization:getInstance():getText("new.version.dynamic.settingfile.error"), "negative")		    		
+		    	
+					local updateVersionButton = HomeScene:sharedInstance().updateVersionButton
+					if updateVersionButton and not updateVersionButton.isDisposed then 
+						updateVersionButton.wrapper:setTouchEnabled(true)
 					end
-			    else
+		    	elseif data.errorCode == 2015 then --没有文件可以下载,已经是最新版本
+
+		    		CommonTip:showTip(Localization:getInstance():getText("new.version.dynamic.isnew.error"), "negative")	
+
+					UserManager.getInstance().updateInfo = nil
+					local updateVersionButton = HomeScene:sharedInstance().updateVersionButton
+					if updateVersionButton then 
+						updateVersionButton:removeFromParentAndCleanup(true)
+						HomeScene:sharedInstance().updateVersionButton = nil
+					end
+				else
 			    	if currentPanel then currentPanel:onSuccess(data.errorCode) end
 			    	he_log_warning("load required res error, errorCode: " .. tostring(data.errorCode) .. ", item: " .. tostring(data.item))
-			    end
-			end
+				end
+		    else
+		    	if currentPanel then currentPanel:onSuccess(data.errorCode) end
+		    	he_log_warning("load required res error, errorCode: " .. tostring(data.errorCode) .. ", item: " .. tostring(data.item))
+		    end
+
+		    if failCallback then
+		    	failCallback()
+		    end
 		end
-		if scene:is(HomeScene) then ResourceLoader.loadRequiredResWithPrompt(onResourceLoaderCallback) end
 	end
+
+	ResourceLoader.loadRequiredResWithPrompt(onResourceLoaderCallback)	
+
 end
 
 function DynamicUpdatePanel:create(onConfirmLoad, onCancelLoad, needsize,force)
@@ -159,8 +184,15 @@ function DynamicUpdatePanel:buildUI(onConfirmLoad, onCancelLoad, needsize,requir
 	self.closeBtn = closeBtn
 	self.confirm = confirm
 
+	title._setText = title.setText
+	title._bgWidth= bg:getGroupBounds().size.width
+	function title:setText( text )
+		self:_setText(text)
+		self:setPositionX(self._bgWidth/2 - self:getContentSize().width/2)
+	end
+
 	title:setText(Localization:getInstance():getText("new.version.dynamic.title"))
-	title:setPositionX((bg:getGroupBounds().size.width - title:getContentSize().width) / 2)
+	-- title:setPositionX((bg:getGroupBounds().size.width - title:getContentSize().width) / 2)
 
 	local rewards
 	local updateInfo = UserManager:getInstance().updateInfo
@@ -237,7 +269,16 @@ function DynamicUpdatePanel:buildUI(onConfirmLoad, onCancelLoad, needsize,requir
 	animal:setPositionY(bg1:getPositionY() - bg1:getPreferredSize().height + animal:getGroupBounds().size.height)
 	local bgSize = bg:getPreferredSize()
 	bg:setPreferredSize(CCSizeMake(bgSize.width, bg1:getPositionX() - bg1:getPositionY() + bg1:getPreferredSize().height))
-	confirm:setString(Localization:getInstance():getText("update.mew.vision.panel.yes"))
+	
+	if #rewards > 0 then
+		--更新领奖励
+		confirm:setString(Localization:getInstance():getText("new.version.button.download"))
+	else
+		--立即更新
+		confirm:setString(Localization:getInstance():getText("new.version.button.download.zero"))
+	end
+	-- confirm:setString(Localization:getInstance():getText("update.mew.vision.panel.yes"))
+
 	self:scaleAccordingToResolutionConfig()
 	self:setPositionForPopoutManager()
 	local vSize = Director:sharedDirector():getVisibleSize()
@@ -289,6 +330,10 @@ function DynamicUpdatePanel:buildUI(onConfirmLoad, onCancelLoad, needsize,requir
 			self.progress:setVisible(true)
 			self.pgtxt:setVisible(true)
 			self.closeBtn:setVisible(false)
+
+			-- 新版本下载中！
+			self.title:setText(Localization:getInstance():getText("new.version.dynamic.title.loading"))
+
 			if onConfirmLoad ~= nil then onConfirmLoad() end
 		elseif self.succeedFlag == 2 then onCloseTapped() end
 	end
@@ -372,6 +417,7 @@ function DynamicUpdatePanel:setProgress( porgress )
 	if self.isDisposed then return end
 	if porgress < 0 then porgress = 0 end
 	if porgress > 1 then porgress = 1 end
+
 	local percent = math.floor(porgress * 100)
 	local selfScale = self:getScale()
 	self.progress:setCurNumber(percent)
@@ -390,9 +436,15 @@ function DynamicUpdatePanel:onSuccess(err)
 		self.confirm:setString(Localization:getInstance():getText("button.ok"))
 		self.confirm:setVisible(true)
 
+		-- 发现新版本！
+		self.title:setText(Localization:getInstance():getText("new.version.dynamic.title"))
+
 		self:refreshLayout(true)
 	else
 		self.succeedFlag = 1
+
+		-- 下载成功！
+		self.title:setText(Localization:getInstance():getText("new.version.dynamic.title.finish"))
 
 		-- 成功去掉updateinfo 信息
 		local rewards = UserManager:getInstance().updateInfo.rewards
@@ -408,6 +460,7 @@ function DynamicUpdatePanel:onSuccess(err)
 				self.label:setString(Localization:getInstance():getText("new.version.dynamic.complete.unattended.label.zero"))
 				self.tip:setString(Localization:getInstance():getText("new.version.dynamic.complete.unattended.tip.zero"))
 			end
+			self.confirm:setString(Localization:getInstance():getText("new.version.button.download.android"))
 		else
 			if #rewards == 1 then
 				self.label:setString(Localization:getInstance():getText("new.version.dynamic.complete.label"))
@@ -419,9 +472,9 @@ function DynamicUpdatePanel:onSuccess(err)
 				self.label:setString(Localization:getInstance():getText("new.version.dynamic.complete.label.zero"))
 				self.tip:setString(Localization:getInstance():getText("new.version.dynamic.complete.tip.zero"))
 			end
+			self.confirm:setString(Localization:getInstance():getText("new.version.button.download.ios"))
 		end
 		UserManager.getInstance().updateInfo = nil
-		self.confirm:setString(Localization:getInstance():getText("update.done.confirm"))
 		self.confirm:setVisible(true)
 
 		self:refreshLayout(true)
@@ -436,8 +489,12 @@ function DynamicUpdatePanel:remove()
 		button.wrapper:setTouchEnabled(true)
 	end
 end
-function DynamicUpdatePanel:popout()
-	PopoutManager:sharedInstance():add(self, true, false)
+function DynamicUpdatePanel:popout(notUsePopoutQueue)
+	if notUsePopoutQueue then
+		PopoutManager:sharedInstance():add(self, true, false)
+	else
+		PopoutQueue:sharedInstance():push(self,true, false)
+	end
 	self.allowBackKeyTap = true
 end
 function DynamicUpdatePanel:buildItem(itemId, itemNum)

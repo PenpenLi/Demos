@@ -12,6 +12,9 @@ function GameGuideUI:panelS(playUI, action, skipText)
 		else
 			panel = GameGuideUI:panelSUR(action.text, skipText, action.prefHeight)
 		end
+
+		
+
 	else
 		if action.panType == "down" then
 			panel = GameGuideUI:panelSD(action.text, skipText, action.prefHeight)
@@ -19,6 +22,9 @@ function GameGuideUI:panelS(playUI, action, skipText)
 			panel = GameGuideUI:panelSU(action.text, skipText, action.prefHeight)
 		end
 	end
+
+	
+
 	panel.onEnterHandler = function(self) end -- 覆盖原方法
 
 	if action.panImage then
@@ -30,9 +36,14 @@ function GameGuideUI:panelS(playUI, action, skipText)
 			v.x = v.x or 0
 			v.y = v.y or 0
 			sprite:setPosition(ccp(v.x, v.y))
+			if v.rotation then
+				sprite:setRotation(v.rotation)
+			end
 			panel:addChild(sprite)
 		end
 	end
+
+
 
 	local anim = {}
 	if action.panAnimal then
@@ -102,14 +113,22 @@ function GameGuideUI:panelS(playUI, action, skipText)
 		-- 	end
 		-- end
 	end
-	local target = panel:getChildByName("animation")
-	if action.panFlip then
-		target = target:getChildByName("animation")
+
+	if action.ignoreCharacter then
+		local child = panel:getChildByName("animation")
+		if child then
+			child:removeFromParentAndCleanup(true)
+		end
+	else
+		local target = panel:getChildByName("animation")
+		if action.panFlip then
+			target = target:getChildByName("animation")
+		end
+		target:setOpacity(0)
+		target:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(action.panDelay), CCFadeIn:create(action.panFade)))
+		-- panel:setOpacity(0)
+		-- panel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(action.panDelay), CCFadeIn:create(action.panFade)))
 	end
-	target:setOpacity(0)
-	target:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(action.panDelay), CCFadeIn:create(action.panFade)))
-	-- panel:setOpacity(0)
-	-- panel:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(action.panDelay), CCFadeIn:create(action.panFade)))
 
 	return panel
 end
@@ -126,7 +145,7 @@ function GameGuideUI:panelSD(text, skipText, prefHeight)
 		
 	end
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
 	if skipText then
 		panel.ui:getChildByName("skiptext"):setString(Localization:getInstance():getText("game.guide.panel.skip.text"))
 	else
@@ -150,7 +169,7 @@ function GameGuideUI:panelSU(text, skipText)
 	BasePanel.init(panel, panel.ui)
 	panel.text = panel.ui:getChildByName("text")
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
 	if skipText then
 		panel.ui:getChildByName("skiptext"):setString(Localization:getInstance():getText("game.guide.panel.skip.text"))
 	else
@@ -174,7 +193,7 @@ function GameGuideUI:panelSDR(text, skipText)
 	BasePanel.init(panel, panel.ui)
 	panel.text = panel.ui:getChildByName("text")
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
 	if skipText then
 		panel.ui:getChildByName("skiptext"):setString(Localization:getInstance():getText("game.guide.panel.skip.text"))
 	else
@@ -202,7 +221,7 @@ function GameGuideUI:panelSUR(text, skipText)
 	BasePanel.init(panel, panel.ui)
 	panel.text = panel.ui:getChildByName("text")
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
 	if skipText then
 		panel.ui:getChildByName("skiptext"):setString(Localization:getInstance():getText("game.guide.panel.skip.text"))
 	else
@@ -230,7 +249,7 @@ function GameGuideUI:panelL(text, skipText, action)
 	BasePanel.init(panel, panel.ui)
 	panel.text = panel.ui:getChildByName("text")
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
 	if skipText then
 		panel.ui:getChildByName("skiptext"):setString(Localization:getInstance():getText("game.guide.panel.skip.text"))
 	else
@@ -244,6 +263,9 @@ function GameGuideUI:panelL(text, skipText, action)
 			sprite:setScaleX(v.scale.x)
 			sprite:setScaleY(v.scale.y)
 			sprite:setPosition(ccp(v.x, v.y))
+			if v.rotation then
+				sprite:setRotation(v.rotation)
+			end
 			panel:addChild(sprite)
 		end
 	end
@@ -312,6 +334,7 @@ function GameGuideUI:panelL(text, skipText, action)
 		v:setOpacity(0)
 		v:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(action.panDelay), CCFadeIn:create(action.panFade)))
 	end
+	panel.onEnterHandler = function(self) end -- 覆盖原方法
 	return panel
 end
 
@@ -321,7 +344,8 @@ function GameGuideUI:panelMini(text)
 	BasePanel.init(panel, panel.ui)
 	panel.text = panel.ui:getChildByName("text")
 	local str = Localization:getInstance():getText(text, {n = "\n", s = " "})
-	panel.text:setString(str)
+	panel.text:setRichText(str, "000000")
+	panel.onEnterHandler = function(self) end -- 覆盖原方法
 	return panel
 end
 

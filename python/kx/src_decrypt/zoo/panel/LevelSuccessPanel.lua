@@ -14,7 +14,7 @@ assert(not LevelSuccessPanel)
 assert(PanelWithRankList)
 LevelSuccessPanel = class(PanelWithRankList)
 
-function LevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extraCoin, ...)
+function LevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extraCoin, activityForceShareData, ...)
 	assert(type(levelId) == "number")
 	assert(type(newScore) == "number")
 	assert(type(rewardItems) == "table")
@@ -22,6 +22,10 @@ function LevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extra
 	assert(#{...} == 0)
 
 	self.hiddenRankList = false
+
+	-- 确认是否使用特殊活动UI，为了搜索方便使用完全相同的变量名
+	local useSpecialActivityUI = WorldSceneShowManager:getInstance():isInAcitivtyTime() 
+		and (levelType == GameLevelType.kMainLevel or levelType == GameLevelType.kHiddenLevel or levelType == GameLevelType.kWukong)
 
 	-- 活动关不显示排行
 	local showRankList = LevelType.isShowRankList(levelType)
@@ -31,12 +35,12 @@ function LevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extra
 	-----------------
 	--- Create UI Component
 	-----------------------
-	self.levelSuccessTopPanel	= LevelSuccessTopPanel:create(self, levelId, levelType, newScore, rewardItems, extraCoin)
+	self.levelSuccessTopPanel	= LevelSuccessTopPanel:create(self, levelId, levelType, newScore, rewardItems, extraCoin, activityForceShareData, useSpecialActivityUI)
 
 	-- ---------------
 	-- Init Base Class
 	-- ---------------
-	PanelWithRankList.init(self, levelId, levelType, self.levelSuccessTopPanel, "levelSuccessPanel")
+	PanelWithRankList.init(self, levelId, levelType, self.levelSuccessTopPanel, "levelSuccessPanel", useSpecialActivityUI)
 
 	--------------------
 	-- Data Control Position
@@ -98,6 +102,11 @@ function LevelSuccessPanel:popout(...)
 		self:setRankListPanelTouchEnable()
 		self.allowBackKeyTap	= true
 		self.levelSuccessTopPanel:playAnimation()
+
+		if self.useSpecialActivityUI then
+			local size = self.rankListPanelClipping:getContentSize()
+			self.rankListPanelClipping:setContentSize(CCSizeMake(size.width, size.height + 300))
+		end
 	end
 
 	self.popRemoveAnim:popout(popoutFinishCallback)
@@ -115,7 +124,7 @@ function LevelSuccessPanel:remove(animFinishCallback)
 	self.popRemoveAnim:remove(animFinishCallback)
 end
 
-function LevelSuccessPanel:create(levelId, levelType, newScore, rewardItems, extraCoin, ...)
+function LevelSuccessPanel:create(levelId, levelType, newScore, rewardItems, extraCoin, activityForceShareData, ...)
 	assert(type(levelId) == "number")
 	assert(type(levelType) == "number")
 	assert(type(newScore) == "number")
@@ -125,7 +134,7 @@ function LevelSuccessPanel:create(levelId, levelType, newScore, rewardItems, ext
 	assert(#{...} == 0)
 
 	local newLevelSuccessPanel = LevelSuccessPanel.new()
-	newLevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extraCoin)
+	newLevelSuccessPanel:init(levelId, levelType, newScore, rewardItems, extraCoin, activityForceShareData)
 	return newLevelSuccessPanel
 end
 

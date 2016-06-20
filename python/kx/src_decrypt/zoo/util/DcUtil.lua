@@ -24,6 +24,11 @@ AcType = table.const {
   kViralArrival = 88,
   kViralActivate = 89,
   kFuuu = 100,
+  kActivity = 109,
+  kUserInfo = 900, --用户画像基础数据点
+  kQQUserFri = 909, --用户画像腾讯好友关系链
+  kOPLog = 1003, -- oplog打点
+  kExposure = 1002, --曝光点
 }
 
 local subAcTypes = {AcType.kInstall, AcType.kDnu, AcType.kUp, AcType.kActive, AcType.kReg}
@@ -88,7 +93,22 @@ if metaInfo:isNewInstalled() then
   isNew = 1
 end
 
-local function send(acType, data)
+-- percent: 0到100
+local function isSample(percent)
+	if isLocalDevelopMode then return true end
+	local uuid = MetaInfo:getInstance():getUdid()
+	local tail = string.sub(string.lower(uuid), -4)
+	local tailInt = tonumber(tail, 16)
+	local fullRange = math.pow(16, 4)
+	local sampleRange = math.floor(fullRange * (percent / 100))
+	if tailInt and type(tailInt) == "number" and tailInt <= sampleRange then
+		return true
+	else
+		return false
+	end
+end
+
+local function dc_log_send(acType, data)
 	if PrepackageUtil:isPreNoNetWork() then return end
 	
 	data.platform = platformName
@@ -107,6 +127,25 @@ local function send(acType, data)
 	end
 	end)
 	HeDCLog:getInstance():send(acType, data)
+end
+
+-- doSampling: 是否是概率打点（抽样） 概率10%
+local function send(acType, data, doSampling)
+	if not doSampling then
+		doSampling = false
+	end
+	if doSampling then
+		if isSample(10) then
+			if data.sub_category then
+				data.sub_category = 'G_'..data.sub_category
+			end
+			dc_log_send(acType, data)
+		else
+			return
+		end
+	else
+		dc_log_send(acType, data)
+	end
 end
 
 function DcUtil:getSubPlatform()
@@ -168,6 +207,7 @@ function DcUtil:newUser()
 		google_aid = googleAid,
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
+		imsi = metaInfo:getImsi(),
 		})
 	if subPlatform then
 		DcUtil:reg(subPlatform)
@@ -187,7 +227,7 @@ function DcUtil:dailyUser()
 		google_aid = googleAid,
 		md5 = ResourceLoader.getCurVersion(),
 		imei = metaInfo:getImei(),
-		version = 3,
+		imsi = metaInfo:getImsi(),
 	}
 
 	if _G.sns_token and _G.sns_token.openId then 
@@ -201,6 +241,30 @@ function DcUtil:dailyUser()
 	
 	send(AcType.kDau,data)
 
+end
+
+local function getAchiString()
+	local achiConfig = AchievementManager:getConfigs()
+	local allAchi = {}
+	for id,config in pairs(achiConfig) do
+		if config.achievementType ~= AchievementManager.achievementType.SHARE then
+			table.insert(allAchi, id)
+		end
+	end
+
+	table.sort(allAchi)
+
+	local reachedAchis = AchievementManager:getAchievements()
+
+	local str = ""
+
+	for index,id in ipairs(allAchi) do
+		local achi = reachedAchis[id]
+		local isReached = achi and (achi.level and achi.level > 0)
+		str = str .. (isReached and "1" or "0")
+	end
+
+	return str
 end
 
 --ingame打点
@@ -222,8 +286,18 @@ function DcUtil:logInGame()
 		item_id_10002 = UserManager:getInstance():getUserPropNumber(10002),
 		item_id_10003 = UserManager:getInstance():getUserPropNumber(10003),
 		item_id_10005 = UserManager:getInstance():getUserPropNumber(10005),
+		item_id_10058 = UserManager:getInstance():getUserTimePropNumber(10058),
+		item_id_10059 = UserManager:getInstance():getUserTimePropNumber(10059),
+		item_id_10060 = UserManager:getInstance():getUserTimePropNumber(10060),
+		item_id_10061 = UserManager:getInstance():getUserTimePropNumber(10061),
+		item_id_10062 = UserManager:getInstance():getUserTimePropNumber(10062),
+		item_id_10063 = UserManager:getInstance():getUserTimePropNumber(10063),
+		itme_id_10064 = UserManager:getInstance():getUserTimePropNumber(10064),
 		tree_level = FruitTreePanelModel:sharedInstance():getTreeLevel(),
 		level = UserManager:getInstance().user:getTopLevelId(),
+		have_skip = #UserManager.getInstance():getJumpLevelInfo() > 0,
+		Achievement_anarchy = getAchiString(),
+		Achievement_level = AchievementManager:getTotalScore(),
 		})
 end
 
@@ -271,8 +345,8 @@ function DcUtil:up(step)
 		})
 end
 
---购买银币物品
-function DcUtil:logBuyItem(goodsId, cost, num, coin2, currentStage)
+--用银币购买物品
+function DcUtil:logSilverCoinBuy(goodsId, cost, num, coin2, currentStage)
 	
 	send(AcType.kVirtualGoods, {
 		category = 1,
@@ -289,9 +363,8 @@ function DcUtil:logBuyItem(goodsId, cost, num, coin2, currentStage)
 		})
 end
 
---购买风车币物品
-function DcUtil:logBuyCashItem(goodsId, cost, num, coin2, currentStage,rmb)
-
+--用风车币购买道具
+function DcUtil:logHappyCoinBuy(goodsId, cost, num, coin2, currentStage)
 	local data = {
 		category = 2,
 		item_id = goodsId,
@@ -306,12 +379,23 @@ function DcUtil:logBuyCashItem(goodsId, cost, num, coin2, currentStage,rmb)
 		high_stage = UserManager:getInstance().user:getTopLevelId(),
 	}
 
-	if rmb then
-		data.rmb = rmb
-		data.currency = "rmb coins"
-		data.coin1 = ""
-		data.coin2 = ""
-	end
+	send(AcType.kVirtualGoods,data)
+end
+
+--用rmb买道具或风车币
+function DcUtil:logRmbBuy(goodsId, goodsType, cost, num, currentStage)
+	local data = {
+		category = 2,
+		item_id = goodsId,
+		item_name = goodsId,
+		item_type = goodsType,
+		cost = cost,
+		num = num,
+		currency = "rmb coins",
+		current_stage = currentStage,
+		stage_mode = math.floor(currentStage / 10000),
+		high_stage = UserManager:getInstance().user:getTopLevelId(),
+	}
 
 	send(AcType.kVirtualGoods,data)
 end
@@ -349,6 +433,15 @@ end
 --用户使用道具
 function DcUtil:logUseItem(itemId, num, currentStage)
 	local stageMode = math.floor(currentStage / 10000)
+	local missionId = nil
+	if MissionManager then
+		local missionIds = MissionManager:getInstance():getMissionIdOnLevel(currentStage)
+
+		if missionIds and #missionIds > 0 then
+			missionId = missionIds[1]
+		end
+	end
+
 	send(AcType.kUseItem, {
 		category = itemId,
 		item_id = itemId,
@@ -358,6 +451,7 @@ function DcUtil:logUseItem(itemId, num, currentStage)
 		current_stage = currentStage,
 		stage_mode = stageMode,
 		high_stage = UserManager:getInstance().user:getTopLevelId(),
+		mission_id = missionId,--表示该关卡是否为一个任务关，如果mission_id不为nil则表示是任务关
 		})
 end
 
@@ -448,16 +542,30 @@ function DcUtil:logViralActivate(type,viral_id,src)
 end
 
 --开始关卡
+-- ！！！：概率20%
 function DcUtil:logStageStart(currentStage)
-	send(AcType.kUserTrack, {
-		category = 'stage',
-		sub_category = 'stage_start',
-		current_stage = currentStage,
-		})
+	if isSample(20) then
+		dc_log_send(AcType.kUserTrack, {
+			category = 'stage',
+			sub_category = 'stage_start',
+			current_stage = currentStage,
+			})
+	end
 end
 
 --结束关卡
-function DcUtil:logStageEnd(currentStage, score, star, failReason)
+function DcUtil:logStageEnd(currentStage, score, star, failReason, stageTime)
+	stageTime = stageTime or 0
+
+	local missionId = nil
+	if MissionManager then
+		local missionIds = MissionManager:getInstance():getMissionIdOnLevel(currentStage)
+
+		if missionIds and #missionIds > 0 then
+			missionId = missionIds[1]
+		end
+	end
+
 	send(AcType.kUserTrack, {
 		category = 'stage',
 		sub_category = 'stage_end',
@@ -465,17 +573,34 @@ function DcUtil:logStageEnd(currentStage, score, star, failReason)
 		score = score,
 		level_star = star,
 		fail_reason = failReason,
+		stage_time = stageTime,
+		mission_id = missionId,
+		t1 = currentStage
 		})
 end
 
 --中途退出关卡
-function DcUtil:logStageQuit(currentStage, isRestart)
+function DcUtil:logStageQuit(currentStage, isRestart, leftMoves)
 	send(AcType.kUserTrack, {
 		category = 'stage',
 		sub_category = 'stage_quit',
 		restart_level = isRestart,
 		current_stage = currentStage,
+		left_moves = leftMoves or 0,
 		})
+end
+
+function DcUtil:logOpLog(levelId, score, stageTime, targetCount, opLog)
+	local dcData = {
+			levelId=levelId, 
+			score=score, 
+			stageTime=stageTime,
+			targetCount=targetCount,
+			opLog = opLog,
+			curMd5 = ResourceLoader.getCurVersion(), 	-- game version
+			curConfigMd5 = LevelMapManager.getInstance():getLevelUpdateVersion(), -- level update version
+		}
+	send(AcType.kOPLog, dcData)
 end
 
 --新增记录用户主动退出
@@ -520,7 +645,7 @@ function DcUtil:requestEnergy(friendId,currentStage)
 		sub_category = 'energy_ask',
 		friend_Id = friendId,
 		current_stage = currentStage,
-		})
+		}, true)
 end
 
 --发送邀请解锁云
@@ -530,7 +655,7 @@ function DcUtil:requestUnLockCloud(lockCloudId,friendId)
 		sub_category = 'unLockCloud',
 		lockCloudId = lockCloudId,
 		friend_Id = friendId,
-		})
+		}, true)
 end
 
 --接受加好友的邀请
@@ -549,7 +674,7 @@ function DcUtil:energyGive(friendId,itemId)
 		sub_category = 'energy_give',
 		friend_Id = friendId,
 		item_Id = itemId,
-		})
+		}, true)
 end
 
 --回赠好友精力
@@ -559,7 +684,7 @@ function DcUtil:energySendBack(friendId,itemId)
 		sub_category = 'energy_sendBack',
 		friend_Id = friendId,
 		item_Id = itemId,
-		})
+		}, true)
 end
 
 --确认接受好友赠送精力
@@ -569,7 +694,7 @@ function DcUtil:energy_receive(friendId,itemId)
 		sub_category = 'energy_receive',
 		friend_Id = friendId,
 		item_Id = itemId,
-		})
+		}, true)
 end
 
 --删除好友
@@ -613,7 +738,7 @@ function DcUtil:addFriendSearch(itemNum)
 		category = 'add_friend',
 		sub_category = 'search',
 		item_num = itemNum,
-		})
+		}, true)
 end
 
 --发送添加好友请求
@@ -621,7 +746,7 @@ function DcUtil:addFiendNear()
 	send(AcType.kUserTrack,{
 		category = 'add_friend',
 		sub_category = 'add_near',
-		})
+		}, true)
 end
 
 -- 摇一摇
@@ -630,7 +755,7 @@ function DcUtil:addFriendShake(itemNum)
 		category = 'add_friend',
 		sub_category = 'shake',
 		item_num = itemNum,
-		})
+		}, true)
 end
 
 -- 摇一摇好友的申请
@@ -638,7 +763,7 @@ function DcUtil:addFriendShakeNear()
 	send(AcType.kUserTrack,{
 		category = 'add_friend',
 		sub_category = 'add_shake',
-		})
+		}, true)
 end
 
 -- 摇一摇两个人互相加为好友
@@ -646,7 +771,7 @@ function DcUtil:addFriendShakeConfirm()
 	send(AcType.kUserTrack,{
 		category = 'add_friend',
 		sub_category = 'confim_shake',
-		})
+		}, true)
 end
 
 -- 摇一摇取消重试
@@ -654,7 +779,7 @@ function DcUtil:addFriendShakeCancel()
 	send(AcType.kUserTrack,{
 		category = 'add_friend',
 		sub_category = 'cancel_shake',
-		})
+		}, true)
 end
 
 -- 二维码加好友
@@ -663,7 +788,7 @@ function DcUtil:addFriendQRCode(type)
 		category = "add_friend",
 		sub_category = "add_friend_qrcode",
 		type= type,
-		})
+		}, true)
 end
 
 -- 二维码发送到微信（Mitalk）成功
@@ -671,7 +796,7 @@ function DcUtil:qrCodeSendToWechatTapped()
 	send(AcType.kUserTrack, {
 		category = "add_friend",
 		sub_category = "add_friend_qrcode_click_send",
-		})
+		}, true)
 end
 
 -- 点击扫码按钮
@@ -683,8 +808,8 @@ function DcUtil:qrCodeClickScan()
 end
 
 -- 活动打点
-function DcUtil:UserTrack(data)
-	send(AcType.kUserTrack,data)
+function DcUtil:UserTrack(data, doSampling)
+	send(AcType.kUserTrack,data, doSampling)
 end
 
 function DcUtil:openCanonPromoPanel()
@@ -769,7 +894,7 @@ function DcUtil:fruitPick(fruitType, fruitLevel, treeLevel)
 		fruit_type = fruitType,
 		fruit_level = fruitLevel,
 		tree_level = treeLevel
-		})
+		}, true)
 end
 
 function DcUtil:fruitRegenerate(fruitType, fruitLevel, treeLevel)
@@ -779,7 +904,7 @@ function DcUtil:fruitRegenerate(fruitType, fruitLevel, treeLevel)
 		fruit_type = fruitType,
 		fruit_level = fruitLevel,
 		tree_level = treeLevel
-		})
+		}, true)
 end
 
 function DcUtil:fruitSpeed(count, fruitType, fruitLevel, treeLevel)
@@ -790,7 +915,7 @@ function DcUtil:fruitSpeed(count, fruitType, fruitLevel, treeLevel)
 		fruit_level = fruitLevel,
 		tree_level = treeLevel,
 		item_num = count
-		})
+		}, true)
 end
 
 function DcUtil:fruitTreeUpgrade(treeLevel)
@@ -798,7 +923,7 @@ function DcUtil:fruitTreeUpgrade(treeLevel)
 		category = 'fruittree',
 		sub_category = 'upgrade_tree',
 		tree_level = treeLevel
-		})
+		}, true)
 end
 
 function DcUtil:openMeilukePromoPanel()
@@ -945,32 +1070,13 @@ function DcUtil:getCDKeyReward( key )
 	})
 end
 
-function DcUtil:clickWechatBuyGoldItem(index)
+function DcUtil:logBuyGoldItem(index, type, doSampling)
 	send(AcType.kUserTrack, {
 		category = "buy",
-		sub_category = "push_button_money_"..index,
-	})
-end
-
-function DcUtil:successEnterWechatBuyGoldItem(index)
-	send(AcType.kUserTrack, {
-		category = "buy",
-		sub_category = "push_button_success_"..index,
-	})
-end
-
-function DcUtil:clickAlipayBuyGoldItem(index)
-	send(AcType.kUserTrack, {
-		category = "pay",
-		sub_category = "push_button_money_"..tostring(index)
-	})
-end
-
-function DcUtil:successfulBuyCashByAlipay(index)
-	send(AcType.kUserTrack, {
-		category = "pay",
-		sub_category = "push_button_success_"..tostring(index)
-	})
+		sub_category = "push_button",
+		id = index, 
+		type1 = type,
+	}, doSampling)
 end
 
 --点击广告icon
@@ -1045,37 +1151,6 @@ function DcUtil:sendLocalNotify(typeId, timeStamp, numOfTimes)
 	-- 	})
 end
 
---此方法弃用 安卓走PaymentDCUtil IOS走PaymentIosDCUtil
-function DcUtil:payStart(payType,tradeId,goodsId,goodsType,group)
-	send(AcType.kUserTrack,{
-		category = 'pay',
-		sub_category = 'pay_start',
-		pay_type = payType,
-		trade_id = tradeId,
-		goods_id = goodsId,
-		goods_type = goodsType,
-		version = 1,
-		group = group,
-	})
-end
-
---此方法弃用 安卓走PaymentDCUtil IOS走PaymentIosDCUtil
-function DcUtil:payEnd(payType,tradeId,goodsId,goodsType,result,group,errorCode)
-	send(AcType.kUserTrack,{
-		category = 'pay',
-		sub_category = 'pay_end',
-		pay_type = payType,
-		trade_id = tradeId,
-		goods_id = goodsId,
-		goods_type = goodsType,
-		result = result,
-		error_code = errorCode,
-		version = 1,
-		group = group,
-	})
-
-end
-
 function DcUtil:logAddFiveSteps(actType , currentStage , buttonType , popType , userType , propId , lastFuuuLogID)
 	send(AcType.kUserTrack,{
 		category = 'add_5_steps',
@@ -1095,10 +1170,257 @@ function DcUtil:gameFailedFuuu(fuuuLogID , levelId , gameModeType , result , pro
 		category = "stage",
 		sub_category = "game_failed_fuuu",
 		id  = fuuuLogID,
-		level = levelId,
+		currLevel = levelId,
 		game_mode = gameModeType,
 		result = result,
 		progress = progress,
 		score = score,
 	})
+end
+
+--点击主界面上的星星图标
+function DcUtil:starIconClick( ... )
+	-- body
+	send(AcType.kUserTrack, {
+		category = 'ui',
+		sub_category = 'click_main_ui_star_button',
+		})
+end
+
+--点击快速选关界面上“查看四星和隐藏关”的小牌子
+function DcUtil:fourStarGuideIconClick( ... )
+	-- body
+	send(AcType.kUserTrack, {
+		category = 'ui',
+		sub_category = 'click_see_fourstar_and_hidden',
+		})
+end
+
+--点击四星引导 “炫耀一下”按钮
+function DcUtil:shareAllFourStarClick( ... )
+	-- body
+	send(AcType.kUserTrack, {
+		category = 'ui',
+		sub_category = 'click_share_all_fourstar',
+		})
+end
+
+function DcUtil:ladybugOnMainTrunkClick( ... )
+	-- body
+	send(AcType.kUserTrack, {
+		category = 'ui',
+		sub_category = 'click_ladybug_on_vine',
+		})
+end
+
+--点击所有乱七八糟能点的图标
+function DcUtil:iconClick(subCategory)
+	if not __IOS then return end
+	send(AcType.kUserTrack, {
+		category = "Ui",
+		sub_category = subCategory,
+		}, true)
+end
+
+function DcUtil:activity( params )
+	-- body
+	send(AcType.kActivity, params)
+end
+
+-- 任务系统创建新任务
+function DcUtil:missionLogicCreateMission(missionType)
+	send(AcType.kUserTrack, {
+		category = "job",
+		sub_category = "get_job",
+		t1 = missionType,
+		})
+end
+
+-- 任务系统任务完成
+function DcUtil:missionLogicFinishMission(missionType)
+	send(AcType.kUserTrack, {
+		category = "job",
+		sub_category = "finish_job",
+		t1 = missionType,
+		})
+end
+
+-- 任务系统任务被刷新掉
+function DcUtil:missionLogicRefreshMission(missionType)
+	send(AcType.kUserTrack, {
+		category = "job",
+		sub_category = "refresh_job",
+		t1 = missionType,
+		})
+end
+
+-- 任务系统任务生成失败
+function DcUtil:missionCreateFail(errType)
+	send(AcType.kUserTrack, {
+		category = "job",
+		sub_category = "fail_job",
+		id = errType
+		})
+end
+
+-- 领取精力成功
+function DcUtil:timeMachineGetEnergy()
+	send(AcType.kUserTrack, {
+		category = "activity",
+		sub_category = "Time_Machine_get_energy",
+		})
+end
+--播放送精力动画
+function DcUtil:timeMachineShowEnergy()
+	send(AcType.kUserTrack, {
+		category = "activity",
+		sub_category = "Time_Machine_show_energy",
+		})
+end
+
+-- 点击任务系统icon图标按钮
+function DcUtil:timeMachineLook(page)
+	send(AcType.kUserTrack, {
+		category = "activity",
+		sub_category = "Time_Machine_look",
+		t1 = page
+		})
+end
+
+-- 点击任务系统icon图标按钮
+function DcUtil:timeMachineClickShare()
+	send(AcType.kUserTrack, {
+		category = "activity",
+		sub_category = "Time_Machine_click_share",
+		})
+end
+
+-- 点击任务系统icon图标按钮
+function DcUtil:timeMachineShareSuccess()
+	send(AcType.kUserTrack, {
+		category = "activity",
+		sub_category = "Time_Machine_suc_share",
+		})
+end
+
+-- 点击任务系统icon图标按钮
+function DcUtil:missionIconTapped()
+	send(AcType.kUserTrack, {
+		category = "job",
+		sub_category = "click_icon",
+		})
+end
+
+-- 周赛点击“发送到微信群”（Mitalk）
+function DcUtil:seasonWeeklyShareTapped()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_ask_friend",
+		})
+end
+
+-- 周赛成功发送信息到微信（Mitalk）
+function DcUtil:seasonWeeklyShareSucceed()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_ask_success",
+		})
+end
+
+-- 周赛的次数链接，从链接进入游戏
+function DcUtil:seasonWeeklyClickLink()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_wx",
+		})
+end
+
+-- 周赛点击炫耀按钮
+function DcUtil:clickShareQrCodeBtn(id)
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_show_bnt",
+		id = id,
+		})
+end
+
+-- 周赛成功分享炫耀图
+function DcUtil:doShareQrCodeSuccess(id)
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_show_succsse",
+		id = id,
+		})
+end
+
+-- 周赛每周排名炫耀点击炫耀按钮
+function DcUtil:clickWeeklyRankShareBtn()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_share",
+		})
+end
+
+-- 周赛每周排名炫耀成功分享炫耀图
+function DcUtil:doShareWeeklyRankSuccess()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_share_success",
+		})
+end
+
+-- 周赛通过炫耀图二维码进入游戏
+function DcUtil:enterGameViaWeeklyRaceQrCode()
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_ewm",
+		})
+end
+
+-- 周赛通过扫码或者链接获得的收集物个数
+function DcUtil:sendWeeklyRaceItemNum(itemNum)
+	send(AcType.kUserTrack, {
+		category = "weeklyrace",
+		sub_category = "weeklyrace_summer_2016_ewm_gem",
+		num = itemNum
+		}, true)
+end
+
+function DcUtil:loginException(subCategory)
+	send(AcType.kUserTrack, {
+		category = "Abnormal",
+		sub_category = subCategory,
+		})
+end
+
+function DcUtil:log(acType, data, doSampling)
+	send(acType, data, doSampling)
+end
+
+function DcUtil:userInfo( data )
+	local moreData = {
+		carrier = metaInfo:getNetOperatorName(),
+	}
+
+	for k,v in pairs(data) do
+		moreData[k] = v
+	end
+
+	send(AcType.kUserInfo, moreData)
+end
+
+function DcUtil:qqUserFri( data )
+	local moreData = {
+		carrier = metaInfo:getNetOperatorName(),
+	}
+
+	for k,v in pairs(data) do
+		moreData[k] = v
+	end
+
+	send(AcType.kQQUserFri, moreData)
+end
+
+function DcUtil:Exposure( data )
+	send(AcType.kExposure, data)
 end

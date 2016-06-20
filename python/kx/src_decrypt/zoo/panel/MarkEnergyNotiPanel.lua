@@ -187,6 +187,12 @@ function MarkGetEnergyNotiPanel:_init(boxPosition, callback)
 	self.number:runAction(CCSequence:create(arr7))
 
 	self.close:addEventListener(DisplayEvents.kTouchTap, onClose)
+
+	local scene = HomeScene:sharedInstance()
+	local energyButton = scene.energyButton
+	if energyButton and not energyButton.isDisposed then
+		energyButton:setTempEnergyState(UserEnergyState.COUNT_DOWN_TO_RECOVER)
+	end
 end
 
 function MarkGetEnergyNotiPanel:popout()
@@ -204,12 +210,14 @@ function MarkGetEnergyNotiPanel:onCloseBtnTapped()
 		PopoutManager:sharedInstance():remove(self)
 		return
 	end
-	local toPos = energyButton:getFlyToPosition()
-	local rToPos = self.panel:convertToNodeSpace(ccp(toPos.x, toPos.y))
-	local arr1 = CCArray:create()
-	arr1:addObject(CCSpawn:createWithTwoActions(CCEaseBackIn:create(CCMoveTo:create(1,
-		ccp(rToPos.x - self.size.width, rToPos.y + self.size.height))),
-		CCScaleTo:create(1, self.size.width / self.item:getContentSize().width)))
+	energyButton:setTempEnergyState(nil)
+
+	-- local toPos = energyButton:getFlyToPosition()
+	-- local rToPos = self.panel:convertToNodeSpace(ccp(toPos.x, toPos.y))
+	-- local arr1 = CCArray:create()
+	-- arr1:addObject(CCSpawn:createWithTwoActions(CCEaseBackIn:create(CCMoveTo:create(1,
+	-- 	ccp(rToPos.x - self.size.width, rToPos.y + self.size.height))),
+	-- 	CCScaleTo:create(1, self.size.width / self.item:getContentSize().width)))
 	local function onAllOver()
 		PopoutManager:sharedInstance():remove(self)
 		local scene = HomeScene:sharedInstance()
@@ -222,8 +230,18 @@ function MarkGetEnergyNotiPanel:onCloseBtnTapped()
 		end
 		if self.callback then self.callback() end
 	end
-	arr1:addObject(CCCallFunc:create(onAllOver))
-	self.item:runAction(CCSequence:create(arr1))
+	-- arr1:addObject(CCCallFunc:create(onAllOver))
+	-- self.item:runAction(CCSequence:create(arr1))
+
+	local bounds = self.item:getGroupBounds()
+	self.item:setVisible(false)
+
+	local anim = FlyInfiniteEnergyAnimation:create()
+	anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+	anim:setFinishCallback(onAllOver)
+	anim:play()
+
+
 	self.bg:runAction(CCFadeOut:create(0.25))
 	self.text:runAction(CCFadeOut:create(0.25))
 	self.glow:runAction(CCToggleVisibility:create())
@@ -243,8 +261,8 @@ function MarkRemindRemarkAnim:_init(position, require, reward)
 	self:initLayer()
 	local panel = ResourceManager:sharedInstance():buildGroup("guide_info_panelM")
 	local text = panel:getChildByName("text")
-	text:setString(Localization:getInstance():getText("mark.panel.noti.remark.text",
-		{need = require, reward = reward, n = '\n'}))
+	local testStr = Localization:getInstance():getText("mark.panel.noti.remark.text", {need = require, reward = reward, n = '\n'})
+	text:setRichText(testStr, "000000")
 	panel:setPositionXY(-900, 0)
 	local arr = CCArray:create()
 	arr:addObject(CCDelayTime:create(0.3))

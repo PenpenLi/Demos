@@ -7,16 +7,25 @@ RequestType = {
     kUnlockLevelArea = 3,
     kAddFriend = 5,
     kActivity = 6,
+    kLevelSurpass = 7,   -- 好友关卡超越
+    kLevelSurpassLimited = 8, -- 后端用来限制数量的类型，功能同上
+    kPassLastLevelOfLevelArea = 9, -- 好友超越区域最后一关
+    kScoreSurpass = 10,  -- 好友分数超越
+    kPassMaxNormalLevel = 11, -- 好友通过版本最高关卡
+    kPushEnergy = 12,   -- NPC免费精力推送
+    kDengchaoEnergy = 13, -- 邓超送经理
+    kWeeklyRace = 14,
 }
 
 local getMessageLimit = {
-	kAll = 100,
-	kNeedUpdate = 10,
-	kReceiveFreeGift = 20,
-	kSendFreeGift = 30,
-    kUnlockLevelArea = 20,
-    kAddFriend = 30,
-    kActivity = 20,
+	kAll = 120,            -- 消息中心最大消息数
+	kNeedUpdate = 10,      -- 神秘消息（优先级最低）
+	kReceiveFreeGift = 20, -- 收取精力
+	kSendFreeGift = 30,    -- 发送经历
+    kUnlockLevelArea = 20, -- 区域解锁
+    kAddFriend = 30,       -- 加好友
+    kActivity = 10,        -- 活动帮助
+    kNews = 10,            -- 新鲜事
 }
 
 FreegiftManager = class()
@@ -35,6 +44,7 @@ function FreegiftManager:init()
 	self.leftFreegiftInfos = {}
 	self.lockedSendIds = {}
 	self.lockedReceiveCount = 0
+	self.pushMessages = {}
 end
 
 function FreegiftManager:update(load, callback)
@@ -75,6 +85,12 @@ function FreegiftManager:update(load, callback)
 				end
 			end
 		end
+
+		local myTopLevel = UserManager:getInstance().user:getTopLevelId()
+
+		self.pushMessages = {}
+		local hasFriendEnergyRequest = false
+		local hasDengchaoEnergy = false
 		local limit = {}
 		for k, v in pairs(getMessageLimit) do limit[k] = v end
 		local tmpList = {}
@@ -83,10 +99,12 @@ function FreegiftManager:update(load, callback)
 				table.insert(tmpList, v)
 				limit.kSendFreeGift = limit.kSendFreeGift - 1
 				limit.kAll = limit.kAll - 1
+				hasFriendEnergyRequest = true
 			elseif v.type == RequestType.kReceiveFreeGift and limit.kReceiveFreeGift > 0 then
 				table.insert(tmpList, v)
 				limit.kReceiveFreeGift = limit.kReceiveFreeGift - 1
 				limit.kAll = limit.kAll - 1
+				hasFriendEnergyRequest = true
 			elseif v.type == RequestType.kUnlockLevelArea and limit.kUnlockLevelArea > 0 then
 				table.insert(tmpList, v)
 				limit.kUnlockLevelArea = limit.kUnlockLevelArea - 1
@@ -95,18 +113,43 @@ function FreegiftManager:update(load, callback)
 				table.insert(tmpList, v)
 				limit.kAddFriend = limit.kAddFriend - 1
 				limit.kAll = limit.kAll - 1
-			elseif v.type == RequestType.kNeedUpdate and limit.kNeedUpdate > 0 then
-				table.insert(tmpList, v)
-				limit.kNeedUpdate = limit.kNeedUpdate - 1
-				limit.kAll = limit.kAll - 1
 			elseif v.type == RequestType.kActivity and limit.kActivity > 0 then
 				table.insert(tmpList, v)
 				limit.kActivity = limit.kActivity - 1
+				limit.kAll = limit.kAll - 1
+			elseif (v.type >= RequestType.kLevelSurpass and v.type <= RequestType.kPassMaxNormalLevel or v.type == RequestType.kWeeklyRace) and limit.kNews > 0 then
+				if v.type == RequestType.kPassMaxNormalLevel then
+					local levelId = tonumber(v.itemId) or 0
+					if levelId > myTopLevel then -- 如果好友的最大关卡<=我的topLevelId就不显示
+						table.insert(tmpList, v)
+						limit.kNews = limit.kNews - 1
+						limit.kAll = limit.kAll - 1
+					end
+				else
+					table.insert(tmpList, v)
+					limit.kNews = limit.kNews - 1
+					limit.kAll = limit.kAll - 1
+				end
+			elseif v.type == RequestType.kPushEnergy or v.type == RequestType.kDengchaoEnergy then
+				table.insert(self.pushMessages, v)
+				if v.type == RequestType.kDengchaoEnergy then
+					hasDengchaoEnergy = true
+				end
+			elseif v.type == RequestType.kNeedUpdate and limit.kNeedUpdate > 0 then
+				table.insert(tmpList, v)
+				limit.kNeedUpdate = limit.kNeedUpdate - 1
 				limit.kAll = limit.kAll - 1
 			end
 			if limit.kAll <= 0 then break end
 		end
 		self.requestInfos = tmpList
+
+		if hasFriendEnergyRequest then
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(MessageCenterPushEvents.kReceiveFriendEnergyRequest))
+		end
+		if hasDengchaoEnergy then
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(MessageCenterPushEvents.kDengchaoEnergy))
+		end
 		if callback then callback("success", evt) end
 	end
 
@@ -150,6 +193,14 @@ function FreegiftManager:getMessageNumByType(msgType)
 			end
 		end
 	end
+	for k, v in ipairs(self.pushMessages) do
+		for k2, v2 in ipairs(msgType) do
+			if v.type == v2 then
+				res = res + 1
+				break
+			end
+		end
+	end
 	return res
 end
 
@@ -165,6 +216,22 @@ function FreegiftManager:getMessages(msgType)
 		end
 	end
 	return res
+end
+
+function FreegiftManager:getPushMessages(msgType)
+	if type(msgType) ~= "table" then return self.pushMessages end
+	local ret = {}
+
+	for k, v in pairs(self.pushMessages) do
+		for k2, v2 in pairs(msgType) do
+			if v.type == v2 then
+				table.insert(ret, v)
+				break
+			end
+		end
+	end
+	return ret
+
 end
 
 function FreegiftManager:getMessageById(id)
@@ -207,7 +274,7 @@ function FreegiftManager:getCanGiveFriends()
 	return res
 end
 
-function FreegiftManager:requestGift(uids, itemId, successCallback, failCallback)
+function FreegiftManager:requestGift(uids, itemId, successCallback, failCallback, withLoading)
 	local function onSuccess(data)
 		UserManager:getInstance():addWantIds(uids)
 		if successCallback then successCallback(data) end
@@ -217,16 +284,41 @@ function FreegiftManager:requestGift(uids, itemId, successCallback, failCallback
 		if failCallback then failCallback(err) end
 	end
 
-	local http = SendFreegiftHttp.new(false)
+	withLoading = withLoading or false
+	local http = SendFreegiftHttp.new(withLoading)
 	http:ad(Events.kComplete, onSuccess)
 	http:ad(Events.kError, onFail)
 	http:load(2, nil, uids, itemId)
 end
 
 -- local ___i = 1
-function FreegiftManager:sendGiftTo(receiverUid, successCallback, failCallback)
+function FreegiftManager:sendGiftTo(receiverUid, successCallback, failCallback, withLoading)
 	-- 好友排行中的给好友送东西，这个功能已经不存在了。
 	-- 还有调用，所以不删除接口，然而调了也不会有什么卵用。
+	-- 不好意思，这个功能又加回来了，以后别乱删代码。
+	local function onFail(err)
+
+		UserManager:getInstance():removeSendId(receiverUid)
+		if failCallback then failCallback(err) end
+	end
+
+	local function onSuccess(data)
+		-- if ___i == 4 or ___i == 5 then 
+		-- 	onFail()
+		-- end
+		-- ___i = ___i+1
+		if successCallback then successCallback(data) end
+	end
+	UserManager:getInstance():addSendId(receiverUid)
+
+	-- HomeScene:sharedInstance():runAction(CCSequence:createWithTwoActions(CCDelayTime:create(4), CCCallFunc:create(onSuccess)))
+
+	withLoading = withLoading or false
+	local http = SendFreegiftHttp.new(withLoading)
+	http:ad(Events.kComplete, onSuccess)
+	http:ad(Events.kError, onFail)
+	--(sendType, messageId, targetUids, itemId)
+	http:load(1, nil, {receiverUid}, 10012)
 end
 
 function FreegiftManager:sendGift(id, successCallback, failCallback, isBatch)

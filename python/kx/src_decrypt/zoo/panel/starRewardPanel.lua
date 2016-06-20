@@ -12,7 +12,6 @@ require 'zoo.panel.MoreStarPanel'
 ---------------------------------------------------
 -------------- StarRewardItem
 ---------------------------------------------------
-testTipInfo = ""
 assert(not StarRewardItem)
 assert(BaseUI)
 StarRewardItem = class(BaseUI)
@@ -53,11 +52,16 @@ function StarRewardItem:init(ui, itemId, itemNumber, ...)
 	-- -------------------
 	self.itemPhPos	= self.itemPh:getPosition()
 	self.itemPhSize	= self.itemPh:getGroupBounds().size
+	self.itemPhSize = {width = self.itemPhSize.width, height = self.itemPhSize.height}
 	self.itemPh:setVisible(false)
 
 	-------------
 	-- Create Item Icon
 	-- -----------------
+	--if not self.itemId or self.itemId <= 0 then
+		--self.itemId = ItemType.COIN --itemId必须有值，否则会不创建self.itemRes，造成ui层会crash
+		--正常情况下，如果没有itemId，则根本不会弹板
+	--end
 	
 	if self.itemId > 0 then
 		local itemRes	= ResourceManager:sharedInstance():buildItemGroup(self.itemId)
@@ -225,7 +229,7 @@ function StarRewardPanel:init(starRewardBtnPosInWorldSpace, interfaceGroup , ...
 
 	if nearestStarRewardLevelMeta then
 
-		rewardLevelToPush = userExtend:getFirstNotReceivedRewardLevel(nearestStarRewardLevelMeta.id)
+		local rewardLevelToPush = userExtend:getFirstNotReceivedRewardLevel(nearestStarRewardLevelMeta.id)
 
 		if rewardLevelToPush then
 			-- Has Reward Level
@@ -298,7 +302,7 @@ function StarRewardPanel:init(starRewardBtnPosInWorldSpace, interfaceGroup , ...
 			local scores = UserManager:getInstance():getScoreRef()
 			local counter = 0
 			for k, v in pairs(scores) do 
-				if LevelType:isMainLevel(v.levelId) and v.star < 3 and v.star > 0 then
+				if LevelType:isMainLevel(v.levelId) and ((v.star < 3 and v.star > 0) or (v.star == 0 and JumpLevelManager:getInstance():hasJumpedLevel(v.levelId))) then
 					counter = counter + 1
 				end
 			end
@@ -387,7 +391,6 @@ function StarRewardPanel:getReward(...)
 	print("StarRewardPanel:getReward")
 
 	local function onSendGetRewardMsgSuccess(event)
-		testTipInfo = "onNet \n"
 		print("StarRewardPanel:onGetBtnTapped Called ! onSendGetRewardMsgSuccess ")
 		if self.isDisposed then
 			return
@@ -399,31 +402,28 @@ function StarRewardPanel:getReward(...)
 		local rewardIds = {}
 		local rewardAmounts = {}
 
-		if type(event.data) == "table" and type(event.data.rewardItems) == "table" then
-			for k1,v1 in pairs(event.data.rewardItems) do
-				local itemId 		= v1.itemId
-				local itemNumber	= v1.num
-				table.insert(rewardIds, itemId)
-				table.insert(rewardAmounts, itemNumber)
-			end
-		end
+		-- if type(event.data) == "table" and type(event.data.rewardItems) == "table" then
+		-- 	for k1,v1 in pairs(event.data.rewardItems) do
+		-- 		local itemId 		= v1.itemId
+		-- 		local itemNumber	= v1.num
+		-- 		table.insert(rewardIds, itemId)
+		-- 		table.insert(rewardAmounts, itemNumber)
+		-- 	end
+		-- end
 
-		local anims = HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
-		print("number of anims : " .. #anims)
+		-- local anims = HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
+		-- print("number of anims : " .. #anims)
 
-		-- Get Item Pos In World Space
-		local itemResPosInWorld = self.rewardItem.itemRes:getPositionInWorldSpace()
-		self.rewardItem.itemRes:setVisible(false)
-		anims[1]:setPosition(ccp(itemResPosInWorld.x, itemResPosInWorld.y))
+		-- -- Get Item Pos In World Space
+		-- local itemResPosInWorld = self.rewardItem.itemRes:getPositionInWorldSpace()
+		-- self.rewardItem.itemRes:setVisible(false)
+		-- anims[1]:setPosition(ccp(itemResPosInWorld.x, itemResPosInWorld.y))
 
-		-- Get Item Size
-		local  itemResScale	= self.rewardItem.itemRes:getScale()
-		anims[1]:setScale(itemResScale)
+		-- -- Get Item Size
+		-- local  itemResScale	= self.rewardItem.itemRes:getScale()
+		-- anims[1]:setScale(itemResScale)
 
 		local function onAnimFinished()
-
-			testTipInfo = testTipInfo .. "onAnim \n"
-			
 
 			if self.isDisposed then
 				return
@@ -432,10 +432,8 @@ function StarRewardPanel:getReward(...)
 			local delay = CCDelayTime:create(0.5)
 
 			local function removeSelf()
-				testTipInfo = testTipInfo .. "removeSelf \n"
 				self.getBtn:setEnabled(true)
 				self:remove()
-				--CommonTip:showTip(testTipInfo , nil , nil , 8)
 			end
 			local callAction = CCCallFunc:create(removeSelf)
 
@@ -462,11 +460,18 @@ function StarRewardPanel:getReward(...)
 		end
 		setTimeOut(__decreaseNumber, interval)
 
-		anims[1]:playFlyToAnim(onAnimFinished)
+		-- anims[1]:playFlyToAnim(onAnimFinished)
+		
+		self.rewardItem.itemRes:setVisible(false)
+		local anim = FlyItemsAnimation:create(event.data.rewardItems)
+		local bounds = self.rewardItem.itemRes:getGroupBounds()
+		anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+		anim:setFinishCallback(onAnimFinished)
+		anim:setScale(self.rewardItem.itemRes:getScale())
+		anim:play()
 	end
 
 	local function onSendGetRewardMsgFail(evt)
-		print("RRR  AAAAAAAAAAAAAAAAAAAAA  onSendGetRewardMsgFail 12312312312312")
 
 		if self.isDisposed then
 			return
@@ -487,7 +492,6 @@ function StarRewardPanel:getReward(...)
 			end
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 		end
-		print("RRR  AAAAAAAAAAAAAAAAAAAAA  onSendGetRewardMsgFail 12312312312312   111111111111  " , code)
 		self:onSendGetRewardMsgFail(code)
 	end
 
@@ -535,9 +539,6 @@ function StarRewardPanel:popout(...)
 end
 
 function StarRewardPanel:remove(...)
-
-	testTipInfo = testTipInfo .. "SP.remove \n"
-
 	assert(#{...} == 0)
 	print("StarRewardPanel:remove Called !")
 

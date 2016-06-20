@@ -186,7 +186,6 @@ function TileMoveState:updatePortals()
 		local tr = toPos[1]
 		local tc = toPos[2]
 		local newBoard = self.mainLogic.boardmap[tr][tc]
-		local newBoard = self.mainLogic.boardmap[tr][tc]
 		if newBoard:hasEnterPortal() then
 			local exitPointX, exitPointY = newBoard.passExitPoint_x, newBoard.passExitPoint_y
 			local newPoint = self.moveTiles[exitPointX.."_"..exitPointY] 

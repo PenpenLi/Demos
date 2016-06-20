@@ -114,6 +114,18 @@ function BasePanel:setPositionForPopoutManager()
 	local wSize = CCDirector:sharedDirector():getWinSize()
 	local vOrigin = CCDirector:sharedDirector():getVisibleOrigin()
 	local posAdd = wSize.height - vSize.height - vOrigin.y
+
+	-- print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	-- print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	-- print("vSize:",vSize.width,vSize.height)	--  visible size after scale
+	-- print("wSize:",wSize.width,wSize.height)	--	design size
+	-- print("vOrigin:",vOrigin.x,vOrigin.y)		-- origin point in visible screen
+	-- print("posAdd",posAdd)
+	-- print("self:getVCenterInScreenY()",self:getVCenterInScreenY())
+	-- print(self:getHCenterInScreenX(), -(vSize.height - self:getVCenterInScreenY() + posAdd))
+	-- print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	-- print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
 	self:setPosition(ccp(self:getHCenterInScreenX(), -(vSize.height - self:getVCenterInScreenY() + posAdd)))
 end
 
@@ -130,5 +142,14 @@ function BasePanel:createTouchButton(name, onTapped)
 	btn:setButtonMode(true)
 	btn:ad(DisplayEvents.kTouchTap, onTapped)
 
+	return btn
+end
+
+
+function BasePanel:createTouchButtonBySprite(sp, onTapped)
+
+	sp:setTouchEnabled(true)
+	sp:setButtonMode(true)
+	sp:ad(DisplayEvents.kTouchTap, onTapped)
 	return btn
 end

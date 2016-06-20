@@ -314,7 +314,9 @@ function RabbitWeeklyRankList:onAddFriendButtonTapped()
     local addFriendBtnPosInWorldSpace   = self.addFriendBtn:getPositionInWorldSpace()
     
     -- Pop The Add Friend Panel
-    local panel = AddFriendPanel:create(addFriendBtnPosInWorldSpace)
+    --local panel = AddFriendPanel:create(addFriendBtnPosInWorldSpace)
+    local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(addFriendBtnPosInWorldSpace)
+    -- panel:popout()
     --local selfParent = self:getParent():setRankListPanelTouchDisable()
     self.panelWithRank:setRankListPanelTouchDisable()
     if panel then 

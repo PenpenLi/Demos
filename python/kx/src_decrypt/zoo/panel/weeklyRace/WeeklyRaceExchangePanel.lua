@@ -1,5 +1,4 @@
-require "zoo.panel.BuyPropPanel"
-
+require 'zoo.payment.AddMinusButton'
 
 local kButtonType = {
     kAdd = 0,

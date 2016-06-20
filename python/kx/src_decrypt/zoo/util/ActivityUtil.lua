@@ -33,6 +33,22 @@ local function unrequire(m)
 	print("unrequire:"..m3)
 end
 
+local remove_count = 0
+local function removeUnusedResources( activitys )
+	if remove_count > 0 then return end
+	local usedActivity = {}
+	for index,config in ipairs(activitys) do
+		local s,e = string.find(config.source, "/")
+		local activity_name = string.sub(config.source, 0, s - 1)
+		table.insert(usedActivity, activity_name)
+	end
+
+	if #usedActivity > 0 then
+		ResManager:getInstance():removeActivityUnusedRes(usedActivity)
+	end
+	remove_count = 1
+end
+
 
 local function loadActivityRes(source,version,srcFiles,resourceFiles,onSuccess,onError,onProcess)
 	local metaLua = source:gsub(".lua","_meta.lua")
@@ -185,9 +201,18 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 			local source = activitys[idx].source
 
 			if __WIN32 then
-				require("activity/" .. source)
+				local config = require("activity/" .. source)
+				if type(config.setAttributes) == "function" then
+					config.setAttributes(activitys[idx])
+				end
 				table.insert(ret,activitys[idx])				
-			elseif pcall(function() require("activity/" .. source) end) then
+			elseif pcall(function() 
+					local config = require("activity/" .. source)
+					if type(config.setAttributes) == "function" then
+						config.setAttributes(activitys[idx])
+					end
+				end)
+			 	then
 				table.insert(ret,activitys[idx])
 			else
 				print("require activity/" .. source .. " error")
@@ -250,6 +275,8 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 		end
 	else
 
+		local isInAudit = __IOS and not MaintenanceManager:getInstance():isEnabled("Activity")
+
 	    local function onCallback(response)
 	    	local activitys = nil
 			if response.httpCode ~= 200 then 
@@ -260,7 +287,7 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 					requestConfig(onSuccess,onError,tryCount,isReload)	
 					return
 				else
-					if isReload then 	
+					if isReload or isInAudit then 	
 						onError()
 						return
 					else
@@ -274,12 +301,17 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 			else
 				_loadFromNetwork = true
 				_lastRequestTime = Localhost:time()
-				writeCacheConfig(response.body)
+				if not isInAudit then
+					writeCacheConfig(response.body)
+				end
 
 				activitys,_rootUrl = parseConfig(response.body)
 			end
 
 			if activitys then
+				if not isInAudit then
+					removeUnusedResources(activitys)
+				end
 				loadConfigs(activitys,onSuccess)
 			else
 				print("parse activity config error")
@@ -289,7 +321,11 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 
 		local url = NetworkConfig.maintenanceURL
 		local uid = UserManager.getInstance().uid
-		local params = string.format("?name=activity_config&uid=%s&_v=%s", uid, _G.bundleVersion)
+		local configName = "activity_config"
+		if isInAudit then
+			configName = "activity_config_ios_audit"
+		end
+		local params = string.format("?name=%s&uid=%s&_v=%s",configName, uid, _G.bundleVersion)
 		url = url .. params
 
 	  	print("ActivityUtil:", url)
@@ -304,26 +340,21 @@ local function requestConfig(onSuccess,onError,tryCount,isReload)
 	    request:setConnectionTimeoutMs(connection_timeout * 1000)
 	    request:setTimeoutMs(30 * 1000)
 
-
-	    if not PrepackageUtil:isPreNoNetWork() then 
-	    	if _lastRequestTime + 30 * 60 * 1000 < Localhost:time() then 
-	    		-- HttpClient:getInstance():sendRequest(onCallback, request)
-	    		if ResManager:getInstance().requestActivityConfig then 
-	    			ResManager:getInstance():requestActivityConfig(onCallback, request)
-	    		end
-	    	else
-	    		onSuccess(_activitys)	    		
-	    	end
-	    else
-	    	print("ActivityUtil================no network prepackage")
-	    end
+		if _lastRequestTime + 30 * 60 * 1000 < Localhost:time() then 
+			-- HttpClient:getInstance():sendRequest(onCallback, request)
+			if ResManager:getInstance().requestActivityConfig then 
+				ResManager:getInstance():requestActivityConfig(onCallback, request)
+			end
+		else
+			onSuccess(_activitys)	    		
+		end
 	end
 end
 
 local function isInWhiteList( activityConfig )
 
 	local actInfo = table.find(UserManager:getInstance().actInfos or {},function(v)
-		return v.actId == activityConfig.actId
+		return tostring(v.actId) == tostring(activityConfig.actId)
 	end)
 
 	-- 联网活动在线
@@ -409,7 +440,9 @@ function ActivityUtil:getActivitys(callback)
 		callback({})
 	end
 	--on wp8,disable activity
-	if not (__WP8 and _G.disableActivity) == true then
+	if __WP8 or _G.disableActivity or PrepackageUtil:isPreNoNetWork() then
+		requestError()
+	else
 		requestConfig(requestSuccess,requestError,1,false)
 	end
 end
@@ -478,8 +511,11 @@ function ActivityUtil:reloadActivitys(callback)
 		callback(filter(_activitys))
 	end
 
-	requestConfig(requestSuccess,requestError,1,true)
-
+	if __WP8 or _G.disableActivity or PrepackageUtil:isPreNoNetWork() then
+		requestError()
+	else
+		requestConfig(requestSuccess,requestError,1,true)
+	end
 end
 
 -- 下载对应活动的资源
@@ -726,6 +762,10 @@ function ActivityUtil:getMsgNum( source )
 		return 0
 	end
 
+	if config.isShowMsgNum and not config.isShowMsgNum() then
+		return 0
+	end
+
 	local actInfos = UserManager:getInstance().actInfos
 	if not actInfos then 
 		return 0
@@ -734,7 +774,6 @@ function ActivityUtil:getMsgNum( source )
 	for k,v in pairs(actInfos) do
 		if v.actId == config.actId then
 			return v.msgNum
-			-- return 1
 		end
 	end
 
@@ -889,6 +928,16 @@ function ActivityUtil:clearRewardMark( source )
 	self:setRewardMark(source, false)
 end
 
+function ActivityUtil:setActInfos( actInfos )
+	UserManager:getInstance().actInfos = actInfos
+	for _,act in pairs(ActivityUtil:getActivitys()) do
+		local source = act.source
+		for k,v in pairs(self.onActivityStatusChangeCallbacks) do
+			v.func(v.obj,source)
+		end
+	end
+end
+
 function ActivityUtil:getBeginTime( source )
 	local config = require("activity/" .. source)
 	if not config.actId then
@@ -944,7 +993,7 @@ function ActivityUtil:getNoticeActivitys( ... )
 	local activitys = {}
 	for _,v in pairs(ActivityUtil:getActivitys()) do
 		local config = require("activity/" .. v.source)
-		if config.notice then 
+		if config.notice and not config.icon  then --有icon不显示banner
 			table.insert(activitys,v)
 		end
 	end

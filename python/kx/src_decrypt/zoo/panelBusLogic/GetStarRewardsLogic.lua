@@ -1,6 +1,6 @@
 
 -- Copyright C2009-2013 www.happyelements.com, all rights reserved.
--- Create Date:	2013Äê12ÔÂ24ÈÕ 21:09:23
+-- Create Date:	2013Ã„Ãª12Ã”Ã‚24ÃˆÃ• 21:09:23
 -- Author:	ZhangWan(diff)
 -- Email:	wanwan.zhang@happyelements.com
 
@@ -55,10 +55,20 @@ function GetStarRewardsLogic:start(load, ...)
 		end
 	end
 	local function onSendFailCallback(event)
+		-- has received 		
+		local code = tonumber(event.data)
+		if code and code == 730690 then 
+			local userExtend = UserManager:getInstance().userExtend
+			assert(userExtend)
+
+			userExtend:setRewardLevelReceived(self.rewardId)
+		end
+
 		if self.failCallback then
 			self.failCallback(event)
 		end
 	end
+
 	local function onSendCancel(event)
 		if self.cancelCallback then
 			self.cancelCallback(event)

@@ -55,6 +55,7 @@ function MarketPanelGoodsItem:init(groupName, goodsId)
 	self.bubbleWrapper:setAnchorPoint(ccp(0.5, 0.5))
 
 	self.size = ui:getGroupBounds().size
+	self.size = {width = self.size.width, height = self.size.height}
 
 	local iconBuilder = InterfaceBuilder:create(PanelConfigFiles.properties)
 

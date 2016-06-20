@@ -5,6 +5,10 @@ require "zoo.gamePlay.GamePlayConfig"
 
 GameBoardData = class()
 
+GameBoardDataConfig = {
+	magicTileMaxLife = 8,
+}
+
 GameBoardFallType = table.const
 {
 	kNone = 0,
@@ -18,7 +22,11 @@ GameBoardFallType = table.const
 	kCannonHoneyBottle = 127,
 	kCannonGreyCuteBall = 128,
 	kCannonBrownCuteBall = 129,
-	kCnanonBlackCuteBall = 130,
+	kCannonBlackCuteBall = 130,
+	kCannonRocket = 147,
+	kCannonCrystalStone = 144,
+	kCannonTotems = 156,
+	kCannonDrip = 164,
 }
 
 TileRoadType = table.const{
@@ -26,6 +34,11 @@ TileRoadType = table.const{
 	kCorner = 2,
 	kStartPoint = 3, 
 	kEndPoint = 4,
+}
+
+TileRoadShowType = table.const{
+	kSnail = 0,  --默认 蜗牛路径
+	kHedgehog = 1, --刺猬路径
 }
 
 TransmissionType = table.const{
@@ -58,6 +71,12 @@ TransmissionColor = table.const{
 	kBlue = 3
 }
 
+HedgeRoadState = table.const{
+	kStop = 0, 
+	kPass = 1,
+	kDestroy = 2,
+}
+
 
 function GameBoardData:ctor()
 	self.isUsed = false; 	--是否可用
@@ -85,6 +104,9 @@ function GameBoardData:ctor()
 	self.snailTargetCount = 0
 	self.snailRoadViewRotation = nil
 	self.snailRoadViewType = nil
+	self.roadType = 0
+	self.hedgeRoadState = 0  --刺猬路径状态
+
 
 	self.isRabbitProducer = false -- 兔子生成口
 
@@ -106,10 +128,18 @@ function GameBoardData:ctor()
 	self.theGameBoardFallType = {};
 	self.isMagicTileAnchor = false
 	self.magicTileId = nil
+	self.magicTileIndex = nil
 	self.remainingHit = nil
 	self.chains = {}
 	self.showType = 0
 	self.honeySubSelect = false
+
+	self.isWukongTarget = false    -- 是否为悟空的目标地格
+
+	self.lotusLevel = 0
+
+	self.superCuteState = GameItemSuperCuteBallState.kNone
+	self.superCuteAddInt = 0
 end
 
 function GameBoardData:resetDatas()
@@ -138,6 +168,8 @@ function GameBoardData:resetDatas()
 	self.snailTargetCount = 0
 	self.snailRoadViewRotation = nil
 	self.snailRoadViewType = nil
+	self.roadType = 0
+	self.hedgeRoadState = 0
 
 	self.isRabbitProducer = false -- 兔子生成口
 
@@ -153,6 +185,7 @@ function GameBoardData:resetDatas()
 	self.theGameBoardFallType = {};
 	self.isMagicTileAnchor = false
 	self.magicTileId = nil
+	self.magicTileIndex = nil
 	self.remainingHit = nil
 	self.chains = {}
 	self.showType = 0
@@ -160,6 +193,12 @@ function GameBoardData:resetDatas()
 	self.tileMoveCountDown = 0
 	self.tileMoveReverse = false
 	self.tileMoveMeta = nil
+
+	self.isWukongTarget = false
+	self.lotusLevel = 0
+
+	self.superCuteState = GameItemSuperCuteBallState.kNone
+	self.superCuteAddInt = 0
 end
 
 function GameBoardData.copyDatasFrom(toData, fromData)
@@ -191,6 +230,7 @@ function GameBoardData.copyDatasFrom(toData, fromData)
 	toData.snailTargetCount = fromData.snailTargetCount
 	toData.snailRoadViewRotation = fromData.snailRoadViewRotation
 	toData.snailRoadViewType = fromData.snailRoadViewType
+	toData.roadType = fromData.roadType
 
 	toData.isRabbitProducer = fromData.isRabbitProducer -- 兔子生成口
 	toData.transType = fromData.transType
@@ -206,6 +246,7 @@ function GameBoardData.copyDatasFrom(toData, fromData)
 	toData.seaAnimalType = fromData.seaAnimalType
 	toData.isMagicTileAnchor = fromData.isMagicTileAnchor
 	toData.magicTileId = fromData.magicTileId
+	toData.magicTileIndex = fromData.magicTileIndex
 	toData.remainingHit = fromData.remainingHit
 	toData.isHitThisRound = fromData.isHitThisRound
 
@@ -219,6 +260,13 @@ function GameBoardData.copyDatasFrom(toData, fromData)
 	toData.tileMoveCountDown = fromData.tileMoveCountDown
 	toData.tileMoveReverse = fromData.tileMoveReverse
 	toData.tileMoveMeta = fromData.tileMoveMeta
+	toData.hedgeRoadState = fromData.hedgeRoadState
+
+	toData.isWukongTarget = fromData.isWukongTarget
+	toData.lotusLevel = fromData.lotusLevel
+
+	toData.superCuteState = fromData.superCuteState
+	toData.superCuteAddInt = fromData.superCuteAddInt
 end
 
 function GameBoardData:copy()
@@ -252,17 +300,9 @@ function GameBoardData:initByConfig(tileDef)
 	self.y = tileDef.y;
 
 	if tileDef:hasProperty(TileConst.kEmpty) then self.isUsed = false else self.isUsed = true end	--是否可用		--1
-	if tileDef:hasProperty(TileConst.kCannonAnimal)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonAnimal) end	--是否是生成口	--39
-	if tileDef:hasProperty(TileConst.kCannonIngredient)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonIngredient) end	--是否是生成口	--40
-	if tileDef:hasProperty(TileConst.kCannonBlock)then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBlock) end	--是否是生成口	--41
-	if tileDef:hasProperty(TileConst.kCannonCoin) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonCoin) end 
-	if tileDef:hasProperty(TileConst.kCannonCrystallBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonCrystallBall) end 
-	if tileDef:hasProperty(TileConst.kCannonBalloon) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBalloon) end 
-	if tileDef:hasProperty(TileConst.kCannonHoneyBottle) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonHoneyBottle) end 
-	if tileDef:hasProperty(TileConst.kCannonGreyCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonGreyCuteBall) end 
-	if tileDef:hasProperty(TileConst.kCannonBrownCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonBrownCuteBall) end 
-	if tileDef:hasProperty(TileConst.kCnanonBlackCuteBall) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCnanonBlackCuteBall) end 
-	if #self.theGameBoardFallType <= 0 and tileDef:hasProperty(TileConst.kCannon) then self.isProducer = true table.insert(self.theGameBoardFallType, GameBoardFallType.kCannonAll) end	--是否是生成口	--5
+	-- 生成口类型判断
+	self.theGameBoardFallType = ProductItemLogic:getTileFallTypes(tileDef)
+	if #self.theGameBoardFallType > 0 then self.isProducer = true end
 	
 	if tileDef:hasProperty(TileConst.kBlocker) then self.isBlock = true end							--是否为阻挡物	--6
 	if tileDef:hasProperty(TileConst.kLock) then self.isBlock = true end							--牢笼也是阻挡物--8
@@ -293,7 +333,11 @@ function GameBoardData:initByConfig(tileDef)
 	if tileDef:hasProperty(TileConst.kMagicTile) then
 		self.isMagicTileAnchor = true
 		self.isHitThisRound = false
-		self.remainingHit = 7
+		self.remainingHit = GameBoardDataConfig.magicTileMaxLife
+	end
+
+	if tileDef:hasProperty(TileConst.kWukongTarget) then
+		self.isWukongTarget = true
 	end
 
 	if tileDef:hasProperty(TileConst.kSand) then -- 流沙
@@ -319,6 +363,25 @@ function GameBoardData:initByConfig(tileDef)
 	elseif tileDef:hasProperty(TileConst.kTileBlocker2) then
 		self.tileBlockType = 1 self.reverseCount = 3 self.isReverseSide = true
 	end  --翻转地格
+
+	----[[
+  	if tileDef:hasProperty(TileConst.kLotusLevel1) then
+		self.lotusLevel = 1 
+	end
+	if tileDef:hasProperty(TileConst.kLotusLevel2) then
+		self.lotusLevel = 2 
+		self.isBlock = true 
+	end
+	if tileDef:hasProperty(TileConst.kLotusLevel3) then
+		self.lotusLevel = 3 
+		self.isBlock = true 
+	end
+	--]]
+
+	if tileDef:hasProperty(TileConst.kSuperCute) then 
+		self.superCuteState = GameItemSuperCuteBallState.kActive
+		self.isBlock = true
+	end
 end
 
 function GameBoardData:onUseMoves()
@@ -343,6 +406,9 @@ end
 function GameBoardData:changeDataAfterTrans(gameBoardData)
 	self.iceLevel = gameBoardData.iceLevel
 	self.sandLevel = gameBoardData.sandLevel
+	self.lotusLevel = gameBoardData.lotusLevel
+	self.superCuteState = gameBoardData.superCuteState
+	self.superCuteAddInt = gameBoardData.superCuteAddInt
 	self.isNeedUpdate = true
 end
 
@@ -355,7 +421,7 @@ function GameBoardData:initTileMoveByConfig(tileMoveConfig)
 	end
 end
 
-function GameBoardData:initSnailRoadDataByConfig( tileDef )
+function GameBoardData:initSnailRoadDataByConfig( tileDef, roadType )
 	-- body
 	if tileDef then 
 		if tileDef:hasProperty(RouteConst.kUp) then
@@ -367,6 +433,8 @@ function GameBoardData:initSnailRoadDataByConfig( tileDef )
 		elseif tileDef:hasProperty(RouteConst.kRight) then
 			self.snailRoadType = RouteConst.kRight
 		end
+
+		self.roadType = roadType
 
 	end
 
@@ -576,6 +644,10 @@ function GameBoardData:initUnlockAreaDropDownModeInfo( ... )
 	end
 end
 
+function GameBoardData:hasSuperCuteBall()
+	return self.superCuteState ~= GameItemSuperCuteBallState.kNone
+end
+
 function GameBoardData:isBigMonsterEffectPrior1( ... )
 	-- body
 	if 	self.iceLevel > 0  
@@ -599,4 +671,11 @@ end
 function GameBoardData:isBigMonsterEffectPrior3( ... )
 	-- body
 	return false
+end
+
+function GameBoardData:changeHedgehogRoadState( state )
+	-- body
+	if state > self.hedgeRoadState then 
+		self.hedgeRoadState = state
+	end
 end

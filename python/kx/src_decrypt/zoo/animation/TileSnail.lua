@@ -108,6 +108,13 @@ function TileSnail:playDestroyAnimation(callback)
 	self.snail:play(animate, 0, 1, animationCallback)
 end
 
+function TileSnail:setMainSpriteRotation( rotation )
+	-- body
+	-- if self.moveHedgehog then
+	-- 	self.moveHedgehog.main_sprite:setRotation(-rotation)
+	-- end
+end
+
 function TileSnail:createMoveSnail( callback )
 	-- body
 	local function animationCallback( ... )

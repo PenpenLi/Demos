@@ -3,7 +3,10 @@
 
 require 'zoo.scenes.component.HomeScene.WorldSceneScroller'
 
-
+ScrollableEvents = {
+	kEndMoving = "endMoving",
+	kStartMoving = "startMoving" 
+}
 
 VerticalScrollable = class(Layer)
 
@@ -295,6 +298,7 @@ function VerticalScrollable:onTouchEnd(event)
 	elseif speed ~= 0 then
 		self:slide(speed)
 	end
+	self:updateContentViewArea()
 end
 
 function VerticalScrollable:getSwipeSpeed()
@@ -416,6 +420,17 @@ end
 
 function VerticalScrollable:updateScrollableHeight()
 	self:setScrollableHeight(self.content:getHeight())
+	print("self.container.posY: ", self.container:getPositionY())
+	print("content height: ", self.content:getHeight(), " self.height: ", self.height)
+
+	if self.content:getHeight() < self.height then
+		self:gotoPositionY(0)		
+	else
+		local maxTopOffset = self.content:getHeight() - self.height
+		if self.container:getPositionY() > maxTopOffset then
+			self:gotoPositionY(maxTopOffset)
+		end
+	end
 end
 
 function VerticalScrollable:removeContent()
@@ -461,7 +476,8 @@ function VerticalScrollable:onStartMoving()
 end
 
 function VerticalScrollable:onEndMoving()
-	-- print('VerticalScrollable:onEndMoving')
+	print('VerticalScrollable:onEndMoving')
+	self:dispatchEvent(Event.new(ScrollableEvents.kEndMoving, nil, self))
 	if self.updateSchedId then 
 		Director:sharedDirector():getScheduler():unscheduleScriptEntry(self.updateSchedId)
 		self.updateSchedId = nil

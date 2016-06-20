@@ -251,8 +251,8 @@ function MarketManager:getGoldProductInfo(uicallback)
             -- local list
             self.buyLogic:getProductInfo(onAndroidGetLocalListFinish, getGoldListFail, getGoldListTimeout, getGoldListCanceled)
             -- remote list
-            local norm, wechat, alipay, qihoo, wandoujia = PaymentManager:getInstance():getWindMillTabShowState()
-            if wechat or alipay or qihoo or wandoujia then
+            local norm, wechat, alipay, qihoo, wandoujia, msdk, mi, huawei, qqwallet = PaymentManager:getInstance():getWindMillTabShowState()
+            if wechat or alipay or qihoo or wandoujia or msdk or mi or huawei or qqwallet then
                 local animation, listening = nil, true
                 local function onCloseButtonTap()
                     if animation then
@@ -329,7 +329,7 @@ function MarketManager:onGetAndroidGoldListFinish(localConfig, remoteConfig)
     self.productItems = {}
     local network = true
     if type(remoteConfig) ~= "table" then
-        remoteConfig =  {{name="ingame"}, {name="wechat_2"}, {name="alipay_2"}, {name="qihoo_2"}, {name="wandoujia_2"}}
+        remoteConfig =  {{name="ingame"}, {name="wechat_2"}, {name="alipay_2"}, {name="qihoo_2"}, {name="wandoujia_2"}, {name="msdk"},{name="mi"}, {name="huawei"}, {name="qqwallet"}}
         network = false
     end
 
@@ -340,17 +340,30 @@ function MarketManager:onGetAndroidGoldListFinish(localConfig, remoteConfig)
                 if type(j.tag) ~= "string" or j.tag == "ingame" then table.insert(v, j) end
             end
         end
-        local norm, wechat, alipay, qihoo, wandoujia = PaymentManager:getInstance():getWindMillTabShowState()
-        if v.name == "ingame" or v.name == "wechat_2" or v.name == "alipay_2" or v.name == "qihoo_2" or v.name == "wandoujia_2" then
+        local norm, wechat, alipay, qihoo, wandoujia, msdk, mi, huawei, qqwallet= PaymentManager:getInstance():getWindMillTabShowState()
+        if v.name == "ingame" or v.name == "wechat_2" or v.name == "alipay_2" or v.name == "qihoo_2" or 
+            v.name == "wandoujia_2" or v.name == "msdk" or v.name == "mi" or v.name == "huawei" or v.name == "qqwallet" then
+
             if v.name == "ingame" then v.enabled = norm
             elseif v.name == "wechat_2" then v.enabled = wechat
             elseif v.name == "alipay_2" then v.enabled = alipay 
             elseif v.name == "qihoo_2" then v.enabled = qihoo
-            elseif v.name == "wandoujia_2" then v.enabled = wandoujia  end
+            elseif v.name == "wandoujia_2" then v.enabled = wandoujia  
+            elseif v.name == "msdk" then v.enabled = msdk  
+            elseif v.name == "mi" then v.enabled = mi
+            elseif v.name == "huawei" then v.enabled = huawei
+            elseif v.name == "qqwallet" then v.enabled = qqwallet
+            end
+
             if v.name == "wechat_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWechat end
             elseif v.name == "alipay_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kAlipay end 
             elseif v.name == "qihoo_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kQihoo end
-            elseif v.name == "wandoujia_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWandoujia end end
+            elseif v.name == "wandoujia_2" then for i, j in ipairs(v) do j.payType = PlatformPayType.kWandoujia end 
+            elseif v.name == "msdk" then for i, j in ipairs(v) do j.payType = PlatformPayType.kQQ end
+            elseif v.name == "mi" then for i, j in ipairs(v) do j.payType = PlatformPayType.kMI end
+            elseif v.name == "huawei" then for i, j in ipairs(v) do j.payType = PlatformPayType.kHuaWei end
+            elseif v.name == "qqwallet" then for i, j in ipairs(v) do j.payType = PlatformPayType.kQQWallet end
+            end
             table.sort(v, function(a, b) return tonumber(a.cash) < tonumber(b.cash) end)
             table.insert(self.productItems, v)
         end
@@ -432,15 +445,15 @@ function MarketManager:getGoodsById(goodsId)
 end
 
 function MarketManager:buy(goodsId, amount, price, successFunc, failFunc)
-    local function onSuccess(event)
+    local function onSuccess(data)
         -- notify observers of this goods to update interface
         self:notifyByGoodsId(goodsId)
-        if successFunc then successFunc(event) end
+        if successFunc then successFunc(data) end
     end
 
-    local function onFail(event)
+    local function onFail(errorCode)
         self:notifyByGoodsId(goodsId)
-        if failFunc then failFunc(event) end
+        if failFunc then failFunc(errorCode) end
     end
 
     local logic = BuyLogic:create(goodsId, 2, nil)

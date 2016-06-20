@@ -97,8 +97,12 @@ function GameGuideData:resetRunningAction()
 	self:resetActionIndex()
 end
 
+function GameGuideData:getGuideById(guideId)
+	return self:getGuides()[guideId]
+end
+
 function GameGuideData:getGuideActionById(guideId, actionId)
-	local guide = self:getGuides()[guideId]
+	local guide = self:getGuideById(guideId)
 	if not guide then return nil end
 	return guide.action[actionId]
 end

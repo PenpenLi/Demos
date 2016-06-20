@@ -52,6 +52,9 @@ function onAnimalCrashOccurred(crashLogPath, isLuaError)
   crashHandled = true
 
   -- print("crashLogPath:", crashLogPath, ",isLuaError:", isLuaError)
+  if GlobalEventDispatcher then
+    GlobalEventDispatcher:getInstance():dp(Event.new("lua_crash", {logPath=crashLogPath}))
+  end
   local success, ret = pcall(showErrorLog, crashLogPath)
   if success then
     if type(ret) == "boolean" and ret == true then

@@ -25,7 +25,16 @@ end
 function BeginnerPanel:init()
 	self.rewardList = MetaManager.getInstance():getNewUserRewards()
 
-	self.ui = self:buildInterfaceGroup("BeginnerPanel") 
+	if WorldSceneShowManager:isRightGameVersion() then 
+		if __IOS then 
+			self.ui = self:buildInterfaceGroup('BeginnerPanel_spring_ios')
+		else
+			self.ui = self:buildInterfaceGroup('BeginnerPanel_spring_other')
+		end
+	else
+		self.ui = self:buildInterfaceGroup('BeginnerPanel')
+	end
+
 	BasePanel.init(self, self.ui)
 	self.panelName = "beginnerPanel"
 	self:setPositionForPopoutManager()
@@ -36,6 +45,11 @@ function BeginnerPanel:init()
 	self.avlText = self.ui:getChildByName("avlText")
 	self.btnGet = self.ui:getChildByName("btnGet")
 	assert(self.captain)
+
+	if WorldSceneShowManager:isRightGameVersion() then 
+		self.captain:setVisible(false)
+	end
+
 	self.items = {}
 	for i = 1, 5 do
 		self.items[i] = self.ui:getChildByName("item"..(i - 1))
@@ -51,6 +65,8 @@ function BeginnerPanel:init()
 	elseif PlatformConfig:isQQPlatform() then
 		self.captain:setText(Localization:getInstance():getText("activity.gift.center.panel.title"))
 		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text"))
+	elseif __IOS and WorldSceneShowManager:isRightGameVersion() then 
+		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text.apple"))
 	else
 		self.captain:setText(Localization:getInstance():getText("beginner.panel.title"))
 		self.cmtText:setString(Localization:getInstance():getText("beginner.panel.cmt.text"))
@@ -94,35 +110,7 @@ function BeginnerPanel:init()
 	end
 	self.btnGet:ad(DisplayEvents.kTouchTap, onGetTouched)
 
-	self:initOnePlusUI();
 	return true
-end
-
-function BeginnerPanel:initOnePlusUI()
-	local function hideOnePlusLogo()
-		local onePlusLogo = self.ui:getChildByName("onePlusLogo")
-		if onePlusLogo then
-			onePlusLogo:setVisible(false)
-		end
-	end
-	if StartupConfig:getInstance():getPlatformName()=="oppo" then
-		local actInfo = table.find(UserManager:getInstance().actInfos or {},function(v)
-			return v.actId == 7
-		end)
-		if actInfo then
-			self.captain:setText(Localization:getInstance():getText("activity.school.new.user.title"))
-			self.cmtText:setString(Localization:getInstance():getText("activity.school.new.user.desc"))
-			local capSize = self.captain:getContentSize()
-			local capScale = 65 / capSize.height
-			self.captain:setScale(capScale)
-			local bgSize = self.bg:getGroupBounds().size
-			self.captain:setPositionX((bgSize.width - capSize.width * capScale) / 2 + self.bg:getPositionX())
-		else
-			hideOnePlusLogo()
-		end
-	else
-		hideOnePlusLogo()
-	end
 end
 
 function BeginnerPanel:getPresents()
@@ -160,7 +148,6 @@ function BeginnerPanel:openPackage()
 	local startX = (vSize.width - fullWidth) / 2
 	-- 无限精力
 	local function onOver()
-
 		-- show tip for beginner
 		local scene = HomeScene:sharedInstance()
 		scene.energyButton:showTip()
@@ -169,20 +156,29 @@ function BeginnerPanel:openPackage()
 		local logic = UseEnergyBottleLogic:create(ItemType.INFINITE_ENERGY_BOTTLE)
 		logic:start(true)
 	end
-	local sprite = home:createFlyingEnergyAnim(true)
-	sprite:setPosition(ccp(startX + vOrigin.x, vSize.height / 2 + vOrigin.y))
-	sprite:playFlyToAnim(onOver)
-	-- 银币
-	sprite = home:createFlyingCoinAnim()
-	sprite:setPosition(ccp(startX + width + spare + vOrigin.x, vSize.height / 2 + vOrigin.y))
-	sprite:playFlyToAnim(false, false)
-	-- 其他道具
-	for i = 1, #self.rewardList do
-		if self.rewardList[i].itemId ~= ItemType.COIN and self.rewardList[i].itemId ~= ItemType.INFINITE_ENERGY_BOTTLE then
-			sprite = home:createFloatingItemAnim(self.rewardList[i].itemId)
-			sprite:setPosition(ccp(startX + (i - 1) * (width + spare) + vOrigin.x, vSize.height / 2 + vOrigin.y))
-			sprite:playFlyToAnim(false)
+	-- local sprite = home:createFlyingEnergyAnim(true)
+	-- sprite:setPosition(ccp(startX + vOrigin.x, vSize.height / 2 + vOrigin.y))
+	-- sprite:playFlyToAnim(onOver)
+	-- -- 银币
+	-- sprite = home:createFlyingCoinAnim()
+	-- sprite:setPosition(ccp(startX + width + spare + vOrigin.x, vSize.height / 2 + vOrigin.y))
+	-- sprite:playFlyToAnim(false, false)
+	-- -- 其他道具
+	-- for i = 1, #self.rewardList do
+	-- 	if self.rewardList[i].itemId ~= ItemType.COIN and self.rewardList[i].itemId ~= ItemType.INFINITE_ENERGY_BOTTLE then
+	-- 		sprite = home:createFloatingItemAnim(self.rewardList[i].itemId)
+	-- 		sprite:setPosition(ccp(startX + (i - 1) * (width + spare) + vOrigin.x, vSize.height / 2 + vOrigin.y))
+	-- 		sprite:playFlyToAnim(false)
+	-- 	end
+	-- end
+
+	for i,v in ipairs(self.rewardList) do
+		local anim = FlyItemsAnimation:create({v})
+		anim:setWorldPosition(ccp(startX + (i - 1) * (width + spare) + vOrigin.x, vSize.height / 2 + vOrigin.y))
+		if v.itemId == ItemType.INFINITE_ENERGY_BOTTLE then
+			anim:setFinishCallback(onOver)
 		end
+		anim:play()
 	end
 
 	PopoutManager:sharedInstance():remove(self, true)

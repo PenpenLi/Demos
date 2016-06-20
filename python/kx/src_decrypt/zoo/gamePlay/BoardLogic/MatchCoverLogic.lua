@@ -34,7 +34,7 @@ function MatchCoverLogic:canBeEffectByMatchAt(mainLogic, r, c, sId)
 	local item = mainLogic.gameItemMap[r][c];
 	local board = mainLogic.boardmap[r][c];
 
-	if (board.iceLevel > 0) then
+	if (board.iceLevel > 0) and item.ItemType ~= GameItemType.kBottleBlocker then
 		return true;
 	end
 	return false;
@@ -70,16 +70,21 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 	mainLogic.comboHelpNumCountBalloonList = {}
 	mainLogic.comboHelpNumCountRabbitList = {}
 	mainLogic.comboHelpNumCountSandList = {}
+	mainLogic.comboHelpNumCountRocketList = {}
+	mainLogic.comboHelpNumCountTotemsList = {}
 	local pcount = 0					----有几组消除
 	local firstOneList = {}
 
 	for r = 1, #mainLogic.swapHelpMap do 
 		for c = 1, #mainLogic.swapHelpMap[r] do
 			local spd = mainLogic.swapHelpMap[r][c]		----消除号id
+			local isSpecialType = spd < 0 -- 该位置是否是合成的特效
 			if (spd < 0) then spd = -spd end 				----消除号为负数的id，和正数的绝对值相等的id属于一个集合,0表示没有响应
 
 			if spd > 0 then
-				mainLogic.gameItemMap[r][c].hasGivenScore = true
+				if not isSpecialType then -- 特效的分数独立计算
+					mainLogic.gameItemMap[r][c].hasGivenScore = true
+				end
 				mainLogic.EffectHelpMap[r][c] = -1 			----计算
 				--------辅助计算分数
 				if (mainLogic.comboHelpDataSet[spd] == nil or mainLogic.comboHelpDataSet[spd] == 0)		----还没有被计入过，开始首次统计
@@ -90,32 +95,43 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 					mainLogic.comboHelpDataSet[spd] = pcount;
 					firstOneList[spd] = IntCoord:create(r,c);														----集合中的第一个物体，以他为基础显示获取的分数
 				end
+				local item = mainLogic.gameItemMap[r][c]
 				----某次连击的小动物数量增加
-				if mainLogic.gameItemMap[r][c]:canBeComboNum() then
+				if item:canBeComboNum() then
 					if (mainLogic.comboHelpNumCountList[spd] == nil ) then mainLogic.comboHelpNumCountList[spd] = 0 end;
 					mainLogic.comboHelpNumCountList[spd] = mainLogic.comboHelpNumCountList[spd] + 1;
 				end
 				----某次连击的水晶球数量增加
-				if mainLogic.gameItemMap[r][c]:canBeComboNumCrystal() then
-					mainLogic.gameItemMap[r][c].oldItemType = nil
+				if item:canBeComboNumCrystal() then
+					item.oldItemType = nil
 					if (mainLogic.comboHelpNumCountCrystalList[spd] == nil ) then mainLogic.comboHelpNumCountCrystalList[spd] = 0 end;
 					mainLogic.comboHelpNumCountCrystalList[spd] = mainLogic.comboHelpNumCountCrystalList[spd] + 1;
 				end
-				if mainLogic.gameItemMap[r][c]:canBeComboNumBalloon() then 
+				if item:canBeComboNumBalloon() then 
 					if (mainLogic.comboHelpNumCountBalloonList[spd] == nil ) then mainLogic.comboHelpNumCountBalloonList[spd] = 0 end;
 					mainLogic.comboHelpNumCountBalloonList[spd] = mainLogic.comboHelpNumCountBalloonList[spd] + 1;
 				end
 
-				if mainLogic.gameItemMap[r][c]:canBeComboNumRabbit() then
+				if item:canBeComboNumRabbit() then
 					if (mainLogic.comboHelpNumCountRabbitList[spd] == nil ) then mainLogic.comboHelpNumCountRabbitList[spd] = 0 end;
 					mainLogic.comboHelpNumCountRabbitList[spd] = mainLogic.comboHelpNumCountRabbitList[spd] + 1;
+				end
+
+				if item:canBeComboNumRocket() then
+					if (mainLogic.comboHelpNumCountRocketList[spd] == nil ) then mainLogic.comboHelpNumCountRocketList[spd] = 0 end;
+					mainLogic.comboHelpNumCountRocketList[spd] = mainLogic.comboHelpNumCountRocketList[spd] + 1;
+				end
+
+				if item:canBeComboTotems() then
+					if (mainLogic.comboHelpNumCountTotemsList[spd] == nil ) then mainLogic.comboHelpNumCountTotemsList[spd] = 0 end;
+					mainLogic.comboHelpNumCountTotemsList[spd] = mainLogic.comboHelpNumCountTotemsList[spd] + 1;
 				end
 
 				----统计爆炸的分数
 				if mainLogic.comboSumBombScore[spd] == nil then mainLogic.comboSumBombScore[spd] = 0 end;
 				if (mainLogic.swapHelpMap[r][c] > 0 ) then
 					-----炸掉的部分，计算爆炸得分
-					mainLogic.comboSumBombScore[spd] = mainLogic.comboSumBombScore[spd] + ScoreCountLogic:getScoreWithItemBomb(mainLogic.gameItemMap[r][c])
+					mainLogic.comboSumBombScore[spd] = mainLogic.comboSumBombScore[spd] + ScoreCountLogic:getScoreWithItemBomb(item)
 				end
 				
 				if mainLogic.comboHelpLightUpList[spd] == nil then mainLogic.comboHelpLightUpList[spd] = 0 end
@@ -145,6 +161,8 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 		local bombScore = mainLogic.comboSumBombScore[spd]			----消除的小动物爆炸统计分数
 		local lightCount = mainLogic.comboHelpLightUpList[spd]
 		local numSand = mainLogic.comboHelpNumCountSandList[spd]
+		local numRocket = mainLogic.comboHelpNumCountRocketList[spd]
+		local numTotems = mainLogic.comboHelpNumCountTotemsList[spd] or 0
 		local pos = firstOneList[spd]								----消除的小动物首个位置
 
 		if numCount == nil then numCount = 0; end;
@@ -152,18 +170,21 @@ function MatchCoverLogic:signEffectByMatchHelpMap(mainLogic)
 		if numCountCrystal == nil then numCountCrystal = 0; end;
 		if numCountBalloon == nil then numCountBalloon = 0 end
 		if numCountRabbit == nil then numCountRabbit = 0 end
+		if numRocket == nil then numRocket = 0 end
 		numSand = numSand or 0
 
 		if pos then
 			local comboScale = ScoreCountLogic:getComboWithCount(mainLogic, k)
 			local scoreTotal = ScoreCountLogic:getScoreWithSpecialTypeCombine(productSpecialType) 								----特效加分
-				+ comboScale * numCount * GamePlayConfig_Score_MatchDeleted_Base 			----连击次数*小动物个数*一个小动物10分
-				+ comboScale * lightCount * GamePlayConfig_Score_MatchAt_Ice
-				+ numCountCrystal * GamePlayConfig_Score_MatchDeleted_Crystal 													----水晶个数*一个水晶分数
+				+ comboScale * numCount * GamePlayConfigScore.MatchDeletedBase 			----连击次数*小动物个数*一个小动物10分
+				+ comboScale * lightCount * GamePlayConfigScore.MatchAtIce
+				+ numCountCrystal * GamePlayConfigScore.MatchDeletedCrystal 													----水晶个数*一个水晶分数
 				+ bombScore 																									----爆炸加分
-				+ numCountBalloon * GamePlayConfig_Score_Balloon
-				+ numCountRabbit * GamePlayConfig_Score_Rabbit
-				+ numSand * GamePlayConfig_Score_Sand_Clean
+				+ numCountBalloon * GamePlayConfigScore.Balloon
+				+ numCountRabbit * GamePlayConfigScore.Rabbit
+				+ numSand * GamePlayConfigScore.SandClean
+				+ numRocket * GamePlayConfigScore.Rocket
+				+ numTotems * GamePlayConfigScore.NormalTotems
 
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)     ----一整次消除所得分数
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -183,27 +204,28 @@ end
 function MatchCoverLogic:trySignAtByAround(mainLogic, r, c)
 	local addset = {}
 	local item = nil
+
 	if r - 1 > 0 then 
 		item = mainLogic.gameItemMap[r - 1][c]
-		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r-1, c) then
+		if item:canEffectAroundOnMatch() and not mainLogic:hasChainInNeighbors(r, c, r-1, c) then
 			addset[math.abs(mainLogic.swapHelpMap[r-1][c]) + 1] = true 
 		end
 	end
 	if r + 1 <= #mainLogic.swapHelpMap then 
 		item = mainLogic.gameItemMap[r + 1][c]
-		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r+1, c) then
+		if item:canEffectAroundOnMatch() and not mainLogic:hasChainInNeighbors(r, c, r+1, c) then
 			addset[math.abs(mainLogic.swapHelpMap[r+1][c]) + 1] = true 
 		end
 	end
 	if c - 1 > 0 then 
 		item = mainLogic.gameItemMap[r][c - 1]
-		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r, c-1) then
+		if item:canEffectAroundOnMatch() and not mainLogic:hasChainInNeighbors(r, c, r, c-1) then
 			addset[math.abs(mainLogic.swapHelpMap[r][c-1]) + 1] = true 
 		end
 	end
 	if c + 1 <= #mainLogic.swapHelpMap[r] then 
 		item = mainLogic.gameItemMap[r][c + 1]
-		if not item:hasLock() and not mainLogic:hasChainInNeighbors(r, c, r, c+1) then
+		if item:canEffectAroundOnMatch() and not mainLogic:hasChainInNeighbors(r, c, r, c+1) then
 			addset[math.abs(mainLogic.swapHelpMap[r][c+1]) + 1] = true 
 		end
 	end
@@ -344,6 +366,7 @@ end
 
 --------响应match的变化-------
 function MatchCoverLogic:doEffectByMatchHelpMap(mainLogic)
+	mainLogic.newSuperTotemsPos = {}
 	----1.检测match对棋盘的变化
 	for r=1,#mainLogic.EffectHelpMap do
 		for c=1,#mainLogic.EffectHelpMap[r] do
@@ -358,6 +381,17 @@ function MatchCoverLogic:doEffectByMatchHelpMap(mainLogic)
 			end
 		end
 	end
+	
+	local action = GameBoardActionDataSet:createAs(
+                    GameActionTargetType.kGameItemAction,
+                    GameItemActionType.kItem_SuperTotems_Bomb_By_Match,
+                    nil,
+                    nil,
+                    1)
+    mainLogic:addDestroyAction(action)
+
+	-- match 产生的图腾一次性处理
+	mainLogic:tryBombSuperTotems()
 
 	if #mainLogic.comboHelpList > 0 then
 		ScoreCountLogic:addCombo(mainLogic, #mainLogic.comboHelpList);
@@ -378,14 +412,14 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
 		mainLogic:checkItemBlock(r,c)
 		
 		----1-2.分数统计
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_Lock);
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfigScore.MatchAtLock)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
 			GameItemActionType.kItemScore_Get,
 			IntCoord:create(r,c),				
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_Lock;
+		ScoreAction.addInt = GamePlayConfigScore.MatchAtLock
 		mainLogic:addGameAction(ScoreAction);
 
 		----1-3.播放特效
@@ -400,9 +434,11 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
 	elseif item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, 1 )
 		return
+	elseif item.beEffectByMimosa == GameItemType.kKindMimosa then
+		GameExtandPlayLogic:backMimosaToRC(mainLogic, r, c)
+		return 
 	end
-
-	if item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() then
+	if item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() and board.lotusLevel <= 1 then
 		local action = GameBoardActionDataSet:createAs(
                         GameActionTargetType.kGameItemAction,
                         GameItemActionType.kItem_Magic_Lamp_Charging,
@@ -412,12 +448,84 @@ function MatchCoverLogic:doEffectAtByMatchAt(mainLogic, r, c, comboCount)
                     )
 		action.count = 1
 	    mainLogic:addDestroyAction(action)
+	elseif item.ItemType == GameItemType.kWukong 
+    		and item.wukongProgressCurr < item.wukongProgressTotal 
+    		and ( item.wukongState == TileWukongState.kNormal or item.wukongState == TileWukongState.kOnHit )
+    		and item:isAvailable() and not mainLogic.isBonusTime then
+		local action = GameBoardActionDataSet:createAs(
+                    GameActionTargetType.kGameItemAction,
+                    GameItemActionType.kItem_Wukong_Charging,
+                    IntCoord:create(r, c),
+                    nil,
+                    GamePlayConfig_MaxAction_time
+                )
+		local wukongMathPositions = {}
+		if mainLogic.swapHelpMap then
+
+			local moneyMathID = math.abs( mainLogic.swapHelpMap[r][c] )
+
+			for r1 = 1, #mainLogic.swapHelpMap do
+				for c1 = 1,#mainLogic.swapHelpMap[r1] do
+					local mathID = math.abs( mainLogic.swapHelpMap[r1][c1] )
+					if mathID > 0 and mathID == moneyMathID and not(r1 == r and c1 == c) then
+						table.insert( wukongMathPositions , mainLogic:getGameItemPosInView(r1, c1) )
+					end
+
+				end
+			end
+			action.fromPosition = wukongMathPositions
+		end
+
+		action.count = #wukongMathPositions
+	    mainLogic:addDestroyAction(action) 
+	elseif item.ItemType == GameItemType.kDrip then
+
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfigScore.MatchAtLock)
+		local ScoreAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemScore_Get,
+			IntCoord:create(r,c),				
+			nil,
+			1)
+		ScoreAction.addInt = GamePlayConfigScore.MatchDeletedBase
+		mainLogic:addGameAction(ScoreAction);
+
+		if item.dripState == DripState.kGrow then
+			local dripMatchCount = 0
+			if mainLogic.swapHelpMap then
+				local leaderMathID = math.abs( mainLogic.swapHelpMap[r][c] )
+				for r1 = 1, #mainLogic.swapHelpMap do
+					for c1 = 1,#mainLogic.swapHelpMap[r1] do
+						local mathID = math.abs( mainLogic.swapHelpMap[r1][c1] )
+						if mathID > 0 and mathID == leaderMathID then
+							dripMatchCount = dripMatchCount + 1
+						end
+					end
+				end
+			end
+			item.dripMatchCount = dripMatchCount
+		end
+		
 	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
 		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	elseif item.ItemType == GameItemType.kBottleBlocker and item.bottleLevel > 0 and item:isAvailable() then
-		if item.bottleState == BottleBlockerState.Waiting then
+		--if item.bottleState == BottleBlockerState.Waiting then
 			GameExtandPlayLogic:decreaseBottleBlocker(mainLogic, r, c , 1 , false)
-		end
+		--end
+	elseif item.ItemType == GameItemType.kTotems then
+		item.totemsState = GameItemTotemsState.kWattingActive
+		
+		local action = GameBoardActionDataSet:createAs(
+                        GameActionTargetType.kGameItemAction,
+                        GameItemActionType.kItem_Totems_Change,
+                        IntCoord:create(r, c),
+                        nil,
+                        GamePlayConfig_MaxAction_time)
+	    mainLogic:addDestroyAction(action)
+	end
+
+	if board.lotusLevel > 0 then
+		GameExtandPlayLogic:decreaseLotus(mainLogic, r, c , 1 , false)
 	end
 
 	if item:canEffectChains() then
@@ -434,15 +542,19 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 	local count = mainLogic.EffectHelpMap[r][c];
 	local t_count = count
 	
-	if not item:isAvailable() then return  end
+	if not item:isAvailable() or item.beEffectByMimosa > 0 then return  end
 	local hashoney = item.honeyLevel > 0
 	--蜂蜜------------------
 	if item.honeyLevel > 0 then
 		GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, 1 )
 	end
 
-	----1.检测雪花消除----
-	if (item.snowLevel > 0 and t_count > 0) then
+	if board.lotusLevel == 3 then
+
+		GameExtandPlayLogic:decreaseLotus(mainLogic, r, c , 1 , false)
+	
+	elseif (item.snowLevel > 0 and t_count > 0) then
+		----1.检测雪花消除----
 		----1-1.数据变化
 		local f_count = 1;
 		if item.snowLevel >= t_count then
@@ -461,14 +573,14 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		end
 		
 		----1-2.分数统计
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchBy_Snow * f_count);
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfigScore.MatchBySnow * f_count);
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
 			GameItemActionType.kItemScore_Get,
 			IntCoord:create(r,c),				
 			nil,				
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchBy_Snow * f_count;
+		ScoreAction.addInt = GamePlayConfigScore.MatchBySnow * f_count;
 		mainLogic:addGameAction(ScoreAction);
 
 		----1-3.播放特效
@@ -484,7 +596,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		item.venomLevel = item.venomLevel - 1
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchBy_Snow)
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfigScore.MatchBySnow)
 		mainLogic:tryDoOrderList(r, c, GameItemOrderType.kSpecialTarget, GameItemOrderType_ST.kVenom, 1)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -492,7 +604,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 			IntCoord:create(r, c),
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchBy_Snow
+		ScoreAction.addInt = GamePlayConfigScore.MatchBySnow
 		mainLogic:addGameAction(ScoreAction)
 
 		local VenomAction = GameBoardActionDataSet:createAs(
@@ -509,7 +621,9 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		if item.furballType == GameItemFurballType.kGrey then
 			item.furballLevel = 0
 			item.furballType = GameItemFurballType.kNone
-			ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Furball)
+
+			local addScore = GamePlayConfigScore.Furball
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
@@ -517,7 +631,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 				IntCoord:create(r, c),
 				nil,
 				1)
-			ScoreAction.addInt = GamePlayConfig_Score_Furball
+			ScoreAction.addInt = addScore
 			mainLogic:addGameAction(ScoreAction)
 
 			local FurballAction = GameBoardActionDataSet:createAs(
@@ -548,14 +662,15 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 				SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 			end
 			
-			ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_BlackCuteBall)
+			local addScore = GamePlayConfigScore.MatchAt_BlackCuteBall
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
 				GameItemActionType.kItemScore_Get,
 				IntCoord:create(r, c),
 				nil,
 				1)
-			ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall
+			ScoreAction.addInt = addScore
 			mainLogic:addGameAction(ScoreAction)
 			--add todo
 			local duringTime = 1
@@ -577,7 +692,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		and not hashoney
 		then
 		item:AddItemStatus(GameItemStatusType.kDestroy)
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchBy_Snow)
+		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfigScore.MatchBySnow)
 
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -585,7 +700,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 			IntCoord:create(r, c),
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchBy_Snow
+		ScoreAction.addInt = GamePlayConfigScore.MatchBySnow
 		mainLogic:addGameAction(ScoreAction)
 
 		local CoinAction = GameBoardActionDataSet:createAs(
@@ -606,7 +721,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 
 		local times = item.roostLevel - originRoostLevel
 		if times > 0 then
-			local scoreTotal = times * GamePlayConfig_Score_Roost
+			local scoreTotal = times * GamePlayConfigScore.Roost
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreTotal)
 
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -638,7 +753,7 @@ function MatchCoverLogic:doEffectAtByMatchAround(mainLogic, r, c, comboCount)
 		GameExtandPlayLogic:decreaseDigGoldZongZi(mainLogic, r, c)
 	elseif item.bigMonsterFrostingType > 0 then 
 		--add score
-		local addScore = GamePlayConfig_Score_MatchBy_Snow
+		local addScore = GamePlayConfigScore.MatchBySnow
 		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,

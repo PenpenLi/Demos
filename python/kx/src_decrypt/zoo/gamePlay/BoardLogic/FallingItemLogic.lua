@@ -5,7 +5,7 @@ FallingItemLogic = class{}
 
 -----------------------------------------------------------
 -- 掉落来源类型,来源按方向分为左上、上、右上三个方向
--- 其中上方向掉落有三种情况,即生成口、传送门和普通格子
+-- 其中上方向掉落有三种情况,即生成口、传送门出口和普通格子
 -- 掉落来源类型标识了三种方向的所有组合的可能性
 -- 
 -- 1. Up为普通动物
@@ -28,14 +28,15 @@ FallingSourceType = table.const
 	kLeft = 2,				--仅左上方掉落
 	kRight = 3,				--仅右上方掉落
 	kDouble = 4,			--左上方或右上方可掉落
-	kPortal = 5,			--仅通道
-	kProduct = 6, 			--生成口,有生成口的格子只从生成口获取来源
+	kPortal = 5,			--仅传送门出口
+	kProduct = 6, 			--仅生成口
 	kUpLeft = 7,			--上方或左上方
 	kUpRight = 8,			--上方或右上方
 	kUpLR = 9,				--上方或左上方或右上方
-	kPortalLeft = 10, 		--通道或左上方
-	kPortalRight = 11,		--通道或右上方
-	kPortalLR = 12,			--通道或左上方或右上方
+	kPortalLeft = 10, 		--传送门出口或左上方
+	kPortalRight = 11,		--传送门出口或右上方
+	kPortalLR = 12,			--传送门出口或左上方或右上方
+	kProductPortal = 13,	--生成口或传送门出口
 }
 
 ------提前更新帮助地图--------
@@ -167,7 +168,11 @@ function FallingItemLogic:getPosFallingSourceType(mainLogic, r, c)
 	
 	-- producer
 	if board.isProducer and FallingItemLogic:isProducerValidInFC(mainLogic, r, c) then
-		return FallingSourceType.kProduct
+		if board:hasExitPortal() and not isEnterPortalBlock(board) then
+			return FallingSourceType.kProductPortal
+		else
+			return FallingSourceType.kProduct
+		end
 	-- portal exit tile, enter board must not be block
 	elseif board:hasExitPortal() and not isEnterPortalBlock(board) then 
 		local canFallingFromLeft = FallingItemLogic:canFallingFromLeft(mainLogic, r, c)
@@ -347,15 +352,24 @@ function FallingItemLogic:FallingGameItemCheck(mainLogic)----全局检测掉落-
 		end
 	end
 
+	local productPortals = {}
 	----生成口生成和直线下落随后
 	for c = 1, #mainLogic.gameItemMap[1] do 			----由左至右
 		for r = #mainLogic.gameItemMap,1, -1 do			----由下至上
 			local item = mainLogic.gameItemMap[r][c]
 			if item.isUsed and item.isEmpty and item.comePos == nil then  			----使用中方块
-				if FallingItemLogic:tryGetFalling16(mainLogic, r, c) then 	----尝试掉落
+				if FallingItemLogic:tryGetFalling16(mainLogic, r, c, productPortals) then 	----尝试掉落
 					isStillFalling = true
 				end
 			end
+		end
+	end
+
+	-- 生成口实际执行
+	if #productPortals > 0 then
+		local sortedProductPortals = mainLogic:sortProductPortals(productPortals)
+		for _, pos in ipairs(sortedProductPortals) do
+			self:_tryGetFallingItemFromProduct(mainLogic, pos.x, pos.y)
 		end
 	end
 
@@ -567,6 +581,7 @@ function FallingItemLogic:tryGetFallingFromPass(mainLogic, r, c)
 		or ts == FallingSourceType.kPortalLeft 
 		or ts == FallingSourceType.kPortalRight 
 		or ts == FallingSourceType.kPortalLR 
+		or ts == FallingSourceType.kProductPortal
 		then
 		local board = mainLogic.boardmap[r][c]
 		if FallingItemLogic:isItemHasGameItemCanFalling(mainLogic, board.passEnterPoint_x, board.passEnterPoint_y) then 	----通道那边的东西可以掉落
@@ -576,7 +591,12 @@ function FallingItemLogic:tryGetFallingFromPass(mainLogic, r, c)
 	return false
 end
 
-function FallingItemLogic:tryGetFalling16(mainLogic, r, c)
+function FallingItemLogic:tryGetFalling16(mainLogic, r, c, productPos)
+	local function isEnterPortalEmpty(r, c)
+		local board = mainLogic.boardmap[r][c]
+		return not FallingItemLogic:isItemHasGameItemCanFalling(mainLogic, board.passEnterPoint_x, board.passEnterPoint_y)
+	end
+
 	local ts = mainLogic.FallingHelpMap[r][c]
 	if ts == FallingSourceType.kUp 
 		or ts == FallingSourceType.kUpLeft 
@@ -586,7 +606,9 @@ function FallingItemLogic:tryGetFalling16(mainLogic, r, c)
 		if FallingItemLogic:isItemHasGameItemCanFalling(mainLogic, r-1, c) then 	----上方有可以掉落的东西
 			return FallingItemLogic:_tryGetFallingItemFromUp(mainLogic, r, c)
 		end
-	elseif ts == FallingSourceType.kProduct then
+	elseif ts == FallingSourceType.kProduct 
+		or (ts == FallingSourceType.kProductPortal and isEnterPortalEmpty(r, c)) then
+
 		-- 在生成口所在的FallingColumn中，生成口上方位置有item存在时，生成口不生效，此时视为由上方下落，掉落来源类型为FallingSourceType.kUp
 		local fc = FallingItemLogic:getFallingColumnByPos(mainLogic, r, c)
 		local fcStartRow = fc.start.r
@@ -603,7 +625,9 @@ function FallingItemLogic:tryGetFalling16(mainLogic, r, c)
 				end
 			end
 		end
-		return FallingItemLogic:_tryGetFallingItemFromProduct(mainLogic, r, c)
+		table.insert(productPos, IntCoord:create(r, c))
+		return true
+		-- return FallingItemLogic:_tryGetFallingItemFromProduct(mainLogic, r, c)
 	end
 	return false
 end

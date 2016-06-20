@@ -133,6 +133,8 @@ end
 -------- Function About Map Data
 -------------------------------------------------------------------------
 
+
+
 assert(not GameModeType)
 GameModeType = {
 
@@ -161,9 +163,13 @@ GameModeType = {
 	MAYDAY_ENDLESS = 'MaydayEndless',
 	RABBIT_WEEKLY = 'RabbitWeekly',
 	WORLD_CUP = 'WorldCUP',
-	SEA_ORDER = 'seaOrder',
+	SEA_ORDER = 'seaOrder',-- attention: 特殊情况 小写字母
     HALLOWEEN = 'halloween',
-    TASK_UNLOCK_DROP_DOWN = 'Mobile Drop down'
+    TASK_UNLOCK_DROP_DOWN = 'Mobile Drop down',
+    HEDGEHOG_DIG_ENDLESS = "HedgehogDigEndless",
+    WUKONG_DIG_ENDLESS = "MonkeyDigEndless",
+    SUMMER_WEEKLY = "Summer_Weekly",
+    LOTUS = "meadow",
 }
 
 local function checkGameModeType(gameModeType, ...)
@@ -183,7 +189,11 @@ local function checkGameModeType(gameModeType, ...)
 		gameModeType == GameModeType.WORLD_CUP or
 		gameModeType == GameModeType.SEA_ORDER or
 		gameModeType == GameModeType.HALLOWEEN or 
-		gameModeType == GameModeType.TASK_UNLOCK_DROP_DOWN
+		gameModeType == GameModeType.TASK_UNLOCK_DROP_DOWN or
+		gameModeType == GameModeType.HEDGEHOG_DIG_ENDLESS or
+		gameModeType == GameModeType.WUKONG_DIG_ENDLESS or
+		gameModeType == GameModeType.LOTUS or
+		gameModeType == GameModeType.SUMMER_WEEKLY
 		)
 end
 
@@ -208,9 +218,12 @@ GameModeTypeId = {
 	HALLOWEEN    = 15,
 	TASK_UNLOCK_DROP_DOWN = 16,
 	SUMMER_WEEKLY = 17,
+	HEDGEHOG_DIG_ENDLESS_ID = 18,
+	WUKONG_DIG_ENDLESS_ID = 19,
+	LOTUS_ID = 20,
 }
 
-local function getGameModeTypeIdFromModeType(modeType, ...)
+function getGameModeTypeIdFromModeType(modeType, ...)
 	assert(modeType)
 	checkGameModeType(modeType)
 	assert(#{...} == 0)
@@ -241,6 +254,14 @@ local function getGameModeTypeIdFromModeType(modeType, ...)
 		return GameModeTypeId.HALLOWEEN
 	elseif modeType == GameModeType.TASK_UNLOCK_DROP_DOWN then 
 		return GameModeTypeId.TASK_UNLOCK_DROP_DOWN
+	elseif modeType == GameModeType.HEDGEHOG_DIG_ENDLESS then
+		return GameModeTypeId.HEDGEHOG_DIG_ENDLESS_ID
+	elseif modeType == GameModeType.WUKONG_DIG_ENDLESS then
+		return GameModeTypeId.WUKONG_DIG_ENDLESS_ID
+	elseif modeType == GameModeType.SUMMER_WEEKLY then
+		return GameModeTypeId.SUMMER_WEEKLY
+	elseif modeType == GameModeType.LOTUS then
+		return GameModeTypeId.LOTUS_ID
 	else
 		assert(false)
 	end
@@ -535,8 +556,27 @@ function MetaModel:initHiddenBranchListData(...)
 		end
 
 		local hideAreaMetaList = MetaManager.getInstance().hide_area
-		for index = 1, #hideAreaMetaList do
+
+		for index = 1, #hideAreaMetaList + 1 do
 			local metaInfo = hideAreaMetaList[index]
+			
+			-- 显示设计施工中
+			if not metaInfo then
+				metaInfo = {
+					id = index,
+					continueLevels = {
+						table.last(table.last(hideAreaMetaList).continueLevels) + 1,
+						table.last(table.last(hideAreaMetaList).continueLevels) + 15,						
+					},
+					hideLevelRange = {
+						table.last(table.last(hideAreaMetaList).hideLevelRange) + 1,
+						table.last(table.last(hideAreaMetaList).hideLevelRange) + 3,						
+					},
+					hideAreaId = 0,
+					hideReward = {}
+				}
+			end
+
 			local id = tonumber(metaInfo.id)
 
 			-- Parse continueLevels Attribute
@@ -561,6 +601,7 @@ function MetaModel:initHiddenBranchListData(...)
 			branchData.endHiddenLevel = LevelMapManager.getInstance().hiddenNodeRange + endHiddenLevel
 			branchData.x = calculateBranchPosX(index)
 			branchData.y = calculateBranchPosY(index)
+			branchData.hideReward = metaInfo.hideReward
 			
 			if index % 2 == 1 then
 				branchData.type = "1"
@@ -568,7 +609,11 @@ function MetaModel:initHiddenBranchListData(...)
 				branchData.type = "2"
 			end
 			self.branchList[id] = branchData
+
 		end
+
+
+
 	end
 end
 
@@ -579,11 +624,43 @@ function MetaModel:getHiddenBranchDataList(...)
 	return self.branchList
 end
 
+function MetaModel:isHiddenBranchCanShow(branchId)
+	self:initHiddenBranchListData()
+
+	local branch = self.branchList[branchId]
+	if not branch then
+		return false
+	end
+
+	local startNormalLevel	= branch.startNormalLevel
+	local endNormalLevel	= branch.endNormalLevel
+
+	for index = startNormalLevel, endNormalLevel do
+		local score = UserManager.getInstance():getUserScore(index)
+		if not JumpLevelManager:getInstance():hasJumpedLevel(index) and 
+			(score == nil or score.star <= 0) then
+			return false
+		end
+	end
+
+	return true
+end
+
+-- 显示设计正在施工中
+function MetaModel:isHiddenBranchDesign( branchId )
+	self:initHiddenBranchListData()
+	return branchId >= #self.branchList
+end
+
 function MetaModel:isHiddenBranchCanOpen(branchId, ...)
 	assert(branchId)
 	assert(#{...} == 0)
 
 	self:initHiddenBranchListData()
+
+	if self:isHiddenBranchDesign(branchId) then
+		return false
+	end
 
 	local branch = self.branchList[branchId]
 	assert(branch)
@@ -627,6 +704,10 @@ function MetaModel:getHiddenBranchDataByHiddenLevelId(hiddenLevelId)
 		return self.branchList[index]
 	end
 	return nil
+end
+
+function MetaModel:getHiddenBranchDataByBranchId( branchId  )
+	return self.branchList[branchId]
 end
 
 function MetaModel:getHiddenBranchIdByHiddenLevelId(hiddenLevelId, ...)
@@ -673,6 +754,15 @@ function MetaModel:getHiddenBranchIdByDependingBranch(branchId)
 	return nil
 end
 
+function MetaModel:getFullStarInHiddenRegion()
+	local result = 0
+	local branchList = self:getHiddenBranchDataList()
+	for index = 1, #branchList do
+		result = result + (branchList[index].endHiddenLevel - branchList[index].startHiddenLevel + 1) * 3
+	end
+	return result
+end
+
 function MetaModel:getFullStarInOpenedHiddenRegion()
 	self:initHiddenBranchListData()
 
@@ -690,9 +780,166 @@ function MetaModel:markHiddenBranchOpen(hiddenBranchId)
 	self.openBranchList[hiddenBranchId] = true
 end
 
+function MetaModel:markHiddenBranchClose(hiddenBranchId)
+	self.openBranchList[hiddenBranchId] = nil
+end
+
 function MetaModel:isHiddenBranchUnlock(hiddenBranchId)
 	if self.openBranchList then
 		return self.openBranchList[hiddenBranchId]
 	end
 	return false
+end
+
+function MetaModel:getNeedGuideHiddenBranchId( ... )
+
+	local function isTopLevelPassed( ... )
+		local user = UserManager:getInstance():getUserRef()
+		if user:getTopLevelId() == MetaManager:getInstance():getMaxNormalLevelByLevelArea() then
+			local score = UserManager:getInstance():getUserScore(user:getTopLevelId())
+			if score and score.star >= 1 then
+				return true
+			end
+		end
+		return false
+	end
+
+	local function hasEnterLessStar2Level( ... )
+
+		local uid = UserManager.getInstance().uid
+		local data = Localhost:readLocalLevelData(uid)
+		local dataIsChanged = false
+
+		local scores = UserManager:getInstance():getScoreRef()
+
+		for k,v in pairs(scores) do
+			-- 没有上次进入关卡时间数据,当成当前时间
+			if not data[tostring(v.levelId)] then
+				data[tostring(v.levelId)] = {}
+			end
+			if not data[tostring(v.levelId)].lastEnterTime then
+				data[tostring(v.levelId)].lastEnterTime = Localhost:time()
+				dataIsChanged = true
+			end
+		end
+		if dataIsChanged then
+			Localhost:writeLocalLevelData(uid,data)
+		end	
+
+		local hasLessStar2Level = false
+		for k,v in pairs(scores) do
+			if LevelMapManager:isNormalNode(v.levelId) then
+				if v.star < 3 then
+					hasLessStar2Level = true
+					break
+				end
+			end
+		end
+
+		-- 没有当成已经进入过了
+		if not hasLessStar2Level then
+			return true
+		end
+
+		for k,v in pairs(scores) do
+			if LevelMapManager:isNormalNode(v.levelId) then
+				if v.star < 3 then
+					if Localhost:time() - data[tostring(v.levelId)].lastEnterTime < 5 * 24 * 3600 * 1000 then
+						return true
+					end
+				end
+			end
+		end
+
+		return false
+	end
+
+	local function getHiddenNoPasseBranchId( ... )
+
+		self:initHiddenBranchListData()
+		for index = 1,#self.branchList do
+			if self:isHiddenBranchCanShow(index) and not self:isHiddenBranchDesign(index) then
+				for levelId=self.branchList[index].startHiddenLevel,self.branchList[index].endHiddenLevel do
+					local score = UserManager:getInstance():getUserScore(levelId)
+					if not score or score.star == 0 then
+						return index
+					end
+				end				
+			end
+		end
+
+		return nil
+	end
+
+	local lastGuideTime = tonumber(Cookie.getInstance():read(CookieKey.kHiddenAreaLastGuideTime)) or 0
+	if isTopLevelPassed() then
+		local nextGuideTime = lastGuideTime + 4 * 24 * 3600 * 1000
+		if nextGuideTime > Localhost:time() then
+			return nil
+		end
+	else
+		if hasEnterLessStar2Level() then
+			return nil
+		end 
+
+		local nextGuideTime = lastGuideTime + 7 * 24 * 3600 * 1000
+		if nextGuideTime > Localhost:time() then
+			return nil
+		end
+	end
+
+	local branchId = getHiddenNoPasseBranchId()
+	if branchId then
+		Cookie.getInstance():write(CookieKey.kHiddenAreaLastGuideTime,Localhost:time())
+		return branchId
+	end
+
+	return nil
+end
+
+function MetaModel:getRewardGuideHiddenBranchId( ... )
+
+	local lastGuideTime = tonumber(Cookie.getInstance():read(CookieKey.kHiddenAreaLastRewardGuideTime)) or 0
+	if Localhost:time() - lastGuideTime < 3 * 24 * 3600 * 1000 then
+		return
+	end
+
+	local uid = UserManager.getInstance().uid
+	for index = 1,#self.branchList do
+		if self:isHiddenBranchCanOpen(index) and not self:isHiddenBranchDesign(index) then
+			local endHiddenLevel = self.branchList[index].endHiddenLevel
+			if UserManager.getInstance():hasPassedLevel(endHiddenLevel) then
+				if not UserManager:getInstance():getUserExtendRef():isHideAreaRewardReceived(index) then
+
+					local data = Localhost:readLocalBranchDataByBranchId(uid,index)
+					if data.canRewardTime and Localhost:time() - data.canRewardTime > 3 * 24 * 3600 * 1000 then
+						Cookie.getInstance():write(CookieKey.kHiddenAreaLastRewardGuideTime,Localhost:time())
+						return index
+					end
+				end
+			end
+		end
+	end
+
+	return nil
+end
+
+-- 更新新的掩藏关卡
+function MetaModel:getNewGuideHiddenBranchId( ... )
+
+	local lastMaxBranchId = tonumber(Cookie.getInstance():read(CookieKey.kHiddenAreaLastMaxBranchId)) or 16
+
+	if #self.branchList > lastMaxBranchId then
+		Cookie.getInstance():write(CookieKey.kHiddenAreaLastMaxBranchId,#self.branchList)
+	else
+		return nil
+	end
+
+	for index = lastMaxBranchId,#self.branchList do
+		if self:isHiddenBranchCanShow(index) and not self:isHiddenBranchDesign(index) then
+			return index
+		end
+	end
+
+	return nil
 end

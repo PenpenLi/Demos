@@ -12,6 +12,9 @@ QuickSelectAnimation = {
 	{id = 19, frameNum = 10},
 	{id = 23, frameNum = 10},
 	{id = 30, frameNum = 10},
+	{id = 43, frameNum = 14},
+	{id = 46, frameNum = 20},
+	{id = 50, frameNum = 16},
 }
 function QuickTableView:create( width, height, renderClass)
 	-- body
@@ -383,7 +386,7 @@ local function createAnimationSelect( animateConfig )
 	-- body
 	local sprite = Sprite:createWithSpriteFrameName("area_animation_"..animateConfig.id.."_0000")
 	local frames = SpriteUtil:buildFrames("area_animation_"..animateConfig.id.."_%04d", 0, animateConfig.frameNum)
-	local animate = SpriteUtil:buildAnimate(frames, 1/30)
+	local animate = SpriteUtil:buildAnimate(frames, 1/24)
 	sprite:play(animate)
 	return sprite
 
@@ -426,6 +429,7 @@ function QuickTableView:playAnimation( ... )
 		local y = pos_2.y - cell_center:getContentSize().height/2
 		local pos_3 = cell_center.icon:getPosition()
 		local pos = ccp(pos_1.x + x + pos_3.x, pos_1.y + y + pos_3.y)
+		ani:setScale(0.5)
 		ani:setPosition(pos)
 		self:addChild(ani)
 		self.animation = ani

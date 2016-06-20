@@ -10,6 +10,7 @@ require "zoo.panel.RequireNetworkAlert"
 require "zoo.panel.basePanel.panelAnim.IconPanelShowHideAnim"
 require "zoo.panel.MarkPrisePanel"
 require "zoo.panel.MarkEnergyNotiPanel"
+require "zoo.panel.MarkEnergyRemindPanel"
 
 MarkPanel = class(BasePanel)
 
@@ -56,7 +57,37 @@ function MarkPanel:init(scaleOriginPosInWorld, ...)
 	self.fillSign = MetaManager:getInstance().global.fillSign
 
 	-- 建立窗口UI和初始化
-	self.ui = self:buildInterfaceGroup("MarkPanel")
+	if WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		self.ui = self:buildInterfaceGroup("MarkPanel_spring")
+
+		local pattern = self.ui:getChildByName("pattern")
+		pattern:removeFromParentAndCleanup(false)
+
+		local childList = {}
+		pattern:getVisibleChildrenList(childList)
+		if #childList > 0 then
+			local batch = SpriteBatchNode:createWithTexture(childList[1]:getTexture())
+			for i,v in ipairs(childList) do
+				v:removeFromParentAndCleanup(false)
+				batch:addChild(v)
+			end
+			batch:setPositionXY(pattern:getPositionX(), pattern:getPositionY())
+			pattern:dispose()
+			pattern = batch
+		end
+		
+		local mask = self.ui:getChildByName("mask")
+		local maskPosition = {x = mask:getPositionX(), y = mask:getPositionY()}
+		local maskIndex = self.ui:getChildIndex(mask)
+		mask:removeFromParentAndCleanup(false)
+		local clip = ClippingNode.new(CCClippingNode:create(mask.refCocosObj))
+		clip:setAlphaThreshold(0.7)
+		self.ui:addChildAt(clip, maskIndex)
+		pattern:setPositionXY(pattern:getPositionX() - maskPosition.x, pattern:getPositionY())
+		clip:addChild(pattern)
+	else
+		self.ui = self:buildInterfaceGroup( GamePlaySceneSkinManager:getMarkPanelSkin() )
+	end
 	BasePanel.init(self, self.ui)
 	self.ui:setTouchEnabled(true, 0, true)
 
@@ -112,19 +143,21 @@ function MarkPanel:init(scaleOriginPosInWorld, ...)
 	self.mark:setString(Localization:getInstance():getText("mark.panel.mark.btn.text"))
 	self.leave:setString(Localization:getInstance():getText("mark.panel.close.btn.text"))
 	-- 替换标题
-	local charWidth = 65
-	local charHeight = 65
-	local charInterval = 57
-	local fntFile = "fnt/caption.fnt"
-	if _G.useTraditionalChineseRes then fntFile = "fnt/zh_tw/caption.fnt" end
-	local position = self.captain:getPosition()
-	self.newCaptain = LabelBMMonospaceFont:create(charWidth, charHeight, charInterval, fntFile)
-	self.newCaptain:setAnchorPoint(ccp(0,1))
-	self.newCaptain:setString(Localization:getInstance():getText("mark.panel.title"))
-	self.newCaptain:setPosition(ccp(position.x, position.y))
-	self.ui:addChildAt(self.newCaptain, 3)
-	self.newCaptain:setToParentCenterHorizontal()
-	self.captain:removeFromParentAndCleanup(true)
+	if not WorldSceneShowManager:getInstance():isInAcitivtyTime() then 
+		local charWidth = 65
+		local charHeight = 65
+		local charInterval = 57
+		local fntFile = "fnt/caption.fnt"
+		if _G.useTraditionalChineseRes then fntFile = "fnt/zh_tw/caption.fnt" end
+		local position = self.captain:getPosition()
+		self.newCaptain = LabelBMMonospaceFont:create(charWidth, charHeight, charInterval, fntFile)
+		self.newCaptain:setAnchorPoint(ccp(0,1))
+		self.newCaptain:setString(Localization:getInstance():getText("mark.panel.title"))
+		self.newCaptain:setPosition(ccp(position.x, position.y))
+		self.ui:addChildAt(self.newCaptain, 3)
+		self.newCaptain:setToParentCenterHorizontal()
+		self.captain:removeFromParentAndCleanup(true)
+	end
 
 	-- 设置互动事件监听
 	local function onExitTouch()
@@ -284,6 +317,7 @@ function MarkPanel:updateProfile()
 		if self.clipping then self.clipping:removeFromParentAndCleanup(true) end
 		local framePos = self.head:getPosition()
 		local frameSize = self.head:getGroupBounds().size
+		frameSize = {width = frameSize.width, height = frameSize.height}
 		local function onImageLoadFinishCallback(clipping)
 			if self.isDisposed then return end
 			local clippingSize = clipping:getContentSize()
@@ -378,13 +412,33 @@ function MarkPanel:markNew()
 		CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative")
 	end
 
-	local function sendMarkRequest()
-		local http = MarkHttp.new(true)
-		http:ad(Events.kComplete, onSuccess)
-		http:ad(Events.kError, onFail)
-		http:load()
+	local function onProc()
+		if self.isDisposed then return end
+		local function sendMarkRequest()
+			local http = MarkHttp.new(true)
+			http:ad(Events.kComplete, onSuccess)
+			http:ad(Events.kError, onFail)
+			http:load()
+		end
+		RequireNetworkAlert:callFuncWithLogged(sendMarkRequest)
 	end
-	RequireNetworkAlert:callFuncWithLogged(sendMarkRequest)
+
+	if self.markRewards[self.signedDay + 1] and self.markRewards[self.signedDay + 1].rewards then
+		local found = false
+		for i, v in ipairs(self.markRewards[self.signedDay + 1].rewards) do
+			if v.itemId == 10039 then
+				found = true
+				break
+			end
+		end
+		if found then
+			MarkEnergyRemindPanel:create(onProc):popout()
+		else
+			onProc()
+		end
+	else
+		return
+	end
 end
 
 function MarkPanel:updateANewMark(finishCallback)
@@ -489,39 +543,66 @@ function MarkPanel:playRewardAnim()
 			startPosX = pos.x - fullWidth
 		end
 		print(startPosX, fullWidth, vSize.width, startPosX + fullWidth)
+		local isFinalChest = false
+
+		local toBoxRewards = {} 
 		for __, v in ipairs(reward) do
 			if v.itemId == 10039 then
 				local x, y = self.position[29]:getPositionX(), self.position[29]:getPositionY()
 				local position = self.pos:convertToWorldSpace(ccp(x, y))
-				local panel = MarkGetEnergyNotiPanel:create(position, checkMarkPrise)
+				local panel = MarkGetEnergyNotiPanel:create(position, function( ... )
+					checkMarkPrise()
+					
+					local anim = OpenBoxAnimation:create(toBoxRewards)
+					anim:play()
+				end)
 				callback = true
 				panel:popout()
 
 				--只有最后一个宝箱里会有无限精力瓶 所以把领完最后一个宝箱里的炫耀调起逻辑加在这里
 				ShareManager:checkShareTime()
-				ShareManager:setShareData(ShareManager.ConditionType.GET_MARK_FINAL_CHEST, true)
-				ShareManager:shareWithID(ShareManager.MARK_FINAL_CHEST)
+				--ShareManager:setShareData(ShareManager.ConditionType.GET_MARK_FINAL_CHEST, true)
+				--ShareManager:shareWithID(ShareManager.MARK_FINAL_CHEST)
+				isFinalChest = true
 			else
 				count = count + 1
-				local sprite
-				if v.itemId == 2 then sprite = home:createFlyingCoinAnim()
-				elseif v.itemId == 14 then sprite = home:createFlyingGoldAnim()
-				else sprite = home:createFloatingItemAnim(v.itemId) end
-				sprite:setPosition(ccp(startPosX + sSize.width / 2 + (count - 1) * (width + spare),
-					pos.y - sSize.height / 2 - 10))
-				if not self.coinSize then self.coinSize = sprite:getGroupBounds().size end
-				if v.itemId == 2 then
-					local lPos = sprite:getPosition()
-					sprite:setPosition(ccp(lPos.x - self.coinSize.width / 2, lPos.y + self.coinSize.height / 2))
-				end
-				sprite:playFlyToAnim(false, false)
+				-- local sprite
+				-- if v.itemId == 2 then sprite = home:createFlyingCoinAnim()
+				-- elseif v.itemId == 14 then sprite = home:createFlyingGoldAnim()
+				-- else sprite = home:createFloatingItemAnim(v.itemId) end
+				-- sprite:setPosition(ccp(startPosX + sSize.width / 2 + (count - 1) * (width + spare),
+				-- 	pos.y - sSize.height / 2 - 10))
+				-- if not self.coinSize then 
+				-- 	self.coinSize = sprite:getGroupBounds().size 
+				-- 	self.coinSize = {width = self.coinSize.width, height = self.coinSize.height}
+				-- end
+				-- if v.itemId == 2 then
+				-- 	local lPos = sprite:getPosition()
+				-- 	sprite:setPosition(ccp(lPos.x - self.coinSize.width / 2, lPos.y + self.coinSize.height / 2))
+				-- end
+				-- sprite:playFlyToAnim(false, false)
+
+				table.insert(toBoxRewards,v)
 			end
+
 		end
+
+		if not isFinalChest then
+			self:runAction(CCCallFunc:create(function( ... )
+				local anim = OpenBoxAnimation:create(toBoxRewards)
+				anim:play()
+			end))
+		end
+		
+		AchievementManager:onDataUpdate( AchievementManager.GET_MARK_FINAL_CHEST, isFinalChest )
 	else
-		local coins = home:createFlyingCoinAnim()
-		if not self.coinSize then self.coinSize = coins:getGroupBounds().size end
-		coins:setPosition(ccp(pos.x - self.coinSize.width / 3, pos.y + self.coinSize.height / 2))
-		coins:playFlyToAnim(false, false)
+		-- local coins = home:createFlyingCoinAnim()
+		-- if not self.coinSize then self.coinSize = coins:getGroupBounds().size end
+		-- coins:setPosition(ccp(pos.x - self.coinSize.width / 3, pos.y + self.coinSize.height / 2))
+		-- coins:playFlyToAnim(false, false)
+		local anim = FlyItemsAnimation:create(reward)
+		anim:setWorldPosition(pos)
+		anim:play()
 	end
 	if not callback then checkMarkPrise() end
 end
@@ -552,7 +633,12 @@ function MarkPanel:remarkNew()
 		CommonTip:showTip(Localization:getInstance():getText("mark.panel.cant.remark"), "negative")
 		return
 	end
-	local function onSuccess(evt)
+	local function onSuccess(data)
+
+		local bounds = self.remark:getGroupBounds()
+		local pos = ccp(bounds:getMidX(),bounds:getMidY())
+		self.remark:playFloatAnimation('-'..tostring(self.remark:getNumber()))
+
 		self.remark:setEnabled(false)
 		self.signedDay = self.signedDay + 1
 		local function onUpdateFinish() 
@@ -571,21 +657,41 @@ function MarkPanel:remarkNew()
 		if button then button:updateView() end
 		MarkModel:getInstance():setGetRewardNotification(self.signDay, self.signedDay)
 	end
-	local function onFail(evt)
+	local function onFail(errorCode)
 		self.remark:setEnabled(true)
-		if evt.data == 730330 then	-- 没钱
+		if errorCode == 730330 then	-- 没钱
 			self:goldNotEnough()
 		else
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(errorCode)), "negative")
 		end
 	end
 
-	local function startBuyLogic()
-		local logic = BuyLogic:create(15, 2)
-		logic:getPrice()
-		logic:start(1, onSuccess, onFail, nil, self.fillSign[self.addNum + 1])
+	local function onProc()
+		if self.isDisposed then return end
+		local function startBuyLogic()
+			local logic = BuyLogic:create(15, 2)
+			logic:getPrice()
+			logic:start(1, onSuccess, onFail, nil, self.fillSign[self.addNum + 1])
+		end
+		RequireNetworkAlert:callFuncWithLogged(startBuyLogic)
 	end
-	RequireNetworkAlert:callFuncWithLogged(startBuyLogic)
+	
+	if self.markRewards[self.signedDay + 1] and self.markRewards[self.signedDay + 1].rewards then
+		local found = false
+		for i, v in ipairs(self.markRewards[self.signedDay + 1].rewards) do
+			if v.itemId == 10039 then
+				found = true
+				break
+			end
+		end
+		if found then
+			MarkEnergyRemindPanel:create(onProc):popout()
+		else
+			onProc()
+		end
+	else
+		return
+	end 
 end
 
 function MarkPanel:goldNotEnough()
@@ -600,14 +706,7 @@ function MarkPanel:goldNotEnough()
 	end
 	local function askForGoldPanel()
 		print("ask for gold panel")
-		-- local text = {
-		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		-- }
-		-- CommonTipWithBtn:setShowFreeFCash(true)
-		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
-		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
+		GoldlNotEnoughPanel:create(createGoldPanel):popout()
 	end
 	askForGoldPanel()
 end

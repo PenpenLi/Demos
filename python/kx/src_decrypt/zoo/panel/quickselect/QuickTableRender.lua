@@ -123,6 +123,7 @@ function QuickTableRender:addLevelArea( ... )
 		icon = Sprite:createWithSpriteFrameName(str)
 		self:addChild(icon)
 		local x = self:getContentSize().width / 8
+		icon:setScale(0.5)
 		icon:setPosition(ccp(x,y))
 	end
 

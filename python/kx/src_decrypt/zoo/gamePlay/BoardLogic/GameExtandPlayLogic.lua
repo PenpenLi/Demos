@@ -3,7 +3,7 @@ GameExtandPlayLogic = class{}
 -----返回true，成功发起颜色变化
 function GameExtandPlayLogic:checkCrystalChangeColor(mainLogic, completeCallback)
 	local ret = 0
-	local crystalBalls = self:filterItemByConditions(mainLogic, { gameItemTypeList = { GameItemType.kCrystal } })
+	local crystalBalls = self:filterItemByConditions(mainLogic, { gameItemTypeList = { GameItemType.kCrystal } , lotusLevelLess = 2 })
 	local colorList = mainLogic.mapColorList
 	local originColorMatrix = {}
 	local failColorMatrix = {}
@@ -39,22 +39,65 @@ function GameExtandPlayLogic:checkCrystalChangeColor(mainLogic, completeCallback
 		return false
 	end
 
-	local retryTimes = 1
+	local retryTimes = 0
 	local cloneFlag = false
 	local success = false 
-	while retryTimes < 500 do
-		for i, item in ipairs(crystalBalls) do
-			local possibleColor = getPossibleChangeColor(originColorMatrix[item.y][item.x])
-			
-			if #possibleColor > 0 then
-				local index = mainLogic.randFactory:rand(1, #possibleColor)
-				item.ItemColorType = possibleColor[index]
+	local hasCrystalItemInSwapArea = nil
+	local possibleComposition = {}
+	local numTotalPosssibleComposition = nil
+
+	local function getTotalPossibleComposition()
+		if not numTotalPosssibleComposition then
+			numTotalPosssibleComposition = 1
+			for i, item in ipairs(crystalBalls) do
+				local possibleColor = getPossibleChangeColor(originColorMatrix[item.y][item.x])
+				numTotalPosssibleComposition = numTotalPosssibleComposition * (#possibleColor > 0 and #possibleColor or 1)
 			end
 		end
+		return numTotalPosssibleComposition
+	end
+
+	local function isCompositionEqual(compA, compB)
+		if #compA ~= #compB then return false end
+		for i, c in ipairs(compA) do
+			if c ~= compB[i] then return false end
+		end
+		return true
+	end
+
+	local function isCompositionDuplicate(composition)
+		for _, compoEle in ipairs(possibleComposition) do
+			if isCompositionEqual(compoEle, composition) then
+				return true
+			end
+		end
+		table.insert(possibleComposition, composition)
+		return false
+	end
+
+	while retryTimes < 500 do
+		if #possibleComposition >= getTotalPossibleComposition() then
+			success = false
+			break
+		end
+		retryTimes = retryTimes + 1
+
+		-- 对选择的颜色结果进行查重，重复的组合不再重复计算
+		repeat
+			local composition = {}
+			for i, item in ipairs(crystalBalls) do
+				local possibleColor = getPossibleChangeColor(originColorMatrix[item.y][item.x])
+				
+				if #possibleColor > 0 then
+					local index = mainLogic.randFactory:rand(1, #possibleColor)
+					item.ItemColorType = possibleColor[index]
+				end
+				table.insert(composition, item.ItemColorType)
+			end
+		until not isCompositionDuplicate(composition)
 		
 		if not checkHasMatchQuick() then
 			if not cloneFlag then
-				-- print("record fail color matrix times : ", retryTimes)
 				cloneFlag = true
 				for r = 1, #mainLogic.gameItemMap do
 					for c = 1, #mainLogic.gameItemMap[r] do
@@ -66,13 +109,24 @@ function GameExtandPlayLogic:checkCrystalChangeColor(mainLogic, completeCallback
 			if not RefreshItemLogic:checkNeedRefresh(mainLogic) then
 				success = true
 				break
+			elseif hasCrystalItemInSwapArea == nil then -- 对于无法参与匹配计算的水晶球，无需强求组成possibleSwap
+				hasCrystalItemInSwapArea = false
+				for i, item in ipairs(crystalBalls) do
+					local isSwapAreaValid = RefreshItemLogic.isItemSwapAreaValid(mainLogic, item.y, item.x)
+					if isSwapAreaValid then hasCrystalItemInSwapArea = true end
+				end
+				-- print(hasCrystalItemInSwapArea)
+				if not hasCrystalItemInSwapArea then
+					success = true
+					break
+				end
 			end
 		end
-		retryTimes = retryTimes + 1
 	end
 	-- print("success : ", success, "retryTimes : ", retryTimes)
-	
+
 	for i, item in ipairs(crystalBalls) do
+
 		local theAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,				--动作发起主体	
 			GameItemActionType.kItem_Crystal_Change,			--动作类型	    
@@ -166,7 +220,7 @@ function GameExtandPlayLogic:checkVenomSpread(mainLogic, completeCallback)
 		for k, v in pairs(positionItemMap) do
 			if v.item:isAvailable() then
 				if v.item.ItemType == GameItemType.kAnimal 
-					and (v.item.ItemSpecialType >= AnimalTypeConfig.kLine and v.item.ItemSpecialType <= AnimalTypeConfig.kColor)
+					and AnimalTypeConfig.isSpecialTypeValid(v.item.ItemSpecialType)
 					then
 					table.insert(possiblePoisonedItemGroup[POISONED_ITEM_PRIORITY_SPECIAL], v)
 				elseif v.item.ItemType == GameItemType.kAnimal 
@@ -309,12 +363,21 @@ function GameExtandPlayLogic:filterItemByConditions(mainLogic, conditions)
 		return false
 	end
 
+	local function checkLotusLevelLess(item , lotusLevel)
+		if not lotusLevel or not item.lotusLevel then
+			return true
+		end
+
+		return item.lotusLevel <= lotusLevel
+	end
+	
 	local ret = {}
 	for r = 1, #mainLogic.gameItemMap do
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
 			if isGameItemType(item, conditions.gameItemTypeList) 
 				and isGameItemFurballType(item, conditions.furballTypeList)
+				and checkLotusLevelLess(item, conditions.lotusLevelLess)
 				and item:isAvailable()
 				then
 				table.insert(ret, item)
@@ -348,22 +411,32 @@ function GameExtandPlayLogic:getFurballValidAroundItems(mainLogic, centerItem)
 		return nil
 	end
 
+	local function getBoardAt(r, c)
+		if mainLogic.boardmap[r] then
+			return mainLogic.boardmap[r][c]
+		end
+		return nil
+	end
+
 	local cx = centerItem.x
 	local cy = centerItem.y
 
 	local result = {}
 	local tempItem = nil
+	local tempBoard = nil
 	for i, coord in ipairs(aroundDirections) do 
 		tempItem = getItemAt(cy + coord.y, cx + coord.x);
+		tempBoard = getBoardAt(cy + coord.y, cx + coord.x)
 		if tempItem 
 			and (tempItem.ItemType == GameItemType.kAnimal 
 				or tempItem.ItemType == GameItemType.kGift 
 				or tempItem.ItemType == GameItemType.kAddTime
 				or tempItem.ItemType == GameItemType.kCrystal
 				or tempItem.ItemType == GameItemType.kQuestionMark)
-			and not tempItem:hasFurball() 
+			and not tempItem:hasFurball()
 			and not tempItem.isBlock 
 			and tempItem:canBeCoverByMatch()
+			and not tempBoard:hasSuperCuteBall() 
 			and not mainLogic:hasChainInNeighbors(cy, cx, cy + coord.y, cx + coord.x) then
 			table.insert(result, tempItem)
 		end
@@ -494,12 +567,13 @@ function GameExtandPlayLogic:onMagicTileHit(mainLogic, r, c)
 			nil,
 			GamePlayConfig_MaxAction_time
 		)
-	if gameItem.ItemSpecialType >= AnimalTypeConfig.kLine and gameItem.ItemSpecialType <= AnimalTypeConfig.kColor then
+	if AnimalTypeConfig.isSpecialTypeValid(gameItem.ItemSpecialType) then
 		action.count = mainLogic:getHalloweenBoss().specialHit
 	else
 		action.count = mainLogic:getHalloweenBoss().normalHit
 	end
 	action.magicTileId = boardItem.magicTileId
+	action.magicTileIndex = boardItem.magicTileIndex
 	mainLogic:addGameAction(action)
 
 	-- 计算是否掉落限时道具 TODO
@@ -511,18 +585,59 @@ function GameExtandPlayLogic:onMagicTileHit(mainLogic, r, c)
 			local dragonBoatData = mainLogic.dragonBoatData
 			if dragonBoatData and dropPropCount < 1 and mainLogic.dragonBoatPropConfig then
 				dragonBoatData.dropPropsPercent = dragonBoatData.dropPropsPercent or 0
-				local dropWeight = dragonBoatData.dropPropsPercent * 100
-				if dropWeight > 0 and mainLogic.randFactory:rand(1, 10000) <= dropWeight then
+
+				-- 解决概率特别小的情况
+				-- 虽然两次随机数不是完全独立随机事件，但是总体上只要是平均分布就行
+				local possibility = dragonBoatData.dropPropsPercent / 100
+				local sqrt = math.sqrt(possibility)
+				local maxRange = 25000
+				local targetRange = sqrt * maxRange
+				local function possibilityHit()
+					local firstHit = math.random(1, maxRange) < targetRange
+					local secondHit = math.random(1, maxRange) < targetRange
+					return firstHit and secondHit
+				end
+
+				if possibilityHit() then
 					local totalWeight = mainLogic.dragonBoatPropConfig:getTotalWeight()
 					local random = mainLogic.randFactory:rand(1, totalWeight)
 					local randPropId = mainLogic.dragonBoatPropConfig:getRandProp(random)
 					if randPropId then
 						local pos = mainLogic:getGameItemPosInView(r, c)
 						if mainLogic.PlayUIDelegate then
-							mainLogic.PlayUIDelegate:addTimeProp(randPropId, 1, pos, mainLogic.activityId, "哇~萌萌龙送给了您一个限时道具")
+							local showText = mainLogic.dropPropText or ""
+							mainLogic.PlayUIDelegate:addTimeProp(randPropId, 1, pos, mainLogic.activityId, showText)
 						end
 					end
 				end
+			end
+		end
+	end
+end
+
+function GameExtandPlayLogic:chargeCrystalStone(mainLogic, fr, fc, colortype)
+	if mainLogic.theGamePlayStatus ~= GamePlayStatus.kNormal then
+		return
+	end
+
+	for r = 1, #mainLogic.gameItemMap do
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item and item.ItemType == GameItemType.kCrystalStone 
+				and item.ItemColorType == colortype and item:canCrystalStoneBeCharged() then
+				item:chargeCrystalStoneEnergy(GamePlayConfig_CrystalEnergy_Normal)
+				-- item.isNeedUpdate = true
+
+				local theAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItemSpecial_CrystalStone_Charge,
+					IntCoord:create(fr,fc), 			
+					IntCoord:create(r,c),				
+					GamePlayConfig_MaxAction_time
+					)
+				theAction.addInt1 = item.ItemColorType
+				theAction.addInt2 = item:getCrystalStoneEnergy()
+				mainLogic:addDestructionPlanAction(theAction)
 			end
 		end
 	end
@@ -543,6 +658,7 @@ function GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 			end
 		end
 	end
+
 	if gameItem.ItemType == GameItemType.kAnimal then
 	elseif gameItem.ItemType == GameItemType.kGift then
 		GameExtandPlayLogic:bombGiftBlocker(mainLogic, r, c)
@@ -589,6 +705,23 @@ function GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 			if mainLogic.PlayUIDelegate then
 				local position = mainLogic:getGameItemPosInView(r, c)
 				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.digJewelCount:getValue(), position)
+			end
+		elseif mainLogic.theGamePlayType == GamePlayType.kWukongDigEndless then
+			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + 1)
+			local position = nil
+			if mainLogic.PlayUIDelegate then
+				position = mainLogic:getGameItemPosInView(r, c)
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.digJewelCount:getValue(), position)
+			end
+			mainLogic.gameMode:chargeByDigJewel(position)
+		elseif mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless then
+			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + 1)
+			if mainLogic.gameMode:canAddEnerge() then
+				mainLogic.gameMode:addEnergeCount(1)
+			end
+			if mainLogic.PlayUIDelegate then
+				local position = mainLogic:getGameItemPosInView(r, c)
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 1, mainLogic.digJewelCount:getValue(), position, nil, nil, mainLogic.gameMode:getPercentEnerge())
 			end
 		end
 	elseif gameItem.ItemType == GameItemType.kAddMove then
@@ -647,6 +780,8 @@ function GameExtandPlayLogic:itemDestroyHandler(mainLogic, r, c)
 				scene:addChild(animation)
 			end
 		end
+	elseif gameItem.ItemType == GameItemType.kRocket and mainLogic.hasDropDownUFO then
+		GameExtandPlayLogic:fireRocket(mainLogic, r, c, gameItem.ItemColorType)
 	end	
 end
 
@@ -673,7 +808,8 @@ function GameExtandPlayLogic:CheckBalloonList( mainLogic, completeCallback )
 	for r = 1, #mainLogic.gameItemMap do 
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local itemdata = mainLogic.gameItemMap[r][c]
-			if itemdata:isAvailable() and itemdata.ItemType == GameItemType.kBalloon then
+			if itemdata:isAvailable() and itemdata.ItemType == GameItemType.kBalloon
+			and itemdata.beEffectByMimosa == 0 then
 				if itemdata.isFromProductBalloon then
 					itemdata.isFromProductBalloon = false
 				else
@@ -733,11 +869,13 @@ function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale, noS
 	item.digGroundLevel = item.digGroundLevel - 1
 
 	if item.digGroundLevel == 0 then
+		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 	end
 
 	if not noScore then
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigGround * scoreScale)
+		local addScore = GamePlayConfigScore.MatchAtDigGround * scoreScale
+		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -745,7 +883,7 @@ function GameExtandPlayLogic:decreaseDigGround( mainLogic, r, c, scoreScale, noS
 			IntCoord:create(r, c),
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigGround * scoreScale
+		ScoreAction.addInt = addScore
 		mainLogic:addGameAction(ScoreAction)
 	end
 
@@ -772,11 +910,13 @@ function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale, noSc
 		if mainLogic.theGamePlayType == 12 and not isFromSpringBomb then
 			mainLogic:chargeFirework(1, r, c)
 		end
+		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 		item:AddItemStatus(GameItemStatusType.kDestroy)
 	end
 
 	if not noScore then
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigJewel * scoreScale)
+		local addScore = GamePlayConfigScore.MatchAt_DigJewel * scoreScale
+		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -784,7 +924,7 @@ function GameExtandPlayLogic:decreaseDigJewel( mainLogic, r, c, scoreScale, noSc
 			IntCoord:create(r, c),
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigJewel * scoreScale
+		ScoreAction.addInt = addScore
 		mainLogic:addGameAction(ScoreAction)
 	end
 	
@@ -820,8 +960,108 @@ function GameExtandPlayLogic:decreaseDigGoldZongZi( mainLogic, r, c, scoreScale,
 
 end
 
+--function GameExtandPlayLogic:dripCasting( mainLogic, r, c, isLeader, leaderPos )
+function GameExtandPlayLogic:dripCasting( mainLogic, dripList , callback )
+	print("RRR   GameExtandPlayLogic:dripCasting  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	if mainLogic and dripList and #dripList > 0 then
+
+		local countCallback = 0
+		local totalCallback = 0
+
+		local function onActivityComplete()
+
+			countCallback = countCallback + 1
+			--print("RRR   GameExtandPlayLogic:dripCasting   onActivityComplete    " , countCallback , "   totalCallback " , totalCallback)
+			if countCallback >= totalCallback then
+				if callback then callback() end
+			end
+		end
+		for i = 1 , #dripList do
+
+			local item = dripList[i]
+
+			--print("RRR   RRR   GameExtandPlayLogic:dripCasting    dripList " , i , item.startDripCastingAction)
+			if not item.startDripCastingAction then
+				GameExtandPlayLogic:__dripCasting( mainLogic, item.y , item.x , onActivityComplete )
+				totalCallback = totalCallback + 1
+			end
+			
+			--[[
+			local dripCastingAction = GameBoardActionDataSet:createAs(
+		 		GameActionTargetType.kGameItemAction,
+		 		GameItemActionType.kItem_Drip_Casting,
+		 		IntCoord:create( item.y , item.x ),
+		 		nil,
+		 		GamePlayConfig_MaxAction_time)
+
+			dripCastingAction.completeCallback = onActivityComplete
+			
+			mainLogic:addDestructionPlanAction(dripCastingAction)
+			mainLogic:setNeedCheckFalling()	
+			]]
+		end
+
+		
+
+	end
+end
+
+function GameExtandPlayLogic:__dripCasting(  mainLogic, r, c , callback )
+	
+	local item = mainLogic.gameItemMap[r][c]
+	print("RRR    GameExtandPlayLogic:__dripCasting   " , r, c , item.startDripCastingAction )
+	if item.startDripCastingAction == true then
+		--return
+	end
+
+	item.startDripCastingAction = true
+
+	local dripCastingAction = GameBoardActionDataSet:createAs(
+ 		GameActionTargetType.kGameItemAction,
+ 		GameItemActionType.kItem_Drip_Casting,
+ 		IntCoord:create( item.y , item.x ),
+ 		nil,
+ 		GamePlayConfig_MaxAction_time)
+
+	dripCastingAction.completeCallback = function () if callback then callback() end end
+	
+	if _G.test_DripMode == 2 then
+		--mainLogic:addGameAction(dripCastingAction)
+		mainLogic:addDestructionPlanAction(dripCastingAction)
+	else
+		mainLogic:addDestructionPlanAction(dripCastingAction)
+	end
+	
+	mainLogic:setNeedCheckFalling()	
+
+end
+
+function GameExtandPlayLogic:decreaseLotus( mainLogic, r, c , scoreScale , noScore)
+	--crash.crash()
+	local item = mainLogic.gameItemMap[r][c]
+	local board = mainLogic.boardmap[r][c]
+
+	if board.lotusLevel > 0 then
+
+		local lotusDecAction = GameBoardActionDataSet:createAs(
+		 		GameActionTargetType.kGameItemAction,
+		 		GameItemActionType.kItem_Decrease_Lotus,
+		 		IntCoord:create(r,c),
+		 		nil,
+		 		GamePlayConfig_MaxAction_time)
+
+		lotusDecAction.originLotusLevel = board.lotusLevel
+
+		mainLogic:addDestroyAction(lotusDecAction)
+	end
+end
+
 function GameExtandPlayLogic:decreaseBottleBlocker( mainLogic, r, c , scoreScale , noScore )
 	local item = mainLogic.gameItemMap[r][c]
+	
+	if item.bottleLevel == 0 then
+		return
+	end
 
 	if item.bottleLevel == 1 then
 		item.bottleState = BottleBlockerState.ReleaseSpirit
@@ -837,7 +1077,7 @@ function GameExtandPlayLogic:decreaseBottleBlocker( mainLogic, r, c , scoreScale
 
 	if not noScore then
 		scoreScale = scoreScale or 1
-		local addScore = scoreScale * GamePlayConfig_Score_MatchBy_Snow
+		local addScore = scoreScale * GamePlayConfigScore.MatchBySnow
 		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
@@ -856,31 +1096,20 @@ function GameExtandPlayLogic:decreaseBottleBlocker( mainLogic, r, c , scoreScale
 	 		nil,
 	 		GamePlayConfig_MaxAction_time)
 	bottleBlockerDecAction.oldColor = item.ItemColorType
+	bottleBlockerDecAction.oldState = item.bottleState
 	bottleBlockerDecAction.newBottleLevel = item.bottleLevel
-	
+
 	mainLogic:addDestroyAction(bottleBlockerDecAction)
 end
 
---随机妖精瓶子的颜色。规则：关卡内有的颜色且尽量不造成三消且和当前的ItemColorType不一致
-function GameExtandPlayLogic:randomBottleBlockerColor( mainLogic, r, c )
+--随机一个可用的颜色。规则：关卡内有的颜色且尽量不造成三消且和当前位于r，c的Item的ItemColorType不一致
+function GameExtandPlayLogic:getRandomColorByDefaultLogic( mainLogic, r, c )
 
 	local resultColor = AnimalTypeConfig.kBlue
 
-	local function randomizeTable(table)
-		local size = #table
-		local function swapInTable(table, i, j)
-			local t = table[i]
-			table[i] = table[j]
-			table[j] = t
-		end
-		for i = 1, size do
-			swapInTable(table, 1, mainLogic.randFactory:rand(1, size))
-		end
-	end
-
 	local item = mainLogic.gameItemMap[r][c]
 
-	if item and item.ItemType == GameItemType.kBottleBlocker then
+	if item then
 
 		local levelColors = {}
 		for i = 1, #mainLogic.mapColorList do 
@@ -919,6 +1148,34 @@ function GameExtandPlayLogic:randomBottleBlockerColor( mainLogic, r, c )
 	return resultColor
 end
 
+--随机妖精瓶子的颜色。规则：关卡内有的颜色且尽量不造成三消且和当前的ItemColorType不一致
+function GameExtandPlayLogic:randomBottleBlockerColor( mainLogic, r, c )
+
+	local item = mainLogic.gameItemMap[r][c]
+
+	if item and item.ItemType == GameItemType.kBottleBlocker then
+		return GameExtandPlayLogic:getRandomColorByDefaultLogic(mainLogic, r, c)
+	end
+
+	return AnimalTypeConfig.kBlue
+end
+
+function GameExtandPlayLogic:updateItemsEffectedByUFO(mainLogic)
+	if mainLogic.hasDropDownUFO then
+		local itemMap = mainLogic.gameItemMap
+		local baseMap = mainLogic.boardView.baseMap
+		for r = 1, #itemMap do
+			for c = 1 ,#itemMap[r] do 
+				local itemdata = itemMap[r][c]
+				if itemdata and itemdata:canBeEffectByUFO() then
+					local isDangerours = GameExtandPlayLogic:isItemInDanger(mainLogic, r, c)
+					baseMap[r][c]:updateDangerousStatus(isDangerours)
+				end
+			end
+		end
+	end
+end
+
 --获取ufo的位置
 function GameExtandPlayLogic:getUFOPosition( mainLogic )
 	-- body
@@ -943,7 +1200,8 @@ function GameExtandPlayLogic:getUFOPosition( mainLogic )
 			end
 		end
 	end
-	return mainLogic:getGameItemPosInView(1, c_ufo)
+	local oldPos = mainLogic:getGameItemPosInView(1, c_ufo)
+	return ccp(oldPos.x, oldPos.y + 20), IntCoord:create(1, c_ufo) -- y+20为飞碟提供坠落空间
 end
 
 function GameExtandPlayLogic:getSquirrelPosYinBoard( mainLogic, old_c )
@@ -980,6 +1238,32 @@ function GameExtandPlayLogic:resetRabbitItemState(mainLogic)
 		end
 	end
 end
+
+function GameExtandPlayLogic:recoverUFO(mainLogic)
+	if mainLogic.hasDropDownUFO and not mainLogic.isUFOWin then -- 飞碟被击晕
+		if mainLogic.UFOSleepCD > 0 then
+			if mainLogic.UFOSleepCD < 3 then
+				mainLogic.PlayUIDelegate:playUFORecoverAnimation()
+			end
+			mainLogic.oldUFOSleepCD = mainLogic.UFOSleepCD
+			mainLogic.UFOSleepCD = mainLogic.UFOSleepCD - 1
+		end
+	end
+end
+
+function GameExtandPlayLogic:revertUFOToPreStatus(mainLogic)
+	if mainLogic.hasDropDownUFO then
+		-- 根据
+		local oldStatus = UFOStatus.kNormal
+		if mainLogic.oldUFOSleepCD == 2 then
+			oldStatus = UFOStatus.kWakeUp
+		elseif mainLogic.oldUFOSleepCD > 2 then
+			oldStatus = UFOStatus.kStun
+		end
+		mainLogic.PlayUIDelegate:forceUpdateUFOStatus(oldStatus)
+	end
+end
+
 -------------------
 --check item can be effect by ufo
 --------------------
@@ -991,6 +1275,10 @@ function GameExtandPlayLogic:checkUFOItemUpdate( mainLogic, completeCallback )
 		return item_count, item_top
 	end
 	if mainLogic.gameMode:is(RabbitWeeklyMode) and mainLogic.gameMode:isNeedChangeState(nil, false) then 
+		return item_count, item_top
+	end
+
+	if mainLogic.UFOSleepCD > 0 then -- 飞碟被击晕
 		return item_count, item_top
 	end
 
@@ -1010,6 +1298,7 @@ function GameExtandPlayLogic:checkUFOItemUpdate( mainLogic, completeCallback )
 			for c = 1, #itemList_copy[r] do 
 				local item = itemList_copy[r][c]
 				if item:canBeEffectByUFO() 
+					and not item:hasLock()
 					and item:isAvailable() and item.rabbitState ~= GameItemRabbitState.kSpawn then
 
 					local r_up, isTop, isShowDangerous = GameExtandPlayLogic:upstairsItemsByUfo(mainLogic, itemList_copy, r, c )
@@ -1065,6 +1354,22 @@ function GameExtandPlayLogic:checkUFOItemUpdate( mainLogic, completeCallback )
 	end
 	return item_count, item_top
 
+end
+
+function GameExtandPlayLogic:isItemInDanger(mainLogic, r, c)
+	local itemMap = mainLogic.gameItemMap
+	local top_num = 1
+	for k = 1, 9 do 
+		if itemMap[k][c].isUsed then 
+			top_num = k
+			break
+		end
+	end
+	if r - top_num < 2 then 
+		return true 
+	else 
+		return false 
+	end	
 end
 --------------------
 --get upstairs r c  by ufo
@@ -1294,7 +1599,8 @@ function GameExtandPlayLogic:getRandomColorItems( mainLogic, maxNum )
 	for r = 1, #mainLogic.gameItemMap do 
 		for c = 1, #mainLogic.gameItemMap[r] do 
 			local item = mainLogic.gameItemMap[r][c]
-			if item:isAvailable() and not item:hasLock() and not item:hasFurball() then
+			local board = mainLogic.boardmap[r][c]
+			if item:isAvailable() and not item:hasLock() and not item:hasFurball() and not board:hasSuperCuteBall() then
 				if item.ItemType == GameItemType.kAnimal then
 					if item.ItemSpecialType == 0 then
 						table.insert(animal_normal_list, {r=r, c=c})
@@ -1382,13 +1688,16 @@ end
 function GameExtandPlayLogic:findMimosa(mainLogic, r, c )
 	-- body
 	local item = mainLogic.gameItemMap[r][c]
-	if item.ItemType == GameItemType.kMimosa and #item.mimosaHoldGrid > 0 and item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+	if (item.ItemType == GameItemType.kMimosa or item.ItemType == GameItemType.kKindMimosa )
+		-- and #item.mimosaHoldGrid > 0 and item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+		and #item.mimosaHoldGrid > 0 and not item.isBackAllMimosa then
 		return r, c
 	else
 		for r1 = 1, #mainLogic.gameItemMap do 
 			for c1 = 1, #mainLogic.gameItemMap[r1] do 
 				local temp_item = mainLogic.gameItemMap[r1][c1]
-				if temp_item and #temp_item.mimosaHoldGrid > 0 and temp_item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+				-- if temp_item and #temp_item.mimosaHoldGrid > 0 and temp_item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+				if temp_item and #temp_item.mimosaHoldGrid > 0 and not temp_item.isBackAllMimosa then
 					for k, v in pairs(temp_item.mimosaHoldGrid) do
 						if v.x == r and v.y == c then
 							return r1, c1
@@ -1401,7 +1710,57 @@ function GameExtandPlayLogic:findMimosa(mainLogic, r, c )
 	return nil
 end
 
-function GameExtandPlayLogic:backMimosa(mainLogic, r, c, callback )
+-------含羞草退到r, c点 无保护
+function GameExtandPlayLogic:backMimosaToRC(mainLogic, r, c, callback)
+	-- body
+	local _r, _c = GameExtandPlayLogic:findMimosa(mainLogic, r, c )
+	if _r and _c then
+		local item = mainLogic.gameItemMap[_r][_c]
+		local action = GameBoardActionDataSet:createAs(
+							GameActionTargetType.kGameItemAction,
+							GameItemActionType.kItem_KindMimosa_back,
+							IntCoord:create(_r, _c),
+							IntCoord:create(r, c),
+							GamePlayConfig_MaxAction_time
+							)
+		action.completeCallback = callback
+		local mimosaHoldGrid = item.mimosaHoldGrid
+		local max = #mimosaHoldGrid
+		local newHoldGrid = {}
+		local list = {}
+		local isPopHoldGrid = false
+		for k = 1, max do
+			local v = mimosaHoldGrid[k]
+			if v.x == r and v.y == c then
+				isPopHoldGrid = true
+			end
+
+			if isPopHoldGrid then
+				table.insert(list, IntCoord:create(v.x, v.y))
+
+			else
+				table.insert(newHoldGrid, IntCoord:create(v.x, v.y))
+			end
+		end
+
+		action.direction = item.mimosaDirection
+		action.itemType = item.ItemType
+		action.list = list
+
+		item.mimosaHoldGrid = newHoldGrid
+		item.mimosaLevel = 1
+		if #newHoldGrid == 0 then
+			item.mimosaLevel = 0
+		end
+		mainLogic:addDestroyAction(action)
+	else
+		if callback then callback() end
+	end
+
+end
+
+-------含羞草退出所有 有保护
+function GameExtandPlayLogic:backMimosa( mainLogic, r, c, callback )
 	-- body
 	local _r, _c = GameExtandPlayLogic:findMimosa(mainLogic, r, c )
 	if _r and _c then
@@ -1415,8 +1774,14 @@ function GameExtandPlayLogic:backMimosa(mainLogic, r, c, callback )
 							)
 		action.completeCallback = callback
 		action.mimosaHoldGrid = item.mimosaHoldGrid
+		for k, v in pairs(item.mimosaHoldGrid) do    --------保护起来
+			local item_t = mainLogic.gameItemMap[v.x][v.y]
+			item_t.beEffectByMimosa = GameItemType.kMimosa 
+		end
 		action.direction = item.mimosaDirection
+		action.itemType = item.ItemType
 		item.mimosaLevel = 1
+		item.isBackAllMimosa = true
 		mainLogic:addDestroyAction(action)
 	else
 		if callback then callback() end
@@ -1424,12 +1789,12 @@ function GameExtandPlayLogic:backMimosa(mainLogic, r, c, callback )
 
 end
 
-function GameExtandPlayLogic:getMimosaToHoldGrid( mainLogic, r, c )
+function GameExtandPlayLogic:getMimosaToHoldGrid(itemType, mainLogic, r, c )
 	-- body
 	local item = mainLogic.gameItemMap[r][c]
 	local rAdd, cAdd = 0, 0
 	local result = nil
-	if item and item.ItemType == GameItemType.kMimosa then
+	if item and item.ItemType == itemType then
 		if item.mimosaDirection == 1 then  --left
 			rAdd = 0  cAdd = -1
 		elseif item.mimosaDirection == 2 then  --right
@@ -1459,17 +1824,18 @@ function GameExtandPlayLogic:getMimosaToHoldGrid( mainLogic, r, c )
 			and not item_select.isEmpty
 			and not item_select:hasFurball() 
 			and not item_select:hasLock() 
-			and item_select.ItemType ~= ItemType.kBlackCuteBall
+			and item_select.ItemType ~= GameItemType.kBlackCuteBall
 			and item_select:isAvailable()
 			and not item_select.isBlock
-			or item_select.ItemType == GameItemType.kMagicLamp then
+			or item_select.ItemType == GameItemType.kMagicLamp
+			or item_select.ItemType == GameItemType.kWukong then
 			result = grid
 		end
 	end
 	return result
 end
 
-function GameExtandPlayLogic:updateMimosaToHoldGridList( mainLogic)
+function GameExtandPlayLogic:updateMimosaToHoldGridList(itemType, mainLogic)
 	-- body
 	local itemMap = mainLogic.gameItemMap
 	local result = {}
@@ -1478,22 +1844,20 @@ function GameExtandPlayLogic:updateMimosaToHoldGridList( mainLogic)
 			if not result[r] then result[r] = {} end
 			for c = #itemMap[r], 1, -1 do 
 				local item = itemMap[r][c]
-				if item and item.ItemType == GameItemType.kMimosa and item:isAvailable() 
+				if item and item.ItemType == itemType and item:isAvailable() 
 					and item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
-					local tryGrid = GameExtandPlayLogic:getMimosaToHoldGrid( mainLogic, r, c )
+					local tryGrid = GameExtandPlayLogic:getMimosaToHoldGrid(itemType, mainLogic, r, c )
 					if tryGrid then
 						if i == 1 then
 							item.isCanGrow = true
 						else
 							local item_select = itemMap[tryGrid.x][tryGrid.y]
-							item_select.beEffectByMimosa = true
+							item_select.beEffectByMimosa = item.ItemType
 							item_select.mimosaDirection = item.mimosaDirection
 							if not result[r][c] then result[r][c] = {} end
 							table.insert(result[r][c], tryGrid)
 							table.insert(item.mimosaHoldGrid, tryGrid)
 						end
-
-						
 					end
 				end
 			end
@@ -1505,16 +1869,17 @@ function GameExtandPlayLogic:updateMimosaToHoldGridList( mainLogic)
 
 end
 
-function GameExtandPlayLogic:checkMimosa( mainLogic, callback )
+function GameExtandPlayLogic:checkMimosa( itemType, mainLogic, callback )
 	-- body
 	local count = 0
 	local map = mainLogic.gameItemMap
-	local addGridMap = GameExtandPlayLogic:updateMimosaToHoldGridList( mainLogic)
+	local addGridMap = GameExtandPlayLogic:updateMimosaToHoldGridList(itemType, mainLogic)
 	for r = 1, #map do 
 		for c = 1, #map[r] do
 			local item = map[r][c]
-			if item and item.ItemType == GameItemType.kMimosa and item:isAvailable() then
-				if item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+			if item and item.ItemType == itemType and item:isAvailable() then
+				item.mimosaLevel = item.mimosaLevel + 1
+				if item.mimosaLevel > GamePlayConfig_Mimosa_Grow_Step then
 					local tryGrids = addGridMap[r][c]
 					if tryGrids and #tryGrids > 0 then              -------生长
 						local action = GameBoardActionDataSet:createAs(
@@ -1527,6 +1892,7 @@ function GameExtandPlayLogic:checkMimosa( mainLogic, callback )
 						action.completeCallback = callback
 						action.addItem = tryGrids
 						action.direction = item.mimosaDirection
+						action.itemType = item.ItemType
 						mainLogic:addGameAction(action)
 						count = count + 1
 					elseif #item.mimosaHoldGrid > 0 and not item.isCanGrow then    -------------退回
@@ -1540,14 +1906,14 @@ function GameExtandPlayLogic:checkMimosa( mainLogic, callback )
 						action.completeCallback = callback
 						action.mimosaHoldGrid = item.mimosaHoldGrid
 						action.direction = item.mimosaDirection
+						action.itemType = item.ItemType
 						mainLogic:addGameAction(action)
 						item.mimosaLevel = 1
 						count = count + 1
 					end
 					item.isCanGrow = nil
 				else 
-					item.mimosaLevel = item.mimosaLevel + 1
-					if item.mimosaLevel >= GamePlayConfig_Mimosa_Grow_Step then
+					if item.mimosaLevel == GamePlayConfig_Mimosa_Grow_Step then
 						local action = GameBoardActionDataSet:createAs(
 							GameActionTargetType.kGameItemAction,
 							GameItemActionType.kItem_Mimosa_Ready,
@@ -1568,7 +1934,7 @@ end
 
 
 
-function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , actid)
+function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , actid , hitBlood)
 	
 	local item = mainLogic.gameItemMap[r][c]
 	local boss = nil
@@ -1604,7 +1970,7 @@ function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , acti
 	end
 
 	if boss ~= nil and boss.blood > 0 and canBeEffectBySpecaial then
-		local addScore = 100
+		local addScore = GamePlayConfigScore.MayDayBossBeHit
 		-- boss.digBlockCanbeDelete = false
 		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 		local ScoreAction = GameBoardActionDataSet:createAs(
@@ -1616,6 +1982,9 @@ function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , acti
 		ScoreAction.addInt = addScore
 		mainLogic:addGameAction(ScoreAction)
 		local bloodLoseCount = isMatch and 1 or boss.speicial_hit_blood
+		if hitBlood and type(hitBlood) == "number" and hitBlood > 0 then
+			bloodLoseCount = hitBlood
+		end
 		-- hitCounter的增量不会超过boss当前血量
 		if boss.blood > bloodLoseCount then
 			boss.hitCounter = boss.hitCounter + bloodLoseCount
@@ -1632,6 +2001,7 @@ function GameExtandPlayLogic:MaydayBossLoseBlood(mainLogic, r, c, isMatch , acti
 			nil,
 			GamePlayConfig_MaxAction_time)
 		decAction.addInt = boss.blood / boss.maxBlood
+		decAction.debug_string = tostring(boss.blood)..'/'..tostring(boss.maxBlood)
 		mainLogic:addDestroyAction(decAction)
 	end
 end
@@ -1802,14 +2172,15 @@ function GameExtandPlayLogic:checkHoneyBottleBroken( mainLogic, callback )
 			end
 		end
 		
-		ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_DigJewel)
+		local addScore = GamePlayConfigScore.MatchAt_DigJewel
+		ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 		local ScoreAction = GameBoardActionDataSet:createAs(
 			GameActionTargetType.kGameItemAction,
 			GameItemActionType.kItemScore_Get,
 			IntCoord:create(v.x, v.y),
 			nil,
 			1)
-		ScoreAction.addInt = GamePlayConfig_Score_MatchAt_DigJewel
+		ScoreAction.addInt = addScore
 		mainLogic:addGameAction(ScoreAction)
 
 		local infectAction = GameBoardActionDataSet:createAs(
@@ -1831,6 +2202,7 @@ function GameExtandPlayLogic:honeyDestroy( mainLogic, r, c, scoreScale )
 	local  item = mainLogic.gameItemMap[r][c]
 	----1-1.数据变化
 	item.honeyLevel = item.honeyLevel - 1
+	item.digBlockCanbeDelete = false
 
 	mainLogic:tryDoOrderList(r, c, GameItemOrderType.kOthers, GameItemOrderType_Others.kHoney, 1)
 	local honeyAction = GameBoardActionDataSet:createAs(
@@ -1860,7 +2232,8 @@ function GameExtandPlayLogic:canSandTransferToPos(mainLogic, r, c)
 	local item = mainLogic.gameItemMap[r][c]
 	if not item or not item.isUsed or item:isPermanentBlocker() 
 			or item.ItemType == GameItemType.kMagicStone
-			or item.isReverseSide or item.beEffectByMimosa then -- 
+			or item:isActiveTotems()
+			or (not item:isAvailable()) then -- 
 		return false 
 	end
 
@@ -1933,7 +2306,7 @@ function GameExtandPlayLogic:getSandBoardPos(mainLogic)
 		for c = 1, #boardmap[r] do 
 			local board = boardmap[r][c]
 			local item = mainLogic.gameItemMap[r][c]
-			if board and board.sandLevel > 0 and not item.isReverseSide and not item.beEffectByMimosa then
+			if board and board.sandLevel > 0 and item:isAvailable() then
 				table.insert(result, IntCoord:create(r,c))
 			end
 		end
@@ -2034,14 +2407,15 @@ function GameExtandPlayLogic:getNormalPositionsForBoss(mainLogic, count, fromRow
 
 end
 
-function GameExtandPlayLogic:checkBossCasting(mainLogic, callback)
+function GameExtandPlayLogic:checkBossCasting(mainLogic, callback , passDrip)
 
 
 	local counter = 0
 	local gameItemMap = mainLogic.gameItemMap
 	for r = 1, #gameItemMap do
 		for c = 1, #gameItemMap[r] do
-			if gameItemMap[r][c].ItemType == GameItemType.kBoss and gameItemMap[r][c].bossLevel > 0  then
+			if gameItemMap[r][c].ItemType == GameItemType.kBoss 
+				and gameItemMap[r][c].bossLevel > 0  then
 				local boss = gameItemMap[r][c]
 				local buffBlood = BossConfig[boss.bossLevel].buffBlood
 				local buffRate = BossConfig[boss.bossLevel].buffRate
@@ -2076,6 +2450,10 @@ function GameExtandPlayLogic:checkBossCasting(mainLogic, callback)
 							end
 						end
 					end
+
+					
+					
+
 					-- 最多只保留buffLimit个
 					if #targetPositions > buffLimit then
 						local tmp = {}
@@ -2087,6 +2465,18 @@ function GameExtandPlayLogic:checkBossCasting(mainLogic, callback)
 
 					print('finalCount', #targetPositions)
 
+					local rand = mainLogic.randFactory:rand(1, 100) / 100
+					local dripPositions = {}
+					local dripFixMap = {}
+					if not passDrip and rand <= buffRate and mainLogic.hasDripOnLevel then
+						dripPositions = GameExtandPlayLogic:getNormalPositionsForBoss(
+											mainLogic, mainLogic.randFactory:rand(2, 3) , 6, 9, targetPositions)
+						for k, v in pairs(dripPositions) do 
+							table.insert(targetPositions, v)
+							dripFixMap[tostring(v.r) .. "_" .. tostring(v.c) ] = true
+						end
+					end
+					print('finalCount 2222  ', #targetPositions)
 					if #targetPositions > 0 then
 						counter = counter + 1
 						local action = GameBoardActionDataSet:createAs(
@@ -2096,6 +2486,7 @@ function GameExtandPlayLogic:checkBossCasting(mainLogic, callback)
 							nil,
 							GamePlayConfig_MaxAction_time)
 						action.targetPositions = targetPositions
+						action.dripPositions = dripFixMap
 						action.completeCallback = callback
 						mainLogic:addGameAction(action)
 					end
@@ -2327,7 +2718,7 @@ function GameExtandPlayLogic:changeItemTypeFromQuestionMark( mainLogic, r, c )
 				local activityId = 0
 				local text = nil
 				if mainLogic.levelType == GameLevelType.kSummerWeekly then
-					text = Localization:getInstance():getText("weeklyrace.summer.prop.desc", {n="\n"})
+					text = Localization:getInstance():getText("weeklyrace.winter.prop.desc", {n="\n"})
 				else
 					activityId = mainLogic.activityId
 				end
@@ -2362,14 +2753,16 @@ function GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	local boardView = mainLogic.boardView
 	local itemView = boardView.baseMap[r][c]
 	itemView:playQuestionMarkDestroy()
-	if item.ClippingPosAdd.y > 0 then
+	if itemView.itemSprite[ItemSpriteType.kEnterClipping] then
 		itemView:FallingDataIntoClipping(item)
 		local boardData = mainLogic.boardmap[r][c]
 		local r1 = boardData.passEnterPoint_x
 		local c1 = boardData.passEnterPoint_y
 		if r1 > 0 and c1 > 0 then
 			local exitItem = boardView.baseMap[r1][c1]
-			exitItem:FallingDataOutOfClipping(item)
+			if exitItem.itemSprite[ItemSpriteType.kClipping] then
+				exitItem:FallingDataOutOfClipping(item)
+			end
 		end
 	else
 		itemView:initByItemData(item)
@@ -2378,14 +2771,15 @@ function GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
 	mainLogic.gameItemMap[r][c].isNeedUpdate = true
 
 	--add score
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Question_Mark_Destory)
+	local addScore = GamePlayConfigScore.QuestionMarkDestory
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 	local ScoreAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemScore_Get,
 		IntCoord:create(r, c),
 		nil,
 		1)
-	ScoreAction.addInt = GamePlayConfig_Score_Question_Mark_Destory
+	ScoreAction.addInt = addScore
 	mainLogic:addGameAction(ScoreAction)
 end 
 
@@ -2412,4 +2806,409 @@ function GameExtandPlayLogic:calcMagicStoneEffectPositions(mainLogic, r, c)
 		end
 	end
 	return validPos
+end
+
+function GameExtandPlayLogic:onEnterWaitingState(mainLogic)
+	GameExtandPlayLogic:updateItemStates(mainLogic)
+	-- 更新棋盘上受UFO影响Item的状态
+	GameExtandPlayLogic:updateItemsEffectedByUFO(mainLogic)
+	-- 水晶石引导
+	GameExtandPlayLogic:trySwapCrystalStonesGuide(mainLogic)
+end
+
+function GameExtandPlayLogic:halloweenTutorial(mainLogic)
+	if mainLogic.levelType == GameLevelType.kMayDay then 
+	    local goldZongziPos = nil
+	    for r = 1, #mainLogic.gameItemMap do
+	        for c = 1, #mainLogic.gameItemMap[r] do
+	            local item = mainLogic.gameItemMap[r][c]
+	            if item.ItemType == GameItemType.kGoldZongZi and not goldZongziPos then
+	                goldZongziPos = {r = r, c = c}
+	            end
+	        end
+	    end
+
+	    if goldZongziPos then
+	        GameGuide:sharedInstance():onGoldZongziAppear(goldZongziPos)
+	    end
+	end
+end
+
+function GameExtandPlayLogic:trySwapCrystalStonesGuide(mainLogic)
+	-- 这个引导只在730关出现
+	if mainLogic.level ~= 730 or not GameGuide:checkHaveGuide(mainLogic.level) then
+		return
+	end
+
+	local function findNearbyActiveStonePos(r, c)
+		local directions = {{dr=0, dc=1}, {dr=0, dc=-1}, {dr=1, dc=0}, {dr=-1, dc=0}}
+		for _, dir in ipairs(directions) do
+			local r1 = r + dir.dr
+			local c1 = c + dir.dc
+			if mainLogic:isPosValid(r1, c1) then
+				local item = mainLogic.gameItemMap[r1][c1]
+				if item and item.ItemType == GameItemType.kCrystalStone and item:isActiveCrystalStoneAvailble() 
+						and not mainLogic:hasRopeInNeighbors(r, c, r1, c1) then
+					return ccp(r1, c1)
+				end
+			end
+		end
+		return nil
+	end
+
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item and item.ItemType == GameItemType.kCrystalStone and item:isActiveCrystalStoneAvailble() then
+				local pos = findNearbyActiveStonePos(r, c)
+				if pos then
+					GameGuide:trySwapCrystalStonesGuide(ccp(r, c), pos)
+					return
+				end
+			end
+		end
+	end	
+end
+
+function GameExtandPlayLogic:updateItemStates(mainLogic)
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item.ItemType == GameItemType.kMagicStone then -- 重置魔法石状态
+				if item.magicStoneLevel >= TileMagicStoneConst.kMaxLevel then
+					item.magicStoneActiveTimes = 0
+				end
+			elseif item.ItemType == GameItemType.kCrystalStone then -- 染色宝宝能量充满，改变状态
+				if not item:isActiveCrystalStoneAvailble() and item:getCrystalStoneEnergy() >= GamePlayConfig_CrystalStone_Energy then
+					item:setCrystalStoneActive(true)
+					local itemView = mainLogic.boardView.baseMap[r][c]
+					itemView:playCrystalStoneFullAnimate()
+				end
+			end
+		end
+	end
+end
+
+function GameExtandPlayLogic:checkIsReleaseEnery( mainLogic, callback )
+	-- body
+	local count = 0
+	if mainLogic.theGamePlayType == GamePlayType.kHedgehogDigEndless then
+		local r, c = mainLogic.gameMode:findHedgehogRC()
+		if mainLogic.gameMode:checkIsReleaseEnery(r, c) then
+			count = count + 1
+			local _action = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItem_Hedgehog_Release_Energy,
+				IntCoord:create(r, c),
+				nil,
+				GamePlayConfig_MaxAction_time)
+			_action.completeCallback = callback
+			_action.hedgehogLevel = 2
+			mainLogic:addGameAction(_action)
+
+			local dc_data = {
+				game_type = "stage",
+				game_name = "2016_children_day",
+				category = "other",
+				sub_category = "children_day_crazy_ready"
+			}
+			DcUtil:activity(dc_data)
+		end
+	end
+
+	return count
+end
+
+function GameExtandPlayLogic:fireRocket(mainLogic, r, c, colortype)
+	local item = mainLogic.gameItemMap[r][c]
+	local targetPos = nil
+	local isUFOExist = false
+
+	if mainLogic.hasDropDownUFO and not mainLogic.isUFOWin and (mainLogic.theGamePlayStatus == GamePlayStatus.kNormal) then
+		isUFOExist = true
+	end
+	if isUFOExist then
+		targetPos = mainLogic.PlayUIDelegate:getUFOStayPositionInBoard()
+		local sleepCD = GamePlayConfig_UFO_SleepCD_On_Hit
+		if mainLogic.UFOSleepCD < sleepCD then
+			mainLogic.UFOSleepCD = sleepCD
+		end
+	else
+		targetPos = IntCoord:create(1, c)
+	end
+
+	local action = GameBoardActionDataSet:createAs(
+                    GameActionTargetType.kGameItemAction,
+                    GameItemActionType.kItem_Rocket_Active,
+                    IntCoord:create(r, c),
+                    targetPos,
+                    GamePlayConfig_MaxAction_time
+                )
+	action.addInt = colortype
+	action.isUFOExist = isUFOExist
+
+    mainLogic:addDestructionPlanAction(action)
+end
+
+function GameExtandPlayLogic:playTileHighlight(mainLogic, type, startPos, endPos)
+	if not startPos or not endPos then return end
+
+	local fromR, fromC = startPos.x, startPos.y
+	local toR, toC = endPos.x, endPos.y
+	if fromR > toR then fromR, toR = toR, fromR end
+	if fromC > toC then fromC, toC = toC, fromC end
+
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			if r >= fromR and r <= toR and c >= fromC and c <= toC then
+				local item = mainLogic.gameItemMap[r][c]
+				if item and item.isUsed then
+					mainLogic.boardView.baseMap[r][c]:playTileHighlightEffect(type)
+					mainLogic.boardView.baseMap[r][c].isNeedUpdate  = true
+				end
+			end
+		end
+	end	
+end
+
+function GameExtandPlayLogic:stopTileHighlight(mainLogic, startPos, endPos)
+	if not startPos or not endPos then return end
+
+	local fromR, fromC = startPos.x, startPos.y
+	local toR, toC = endPos.x, endPos.y
+	if fromR > toR then fromR, toR = toR, fromR end
+	if fromC > toC then fromC, toC = toC, fromC end
+
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			if r >= fromR and r <= toR and c >= fromC and c <= toC then
+				local item = mainLogic.gameItemMap[r][c]
+				if item and item.isUsed then
+					mainLogic.boardView.baseMap[r][c]:stopTileHighlightEffect()
+					mainLogic.boardView.baseMap[r][c].isNeedUpdate  = true
+				end
+			end
+		end
+	end	
+end
+
+function GameExtandPlayLogic:addScoreToTotal(mainLogic, r, c, addScore)
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore);
+	local ScoreAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemScore_Get,
+		IntCoord:create(r,c),				
+		nil,				
+		1)
+	ScoreAction.addInt = addScore
+	mainLogic:addGameAction(ScoreAction)
+end
+
+function GameExtandPlayLogic:specialCoverInactiveCrystalStone(mainLogic, r, c, scoreScale)
+	local item = mainLogic.gameItemMap[r][c]
+	if item and item.isUsed and item.ItemType == GameItemType.kCrystalStone and not item:isCrystalStoneActive() then -- 未充满的继续充能
+		if mainLogic.theGamePlayStatus == GamePlayStatus.kNormal and item:canCrystalStoneBeCharged() then
+			item:chargeCrystalStoneEnergy(GamePlayConfig_CrystalEnergy_Special)
+			-- item.isNeedUpdate = true
+
+			local theAction = GameBoardActionDataSet:createAs(
+				GameActionTargetType.kGameItemAction,
+				GameItemActionType.kItemSpecial_CrystalStone_Charge,
+				nil, 			
+				IntCoord:create(r,c),				
+				GamePlayConfig_MaxAction_time
+				)
+			theAction.addInt1 = item.ItemColorType
+			theAction.addInt2 = item:getCrystalStoneEnergy()
+			mainLogic:addDestructionPlanAction(theAction)
+		end
+	end
+end
+
+function GameExtandPlayLogic:specialCoverActiveCrystalStone(mainLogic, r, c, scoreScale)
+	local item = mainLogic.gameItemMap[r][c]
+	if item and item.isUsed and item.ItemType == GameItemType.kCrystalStone and item:isCrystalStoneActive() then
+		local theAction = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItemSpecial_CrystalStone_Animal ,
+			IntCoord:create(r,c),
+			nil,				
+			GamePlayConfig_SpecialBomb_CrystalStone_Animal_Time1
+			)
+
+		theAction.addInt1 = item.ItemColorType ----染色宝宝的颜色
+		mainLogic:addDestructionPlanAction(theAction)
+	end
+end
+
+function GameExtandPlayLogic:onItemTouchBegin(mainLogic, r, c)
+
+	if mainLogic.gameItemMap and mainLogic.gameItemMap[r] and mainLogic.gameItemMap[r][c] then
+		local item = mainLogic.gameItemMap[r][c]
+		if item.ItemType == GameItemType.kWukong then
+			if item.wukongProgressCurr >= item.wukongProgressTotal and item.wukongState ~= TileWukongState.kReadyToJump then
+				if wukongLastGuideCastingCount ~= wukongCastingCount then
+					wukongLastGuideCastingCount = wukongCastingCount
+					local boardmap = mainLogic.boardmap
+					local moneyTargetBoardPos = {}
+				    for r = 1, #boardmap do
+				        for c = 1, #boardmap[r] do
+				            local board = boardmap[r][c]
+				            if board and board.isWukongTarget then
+								table.insert(moneyTargetBoardPos, {r = r , c = c} )
+				            end
+				        end
+				    end
+					GameGuide:sharedInstance():onWukongGuideJump({wukongGuide = true, pos = moneyTargetBoardPos}, "wukongGuideJumpClick" )
+				end
+			end
+		end
+	end
+end
+
+function GameExtandPlayLogic:activeAllTotemsWithColor(mainLogic, colortype, scoreScale)
+	local gameItemMap = mainLogic.gameItemMap
+	for r = 1, #gameItemMap do
+		for c = 1, #gameItemMap[r] do
+			local item = gameItemMap[r][c]
+			if item and item.isUsed and item.ItemType == GameItemType.kTotems 
+					and not item:isActiveTotems() and item.ItemColorType == colortype then
+				SpecialCoverLogic:effectTotemsAt(mainLogic, r, c, scoreScale)
+			end
+		end
+	end	
+end
+
+function GameExtandPlayLogic:checkSuperCuteBallRecover(mainLogic, callback)
+	local count = 0
+	local boardmap = mainLogic.boardmap
+	for r = 1, #boardmap do
+		for c = 1, #boardmap[r] do
+			local board = boardmap[r][c]
+			if board and board.isUsed and board:hasSuperCuteBall() and board.superCuteState == GameItemSuperCuteBallState.kInactive then
+				if board.superCuteAddInt <= 0 then
+					count = count + 1
+
+					local item = mainLogic.gameItemMap[r][c]
+
+					board.superCuteAddInt = 0
+					board.superCuteState = GameItemSuperCuteBallState.kActive
+					item.beEffectBySuperCute = true
+
+					mainLogic:checkItemBlock(r, c)
+
+					local recoverAction = GameBoardActionDataSet:createAs(
+						GameActionTargetType.kGameItemAction,
+						GameItemActionType.kItem_SuperCute_Recover,
+						IntCoord:create(r,c),				
+						nil,				
+						GamePlayConfig_MaxAction_time)
+					recoverAction.completeCallback = callback
+					mainLogic:addGameAction(recoverAction)
+				end
+				board.superCuteAddInt = board.superCuteAddInt - 1
+			end
+		end
+	end	
+	return count
+end
+
+function GameExtandPlayLogic:getSuperCuteValidAroundItems(mainLogic, centerItem)
+	local aroundDirections = {
+		{ x = -1, y = 0 }, 
+		{ x = 1, y = 0 }, 
+		{ x = 0, y = -1 }, 
+		{ x = 0, y = 1 }
+	}
+
+	local function getItemAt(r, c)
+		if mainLogic.gameItemMap[r] then
+			return mainLogic.gameItemMap[r][c]
+		end
+		return nil
+	end
+
+	local function getBoardAt(r, c)
+		if mainLogic.boardmap[r] then
+			return mainLogic.boardmap[r][c]
+		end
+		return nil
+	end
+
+	local cx = centerItem.x
+	local cy = centerItem.y
+
+	local result = {}
+	for i, coord in ipairs(aroundDirections) do 
+		local tempItem = getItemAt(cy + coord.y, cx + coord.x);
+		local tempBoard = getBoardAt(cy + coord.y, cx + coord.x)
+
+		if tempItem 
+			and not tempItem.isEmpty
+			and tempItem:isAvailable()
+			and tempItem.beEffectByMimosa ~= GameItemType.kKindMimosa -- 不能跳到含羞草的藤曼上
+			and tempItem.ItemType ~= GameItemType.kBlackCuteBall
+			and tempItem.ItemType ~= GameItemType.kBigMonster
+			and tempItem.ItemType ~= GameItemType.kBigMonsterFrosting
+			and tempItem.ItemType ~= GameItemType.kSuperBlocker
+			and not tempItem:hasFurball()
+			and tempBoard.tileBlockType ~= 1 -- 翻转地块
+			and not tempBoard.isMoveTile -- 移动地格
+			and not tempBoard:hasSuperCuteBall() 
+			and tempBoard.transType == TransmissionType.kNone -- 传送带
+			and not mainLogic:hasChainInNeighbors(cy, cx, cy + coord.y, cx + coord.x) then
+			table.insert(result, tempItem)
+		end
+	end
+
+	return result
+end
+
+function GameExtandPlayLogic:checkSuperCuteBallTransfer(mainLogic, callback)
+	local count = 0
+	local boardmap = mainLogic.boardmap
+	local superCuteBoardList = {}
+	for r = 1, #boardmap do
+		for c = 1, #boardmap[r] do
+			local board = boardmap[r][c]
+			if board and board.isUsed and board:hasSuperCuteBall() and board.superCuteState == GameItemSuperCuteBallState.kActive then
+				table.insert(superCuteBoardList, board)
+			end
+		end
+	end	
+	if #superCuteBoardList > 0 then
+		for _, board in pairs(superCuteBoardList) do
+			local item = mainLogic.gameItemMap[board.y][board.x]
+			local validAroundItems = GameExtandPlayLogic:getSuperCuteValidAroundItems(mainLogic, item)
+			if #validAroundItems > 0 then
+				local targetItem = validAroundItems[mainLogic.randFactory:rand(1, #validAroundItems)]
+				local targetBoard = mainLogic.boardmap[targetItem.y][targetItem.x]
+
+				targetBoard.superCuteState = board.superCuteState
+				targetItem.beEffectBySuperCute = true
+
+				board.superCuteState = GameItemSuperCuteBallState.kNone
+				item.beEffectBySuperCute = false
+
+				mainLogic:checkItemBlock(item.y,item.x)
+				mainLogic:checkItemBlock(targetItem.y,targetItem.x)
+				mainLogic:addNeedCheckMatchPoint(item.y,item.x)
+
+				count = count + 1
+				local transferAction = GameBoardActionDataSet:createAs(
+					GameActionTargetType.kGameItemAction,
+					GameItemActionType.kItem_SuperCute_Transfer,
+					IntCoord:create(item.y,item.x),				
+					IntCoord:create(targetItem.y,targetItem.x),				
+					GamePlayConfig_MaxAction_time)
+				transferAction.completeCallback = callback
+				mainLogic:addGameAction(transferAction)
+			end 
+		end
+	end
+	return count
 end

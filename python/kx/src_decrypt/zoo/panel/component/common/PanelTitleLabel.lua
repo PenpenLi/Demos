@@ -11,9 +11,9 @@
 assert(not PanelTitleLabel)
 PanelTitleLabel = class(Layer)
 
-function PanelTitleLabel:init(levelNumber, diguanW, diguanH, levelNumberW, levelNumberH, manualAdjustInter, ...)
+function PanelTitleLabel:init(levelNumber, diguanW, diguanH, levelNumberW, levelNumberH, manualAdjustInter, useSpecialActivityUI, ...)
 	assert(#{...} == 0)
-
+	
 	-------------
 	-- Init Base Class
 	-- --------------
@@ -27,12 +27,18 @@ function PanelTitleLabel:init(levelNumber, diguanW, diguanH, levelNumberW, level
 	local diguanWidth 	= diguanW or 58
 	local diguanHeight	= diguanH or 58
 	local diguanFntFile	= "fnt/titles.fnt" 
+	if useSpecialActivityUI then
+		diguanFntFile = "fnt/titles_red.fnt"
+	end
 	if _G.useTraditionalChineseRes then diguanFntFile = "fnt/zh_tw/titles.fnt" end
 	local diguanAlignment	= kCCTextAlignmentCenter
 
 	local levelNumberWidth		= levelNumberW or 205.52
 	local levelNumberHeight 	= levelNumberH or 68.5
 	local levelNumberFntFile	= "fnt/level_seq_upon_entering.fnt"
+	if useSpecialActivityUI then
+		levelNumberFntFile	= "fnt/level_seq_upon_entering_red.fnt"
+	end
 	local levelNumberAlignment	= kCCTextAlignmentCenter
 
 	local manualAdjustInterval	= manualAdjustInter or 0
@@ -94,11 +100,11 @@ function PanelTitleLabel:init(levelNumber, diguanW, diguanH, levelNumberW, level
 	self:setContentSize(CCSizeMake(contentSize.width, diguanHeight))
 end
 
-function PanelTitleLabel:create(levelNumber, diguanWidth, diguanHeight, levelNumberWidth, levelNumberHeight, manualAdjustInterval, ...)
+function PanelTitleLabel:create(levelNumber, diguanWidth, diguanHeight, levelNumberWidth, levelNumberHeight, manualAdjustInterval, useSpecialActivityUI, ...)
 	assert(#{...} == 0)
 
 	local newPanelTitleLabel = PanelTitleLabel.new()
-	newPanelTitleLabel:init(levelNumber,diguanWidth, diguanHeight, levelNumberWidth, levelNumberHeight, manualAdjustInterval)
+	newPanelTitleLabel:init(levelNumber,diguanWidth, diguanHeight, levelNumberWidth, levelNumberHeight, manualAdjustInterval, useSpecialActivityUI)
 	return newPanelTitleLabel
 end
 

@@ -209,53 +209,31 @@ function MarkPrisePanel:onBuyBtnTapped(index)
 	if self.isDisposed then return end
 	local scene = HomeScene:sharedInstance()
 	local function onSuccess()
-		scene:checkDataChange()
-		if scene and scene.goldButton and not scene.goldButton.isDisposed then scene.goldButton:updateView() end
-		if not self.isDisposed then
-			for k, v in ipairs(self.items) do
-				if v.itemId == 2 then
-					local config = {updateButton = true,}
-					local anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
-					local position = v:getPosition()
-					local wPosition = v:getParent():convertToWorldSpace(ccp(position.x, position.y))
-					anim.sprites:setPosition(ccp(wPosition.x + 100, wPosition.y - 90))
-					scene:addChild(anim.sprites)
-					anim:play()
-				elseif v.itemId == 14 then
-					local num = v.num
-					if num > 10 then num = 10 end
-					local config = {number = num, updateButton = true,}
-					local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
-					local position = v:getPosition()
-					local size = v:getGroupBounds().size
-					local wPosition = v:getParent():convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
-					for k, v2 in ipairs(anim.sprites) do
-						v2:setPosition(ccp(wPosition.x, wPosition.y))
-						v2:setScaleX(v.sprite:getScaleX())
-						v2:setScaleY(v.sprite:getScaleY())
-						scene:addChild(v2)
-					end
-					anim:play()
-				else
-					local num = v.num
-					if num > 10 then num = 10 end
-					local config = {propId = v.itemId, number = num, updateButton = true,}
-					local anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
-					local position = v:getPosition()
-					local size = v:getGroupBounds().size
-					local wPosition = v:getParent():convertToWorldSpace(ccp(position.x + size.width / 8, position.y - size.height / 8))
-					for k, v2 in ipairs(anim.sprites) do
-						v2:setPosition(ccp(wPosition.x, wPosition.y))
-						v2:setScaleX(v.sprite:getScaleX())
-						v2:setScaleY(v.sprite:getScaleY())
-						scene:addChild(v2)
-					end
+		local function afterAnimation()
+			scene:checkDataChange()
+			if scene and scene.goldButton and not scene.goldButton.isDisposed then scene.goldButton:updateView() end
+			if not self.isDisposed then
+				for k, v in ipairs(self.items) do
+					local anim = FlyItemsAnimation:create({v})
+					local bounds = v:getGroupBounds()
+					anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+					anim:setScaleX(v.sprite:getScaleX())
+					anim:setScaleY(v.sprite:getScaleY())
 					anim:play()
 				end
 			end
+			MarkModel:getInstance():removeIndex(index)
+			if not self.isDisposed then self:onCloseBtnTapped() end
 		end
-		MarkModel:getInstance():removeIndex(index)
-		if not self.isDisposed then self:onCloseBtnTapped() end
+		local goodsId = MarkPrisePanelModel:getGoodsId(index)
+		if not(__ANDROID  and not PaymentManager.getInstance():checkCanWindMillPay(goodsId)) then
+			self.buyBtn:playFloatAnimation(
+				'-'..tostring(self.buyBtn:getNumber()),
+				afterAnimation
+			)
+		else
+			afterAnimation()
+		end
 	end
 	local function onGoldNotEnough()
 		local function createGoldPanel()
@@ -265,28 +243,42 @@ function MarkPrisePanel:onBuyBtnTapped(index)
 				panel:popout()
 			end
 		end
-		-- local text = {
-		-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-		-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-		-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-		-- }
-		-- CommonTipWithBtn:setShowFreeFCash(true)
-		-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel)
-		GoldlNotEnoughPanel:create(createGoldPanel, nil, nil):popout()
+		GoldlNotEnoughPanel:create(createGoldPanel):popout()
 		self.buyBtn:setEnabled(true)
+		self.closeBtn:setEnabled(true)
 	end
-	local function onFail(err)
+	local function onFail(errCode, errMsg)
 		if self.isDisposed then return end
-		if not err then
+		if not errCode then
 			CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
-		elseif err == 730330 then onGoldNotEnough()
-		else CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err)), "negative") end
+		elseif errCode == 730330 then 
+			onGoldNotEnough()
+		else 
+			if __ANDROID then 
+				if errCode == 730241 or errCode == 730247 then
+					CommonTip:showTip(errMsg, "negative")
+				else
+					CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative")
+				end
+			else
+				CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(errCode)), "negative") 
+			end
+		end
 		self.buyBtn:setEnabled(true)
+		self.closeBtn:setEnabled(true)
 	end
 	local function onCancel()
 		self.buyBtn:setEnabled(true)
+		self.closeBtn:setEnabled(true)
 	end
 	self.buyBtn:setEnabled(false)
+	self.closeBtn:setEnabled(false)
+	setTimeOut(function()
+			if not self.disposed then
+				self.buyBtn:setEnabled(true)
+				self.closeBtn:setEnabled(true)
+			end
+		end, 3)
 
 	MarkPrisePanelModel:buyMarkPrise(index, onSuccess, onFail, onCancel, self)
 end
@@ -297,22 +289,18 @@ function MarkPrisePanelModel:buyMarkPrise(index, successCallback, failCallback, 
 	local function onSuccess()
 		if successCallback then successCallback() end
 	end
-	local function onFailForIOS(evt)
-		local errorCode = nil
-		if evt and evt.data then 
-			errorCode = evt.data
-		end
+	local function onFailForIOS(errorCode)
 		if failCallback then failCallback(errorCode) end
 	end
-	local function onFailForAndroid(evt)
+	local function onFailForAndroid()
 		if parentPanel and not parentPanel.isDisposed then 
 			parentPanel.buyBtn:setEnabled(true)
 		end
 	end
-	local function onFail(evt)
-		if failCallback then failCallback() end
+	local function onFail(errorCode, errMsg)
+		if failCallback then failCallback(errorCode, errMsg) end
 	end
-	local function onCancel(evt)
+	local function onCancel()
 		if cancelCallback then cancelCallback() end
 	end
     local function updateFunc()
@@ -324,16 +312,17 @@ function MarkPrisePanelModel:buyMarkPrise(index, successCallback, failCallback, 
 
 	if __ANDROID then
 		if PaymentManager.getInstance():checkCanWindMillPay(goodsId) then
-			local uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
-			PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, goodsId, 1, 1, 0, 1)
+			self.dcAndroidInfo = DCWindmillObject:create()
+            self.dcAndroidInfo:setGoodsId(goodsId)
+            PaymentDCUtil.getInstance():sendAndroidWindMillPayStart(self.dcAndroidInfo)
 
    			local logic = WMBBuyItemLogic:create()
             local buyLogic = BuyLogic:create(goodsId, 2)
             buyLogic:getPrice()
-            logic:buy(goodsId, 1, uniquePayId, buyLogic, onSuccess, onFailForAndroid, onFailForAndroid, updateFunc)
+            logic:buy(goodsId, 1, self.dcAndroidInfo, buyLogic, onSuccess, onFailForAndroid, onFailForAndroid, updateFunc)
 		else
 			local logic = IngamePaymentLogic:create(goodsId)
-			logic:buy(onSuccess, onFail, onCancel, true)
+			logic:buy(onSuccess, onFail, onCancel)
 		end
 	else
 		local logic = BuyLogic:create(goodsId, 2)

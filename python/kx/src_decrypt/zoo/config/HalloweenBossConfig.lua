@@ -13,10 +13,10 @@ maxMove         释放技能的步数
 local count = 0
 local boss = 
 {
-    [1] = {blood = 14, normalHit = 1, specialHit = 3, genBellCount = 1, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 8, dropAddMove = 1, maxMove = 0},
-    [2] = {blood = 19, normalHit = 1, specialHit = 3, genBellCount = 1, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 12, dropAddMove = 1, maxMove = 8},
-    [3] = {blood = 25, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 17, dropAddMove = 1, maxMove = 7},
-    [4] = {blood = 32, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 1, dropBellOnHit = 1, dropBellOnDie = 23, dropAddMove = 1, maxMove = 6},
+    [1] = {blood = 21, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 10, dropAddMove = 1, maxMove = 0},
+    [2] = {blood = 30, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 12, dropAddMove = 1, maxMove = 7},
+    [3] = {blood = 37, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 14, dropAddMove = 1, maxMove = 0},
+    [4] = {blood = 45, normalHit = 1, specialHit = 3, genBellCount = 2, genCloudCount = 0, dropBellOnHit = 1, dropBellOnDie = 15, dropAddMove = 1, maxMove = 6},
 
 }
 function HalloweenBossConfig.reinit()
@@ -24,13 +24,13 @@ function HalloweenBossConfig.reinit()
 end
 function HalloweenBossConfig.genNewBoss()
     count = count + 1
-    if count == 1 or count == 2 then
+    if count == 1 then
         return boss[1]
-    elseif count == 3 then
+    elseif count == 2 then
         return boss[2]
-    elseif count == 4 then
+    elseif count == 3 then
         return boss[3]
-    elseif count > 4 then
+    elseif count >= 4 then
         return boss[4]
     end
 end

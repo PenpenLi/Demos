@@ -42,9 +42,12 @@ function GameBoardActionRunner:runGameItemAction(mainLogic, theAction, actid, ac
 	end
 end
 
+
 function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid, actByView)
 	-- print('run GameBoardActionRunner:runningGameItemAction')
-	if theAction.actionType == GameItemActionType.kItemRefresh_Item_Flying then
+	if theAction.actionType == GameItemActionType.kItemScore_Get then
+		GameBoardActionRunner:runningGameItemScoreGet(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItemRefresh_Item_Flying then
 		GameBoardActionRunner:runningGameItemRefresh_Item_Flying(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Crystal_Change then
 		GameBoardActionRunner:runningGameItem_Crystal_Change(mainLogic, theAction, actid, actByView)
@@ -80,6 +83,8 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionMimosaReady(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Road_Bright then
 		GameBoardActionRunner:runningGameItemActionSnailRoadBright(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Road_State then
+		GameBoardActionRunner:runningGameItemActionHedgehogRoadState(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Snail_Product then
 		GameBoardActionRunner:runningGameItemActionProductSnail(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Mayday_Boss_Die then
@@ -96,6 +101,14 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionDestroyArea(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Casting then
 		GameBoardActionRunner:runningGameItemActionMagicLampCasting(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_CheckAndChangeState then
+		GameBoardActionRunner:runGameItemActionWukongCheckAndChangeState(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Gift then
+		GameBoardActionRunner:runGameItemActionWukongGift(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_Reinit then
+		GameBoardActionRunner:runGameItemActionWukongReinit(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Wukong_JumpToTarget then
+		GameBoardActionRunner:runGameItemActionWukongJumping(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Gold_ZongZi_Explode then
 		GameBoardActionRunner:runningGameItemActionGoldZongZiCasting(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_Magic_Lamp_Reinit then
@@ -116,40 +129,573 @@ function GameBoardActionRunner:runningGameItemAction(mainLogic, theAction, actid
 		GameBoardActionRunner:runningGameItemActionSandTransfer(mainLogic, theAction, actid, actByView)
 	elseif theAction.actionType == GameItemActionType.kItem_mayday_boss_casting then
 		GameBoardActionRunner:runningGameItemActionMaydayBossCasting(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Clean_Dig_Groud then
+		GameBoardActionRunner:runningGameItemActionCleanDigGround(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Hedgehog_Box_Change then
+		GameBoardActionRunner:runningGameItemActionHedgehogBoxChange(mainLogic, theAction, actid, actByView)
+	elseif  theAction.actionType == GameItemActionType.kItem_Hedgehog_Release_Energy then
+		GameBoardActionRunner:runningGameItemActionHedgehogReleaseEnergy(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Halloween_Boss_Ready_Casting then
+		GameBoardActionRunner:runningGameitemActionHalloweenBossReadyCasting(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItemSpecial_CrystalStone_Flying then
+		GameBoardActionRunner:runningGameitemActionCrystalStoneFlying(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Update_Lotus then
+		GameBoardActionRunner:runningGameitemActionUpdateLotus(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Recover then
+		GameBoardActionRunner:runningGameItemActionRecoverSuperCute(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_SuperCute_Transfer then
+		GameBoardActionRunner:runningGameItemActionTransferSuperCute(mainLogic, theAction, actid, actByView)
+	elseif theAction.actionType == GameItemActionType.kItem_Check_Has_Drip then
+		GameBoardActionRunner:runningGameItemActionCheckHasDrip(mainLogic, theAction, actid, actByView)
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionCheckHasDrip(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+
+		local gameItemMap = mainLogic.gameItemMap
+		local item = nil
+		local dripNum = 0
+
+		for r = 1, #gameItemMap do 
+	        for c = 1, #gameItemMap[r] do
+
+	            item = gameItemMap[r][c]
+	            if item ~= nil and item.ItemType == GameItemType.kDrip 
+	            	and ( item.dripState == DripState.kGrow or item.dripState == DripState.kReadyToMove ) then
+	            	dripNum = dripNum + 1
+	            end
+	        end
+		end
+
+		if dripNum == 0 then
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+			mainLogic.gameActionList[actid] = nil
+		end
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionTransferSuperCute(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		if theAction.addInfo == "over" then
+			-- local fr, fc = theAction.ItemPos1.x, theAction.ItemPos1.y
+			local tr, tc = theAction.ItemPos2.x, theAction.ItemPos2.y
+			local item = mainLogic.gameItemMap[tr][tc]
+			if item.ItemType == GameItemType.kKindMimosa or item.beEffectByMimosa == GameItemType.kKindMimosa then
+				GameExtandPlayLogic:backMimosa( mainLogic, tr, tc )
+			end
+
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+			mainLogic.gameActionList[actid] = nil
+		end
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionRecoverSuperCute(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		if theAction.addInfo == "over" then
+			local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+
+			local item = mainLogic.gameItemMap[r][c]
+			if item.ItemType == GameItemType.kKindMimosa or item.beEffectByMimosa == GameItemType.kKindMimosa then
+				GameExtandPlayLogic:backMimosa( mainLogic, r, c )
+			end
+
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+			mainLogic.gameActionList[actid] = nil
+		end
+	end
+end
+
+function GameBoardActionRunner:runningGameitemActionUpdateLotus(mainLogic, theAction, actid, actByView)
+	--[[
+	if theAction.actionStatus == GameActionStatus.kRunning then
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+		local board = mainLogic.boardmap[r][c]
+		local updateType = theAction.updateType
+
+		if theAction.addInfo == "update" then
+
+			theAction.viewJSQ = 0
+			theAction.viewJSQTarget = 0
+
+			if updateType == 1 then
+				theAction.viewJSQTarget = 10
+				mainLogic.currLotusNum = mainLogic.currLotusNum + 1
+			elseif updateType == 2 then
+				theAction.viewJSQTarget = 16
+			else
+				theAction.viewJSQTarget = 22
+			end
+
+			theAction.addInfo = "playAnimation"
+
+		end
+
+		if theAction.addInfo == "playing" then
+
+			if theAction.viewJSQ == 0 then
+				board.lotusLevel = board.lotusLevel + 1
+				if board.lotusLevel > 3 then board.lotusLevel = 3 end
+				item.lotusLevel = board.lotusLevel
+
+				board.isNeedUpdate = true
+				item.isNeedUpdate = true
+				mainLogic:checkItemBlock(r, c)
+			end
+
+			theAction.viewJSQ = theAction.viewJSQ + 1
+			if theAction.viewJSQ > theAction.viewJSQTarget then
+				theAction.addInfo = "over"
+			end
+		end
+
+		if theAction.addInfo == "over" then
+
+			if updateType == 1 then
+				local pos = mainLogic:getGameItemPosInView(r, c)
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.currLotusNum, pos)
+			end
+
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+			mainLogic.gameActionList[actid] = nil
+		end
+	end
+	]]
+
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+		local board = mainLogic.boardmap[r][c]
+		local updateType = theAction.updateType
+
+		if theAction.addInfo == "playAnimation" then
+			theAction.viewJSQ = 0
+			theAction.viewJSQTarget = 0
+
+			if updateType == 1 then
+				theAction.viewJSQTarget = 10
+				mainLogic.currLotusNum = mainLogic.currLotusNum + 1
+			elseif updateType == 2 then
+				theAction.viewJSQTarget = 16
+			else
+				theAction.viewJSQTarget = 22
+			end
+
+			board.lotusLevel = board.lotusLevel + 1
+			if board.lotusLevel > 3 then board.lotusLevel = 3 end
+			item.lotusLevel = board.lotusLevel
+
+			board.isNeedUpdate = true
+			item.isNeedUpdate = true
+			mainLogic:checkItemBlock(r, c)
+
+			theAction.addInfo = "playing"
+		elseif theAction.addInfo == "playing" then
+			theAction.viewJSQ = theAction.viewJSQ + 1
+			if theAction.viewJSQ > theAction.viewJSQTarget then
+				theAction.addInfo = "over"
+			end
+		elseif theAction.addInfo == "over" then
+			if updateType == 1 then
+				local pos = mainLogic:getGameItemPosInView(r, c)
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 0, mainLogic.currLotusNum, ccp(0,0))
+			end
+
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+			mainLogic.gameActionList[actid] = nil
+		end
+	end
+end
+
+function GameBoardActionRunner:runningGameItemScoreGet(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameitemActionCrystalStoneFlying(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		if not theAction.actionTick then 
+			theAction.actionTick = 1
+		else
+			theAction.actionTick = theAction.actionTick + 1
+		end
+		
+		if theAction.addInfo == "over" then
+			mainLogic.gameActionList[actid] = nil
+		else
+			local isSpecialType = theAction.addInt2 and theAction.addInt2 ~= 0
+			if theAction.actionTick == GamePlayConfig_CrystalStone_Fly_Time2 then
+				local r, c = theAction.ItemPos2.x, theAction.ItemPos2.y
+		        local item = mainLogic.gameItemMap[r][c]
+		        local sptype = theAction.addInt2
+		        local targetColor = theAction.addInt1
+
+				if not isSpecialType then
+					item.ItemColorType = targetColor
+					item.isNeedUpdate = true
+				else
+					if (sptype == AnimalTypeConfig.kLine or sptype == AnimalTypeConfig.kColumn) then
+						local specialTypes = { AnimalTypeConfig.kLine, AnimalTypeConfig.kColumn }
+						local targetSpecialType = specialTypes[mainLogic.randFactory:rand(1, 2)]
+						item.ItemSpecialType = targetSpecialType
+					elseif sptype == AnimalTypeConfig.kWrap then
+						item.ItemSpecialType = AnimalTypeConfig.kWrap
+					end
+					item.ItemType = GameItemType.kAnimal
+					item.ItemColorType = targetColor
+					item.isNeedUpdate = true
+
+					item.bombRes = IntCoord:create(r, c)
+				end
+			elseif not isSpecialType and theAction.actionTick == GamePlayConfig_CrystalStone_Fly_Time2 + 1 then
+				local r, c = theAction.ItemPos2.x, theAction.ItemPos2.y
+				mainLogic:addNeedCheckMatchPoint(r, c)
+				if theAction.completeCallback then theAction.completeCallback() end
+				theAction.addInfo = "over"
+			elseif isSpecialType and theAction.actionTick == GamePlayConfig_CrystalStone_Fly_Time3 then
+				local r, c = theAction.ItemPos2.x, theAction.ItemPos2.y
+				BombItemLogic:tryBombWithBombRes(mainLogic, r, c, 1, scoreScale)
+				if theAction.completeCallback then theAction.completeCallback() end
+				theAction.addInfo = "over"
+			end
+		end
+	end
+end
+
+function GameBoardActionRunner:runningGameitemActionHalloweenBossReadyCasting(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		if theAction.completeCallback and type(theAction.completeCallback) == "function" then 
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionCleanDigGround(mainLogic, theAction, actid, actByView)
+	-- body
+	if theAction.addInfo == "bomb" then
+		local maxR = theAction.ItemPos1.x
+		local count = 0
+		if theAction.bombCount < maxR then
+			local r = maxR - theAction.bombCount
+			for c = 1, #mainLogic.gameItemMap[r] do 
+	            local item = mainLogic.gameItemMap[r][c]
+	            if item.digGroundLevel > 0 then
+	                for k = 1, item.digGroundLevel do 
+	                    SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, nil, nil, true, false) 
+	                end
+	                count = count + 1
+	            elseif item.digJewelLevel > 0 then
+	                for k = 1, item.digJewelLevel do 
+	                    GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, nil, false, false)
+	                end
+	                count = count + 1
+	            end
+	        end
+			theAction.bombCount = theAction.bombCount + 1
+		else
+			theAction.addInfo = "over"
+		end
+		if count > 0 then
+	    	mainLogic:setNeedCheckFalling()
+		end
+	elseif theAction.addInfo == "over" then
+		if theAction.completeCallback then 
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionHedgehogReleaseEnergy(mainLogic, theAction, actid, actByView)
+	-- body
+	if theAction.addInfo == "updateData" then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+		item.hedgehogLevel = theAction.hedgehogLevel
+		item.isNeedUpdate = true
+		mainLogic.gameMode:releaseEnerge()
+		theAction.addInfo = "updateTarget"
+	elseif theAction.addInfo == "over" then
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+function GameBoardActionRunner:runningGameItemActionHedgehogBoxChange(mainLogic, theAction, actid, actByView)
+	-- body
+	if theAction.addInfo == "animationOver" then
+		local addJewel = theAction.addJewelCount or 0
+		if addJewel > 0 then
+			mainLogic.PlayUIDelegate:setTargetNumber(0, 1, mainLogic.digJewelCount:getValue(), 
+				ccp(0,0), nil, false, mainLogic.gameMode:getPercentEnerge())
+		end
+		theAction.addInfo = "addProp"
+	elseif theAction.addInfo == "addProp" then
+		if theAction.changeType == HedgehogBoxCfgConst.kProp then
+			local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+			local pos = mainLogic:getGameItemPosInView(r, c)
+			if mainLogic.PlayUIDelegate and theAction.changeItem then
+				local activityId = 0
+				local text = mainLogic.dropPropText or Localization:getInstance():getText("activity.GuoQing.getprop.tips")
+				activityId = mainLogic.activityId
+				mainLogic.PlayUIDelegate:addTimeProp(theAction.changeItem, 1, pos, activityId, text)
+			end
+		end
+		theAction.addInfo = "effect"
+	elseif theAction.addInfo == "effectOver" then
+		if theAction.changeType == HedgehogBoxCfgConst.kAddMove  then
+			for k, v in pairs(theAction.effectItem) do 
+				local item = mainLogic.gameItemMap[v.r][v.c]
+				item.ItemType = GameItemType.kAddMove
+				item.numAddMove = mainLogic.addMoveBase or GamePlayConfig_Add_Move_Base
+				item.isNeedUpdate = true
+			end
+		elseif theAction.changeType == HedgehogBoxCfgConst.kSpecial then
+			local total = #theAction.effectItem
+			local rate = math.ceil(GamePlayConfig_HedgehogAwardWrap * total
+				/(GamePlayConfig_HedgehogAwardWrap + GamePlayConfig_HedgehogAwardLine))
+			for k = 1, total do 
+				local item_selectd = theAction.effectItem[k]
+				local item = mainLogic.gameItemMap[item_selectd.r][item_selectd.c]
+				if k <= rate/2 then
+					item.ItemSpecialType = AnimalTypeConfig.kLine
+				elseif k <= rate then
+					item.ItemSpecialType = AnimalTypeConfig.kColumn
+				else
+					item.ItemSpecialType = AnimalTypeConfig.kWrap
+				end
+				item.isNeedUpdate = true 
+			end
+		elseif theAction.changeType == HedgehogBoxCfgConst.kJewl then
+			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + GamePlayConfig_HedgehogAwardJewel)
+			if mainLogic.PlayUIDelegate then
+				local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+				local pos = mainLogic:getGameItemPosInView(r, c)
+				for k = 1, GamePlayConfig_HedgehogAwardJewel do 
+					mainLogic.gameMode:addEnergeCount(1)
+					mainLogic.PlayUIDelegate:setTargetNumber(0, 1, mainLogic.digJewelCount:getValue(), pos, nil, nil, mainLogic.gameMode:getPercentEnerge())
+				end
+			end
+		end
+
+		if theAction.specialItems and #theAction.specialItems > 0 then
+			local total = #theAction.specialItems
+			local specialTypes = {AnimalTypeConfig.kLine, AnimalTypeConfig.kColumn, AnimalTypeConfig.kWrap}
+			for k = 1, total do 
+				local item_selectd = theAction.specialItems[k]
+				local item = mainLogic.gameItemMap[item_selectd.r][item_selectd.c]
+				item.ItemSpecialType = specialTypes[mainLogic.randFactory:rand(1, #specialTypes)]
+				item.isNeedUpdate = true 
+			end
+		end
+		mainLogic.maydayBossCount = mainLogic.maydayBossCount + 1
+		if mainLogic.PlayUIDelegate then
+			local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+			local position = mainLogic:getGameItemPosInView(r, c)
+			mainLogic.PlayUIDelegate:setTargetNumber(0, 2, mainLogic.maydayBossCount, position)
+		end
+		theAction.addInfo = "updateView"
+	elseif theAction.addInfo == "over" then
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local item = mainLogic.gameItemMap[r][c]
+		item:cleanAnimalLikeData()
+		SnailLogic:doEffectSnailRoadAtPos(mainLogic, r, c)
+		mainLogic:checkItemBlock(r,c)
+		item.isNeedUpdate = true
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+		mainLogic:setNeedCheckFalling()
 	end
 end
 
 function GameBoardActionRunner:runningGameItemActionHalloweenBossCasting(mainLogic, theAction, actid, actByView)
-	if theAction.addInfo == 'over' then
+	if theAction.addInfo == 'playingAnim' then
+		-- print('playingAnim')
 		-- print('***************** Halloween Boss Casting')
 
-		local toItemPos = theAction.destPositions
-		local boss = mainLogic:getHalloweenBoss()
+		local jewelPositions = theAction.jewelPositions
+		local specialPositions = theAction.specialPositions
+		local goldZongziPosition = theAction.goldZongziPosition
 
-		for k, v in pairs(toItemPos) do
-			local item = mainLogic.gameItemMap[v.r][v.c]
-			if k <= boss.genBellCount then
-				-- 带宝石的云块
-				item:cleanAnimalLikeData()
-				item.digJewelLevel = 1 
-				item.ItemType = GameItemType.kDigJewel 
-				item.isBlock = true 
-				item.isEmpty = false 
-			else 
-				-- 单纯的云块
-				item:cleanAnimalLikeData()
-				item.digGroundLevel = 1 
-				item.ItemType = GameItemType.kDigGround 
-				item.isBlock = true 
-				item.isEmpty = false
+		local allComplete = true
+
+		local jewelComplete = false
+		for k, v in pairs(jewelPositions) do
+			if v.animFinished == true and v.dataChanged == false then
+				local item = mainLogic.gameItemMap[v.r][v.c]
+				item.ItemType = GameItemType.kDigJewel
+				item.digJewelLevel = item.digGroundLevel
+				item.digGroundLevel = 0
+				item.isNeedUpdate = true
+				v.dataChanged = true
 			end
-			mainLogic:checkItemBlock(v.r,v.c)
-			item.isNeedUpdate = true
 		end
-		theAction.addInfo = 'complete'
-	elseif theAction.addInfo == 'complete' then
+
+		for k, v in pairs(specialPositions) do
+			if v.animFinished == true and v.dataChanged == false then
+				local item = mainLogic.gameItemMap[v.r][v.c]
+				local rand = mainLogic.randFactory:rand(1, 100)
+				if rand < 34 then
+					item.ItemSpecialType = AnimalTypeConfig.kLine
+				elseif rand < 67 then
+					item.ItemSpecialType = AnimalTypeConfig.kColumn
+				else 
+					item.ItemSpecialType = AnimalTypeConfig.kWrap
+				end
+				item.isNeedUpdate = true
+				v.dataChanged = true
+			end
+		end
+
+		if goldZongziPosition then
+			-- print('goldZongziPosition')
+			if goldZongziPosition.animFinished == true and goldZongziPosition.dataChanged == false then
+				local item = mainLogic.gameItemMap[goldZongziPosition.r][goldZongziPosition.c]
+				item.ItemType = GameItemType.kGoldZongZi
+				item.digGoldZongZiLevel = 1
+				item.digGroundLevel = 0
+				item.digJewelLevel = 0
+				item.isNeedUpdate = true
+				goldZongziPosition.dataChanged = true
+			end
+		end
+
+		for k, v in pairs(theAction.allDestPos) do
+			-- print(v.animFinished, v.dataChanged)
+			if not (v.animFinished == true and v.dataChanged == true) then
+				allComplete = false
+			end
+		end
+		if allComplete then
+			-- print('allComplete')
+			theAction.addInfo = 'over'
+		end
+	elseif theAction.addInfo == 'over' then
 		if theAction.completeCallback then
 			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionHalloweenBossCreate(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == 'over' then
+		-- print('***************** Halloween Boss Create')
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		mainLogic:initHalloweenBoss(HalloweenBossConfig.genNewBoss())
+		mainLogic.gameItemMap[r][c].isHalloweenBottle = nil
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+
+function GameBoardActionRunner:runningGameItemActionHalloweenBossDie(mainLogic, theAction, actid, actByView)
+	if theAction.addInfo == 'over' then
+		
+		mainLogic:halloween2015BossDie(theAction.diePosition)
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	elseif theAction.addInfo == 'clearLine' then
+		theAction.addInfo = ''
+		local function finish()
+			theAction.addInfo = 'over'
+		end
+
+
+		local pos = {}
+		table.insert(pos, mainLogic:getGameItemPosInView(8.5, -0.5))
+		table.insert(pos, mainLogic:getGameItemPosInView(7.8, 0.7))
+		table.insert(pos, mainLogic:getGameItemPosInView(8.7, 2.2))
+		table.insert(pos, mainLogic:getGameItemPosInView(8.0, 3.1))
+		table.insert(pos, mainLogic:getGameItemPosInView(9.1, 4.1))
+		table.insert(pos, mainLogic:getGameItemPosInView(7.7, 4.7))
+		table.insert(pos, mainLogic:getGameItemPosInView(7.6, 5.6))
+		table.insert(pos, mainLogic:getGameItemPosInView(8.6, 8.0))
+		table.insert(pos, mainLogic:getGameItemPosInView(7.7, 8.9))
+
+		local currDigJewelCount = mainLogic.digJewelCount:getValue()
+		for k, v in pairs(pos) do
+			if mainLogic.PlayUIDelegate then
+				mainLogic.PlayUIDelegate:setTargetNumber(0, 1, currDigJewelCount , v)
+			end
+		end
+
+
+		local action = GameBoardActionDataSet:createAs(
+			GameActionTargetType.kGameItemAction,
+			GameItemActionType.kItem_Halloween_Boss_ClearLine,
+			nil, 
+			nil,
+			GamePlayConfig_MaxAction_time)
+		action.completeCallback = finish
+		mainLogic:addDestructionPlanAction(action)
+		mainLogic:setNeedCheckFalling()
+	end
+end
+
+function GameBoardActionRunner:runningGameItemActionMagicTileHit(mainLogic, theAction, actid, actByView) 
+	if theAction.addInfo == 'over' then
+
+		if not theAction.bossDead then
+			local item = mainLogic.boardmap[theAction.ItemPos1.x][theAction.ItemPos1.y]
+			if item then
+				local id = item.magicTileId
+				for r = 1, #mainLogic.boardmap do
+					for c = 1, #mainLogic.boardmap[r] do
+						local item2 = mainLogic.boardmap[r][c]
+						if item2.isMagicTileAnchor == true and item2.magicTileId == id then
+							item2.isHitThisRound = true
+						end
+					end
+				end
+			end
+
+			local bossData = mainLogic:getHalloweenBoss() 
+
+			-- boss不在，或者boss已经死了或者boss正在播死亡动画，都算boss死了
+			if bossData then
+				print('QAAAAAAAAAAAAAAAAAAAAAAAA hit ', bossData.hit)
+				local count = bossData.dropBellOnHit
+				mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + count)
+				local currDigJewelCount = mainLogic.digJewelCount:getValue()
+				local currBossPos = ccp( theAction.bossPosition.x , theAction.bossPosition.y )
+
+				local function ontimerout()
+					if mainLogic.PlayUIDelegate then
+						for k = 1, count do 
+							if currBossPos.x == 0 and currBossPos.y == 0 then
+								print('error!!!!!!!!!!!!!!!')
+							end
+							mainLogic.PlayUIDelegate:setTargetNumber(0, 1, currDigJewelCount , currBossPos)
+						end
+					end
+				end
+
+				TimerUtil.addAlarm( ontimerout , 2 , 1)
+			end
 		end
 		mainLogic.gameActionList[actid] = nil
 	end
@@ -180,73 +726,6 @@ function GameBoardActionRunner:runningGameItemActionMagicTileChange(mainLogic, t
 		
 		if theAction.completeCallback then
 			theAction.completeCallback()
-		end
-		mainLogic.gameActionList[actid] = nil
-	end
-end
-
-function GameBoardActionRunner:runningGameItemActionHalloweenBossCreate(mainLogic, theAction, actid, actByView)
-	if theAction.addInfo == 'over' then
-		-- print('***************** Halloween Boss Create')
-		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
-		mainLogic:initHalloweenBoss(HalloweenBossConfig.genNewBoss())
-		mainLogic.gameItemMap[r][c].isHalloweenBottle = nil
-		if theAction.completeCallback then
-			theAction.completeCallback()
-		end
-		mainLogic.gameActionList[actid] = nil
-	end
-end
-
-function GameBoardActionRunner:runningGameItemActionHalloweenBossDie(mainLogic, theAction, actid, actByView)
-	if theAction.addInfo == 'over' then
-		-- print('***************** Halloween Boss Die')
-		local toItemPos = theAction.destPositions
-		for k, v in pairs(toItemPos) do
-			local item = mainLogic.gameItemMap[v.r][v.c]
-			item.ItemType = GameItemType.kAddMove
-			item:initAddMoveConfig(mainLogic.addMoveBase)
-			item.isNeedUpdate = true
-		end
-		if theAction.completeCallback then
-			theAction.completeCallback()
-		end
-		mainLogic.gameActionList[actid] = nil
-	elseif theAction.addInfo == 'died' then
-		local bells = {}
-		if theAction.dropsAnim and theAction.dropsAnim.bells then
-			bells = theAction.dropsAnim.bells
-		end
-		mainLogic:dragonBoatBossDie(theAction.diePosition, bells)
-		theAction.addInfo = "died_action"
-
-	end
-end
-
-function GameBoardActionRunner:runningGameItemActionMagicTileHit(mainLogic, theAction, actid, actByView) 
-	if theAction.addInfo == 'over' then
-		-- print('***************** Halloween Magic Tile Hit')
-		local item = mainLogic.boardmap[theAction.ItemPos1.x][theAction.ItemPos1.y]
-		if item then
-			local id = item.magicTileId
-			for r = 1, #mainLogic.boardmap do
-				for c = 1, #mainLogic.boardmap[r] do
-					local item2 = mainLogic.boardmap[r][c]
-					if item2.isMagicTileAnchor == true and item2.magicTileId == id then
-						item2.isHitThisRound = true
-					end
-				end
-			end
-		end
-		local boss = mainLogic:getHalloweenBoss() 
-		if boss then
-			local count = boss.dropBellOnHit
-			mainLogic.digJewelCount:setValue(mainLogic.digJewelCount:getValue() + count)
-			if mainLogic.PlayUIDelegate then
-				for k = 1, count do 
-					mainLogic.PlayUIDelegate:setTargetNumber(0, 1, mainLogic.digJewelCount:getValue(), theAction.bossPosition)
-				end
-			end
 		end
 		mainLogic.gameActionList[actid] = nil
 	end
@@ -301,7 +780,10 @@ function GameBoardActionRunner:runningGameItemActionMagicLampCasting(mainLogic, 
 		local toItemPos = theAction.speicalItemPos
 		for k, v in pairs(toItemPos) do
 			local item = mainLogic.gameItemMap[v.r][v.c]
-			item.ItemSpecialType = 7 + mainLogic.randFactory:rand(0, 1)
+			local specialTypes = { AnimalTypeConfig.kLine, AnimalTypeConfig.kColumn }
+			local targetSpecialType = specialTypes[mainLogic.randFactory:rand(1, 2)]
+			item.ItemType = GameItemType.kAnimal
+			item.ItemSpecialType = targetSpecialType
 			item.isNeedUpdate = true
 		end
 		local function bombAll()
@@ -319,6 +801,218 @@ function GameBoardActionRunner:runningGameItemActionMagicLampCasting(mainLogic, 
 		setTimeOut(bombAll, 0.3)
 		-- bombAll()
 		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+function GameBoardActionRunner:runGameItemActionWukongCheckAndChangeState(mainLogic, theAction, actid, actByView)
+
+	if theAction.actionStatus == GameActionStatus.kRunning then
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local monkey = mainLogic.gameItemMap[r][c]
+
+		local function onCompleteCallback()
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+		end
+
+		if theAction.addInfo == "onChangeToReadyToJumpFin" then
+			--monkey.wukongIsReadyToJump = true
+			monkey.wukongState = TileWukongState.kReadyToJump
+			mainLogic.gameActionList[actid] = nil
+			onCompleteCallback()
+		elseif theAction.addInfo == "onChangeToActiveFin" then
+			--monkey.wukongIsReadyToJump = false
+			monkey.wukongState = TileWukongState.kOnActive
+			mainLogic.gameActionList[actid] = nil
+			onCompleteCallback()
+		end
+	end
+	
+end
+
+function GameBoardActionRunner:runGameItemActionWukongGift(mainLogic, theAction, actid, actByView)
+
+	local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+	local fromItem = mainLogic.gameItemMap[r][c]
+
+	if theAction.addInfo == 'anim_over' then
+		
+		----[[
+		local addStepPositions = theAction.addStepPositions
+		for k, v in pairs(addStepPositions) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kAddMove
+			item:initAddMoveConfig(mainLogic.addMoveBase)
+			item.isNeedUpdate = true
+		end
+		--]]
+		----[[
+		local lineAndColumnPositions = theAction.lineAndColumnPositions
+		for k, v in pairs(lineAndColumnPositions) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kAnimal
+			local rand = mainLogic.randFactory:rand(1, 2)
+			if rand == 1 then
+				item.ItemSpecialType = AnimalTypeConfig.kLine
+			else
+				item.ItemSpecialType = AnimalTypeConfig.kColumn  
+			end
+			
+			item.isNeedUpdate = true
+		end
+
+		local warpPositions = theAction.warpPositions
+		for k, v in pairs(warpPositions) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kAnimal
+			item.ItemSpecialType = AnimalTypeConfig.kWrap
+			item.isNeedUpdate = true
+		end
+		--]]
+
+		theAction.fromItemPosition = mainLogic:getGameItemPosInView( r , c )
+		
+		mainLogic:addDigJewelCountWhenBossDie(10 , theAction.fromItemPosition)
+
+
+
+		local function dropProps()
+            local totalWeight = mainLogic.wukongPropConfig:getTotalWeight()
+            local random = mainLogic.randFactory:rand(1, totalWeight)
+            local randPropId = mainLogic.wukongPropConfig:getRandProp(random)
+           	--randPropId = 10061
+            if randPropId then
+                if mainLogic.PlayUIDelegate then
+                    local showText = mainLogic.dropPropText or ""
+                    mainLogic.PlayUIDelegate:addTimeProp(randPropId, 1, theAction.fromItemPosition , mainLogic.activityId , showText)
+                end
+            end
+        end
+
+        local totalPlayNum = 999
+        local dropPropCount = 999
+
+        if mainLogic.dragonBoatData then
+        	totalPlayNum = mainLogic.dragonBoatData.totalPlayNum
+        	dropPropCount = mainLogic.dragonBoatData.dropPropCount
+        end
+
+        
+        
+        if dropPropCount < 20 and not mainLogic.gameMode.wukongDropProp then
+        	--1,3,5,7,11,17,21,25
+        	if totalPlayNum == 1 
+        		or totalPlayNum == 3 
+        		or totalPlayNum == 5 
+        		or totalPlayNum == 7 
+        		or totalPlayNum == 11 
+        		or totalPlayNum == 17 
+        		or totalPlayNum == 21 
+        		or totalPlayNum == 25 
+        		then
+        		dropProps()
+        		mainLogic.gameMode.wukongDropProp = true
+        	elseif mainLogic.randFactory:rand(1, 10000) <= 5 then
+        		dropProps()
+        		mainLogic.gameMode.wukongDropProp = true
+        	end
+        end
+
+        theAction.addInfo = "data_over"
+
+	elseif theAction.addInfo == 'over' then
+
+		fromItem.wukongState = TileWukongState.kReadyToChangeColor
+
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+
+	end	
+end
+
+function GameBoardActionRunner:runGameItemActionWukongReinit(mainLogic, theAction, actid, actByView)
+
+	local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+	local item = mainLogic.gameItemMap[r][c]
+	local boardmap = mainLogic.boardmap
+	if theAction.addInfo == "clearTargetBorad" then
+		item.wukongState = TileWukongState.kChangeColor
+
+		local wukongTargets = theAction.wukongTargetsPosition
+		for k, v in pairs(wukongTargets) do
+            local board = boardmap[v.x][v.y]
+            board.isWukongTarget = false
+            board.isNeedUpdate = true
+        end
+        theAction.addInfo = "clearTargetBoradFin"
+
+	elseif theAction.addInfo == "changeWukongColorFin" then
+		item.wukongState = TileWukongState.kNormal
+		item.ItemColorType = theAction.color
+		item.isEmpty = false
+		item.wukongProgressCurr = 0
+		item.isNeedUpdate = true
+
+		mainLogic:checkItemBlock(r, c)
+		mainLogic:setNeedCheckFalling()
+
+		if theAction.completeCallback then
+			theAction.completeCallback()
+		end
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
+
+function GameBoardActionRunner:runGameItemActionWukongJumping(mainLogic, theAction, actid, actByView)
+	if theAction.actionStatus == GameActionStatus.kRunning then
+		
+
+		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
+		local tr , tc = theAction.monkeyTargetPos.y, theAction.monkeyTargetPos.x
+		local fromItem = mainLogic.gameItemMap[r][c]
+		local toItem = mainLogic.gameItemMap[tr][tc]
+
+
+		local function onFallToClearDone() -- 跳跃完成
+			theAction.addInfo = "over"
+		end
+
+		if theAction.addInfo == "startJump" then
+			toItem.wukongState = TileWukongState.kJumping
+
+		elseif theAction.addInfo == "jumpFin" then
+
+			local action = GameBoardActionDataSet:createAs(
+                        GameActionTargetType.kGameItemAction,
+                        GameItemActionType.kItem_Wukong_FallToClearItem,
+                        IntCoord:create(tr, tc),
+                        nil,
+                        GamePlayConfig_MaxAction_time
+                    )
+	        action.completeCallback = onFallToClearDone
+	        action.monkeyFromPos = IntCoord:create(r, c)
+	        mainLogic:addDestructionPlanAction(action)
+			
+
+			mainLogic:setNeedCheckFalling()
+			theAction.addInfo = "wating"
+			--theAction.jumpJsq = 0
+			--toItem.isBlock = true
+
+		elseif theAction.addInfo == "over" then
+			toItem.wukongState = TileWukongState.kReadyToCasting
+
+			mainLogic.gameActionList[actid] = nil
+			
+			if theAction.completeCallback then
+				theAction.completeCallback()
+			end
+		end
 	end
 end
 
@@ -349,6 +1043,23 @@ function GameBoardActionRunner:runningGameItemActionGoldZongZiCasting(mainLogic,
 				mainLogic.gameActionList[actid] = nil
 			end
 		else
+			local itemNum = #toItemPos
+			local wrapNum = math.ceil( itemNum / 2 )
+			local lineNum = itemNum - wrapNum
+			local randlist = {}
+			local warplist = {}
+			local randIndex = 1
+
+			for i=1 , itemNum do
+				table.insert( randlist , {id = i ,wrap = true} )
+			end
+
+			for i=1,wrapNum do  
+	    		randIndex = mainLogic.randFactory:rand(1, #randlist)
+	    		warplist["id"..tostring(randlist[randIndex].id)] = true
+	    		table.remove( randlist , randIndex )
+			end
+
 			for k, v in pairs(toItemPos) do
 				local item = mainLogic.gameItemMap[v.r][v.c]
 				if item.ItemType == GameItemType.kAddMove then
@@ -367,7 +1078,16 @@ function GameBoardActionRunner:runningGameItemActionGoldZongZiCasting(mainLogic,
 					end
 	    		end
 				item.ItemType = GameItemType.kAnimal
-				item.ItemSpecialType = AnimalTypeConfig.kWrap
+
+				if warplist["id"..tostring(k)] then
+					item.ItemSpecialType = AnimalTypeConfig.kWrap
+				else
+					if tostring( mainLogic.randFactory:rand(1, 2) ) == "1" then
+						item.ItemSpecialType = AnimalTypeConfig.kLine
+					else
+						item.ItemSpecialType = AnimalTypeConfig.kColumn
+					end
+				end
 				item.isNeedUpdate = true
 			end
 		end
@@ -448,18 +1168,33 @@ function GameBoardActionRunner:runningGameItemActionMaydayBossCasting(mainLogic,
 		theAction.addInfo = 'data_over'
 		local r, c = theAction.ItemPos1.x, theAction.ItemPos1.y
 		local targetPositions = theAction.targetPositions
+		local dripPositions = theAction.dripPositions
+		if not dripPositions then dripPositions = {} end
 		for k, v in pairs(targetPositions) do
 			local item = mainLogic.gameItemMap[v.r][v.c]
-			item.ItemType = GameItemType.kQuestionMark
-			mainLogic:onProduceQuestionMark(v.r, v.c)
-			item.isNeedUpdate = true
+
+			if dripPositions[tostring(v.r) .. "_" .. tostring(v.c)] then
+
+				item.ItemType = GameItemType.kDrip
+				item.ItemColorType = AnimalTypeConfig.kDrip
+				item.dripState = DripState.kNormal
+				item.isNeedUpdate = true
+				mainLogic:addNeedCheckMatchPoint(v.r , v.c)
+				mainLogic:setNeedCheckFalling()
+
+			else
+				item.ItemType = GameItemType.kQuestionMark
+				mainLogic:onProduceQuestionMark(v.r, v.c)
+				item.isNeedUpdate = true
+			end
+			
 		end
 	elseif theAction.addInfo == 'over' then
+		
 		if theAction.completeCallback then
 			theAction.completeCallback()
 		end
 		mainLogic.gameActionList[actid] = nil
-
 	end	
 end
 
@@ -489,6 +1224,8 @@ function GameBoardActionRunner:runnningGameItemActionBossDie(mainLogic, theActio
 	elseif theAction.addInfo == 'dropped' then
 		local addMoveItems = theAction.addMoveItemPos
 		local questionItems = theAction.questionItemPos
+		local dripPos = theAction.dripPos
+		if not dripPos then dripPos = {} end
 		for k, v in pairs(addMoveItems) do
 			local item = mainLogic.gameItemMap[v.r][v.c]
 			item.ItemType = GameItemType.kAddMove
@@ -502,6 +1239,14 @@ function GameBoardActionRunner:runnningGameItemActionBossDie(mainLogic, theActio
 			mainLogic:onProduceQuestionMark(v.r, v.c)
 			-- item:initAddMoveConfig(mainLogic.addMoveBase)
 			item.isNeedUpdate = true
+		end
+		for k, v in pairs(dripPos) do
+			local item = mainLogic.gameItemMap[v.r][v.c]
+			item.ItemType = GameItemType.kDrip
+			item.ItemColorType = AnimalTypeConfig.kDrip
+			item.dripState = DripState.kNormal
+			item.isNeedUpdate = true
+			mainLogic:addNeedCheckMatchPoint(v.r , v.c)
 		end
 	end
 end
@@ -598,6 +1343,13 @@ function GameBoardActionRunner:runningGameItemActionSnailRoadBright(mainLogic, t
 	end
 end
 
+function GameBoardActionRunner:runningGameItemActionHedgehogRoadState(mainLogic, theAction, actid, actByView)
+	-- body
+	if theAction.addInfo == "over" then
+		mainLogic.gameActionList[actid] = nil
+	end
+end
+
 function GameBoardActionRunner:runningGameItemActionMimosaReady(mainLogic, theAction, actid, actByView)
 	-- body
 	if theAction.addInfo == "over" then
@@ -639,7 +1391,7 @@ function GameBoardActionRunner:runningGameItemActionMimosaBack(mainLogic, theAct
 		local list = item.mimosaHoldGrid
 		for k, v in pairs(list) do 
 			local item_grid = mainLogic.gameItemMap[v.x][v.y]
-			item_grid.beEffectByMimosa = false
+			item_grid.beEffectByMimosa = 0
 			item_grid.mimosaDirection = 0
 			mainLogic:checkItemBlock(v.x, v.y)
 			mainLogic:addNeedCheckMatchPoint(v.x, v.y)
@@ -729,12 +1481,13 @@ function GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic
 		mainLogic:setNeedCheckFalling()
 	end
 
-	local function bombItem( r,c  )
+	local function bombItem(r, c, dirs)
 		-- body
 		local item = mainLogic.gameItemMap[r][c]
 		local boardData = mainLogic.boardmap[r][c]
 		BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
 		SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
+		SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, dirs) --冰柱处理
 		if (boardData.iceLevel > 0 or boardData.sandLevel > 0 )  and 
 		   (item.ItemType == GameItemType.kAnimal or item.ItemType == GameItemType.kCrystal) and
 		   not item:hasFurball() and 
@@ -755,6 +1508,8 @@ function GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic
 			if theAction.time_count >= 5 then
 				overAction()
 			else
+				local dirs = {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft}
+
 				for r = 5 - theAction.time_count, 5 + theAction.time_count do 
 					for c = 5 - theAction.time_count, 5 + theAction.time_count do
 						if r >= 5 - theAction.time_count + 1 and 
@@ -762,7 +1517,7 @@ function GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic
 						   c >= 5 - theAction.time_count + 1 and 
 						   c <= 5 + theAction.time_count - 1 then
 						else
-							bombItem(r, c)
+							bombItem(r, c, dirs)
 						end
 					end
 				end
@@ -772,7 +1527,17 @@ function GameBoardActionRunner:runningGameItemActionMonsterDestroyItem(mainLogic
 		else                                                   ---3*2格子
 			for r = r_min , r_max do 
 				for c = c_min, c_max do 
-					bombItem(r, c)
+					local dirs = {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kRight, ChainDirConfig.kLeft}
+					if r == r_min then 
+						table.remove(dirs, ChainDirConfig.kUp)
+					elseif r == r_max then 
+						table.remove(dirs, ChainDirConfig.kDown)
+					elseif c == c_min then 
+						table.remove(dirs, ChainDirConfig.kLeft)
+					elseif c == c_max then 
+						table.remove(dirs, ChainDirConfig.kRight)
+					end
+					bombItem(r, c, dirs)
 				end
 			end
 
@@ -794,6 +1559,12 @@ function GameBoardActionRunner:runningGameItemActionTileBlockerUpdate( mainLogic
 			mainLogic:checkItemBlock(r,c)
 			FallingItemLogic:preUpdateHelpMap(mainLogic)
 			mainLogic:addNeedCheckMatchPoint(r, c)
+
+			if mainLogic.gameItemMap[r][c]:isActiveTotems() and not mainLogic.gameItemMap[r][c].isReverseSide then
+				-- 如果翻过来的是超级小金刚，检查当前棋盘上是否有已存在的超级小金刚
+				mainLogic:addNewSuperTotemPos(IntCoord:create(r, c))
+				mainLogic:tryBombSuperTotems()
+			end
 		end
 		
 		if theAction.completeCallback and type(theAction.completeCallback) == "function" then
@@ -974,6 +1745,30 @@ end
 
 function GameBoardActionRunner:runningGameItemRefresh_Item_Flying(mainLogic, theAction, actid, actByView)
 	if theAction.addInfo == "over" then
+
+		--[[
+		local r1 = theAction.ItemPos1.x
+		local c1 = theAction.ItemPos1.y
+		local r2 = theAction.ItemPos2.x
+		local c2 = theAction.ItemPos2.y
+
+		local data1 = boardView.gameBoardLogic.gameItemMap[r1][c1] 		----目标
+		local data2 = boardView.gameBoardLogic.gameItemMap[r2][c2]		----来源
+
+		if item1.oldData then
+			item1.isNeedUpdate = true
+
+			item1.oldData.ItemColorType = data1.ItemColorType
+			item1.oldData.ItemSpecialType = data1.ItemSpecialType
+			if data1.ItemSpecialType == AnimalTypeConfig.kColor then
+				item1.itemShowType = ItemSpriteItemShowType.kBird
+			else
+				item1.itemShowType = ItemSpriteItemShowType.kCharacter
+			end 
+		else 
+		end
+		]]
+
 		if theAction.callback and type(theAction.callback) == "function" then
 			theAction.callback()
 		end

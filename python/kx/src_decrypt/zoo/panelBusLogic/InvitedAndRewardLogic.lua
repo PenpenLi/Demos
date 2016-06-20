@@ -57,7 +57,9 @@ function InvitedAndRewardLogic:start(inviteCode, uid, successCallback, failCallb
 			return
 		end
 	end
-	if UserManager:getInstance():isSameInviteCodePlatform(inviteCode) then 
+	local IamQQ = PlatformConfig:isQQPlatform()
+    local heIsQQ = UserManager:getInstance():isYYBInviteCodePlatform(inviteCode)
+	if IamQQ == heIsQQ then 
 		self.http:addEventListener(Events.kComplete, onSuccess)
 		self.http:addEventListener(Events.kError, onFail)
 		self.http:load(tonumber(inviteCode))

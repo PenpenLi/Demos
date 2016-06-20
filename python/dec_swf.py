@@ -18,7 +18,11 @@ def decrypt(path):
         pass
 
 def main():
+<<<<<<< HEAD
     decrypt('./abc_assets/Pocketmon.swf')
+=======
+    decrypt('Pocketmon.swf')
+>>>>>>> ed5817c2f7d1c12285260bf08dc3a50d16c79b68
 
 if __name__ == '__main__':
     main()

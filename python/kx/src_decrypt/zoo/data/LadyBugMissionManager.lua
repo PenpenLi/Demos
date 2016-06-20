@@ -42,42 +42,44 @@ function LadyBugMissionManager:init(...)
 	self.missionFinishedMsgSendedFlag	= {}
 	self.missionToStartOrToEndTime		= {}
 
-	-- Each Second Check Task State
+	-- 提前调用，初始化数据
 	self:changeTaskStateWhenTimeChange()
-	local function oneSecondCallback()
-		self:changeTaskStateWhenTimeChange()
+
+	if self:isMissionStarted() then
+		local function oneSecondCallback()
+			self:changeTaskStateWhenTimeChange()
+		end
+		self:startOneSecondTimer(oneSecondCallback)
 	end
-	self:startOneSecondTimer(oneSecondCallback)
+end
 
-	local ladyBugInfos	= UserManager:getInstance().ladyBugInfos
-	--for k,info in in pairs(ladyBugInfos) do
-	--	print("")
-	--end
-
-	-- When User's Level Is Greater Than 3, But NOt Ever Send
-	-- The sendStartLadyBugMissionMsg, Then Send It
-	
-	local topLevel = UserManager:getInstance().user:getTopLevelId()
-	
+function LadyBugMissionManager:tryStartMission(successCallback, failCallback)
+	-- 尝试启动任务
+	local topLevel = UserManager:getInstance().user:getTopLevelId()	
 	if not self:isLadybugMissionEverStarted() and
 		topLevel >= 3 then
 
-		local function onSendStartLadyBugMissionMsg()
+		local function localSuccessCallback()
 
 			self:changeTaskStateWhenTimeChange()
-
 			local function oneSecondCallback()
 				self:changeTaskStateWhenTimeChange()
 			end
 			self:startOneSecondTimer(oneSecondCallback)
-
-			HomeScene:sharedInstance():startLadyBug()
-
 			self:setupNotification()
+			if successCallback then
+				successCallback()
+			end
 		end
-
-		-- Start The Lady Bug Mission
-		self:sendStartLadyBugMissionMsg(onSendStartLadyBugMissionMsg)
+		local function localFailCallback()
+			if failCallback then
+				failCallback()
+			end
+		end
+		self:sendStartLadyBugMissionMsg(localSuccessCallback, localFailCallback)
+		return true
+	else
+		return false
 	end
 end
 
@@ -116,6 +118,8 @@ function LadyBugMissionManager:isMissionStarted(...)
 end
 
 function LadyBugMissionManager:changeTaskStateWhenTimeChange(...)
+
+
 	assert(#{...} == 0)
 
 	------------------
@@ -277,18 +281,23 @@ function LadyBugMissionManager:changeTaskStateWhenTimeChange(...)
 	-- Get If Shoud Display Tip In Lady Bug Icon
 	-- --------------------------------------
 	local hasNotReceivedReward = false
-
+	local hasNewOpenedMission = false
 	for k,v in ipairs(self.missionState) do
-
 		if v == LadyBugMissionState.FINISHED_WAIT_RECEIVE_REWARD then
 			hasNotReceivedReward = true
+		elseif v == LadyBugMissionState.OPENED then
+			hasNewOpenedMission = true
 		end
 	end
 
 	if hasNotReceivedReward then
-		self:askHomeSceneToDisplayLadyBugHasRewardTip()
+		self:askHomeSceneToDisplayLadyBugTip(IconTipState.kReward)
 	else
-		self:askHomeSceneToClearLadyBugHasRewardTip()
+		if hasNewOpenedMission then 
+			self:askHomeSceneToDisplayLadyBugTip(IconTipState.kNormal)
+		else
+			self:askHomeSceneToClearLadyBugTip()
+		end
 	end
 
 	-----------------------------------------
@@ -362,21 +371,21 @@ function LadyBugMissionManager:askHomeScenePopoutTheLadyBugPanel(...)
 	---end
 end
 
-function LadyBugMissionManager:askHomeSceneToDisplayLadyBugHasRewardTip(...)
-	assert(#{...} == 0)
-
+function LadyBugMissionManager:askHomeSceneToDisplayLadyBugTip(tipState)
 	local runningScene = Director:sharedDirector():getRunningScene()
 	if runningScene == HomeScene:sharedInstance() then
-		HomeScene:sharedInstance():displayLadyBugHasRewardTip()
+		if runningScene.ladybugButton then
+			runningScene.ladybugButton:updateIconTipShow(tipState)
+		end
 	end
 end
 
-function LadyBugMissionManager:askHomeSceneToClearLadyBugHasRewardTip(...)
-	assert(#{...} == 0)
-
+function LadyBugMissionManager:askHomeSceneToClearLadyBugTip()
 	local runningScene = Director:sharedDirector():getRunningScene()
 	if runningScene == HomeScene:sharedInstance() then
-		HomeScene:sharedInstance():clearLadyBugHasRewardTip()
+		if runningScene.ladybugButton then
+			runningScene.ladybugButton:stopHasNotificationAnim()
+		end
 	end
 end
 
@@ -413,7 +422,7 @@ function LadyBugMissionManager:checkMissionPassed(taskMeta, ...)
 		-- -----------------
 		local targetLevelScore	= UserManager.getInstance():getUserScore(goalValue)
 		
-		if targetLevelScore and targetLevelScore.star >= 1 then
+		if targetLevelScore and targetLevelScore.star >= 1 or JumpLevelManager:getInstance():hasJumpedLevel(goalValue) then
 			-- Passed The Level, Acomplish The Task
 			return true
 
@@ -526,7 +535,7 @@ function LadyBugMissionManager:onTopLevelChange(...)
 	self:checkEachMission()
 end
 
-function LadyBugMissionManager:sendStartLadyBugMissionMsg(successCallback, ...)
+function LadyBugMissionManager:sendStartLadyBugMissionMsg(successCallback, onFail, ...)
 	assert(false == successCallback or type(successCallback) == "function")
 	assert(#{...} == 0)
 
@@ -540,7 +549,9 @@ function LadyBugMissionManager:sendStartLadyBugMissionMsg(successCallback, ...)
 	end
 
 	local function onFailed()
-		-- assert(false)
+		if onFail then
+			onFail()
+		end
 	end
 
 	local http = StartLadyBugTask.new()

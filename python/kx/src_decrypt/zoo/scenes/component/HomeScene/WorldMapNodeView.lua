@@ -23,7 +23,9 @@ WorldMapNodeViewEvents =
 	FIRST_OPENED_WITH_STAR		= "WorldMapNodeViewEvents.FIRST_OPENED_WITH_STAR",
 
 	-- When User Replay This Level And Get A New Star Level
-	OPENED_WITH_NEW_STAR		= "WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR"
+	OPENED_WITH_NEW_STAR		= "WorldMapNodeViewEvents.OPENED_WITH_NEW_STAR",
+
+	OPENED_WITH_JUMP				= "WorldMapNodeViewEvents.OPENED_WITH_JUMP",
 }
 
 
@@ -64,17 +66,37 @@ function WorldMapNodeView:init(isNormalFlower, levelId, playAnimLayer, bmFontBat
 	self.isNormalFlower	= isNormalFlower
 	self.levelId		= levelId
 	self.levelDisplayName = tostring(LevelMapManager.getInstance():getLevelDisplayName(self.levelId))
-
+	self.isJumpLevel = false
 	self.oldStar		= false
 	self.star		= false
-	self:setStar(-1,false, false, false)
+	self:setStar(-1, 0, false, false, false)
 
 	self.childrenAddedToAnimLayer = {}
 
 	self.flowerRes = false
+
+	-- 删除节点时用来记录的变量
+	self.levelIdLabel = nil
+	self.shadowGlow = nil
+	self.glowSprite = nil
 end
 
-function WorldMapNodeView:setStar(star, updateView, playAnimInLogic, animFinishCallback, ...)
+function WorldMapNodeView:dispose()
+	if self.levelIdLabel and not self.levelIdLabel.isDisposed then
+		self.levelIdLabel:removeFromParentAndCleanup(true)
+	end
+	if self.shadowGlow and not self.shadowGlow.isDisposed then
+		self.shadowGlow:removeFromParentAndCleanup(true)
+	end
+	if self.glowSprite and not self.glowSprite.isDisposed then
+		self.glowSprite:removeFromParentAndCleanup(true)
+	end
+
+	CocosObject.dispose(self)
+end
+
+
+function WorldMapNodeView:setStar(star, ingredientCount, updateView, playAnimInLogic, animFinishCallback, ...)
 	assert(type(star) == "number")
 	assert(type(updateView) == "boolean")
 	assert(type(playAnimInLogic) == "boolean")
@@ -84,9 +106,15 @@ function WorldMapNodeView:setStar(star, updateView, playAnimInLogic, animFinishC
 	assert(star >= -1)
 	assert(star <= 4)
 
-	if self.star ~= star then
+	if ingredientCount and ingredientCount > 0 then
+		self.isJumpLevel = true
+	else
+		self.isJumpLevel = false
+	end
+
+	if self.star ~= star or self.isJumpLevel == true then
 		self.oldStar 	= self.star
-		self.star 	= star
+		self.star 		= star
 
 		if updateView then
 			self:updateView(playAnimInLogic, animFinishCallback)
@@ -147,11 +175,11 @@ function WorldMapNodeView:addLevelLabel(...)
 		local manualAdjustX = self.manualAdjustLabelPosX
 		local manualAdjustY = self.manualAdjustLabelPosY
 
-		local label = self.bmFontBatchLayer:createLabel(self.levelDisplayName)
-		label:setAnchorPoint(ccp(0.5, 0))
+		self.levelIdLabel = self.bmFontBatchLayer:createLabel(self.levelDisplayName)
+		self.levelIdLabel:setAnchorPoint(ccp(0.5, 0))
 
-		label:setPosition(ccp(selfPosInPlayAnimLayer.x + manualAdjustX, selfPosInPlayAnimLayer.y + manualAdjustY ))
-		self.bmFontBatchLayer:addChild(label)
+		self.levelIdLabel:setPosition(ccp(selfPosInPlayAnimLayer.x + manualAdjustX, selfPosInPlayAnimLayer.y + manualAdjustY ))
+		self.bmFontBatchLayer:addChild(self.levelIdLabel)
 	end
 end
 
@@ -169,7 +197,6 @@ function WorldMapNodeView:updateView(playAnimInLogic, animFinishCallback, ...)
 	assert(playAnimInLogic ~= nil)
 	assert(animFinishCallback == false or type(animFinishCallback) == "function")
 	assert(#{...} == 0)
-
 	-- Clean
 	self:removeChildren(true)
 	self.flowerRes = false
@@ -189,10 +216,19 @@ function WorldMapNodeView:updateView(playAnimInLogic, animFinishCallback, ...)
 	elseif self.star == 0 then
 		-- Flower Open
 		-- When User Stand On This Level , But Not Pass This Level
-		if playAnimInLogic then
-			self:playFlowerOpenAnimation(animFinishCallback)
+		if not self.isJumpLevel then
+			if playAnimInLogic then
+				self:playFlowerOpenAnimation(animFinishCallback)
+			else
+				self:buildOpenedFlower()
+			end
 		else
-			self:flowerOpen()
+			if playAnimInLogic then
+				self:buildJumpedFlower()
+				self:playJumpLevelFlowerAnimation(5, animFinishCallback)
+			else
+				self:buildJumpedFlower()
+			end
 		end
 
 	elseif self.star >= 1 or  self.star <= 4 then
@@ -275,7 +311,7 @@ function WorldMapNodeView:playFlowerOpenAnimation(animFinishCallback, ...)
 		glowAnimation:removeFromParentAndCleanup(true)
 
 		-- Use The Static Picture To Replace Animation
-		self:flowerOpen()
+		self:buildOpenedFlower()
 
 		if animFinishCallback then
 			animFinishCallback()
@@ -289,7 +325,54 @@ function WorldMapNodeView:playFlowerOpenAnimation(animFinishCallback, ...)
 	glowAnimation:bloom()
 end
 
-function WorldMapNodeView:flowerOpen(...)
+function WorldMapNodeView:buildJumpedFlower()
+	local flower = Sprite:createWithSpriteFrameName(kFlowers.jumpedFlower.."0000")
+	flower:setAnchorPoint(ccp(0.5, 0.9))
+
+	self.flowerRes = flower
+	self:addChild(flower)
+end
+
+function WorldMapNodeView:playJumpLevelFlowerAnimation(count, callback)
+
+	self.isJumpLevel = true
+	local function changeToJumpedFlower()
+		if self.flowerRes and self.flowerRes:getParent() then
+			self.flowerRes:removeFromParentAndCleanup(true)
+			self.flowerRes = nil
+			self:buildJumpedFlower()
+			local arr = CCArray:create()
+			arr:addObject(CCScaleTo:create(0.1, 1.4))
+			arr:addObject(CCScaleTo:create(0.1, 1))
+			self.flowerRes:runAction(CCSequence:create(arr))
+			local destPos = HomeScene:sharedInstance():convertToNodeSpace(self.flowerRes:getParent():convertToWorldSpace(self.flowerRes:getPosition()))
+			destPos = ccp(destPos.x, destPos.y - 70)
+			local shine = Sprite:createWithSpriteFrameName("flowerShineCircle0000")
+			shine:setAnchorPoint(ccp(0.5, 0.5))
+			HomeScene:sharedInstance():addChild(shine)
+			shine:setPosition(destPos)
+			shine:setOpacity(0)
+			local arr2 = CCArray:create()
+			arr2:addObject(CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 1.5), CCFadeTo:create(0.1, 230)))
+			arr2:addObject(CCFadeOut:create(0.1))
+			arr2:addObject(CCCallFunc:create(
+				function () 
+					if shine then 
+						shine:removeFromParentAndCleanup(true) 
+					end 
+					if callback then callback() end
+					self:dispatchEvent(Event.new(WorldMapNodeViewEvents.OPENED_WITH_JUMP, self.levelId))
+				end))
+			shine:runAction(CCSequence:create(arr2))
+		else 
+			if callback then callback() end
+		end
+	end	
+	self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(0.3), CCCallFunc:create(changeToJumpedFlower)))
+	self:playParticle()
+end
+
+function WorldMapNodeView:buildOpenedFlower(...)
 	assert(#{...} == 0)
 
 	local selfPosInPlayAnimLayer = self:getSelfPositionInPlayAnimLayer()
@@ -303,21 +386,21 @@ function WorldMapNodeView:flowerOpen(...)
 	-------------------
 	----- Background Animation
 	--------------------------
-	local shadowGlow = Sprite:createWithSpriteFrameName("flowerShineCircle0000")
-	shadowGlow:setVisible(false)
+	self.shadowGlow = Sprite:createWithSpriteFrameName("flowerShineCircle0000")
+	self.shadowGlow:setVisible(false)
 	
-	local glowSprite = Sprite:createWithSpriteFrameName("flowerShineCircle0000")
+	self.glowSprite = Sprite:createWithSpriteFrameName("flowerShineCircle0000")
 
 	local animationTime = 1
 	local breatheLamp = CCArray:create()
 	breatheLamp:addObject(CCScaleTo:create(animationTime, 1.15, 1)) 
 	breatheLamp:addObject(CCDelayTime:create(0.3))
 	breatheLamp:addObject(CCScaleTo:create(animationTime, 0.85, 0.7 )) 
-	local seq = glowSprite:runAction(CCSequence:create(breatheLamp))
+	local seq = self.glowSprite:runAction(CCSequence:create(breatheLamp))
 
 
-	self:addChildToPlayAnimLayer(shadowGlow)
-	self:addChildToPlayAnimLayer(glowSprite)
+	self:addChildToPlayAnimLayer(self.shadowGlow)
+	self:addChildToPlayAnimLayer(self.glowSprite)
 
 	-- -----------------------------------------------
 	-- Adjust Position After Added To Animation Layer
@@ -328,20 +411,20 @@ function WorldMapNodeView:flowerOpen(...)
 	local manualAdjustX = -3
 
 	-- Adjust Shadow Glow Pos
-	local curPosX	= shadowGlow:getPositionX()
-	local curPosY	= shadowGlow:getPositionY()
+	local curPosX	= self.shadowGlow:getPositionX()
+	local curPosY	= self.shadowGlow:getPositionY()
 	local newPosX	= curPosX + manualAdjustX
 	local newPosY	= curPosY - flowerSize.height / 2 + manualAdjustY
-	shadowGlow:setPosition(ccp(newPosX, newPosY))
+	self.shadowGlow:setPosition(ccp(newPosX, newPosY))
 
 	-- Adjust Glow Sprite Pos
-	local curPosX = glowSprite:getPositionX()
-	local curPosY = glowSprite:getPositionY()
+	local curPosX = self.glowSprite:getPositionX()
+	local curPosY = self.glowSprite:getPositionY()
 	local newPosX = curPosX + manualAdjustX
 	local newPosY = curPosY - flowerSize.height / 2 + manualAdjustY
-	glowSprite:setPosition(ccp(newPosX, newPosY))
+	self.glowSprite:setPosition(ccp(newPosX, newPosY))
 
-	glowSprite:runAction(CCRepeatForever:create(seq))
+	self.glowSprite:runAction(CCRepeatForever:create(seq))
 end
 
 --------------------------------------------------------
@@ -424,94 +507,10 @@ function WorldMapNodeView:playFlyingNewStarAnim(...)
 	if self.oldStar >= 0 and self.oldStar <= 3 and
 		self.oldStar ~= self.star then
 
-		for k = self.oldStar+1, self.star do
-
-			-- ---------------------
-			-- Create Star Resource
-			-- ---------------------
-			local starSpriteFrameName = nil
-			if self.isNormalFlower then
-				starSpriteFrameName = "flowerStar"
-			else
-				starSpriteFrameName = "hiddenFlowerStar"
-			end
-
-			local starRes = Sprite:createWithSpriteFrameName(starSpriteFrameName .. k .. "0000")
-			starRes:setVisible(false)
-			HomeScene:sharedInstance():addChild(starRes)
-
-			-- Get Star Position In Self
-			-- Note: Must Called Function buildStar First !
-			local star 		= self.stars[k]
-			-- Convert Pos To World Space
-			local starPos			= star:getPosition()
-			local starParent		= star:getParent()
-			local starPosInWorldSpace	= starParent:convertToWorldSpace(ccp(starPos.x, starPos.y))
-			-- Convert Pos To HomeScene Space
-			local starPosInHomeScene 	= HomeScene:sharedInstance():convertToNodeSpace(starPosInWorldSpace)
-
-			----------------------------------------------
-			-- Get HomeScene Star Bubble's Star Position
-			-- ---------------------------------------------
-			local homeSceneStar			= HomeScene:sharedInstance().starButton.starIcon
-			local homeSceneStarParent		= homeSceneStar:getParent()
-			-- Convert To World Space
-			local homeSceneStarPos			= homeSceneStar:getPosition()
-			local homeSceneStarPosInWorldSpace	= homeSceneStarParent:convertToWorldSpace(ccp(homeSceneStarPos.x, homeSceneStarPos.y))
-			-- Convert To Home Scene Space
-			local homeSceneStarPosInHomeScene	= HomeScene:sharedInstance():convertToNodeSpace(homeSceneStarPosInWorldSpace)
-
-			starRes:setPosition(ccp(starPosInHomeScene.x, starPosInHomeScene.y))
-
-			-- Delay
-			local delay	= CCDelayTime:create(startTime)
-			startTime = startTime + delayTimePerStar
-
-			-- Init Action 
-			local function initActionFunc()
-				starRes:setVisible(true)
-			end
-			local initAction = CCCallFunc:create(initActionFunc)
-
-			-- Move To Action
-			--local moveTo 		= CCMoveTo:create(moveToTime, ccp(homeSceneStarPosInHomeScene.x, homeSceneStarPosInHomeScene.y))
-			local curPos		= starRes:getPosition()
-			local distance		= ccpDistance(ccp(homeSceneStarPosInHomeScene.x, homeSceneStarPosInHomeScene.y), curPos)
-			local bezierTo		= HeBezierTo:create(moveToTime, ccp(homeSceneStarPosInWorldSpace.x, homeSceneStarPosInHomeScene.y), false, distance * 0.15)
-			local easeBezier	= CCEaseOut:create(bezierTo, 0.3)
-
-			local targetMoveTo	= CCTargetedAction:create(starRes.refCocosObj, easeBezier)
-
-			local scaleLarge	= CCScaleTo:create(moveToTime, 1.5)
-			local targetScale	= CCTargetedAction:create(starRes.refCocosObj, scaleLarge)
-
-			local spawn = CCSpawn:createWithTwoActions(targetMoveTo, targetScale)
-
-			-- Anim Finish Callback
-			local function animFinishCallbackFunc()
-				starRes:removeFromParentAndCleanup(true)
-				HomeScene:sharedInstance().starButton:playHighlightAnim()
-
-				if k == self.star then
-					HomeScene:sharedInstance().starButton:playBubbleSkewAnim()
-					HomeScene:sharedInstance().starButton:updateView()
-				end
-			end
-			local animFinishCallbackAction = CCCallFunc:create(animFinishCallbackFunc)
-
-			-- Action Array
-			local individualStarActionArray = CCArray:create()
-			individualStarActionArray:addObject(delay)
-			individualStarActionArray:addObject(initAction)
-			individualStarActionArray:addObject(spawn)
-			individualStarActionArray:addObject(animFinishCallbackAction)
-			-- Seq 
-			local seq = CCSequence:create(individualStarActionArray)
-			actionArray:addObject(seq)
-		end
-
-		local spawn = CCSpawn:create(actionArray)
-		self:runAction(spawn)
+		local flyStar = FlyStarAnimation:create(self.star - self.oldStar)
+		local bounds = self:getGroupBounds()
+		flyStar:setWorldPosition(ccp(bounds:getMidX(),bounds:getMinY()))
+		flyStar:play()
 	end
 end
 

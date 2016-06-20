@@ -7,8 +7,7 @@ end
 
 function ShareThousandOnePanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{num = self.shareRank})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 	--加载动画资源
 	SpriteUtil:addSpriteFramesWithFile("share/yanhua.plist", "share/yanhua.png")
 
@@ -19,6 +18,13 @@ function ShareThousandOnePanel:init()
 	self:runCircleLightAction()
 	self:runFireworkAction()
 	self:runStarParticle()
+end
+
+function ShareThousandOnePanel:getShareTitleName()
+	local level = self.achiManager:getData(self.achiManager.LEVEL)
+	local levelText = tostring(LevelMapManager.getInstance():getLevelDisplayName(level))
+	local shareRank = self.achiManager:getData(self.achiManager.ALL_SCORE_RANK)
+	return Localization:getInstance():getText(self.shareTitleKey,{num = levelText, num1 = shareRank})
 end
 
 function ShareThousandOnePanel:runPodiumAction()
@@ -222,7 +228,7 @@ function ShareThousandOnePanel:runFireworkAction()
 	end
 	local fireworkIndex = 1
 	local function playFireWork()
-		if fireworkIndex>5 then 
+		if fireworkIndex>5 or self.isDisposed then 
 			if timerId then 
 				CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(timerId)
 			end
@@ -259,20 +265,11 @@ function ShareThousandOnePanel:dispose()
 	end
 end
 
-function ShareThousandOnePanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
-	local shareRank = ShareManager:getShareData(ShareManager.ConditionType.ALL_SCORE_RANK)
-	if not shareRank then 
-		print("error=====================ShareThousandOnePanel.shareRank is null")
-		return nil 
-	end
+function ShareThousandOnePanel:create(shareId)
 	local panel = ShareThousandOnePanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareThousandOnePanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
-	panel.shareRank = shareRank
 	panel:init()
 	return panel
 end

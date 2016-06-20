@@ -7,8 +7,7 @@ end
 
 function ShareLastStepPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey)
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self.shareMessage = Localization:getInstance():getText("show_off_wx_share_50")
 
@@ -16,6 +15,10 @@ function ShareLastStepPanel:init()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runStarGroup3Action()
+end
+
+function ShareLastStepPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey)
 end
 
 function ShareLastStepPanel:runNpcAction()
@@ -145,14 +148,11 @@ function ShareLastStepPanel:runStarParticle()
 	end
 end
 
-function ShareLastStepPanel:create(shareId, shareType, shareLink, shareTitleKey)
+function ShareLastStepPanel:create(shareId)
 	local panel = ShareLastStepPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareLastStepPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareLink = shareLink
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

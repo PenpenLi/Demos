@@ -58,35 +58,50 @@ function CDKeyPanel:init(cdkeyBtnPosInWorldSpace)
 		self.text3:setString(Localization:getInstance():getText("exchange.code.panel.enter.text3"))
 	end
 
-	---------------------
-	-- Create Show/Hide Anim
-	-- ------------------
-	self.showHideAnim	= IconPanelShowHideAnim:create(self, cdkeyBtnPosInWorldSpace)
-
 	
 	local function onGetRewardBtnTapped(event)
+		if self.isDisposed then return end
 		local enteredCodeStr = self.input:getText()
 		local function onSuccess(data)
+			if self.isDisposed then return end
 			print("GetExchangeCodeRewardHttp::onSuccess")
 			-- HomeScene.sharedInstance().coinButton:updateView()
-			local user = UserManager:getInstance().user
-			local button = HomeScene:sharedInstance().coinButton
-			HomeScene.sharedInstance():checkDataChange()
-			button:updateView()
-			self:playRewardAnim(data)
-			if string.upper(enteredCodeStr) == "X30ASEHY33" then
-				UserManager:getInstance().userExtend:setFlagBit(2, true)
-			end
-			if string.upper(enteredCodeStr) == "VVZHT9QS3R" then
-				UserManager:getInstance().userExtend:setFlagBit(3, true)
+			local exchangeCodeInfo = data.data.exchangeCodeInfo
+			if exchangeCodeInfo then 
+				local function closeCallback( ... )
+					-- body
+					self:updateEchangeCodeInfo()
+				end
+				CDKeyManager:getInstance():showCollectInfoPanel(exchangeCodeInfo, closeCallback)
+			else
+				local user = UserManager:getInstance().user
+				local button = HomeScene:sharedInstance().coinButton
+				HomeScene.sharedInstance():checkDataChange()
+				button:updateView()
+				self:playRewardAnim(data)
+				if string.upper(enteredCodeStr) == "X30ASEHY33" then
+					UserManager:getInstance().userExtend:setFlagBit(2, true)
+				end
+				if string.upper(enteredCodeStr) == "VVZHT9QS3R" then
+					UserManager:getInstance().userExtend:setFlagBit(3, true)
+				end
 			end
 
 			DcUtil:getCDKeyReward(string.upper(enteredCodeStr))
 		end
 
 		local function onFail(err)
+			if self.isDisposed then return end
 			print("GetExchangeCodeRewardHttp::onFail")
+			self.getRewardBtn:setEnabled(true)
+			self.inputBlock:setTouchEnabled(false)
 			CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(err.data)), "negative")
+		end
+
+		local function onCancel()
+			if self.isDisposed then return end
+			self.getRewardBtn:setEnabled(true)
+			self.inputBlock:setTouchEnabled(false)
 		end
 		
 		if string.len(enteredCodeStr) > 0 then
@@ -95,9 +110,12 @@ function CDKeyPanel:init(cdkeyBtnPosInWorldSpace)
 				if index ~= nil then
 					onFail({data = 730743})
 				else
+					self.getRewardBtn:setEnabled(false)
+					self.inputBlock:setTouchEnabled(true, 0, true)
 					local http = GetExchangeCodeRewardHttp.new(true)
 					http:ad(Events.kComplete, onSuccess)
 					http:ad(Events.kError, onFail)
+					http:ad(Events.kCancel, onCancel)
 					http:load(string.upper(enteredCodeStr))
 				end
 			end
@@ -121,19 +139,44 @@ function CDKeyPanel:init(cdkeyBtnPosInWorldSpace)
 	-- if not __IOS then
 		-- self.nameLabel:getChildByName("label"):setVisible(false)
 	-- end
-
+	self:updateEchangeCodeInfo()
 	self:initInput()
 end
 
-function CDKeyPanel:popout(...)
-	assert(#{...} == 0)
+function CDKeyPanel:updateEchangeCodeInfo( )
+	-- body
+	if self.isDisposed then return end
+	local rewardInfo = self.ui:getChildByName("text_info")
+	rewardInfo:setVisible(false)
 
-	local function onAnimOver()
-		self.allowBackKeyTap = true
+	local function closeCallback( ... )
+					-- body
+		self:updateEchangeCodeInfo()
 	end
-	PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, onAnimOver)
-	self:setToScreenCenterHorizontal()
-	self:setToScreenCenterVertical()
+
+	local function onRewardInfoTapped( ... )
+		-- body
+		if CDKeyManager:getInstance():isInfoFull() then
+			CDKeyManager:getInstance():showRewardInfoPanel()
+		else
+			CDKeyManager:getInstance():showCollectInfoPanel(nil, closeCallback)
+		end
+	end
+
+	if CDKeyManager:getInstance():hasReward() then
+		rewardInfo:setVisible(true)
+		rewardInfo:setTouchEnabled(true, 0, false)
+		rewardInfo:setButtonMode(true)
+		if CDKeyManager:getInstance():isInfoFull() then
+			rewardInfo:getChildByName("bg2"):setVisible(false)
+			rewardInfo:getChildByName("bg"):setVisible(true)
+		else
+			rewardInfo:getChildByName("bg2"):setVisible(true)
+			rewardInfo:getChildByName("bg"):setVisible(false)
+		end
+		rewardInfo:removeAllEventListeners()
+		rewardInfo:addEventListener(DisplayEvents.kTouchTap, onRewardInfoTapped)
+	end
 end
 
 function CDKeyPanel:initInput()
@@ -144,6 +187,7 @@ function CDKeyPanel:initInput()
 	inputSelect:removeFromParentAndCleanup(false)
 	
 	local function onTextBegin()
+		if self.isDisposed then return end
 		if self.input then
 			self.input:setText("")
 			self.nameLabel:getChildByName("label"):setString("")
@@ -151,6 +195,7 @@ function CDKeyPanel:initInput()
 	end
 
 	local function onTextEnd()
+		if self.isDisposed then return end
 		if self.input then
 			
 			local text = self.input:getText() or ""
@@ -167,7 +212,8 @@ function CDKeyPanel:initInput()
 	end
 
 	local position = ccp(inputPos.x + inputSize.width/2, inputPos.y - inputSize.height/2)
-	local input = TextInput:create(inputSize, Scale9Sprite:createWithSpriteFrameName("img/beginnerpanel_ui_empty0000"), inputSelect.refCocosObj)
+	local input = TextInputIm.new()
+    input:init(inputSize, Scale9Sprite:createWithSpriteFrameName("img/beginnerpanel_ui_empty0000"))
 	input.originalX_ = position.x
 	input.originalY_ = position.y
 	input:setText("")
@@ -178,6 +224,15 @@ function CDKeyPanel:initInput()
 	input:ad(kTextInputEvents.kEnded, onTextEnd)
 	self.nameLabel:addChild(input)
 	self.input = input
+	local inputBlock = LayerColor:create()
+	local rectSize = input:getGroupBounds().size
+	inputBlock:setContentSize(CCSizeMake(rectSize.width, rectSize.height))
+	inputBlock:ignoreAnchorPointForPosition(false)
+	inputBlock:setAnchorPoint(ccp(0.5, 0.5))
+	inputBlock:setOpacity(0)
+	inputBlock:setPosition(position)
+	self.nameLabel:addChild(inputBlock)
+	self.inputBlock = inputBlock
 	inputSelect:dispose()
 end
 
@@ -200,104 +255,101 @@ end
 
 function CDKeyPanel:playRewardAnim(data) 
 	-- if not data then return end
-	local rewardIds = {}
-	local rewardAmounts = {}
+	-- local rewardIds = {}
+	-- local rewardAmounts = {}
 
-	for k,v in pairs(data.data.rewardItems) do
-		local itemId 		= v.itemId
-		local itemNumber	= v.num
-		table.insert(rewardIds, itemId)
-		table.insert(rewardAmounts, itemNumber)
-	end
+	-- for k,v in pairs(data.data.rewardItems) do
+	-- 	local itemId 		= v.itemId
+	-- 	local itemNumber	= v.num
+	-- 	table.insert(rewardIds, itemId)
+	-- 	table.insert(rewardAmounts, itemNumber)
+	-- end
 
-	-- rewardIds = {10010,2,4}
-	-- rewardAmounts = {1,1000,2}
-	local anims = HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
-	print("number of anims : " .. #anims)
+	-- -- rewardIds = {10010,2,4}
+	-- -- rewardAmounts = {1,1000,2}
+	-- local anims = HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
+	-- print("number of anims : " .. #anims)
 
-
-	local function onAnimFinished()
-		if self.isDisposed then
-			return
-		end
-
-		local delay = CCDelayTime:create(1.5)
-
-		local function removeSelf() self:remove() end
-		local callAction = CCCallFunc:create(removeSelf)
-
-		local seq = CCSequence:createWithTwoActions(delay, callAction)
-		self:runAction(seq)
-	end
-
-	local itemResPosInWorld = ccp(360,640)
-	for i,v in ipairs(anims) do
-		v:setPosition(itemResPosInWorld)
-		v:playFlyToAnim(onAnimFinished)
-	end
-
-	-- local itemResPosInWorld = ccp(360,640)
-	-- anims[1]:setPosition(ccp(itemResPosInWorld.x, itemResPosInWorld.y))
 
 	-- local function onAnimFinished()
 	-- 	if self.isDisposed then
 	-- 		return
 	-- 	end
 
-	-- 	local delay = CCDelayTime:create(0.3)
+	-- 	local delay = CCDelayTime:create(1.5)
 
-	-- 	local function removeSelf()
-	-- 		self:remove()
-	-- 	end
+	-- 	local function removeSelf() self:remove() end
 	-- 	local callAction = CCCallFunc:create(removeSelf)
 
 	-- 	local seq = CCSequence:createWithTwoActions(delay, callAction)
 	-- 	self:runAction(seq)
 	-- end
 
-	-- --------------------------------------------------------
-	-- -- number-decreasing animation
-	-- --------------------------------------------------------
-	-- -- local item = self.rewardItem
-	-- -- local label = item.numberLabel
-	-- -- local num = item.itemNumber
-	-- -- local interval = 0.2 -- the same value from function HomeScene:createFlyToBagAnimation
-	-- -- local function __decreaseNumber()
-	-- -- 	if num >= 1 then
-	-- -- 		num = num - 1
-	-- -- 		-- trible reference checks
-	-- -- 		if label and not label.isDisposed and label.refCocosObj then 
-	-- -- 			label:setString('x'..num)
-	-- -- 			setTimeOut(__decreaseNumber, interval)
-	-- -- 		end
-	-- -- 	end
-	-- -- end
-	-- setTimeOut(__decreaseNumber, interval)
+	local itemResPosInWorld = ccp(360,640)
+	-- for i,v in ipairs(anims) do
+	-- 	v:setPosition(itemResPosInWorld)
+	-- 	v:playFlyToAnim(onAnimFinished)
+	-- end
 
-	-- anims[1]:playFlyToAnim(onAnimFinished)
+	local anim = FlyItemsAnimation:create(data.data.rewardItems)
+	anim:setWorldPosition(itemResPosInWorld)
+	anim:setFinishCallback(function( ... )
+		if not self.isDisposed then
+			self:remove()
+		end
+	end)
+	anim:play()
+
+end
+
+function CDKeyPanel:popout()
+	local function onAnimOver()
+		self.allowBackKeyTap = true
+	end
+	PopoutManager:sharedInstance():add(self, true, false)
+	self:setToScreenCenterHorizontal()
+	self:setToScreenCenterVertical()
 end
 
 function CDKeyPanel:remove(...)
-	local function onHideAnimFinished()
-		PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+	PopoutManager:sharedInstance():remove(self, true)
 
-		if self.closeCallback then
-			self.closeCallback()
-		end
+	if self.closeCallback then
+		self.closeCallback()
 	end
-	
-	self.showHideAnim:playHideAnim(onHideAnimFinished)
 end
 
 function CDKeyPanel:onEnterHandler(event, ...)
 	if event == "enter" then
-
-		local function onShowAnimFinished()
-			self.allowBackKeyTap = true
-		end
-
-		self.showHideAnim:playShowAnim(onShowAnimFinished)
+		self.allowBackKeyTap = true
+        self:runAction(self:createShowAnim())
 	end
+end
+
+function CDKeyPanel:onEnterAnimationFinished()
+
+end
+
+function CDKeyPanel:createShowAnim()
+    local centerPosX    = self:getHCenterInParentX()
+    local centerPosY    = self:getVCenterInParentY()
+
+    local function initActionFunc()
+        local initPosX  = centerPosX
+        local initPosY  = centerPosY + 100
+        self:setPosition(ccp(initPosX, initPosY))
+    end
+    local initAction = CCCallFunc:create(initActionFunc)
+    local moveToCenter      = CCMoveTo:create(0.5, ccp(centerPosX, centerPosY))
+    local backOut           = CCEaseQuarticBackOut:create(moveToCenter, 33, -106, 126, -67, 15)
+    local targetedMoveToCenter  = CCTargetedAction:create(self.refCocosObj, backOut)
+
+    local function onEnterAnimationFinished() self:onEnterAnimationFinished() end
+    local actionArray = CCArray:create()
+    actionArray:addObject(initAction)
+    actionArray:addObject(targetedMoveToCenter)
+    actionArray:addObject(CCCallFunc:create(onEnterAnimationFinished))
+    return CCSequence:create(actionArray)
 end
 
 function CDKeyPanel:getHCenterInScreenX(...)

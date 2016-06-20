@@ -8,8 +8,7 @@ end
 
 function ShareLeftTenStepPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey)
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self.shareMessage = Localization:getInstance():getText("show_off_wx_share_80")
 
@@ -18,6 +17,10 @@ function ShareLeftTenStepPanel:init()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runStarGroup3Action()
+end
+
+function ShareLeftTenStepPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey)
 end
 
 function ShareLeftTenStepPanel:runNpcAction()
@@ -167,14 +170,11 @@ function ShareLeftTenStepPanel:runStarParticle()
 	end
 end
 
-function ShareLeftTenStepPanel:create(shareId, shareType, shareLink, shareTitleKey)
+function ShareLeftTenStepPanel:create(shareId)
 	local panel = ShareLeftTenStepPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareLeftTenStepPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareLink = shareLink
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

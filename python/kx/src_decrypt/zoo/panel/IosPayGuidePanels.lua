@@ -171,7 +171,7 @@ function IosPayCartoonPanel:onCloseBtnTapped()
 end
 
 function IosPayCartoonPanel:popout()
-    DcUtil:UserTrack({ category='activity', sub_category='click_ios_help'})
+    DcUtil:UserTrack({ category='activity', sub_category='click_ios_tutorial'})
     self:setPositionForPopoutManager()
     -- self:setPositionX(self:getPositionX() + 20*self.targetScale) -- 因为有个原件出框导致偏移
     PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false)
@@ -330,7 +330,7 @@ function IosPayFailGuidePanel:popout()
         self.allowBackKeyTap = true
     end
     local function hasNetwork()
-        if not UserManager:getInstance().userExtend:isIosGuideRewardReceived() or true then -- 只能领奖一次，检查flag
+        if not UserManager:getInstance().userExtend:isIosGuideRewardReceived() then -- 只能领奖一次，检查flag
             self.showRewards = true
             self:showRewardItems(true)
         else
@@ -387,7 +387,7 @@ function IosPayFailGuidePanel:onGuideBtnTapped()
             end
 
         end
-        local http = getRewardHttp.new()
+        local http = getRewardHttp.new(true)
         http:ad(Events.kComplete, onSuccess)
         http:ad(Events.kError, onError)
         http:load()
@@ -407,46 +407,55 @@ function IosPayFailGuidePanel:playRewardAnim(rewards, callback)
         if callback then callback() end
     end
     HomeScene:sharedInstance():checkDataChange()
-    for k, v in ipairs(rewards) do
-        if v.itemId == 2 then
-            local config = {updateButton = true, finishCallback = animCallback}
-            local anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
-            local position = self['icon'..k]:getPosition()
-            local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x, position.y))
-            anim.sprites:setPosition(ccp(wPosition.x + 100, wPosition.y - 90))
-            scene:addChild(anim.sprites)
-            anim:play()
-        elseif v.itemId == 14 then
-            local num = v.num
-            if num > 10 then num = 10 end
-            local config = {number = num, updateButton = true, finishCallback = animCallback}
-            local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
-            local position = self['icon'..k]:getPosition()
-            local size = self['icon'..k]:getGroupBounds().size
-            local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
-            for k, v2 in ipairs(anim.sprites) do
-                v2:setPosition(ccp(wPosition.x, wPosition.y))
-                v2:setScaleX(self['icon'..k]:getScaleX())
-                v2:setScaleY(self['icon'..k]:getScaleY())
-                scene:addChild(v2)
-            end
-            anim:play()
-        else
-            local num = v.num
-            if num > 10 then num = 10 end
-            local config = {propId = v.itemId, number = num, updateButton = true, finishCallback = animCallback}
-            local anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
-            local position = self['icon'..k]:getPosition()
-            local size = self['icon'..k]:getGroupBounds().size
-            local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x, position.y))
-            for k, v2 in ipairs(anim.sprites) do
-                v2:setPosition(ccp(wPosition.x, wPosition.y))
-                v2:setScaleX(self['icon'..k]:getScaleX())
-                v2:setScaleY(self['icon'..k]:getScaleY())
-                scene:addChild(v2)
-            end
-            anim:play()
-        end
+    
+    for i,v in ipairs(rewards) do
+        local anim = FlyItemsAnimation:create({v})
+        local bounds = self['icon'..i]:getGroupBounds()
+        anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+        anim:setFinishCallback(animCallback)
+        anim:play()
     end
+
+    -- for k, v in ipairs(rewards) do
+    --     if v.itemId == 2 then
+    --         local config = {updateButton = true, finishCallback = animCallback}
+    --         local anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
+    --         local position = self['icon'..k]:getPosition()
+    --         local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x, position.y))
+    --         anim.sprites:setPosition(ccp(wPosition.x + 100, wPosition.y - 90))
+    --         scene:addChild(anim.sprites)
+    --         anim:play()
+    --     elseif v.itemId == 14 then
+    --         local num = v.num
+    --         if num > 10 then num = 10 end
+    --         local config = {number = num, updateButton = true, finishCallback = animCallback}
+    --         local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
+    --         local position = self['icon'..k]:getPosition()
+    --         local size = self['icon'..k]:getGroupBounds().size
+    --         local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
+    --         for k, v2 in ipairs(anim.sprites) do
+    --             v2:setPosition(ccp(wPosition.x, wPosition.y))
+    --             v2:setScaleX(self['icon'..k]:getScaleX())
+    --             v2:setScaleY(self['icon'..k]:getScaleY())
+    --             scene:addChild(v2)
+    --         end
+    --         anim:play()
+    --     else
+    --         local num = v.num
+    --         if num > 10 then num = 10 end
+    --         local config = {propId = v.itemId, number = num, updateButton = true, finishCallback = animCallback}
+    --         local anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
+    --         local position = self['icon'..k]:getPosition()
+    --         local size = self['icon'..k]:getGroupBounds().size
+    --         local wPosition = self['icon'..k]:getParent():convertToWorldSpace(ccp(position.x, position.y))
+    --         for k, v2 in ipairs(anim.sprites) do
+    --             v2:setPosition(ccp(wPosition.x, wPosition.y))
+    --             v2:setScaleX(self['icon'..k]:getScaleX())
+    --             v2:setScaleY(self['icon'..k]:getScaleY())
+    --             scene:addChild(v2)
+    --         end
+    --         anim:play()
+    --     end
+    -- end
 end
 

@@ -15,12 +15,16 @@ local animal_positions = {
 	huanxiong_anime = {x=253.35, y=10.65},
 	thre_anime = {x=97.4, y=16.85},
 	chicken = {x=-196.5, y=-26.7},
-	bear12 = {x=-268.3, y=-46.45}
+	bear12 = {x=-268.3, y=-46.45},
+	["energy_animation_spring2016/huanxiong_anime"] = {x=253.35, y=10.65},
+	["energy_animation_spring2016/thre_anime"] = {x=97.4, y=16.85},
+	["energy_animation_spring2016/chicken"] = {x=-196.5, y=-26.7},
+	["energy_animation_spring2016/bear12"] = {x=-268.3, y=-46.45},
 }
 
-function WinAnimation:create()
+function WinAnimation:create(isActivity)
 	local container = WinAnimation.new(CCNode:create())
-	container:initialize()
+	container:initialize(isActivity)
 	return container
 end
 
@@ -35,11 +39,18 @@ local function createAnimal( name, parent )
 	parent:addChild(node)
 	return node
 end
-function WinAnimation:initialize()
-	self.thre_anime = createAnimal("thre_anime", self)
-	self.huanxiong_anime = createAnimal("huanxiong_anime", self)
-	self.bear12 = createAnimal("bear12", self)
-	self.chicken = createAnimal("chicken", self)
+function WinAnimation:initialize(isActivity)
+	if isActivity then
+		self.thre_anime = createAnimal("energy_animation_spring2016/thre_anime", self)
+		self.huanxiong_anime = createAnimal("energy_animation_spring2016/huanxiong_anime", self)
+		self.bear12 = createAnimal("energy_animation_spring2016/bear12", self)
+		self.chicken = createAnimal("energy_animation_spring2016/chicken", self)
+	else
+		self.thre_anime = createAnimal("thre_anime", self)
+		self.huanxiong_anime = createAnimal("huanxiong_anime", self)
+		self.bear12 = createAnimal("bear12", self)
+		self.chicken = createAnimal("chicken", self)
+	end
 
 	local hitArea = CocosObject:create()
 	hitArea.name = kHitAreaObjectName

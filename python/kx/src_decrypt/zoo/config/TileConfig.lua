@@ -140,15 +140,38 @@ TileConst = table.const
 	kCannonHoneyBottle = 127,
 	kCannonGreyCuteBall = 128,
 	kCannonBrownCuteBall = 129,
-	kCnanonBlackCuteBall = 130,
+	kCannonBlackCuteBall = 130,
 
 	kMoveTile = 131, -- 移动地块
 	kGoldZongZi = 135, --金粽子
 
-	kMaxTile = 140,		--
-	
 	kBottleBlocker = 136, --妖精瓶子
+	kCrystalStone = 142, --水晶石
+	kRocket = 143, --火箭
+	kCannonCrystalStone = 144,
+	kHedgehog = 145,  --刺猬
+	kHedgehogBox = 146, --刺猬宝箱
+	kCannonRocket = 147,
 
+	kKindMimosaLeft = 148,        ----新含羞草
+	kKindMimosaRight = 149,
+	kKindMimosaUp = 150,
+	kKindMimosaDown = 151,
+
+	kTotems = 154, -- 无敌小金刚（PC图腾）
+	kCannonTotems = 156, -- 无敌小金刚生成口
+
+	kWukong = 157,  --悟空（春节关卡的猴子）
+	kWukongTarget = 158,  --悟空目标地块
+
+	kLotusLevel1 = 159,  --草地（荷叶）一级
+	kLotusLevel2 = 160,  --草地（荷叶）二级
+	kLotusLevel3 = 161,  --草地（荷叶）三级
+	kDrip = 163,  --水滴
+	kCannonDrip = 164,  --水滴生成口
+	kSuperCute = 162,	-- 无敌毛球
+
+	kMaxTile = 165,		--
 	kInvalid = -1,		--
 
 
@@ -195,6 +218,35 @@ MagicStoneDirConfig = table.const {
 	kLeft = 4,
 }
 
+GameItemSuperCuteBallState = table.const {
+	kNone = 0,
+	kActive = 1,
+	kInactive = 2,
+}
+
+local recordInt = nil
+local randFactory = nil
+local function genRandomInteger()
+	if not recordInt then
+		randFactory = HERandomObject:create()
+		randFactory:randSeed(os.time())
+		recordInt = randFactory:rand(1, 100)
+	end
+	recordInt = recordInt + randFactory:rand(1, 100)
+	return recordInt
+end
+
+local _colorTypeMt = {
+	__eq = function(op1, op2)
+		return op1.a == op2.a and op1.b == op2.b
+	end
+}
+
+local function _createColorTypeObj(originObj)
+	setmetatable(originObj, _colorTypeMt)
+	return originObj
+end
+
 ------------------------------------------------------------------------------------
 -- 动物类型
 ------------------------------------------------------------------------------------
@@ -202,16 +254,20 @@ AnimalTypeConfig = table.const
 {
     kNone = 30,
 	kRandom = 0, 
-	kBlue = 1, 
-	kGreen = 2, 
-	kOrange = 3, 
-	kPurple = 4, 
-	kRed = 5, 
-	kYellow = 6,
-	kLine = 7,
-	kColumn = 8,
-	kWrap = 9,
-	kColor = 10,
+	
+	kLine = genRandomInteger(), 
+	kColumn = genRandomInteger(), 
+	kWrap = genRandomInteger(), 
+	kColor = genRandomInteger(), 
+	kDrip = genRandomInteger(), 
+
+	-- 随便写的数字, a/b不完全一致就行了
+	kBlue = _createColorTypeObj({a = 1, b = 1}),
+	kGreen = _createColorTypeObj({a = 1, b = 2}),
+	kOrange = _createColorTypeObj({a = 1, b = 3}), 
+	kPurple = _createColorTypeObj({a = 2, b = 1}), 
+	kRed = _createColorTypeObj({a = 2, b = 2}), 
+	kYellow = _createColorTypeObj({a = 2, b = 3}), 
 	
 	fRandom = 0x0,		
 	fBlue = 0x2, 		
@@ -225,6 +281,27 @@ AnimalTypeConfig = table.const
 	fWrap = 0x200,
 	fColor = 0x400,
 }
+
+local colorTypeList = {
+	AnimalTypeConfig.kBlue, 
+	AnimalTypeConfig.kGreen, 
+	AnimalTypeConfig.kOrange, 
+	AnimalTypeConfig.kPurple, 
+	AnimalTypeConfig.kRed, 
+	AnimalTypeConfig.kYellow,
+	--AnimalTypeConfig.kDrip,
+}
+AnimalTypeConfig.colorTypeList = colorTypeList
+
+local specialTypeList = {
+	AnimalTypeConfig.kLine,
+	AnimalTypeConfig.kColumn,
+	AnimalTypeConfig.kWrap,
+	AnimalTypeConfig.kColor,
+	AnimalTypeConfig.kDrip,
+}
+AnimalTypeConfig.specialTypeList = specialTypeList
+
 
 RouteConst = table.const{
 	kUp = 1, 
@@ -274,6 +351,51 @@ function AnimalTypeConfig.getSpecial(value)
 	elseif bit.band(value, AnimalTypeConfig.fColor) ~= 0 then special = AnimalTypeConfig.kColor end
 	
 	return special
+end
+
+function AnimalTypeConfig.isColorTypeValid(color)
+	return table.includes(colorTypeList, color)
+end
+
+function AnimalTypeConfig.isSpecialTypeValid(specialType)
+	return table.includes(specialTypeList, specialType)	
+end
+
+function AnimalTypeConfig.convertColorTypeToIndex(color)
+	if color == 0 then return 0 end
+	return table.indexOf(colorTypeList, color)
+end
+
+function AnimalTypeConfig.convertSpecialTypeToIndex(specialType)
+	if specialType == 0 then return 0 end
+	return table.indexOf(specialTypeList, specialType)
+end
+
+function AnimalTypeConfig.convertIndexToColorType(index)
+	if type(index) == "number" then
+		return colorTypeList[index]
+	end
+	return nil
+end
+
+function AnimalTypeConfig.generateColorType(copyColor)
+	if type(copyColor) == 'number' then
+		return copyColor
+	elseif type(copyColor) == 'table' then
+		return table.clone(copyColor)
+	end
+end
+
+function AnimalTypeConfig.getOriginColorValue(color)
+	if type(color) == 'number' then
+		return color
+	elseif type(color) == 'table' then
+		for _, c in ipairs(colorTypeList) do
+			if c == color then
+				return c
+			end
+		end
+	end
 end
 
 ------------------------------------------------------------------------------------

@@ -90,7 +90,8 @@ function ActivityData:isLoaded( ... )
 	return package.loaded["activity/" .. config.startLua] ~= nil
 end
 
-function ActivityData:start(hasLoadAnimation)
+local isStart = {}
+function ActivityData:start(hasLoadAnimation,userClick,successCallback,errorCallback,endCallback)
 
 	local scene = nil
 
@@ -111,18 +112,29 @@ function ActivityData:start(hasLoadAnimation)
 				local home = HomeScene:sharedInstance()
 				if home.updateVersionButton and not home.updateVersionButton.isDisposed then 
 					if not home.updateVersionButton.wrapper:isTouchEnabled() then 
+						print("home.updateVersionButton enabled false")
+						if errorCallback then
+							errorCallback()
+						end
 						return
 				 	end
 				end
 			end
 
-			ActivityUtil:unLoadResIfNecessary(self.source)
-			require("activity/" .. config.startLua)()
-			
-			-- 有曝光
-			if config.click and config.actId then 
-				local http = ClickActivityHttp.new()
-				http:load(config.actId)
+			if successCallback then
+				successCallback()
+			end
+
+			if isStart[self.source] then
+				ActivityUtil:unLoadResIfNecessary(self.source)
+				require("activity/" .. config.startLua)(userClick,endCallback)
+				-- 有曝光
+				if config.click and config.actId then 
+					local http = ClickActivityHttp.new()
+					http:load(config.actId)
+				end
+
+				isStart[self.source] = false
 			end
 
 		end
@@ -133,6 +145,10 @@ function ActivityData:start(hasLoadAnimation)
 		end
 	end
 	local function onError()
+		if errorCallback then
+			errorCallback()
+		end
+
 		if not hasLoadAnimation then 
 			return
 		end
@@ -149,9 +165,12 @@ function ActivityData:start(hasLoadAnimation)
 		-- body
 	end
 
+	isStart[self.source] = true
+	
 	if self:isLoaded() and not ActivityUtil:needUpdate(self.source) then 
+		-- setTimeOut(onSuccess,0)
 		onSuccess()
-	else		
+	else
 		if hasLoadAnimation then
 			ActivityUtil:loadRes(self.source,self.version,onSuccess,onError)
 		else
@@ -159,6 +178,13 @@ function ActivityData:start(hasLoadAnimation)
 		end
 	end
 
+end
+
+function ActivityData:onNoticeShow( ... )
+	local config = require("activity/" .. self.source)
+	if config.onNoticeShow then
+		pcall(config.onNoticeShow)
+	end
 end
 
 
@@ -314,6 +340,10 @@ function ActivityScene:onEnter(activitys)
 			if v:getStatus() == ActivityStatus.kNoCache or v:getStatus() == ActivityStatus.kHasNewVersion then  
 				self:downLoad(i - 1)
 			end
+		end
+
+		for i,v in ipairs(self.activityList) do
+			v:onNoticeShow()
 		end
 	end
 end
@@ -624,7 +654,7 @@ function ActivityScene:cellTouched(idx)
 		return
 	end
 
-	self.activityList[idx + 1]:start(true)
+	self.activityList[idx + 1]:start(true,true)
 
 
 	-- local source = self.activityList[idx + 1].source

@@ -8,6 +8,10 @@ function Processor:start(statusLabel, statusLabelShadow, progressBar)
     for i, v in ipairs(ResourceConfig.mp3) do loader:add(v, kFrameLoaderType.mp3) end
     for i, v in ipairs(ResourceConfig.sfx) do loader:add(v, kFrameLoaderType.sfx) end
 
+    if __WP8 then
+        for i, v in ipairs(ResourceConfig.asyncPlist) do loader:add(v, kFrameLoaderType.plist) end
+    end
+
     local startTime = os.clock()
     DcUtil:up(120)
     local function onLoadingDc()
@@ -20,7 +24,20 @@ function Processor:start(statusLabel, statusLabelShadow, progressBar)
         print("load resource done, total time:", endTime - startTime)
 
         ResourceManager:sharedInstance():loadNeededJsonFiles()
-        GamePlayMusicPlayer:getInstance():playWorldSceneBgMusic()
+
+        if WorldSceneShowManager:isInAcitivtyTime() then 
+            if not WorldSceneShowManager:getHasPlaySpringMusic() then 
+                GamePlayMusicPlayer:getInstance():playSpringBgMusic()
+                setTimeOut(function ()
+                    WorldSceneShowManager:setHasPlaySpringMusic(true)
+                    GamePlayMusicPlayer:getInstance():playWorldSceneBgMusic()
+                end, 9)
+            else
+                GamePlayMusicPlayer:getInstance():playWorldSceneBgMusic()
+            end
+        else
+            GamePlayMusicPlayer:getInstance():playWorldSceneBgMusic()
+        end
         
         statusLabel:setVisible(false)
         statusLabelShadow:setVisible(false)

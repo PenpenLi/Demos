@@ -22,7 +22,7 @@ function MimosaState:onEnter()
 
 	self.hasItemToHandle = false
 	self.complete = 0
-	self.total = GameExtandPlayLogic:checkMimosa(self.mainLogic, callback)
+	self.total = GameExtandPlayLogic:checkMimosa(GameItemType.kMimosa, self.mainLogic, callback)
 	if self.total == 0 then
 		self:handleComplete()
 	else
@@ -34,7 +34,7 @@ function MimosaState:handleComplete( ... )
 	-- body
 	self.complete = self.complete + 1 
 	if self.complete >= self.total then 
-		self.nextState = self.context.updatePM25State
+		self.nextState = self.context.kindMimosaState
 		if self.hasItemToHandle then
 			self.mainLogic:setNeedCheckFalling();
 		end

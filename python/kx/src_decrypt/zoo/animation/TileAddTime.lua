@@ -3,6 +3,7 @@ TileAddTime = class(CocosObject)
 local kCharacterAnimationTime = 1/30
 
 function TileAddTime:create(colortype, addTime)
+	colortype = AnimalTypeConfig.convertColorTypeToIndex(colortype)
 	local node = TileAddTime.new(CCNode:create())
 	node.name = "addTime"
 

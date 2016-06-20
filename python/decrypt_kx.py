@@ -22,6 +22,8 @@ def main():
 
     for root, dirs, files in os.walk('./kx/src_encrypt/'):
         out_dir=root.replace('src_encrypt', 'src_decrypt')
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         for f in files:
             if f.endswith('.lua'):
                 fileName = os.path.basename(f).split('.')[0] + '.lua'
@@ -31,6 +33,8 @@ def main():
 
     for root, dirs, files in os.walk('./kx/meta_encrypt/'):
         out_dir=root.replace('meta_encrypt', 'meta_decrypt')
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         for f in files:
             if f.endswith('.inf'):
                 fileName = os.path.basename(f).split('.')[0] + '.inf'

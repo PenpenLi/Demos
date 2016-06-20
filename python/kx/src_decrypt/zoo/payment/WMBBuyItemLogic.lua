@@ -9,23 +9,25 @@ function WMBBuyItemLogic:init()
 	
 end
 
-function WMBBuyItemLogic:buy(goodsId, goodsNum, uniquePayId, buyLogic, successCallback, failCallback, cancelCallback, updateFunc)
+function WMBBuyItemLogic:buy(goodsId, goodsNum, dcWindmillInfo, buyLogic, successCallback, failCallback, cancelCallback, updateFunc)
 	self.goodsId = goodsId
 	self.goodsNum = goodsNum
-	self.uniquePayId = uniquePayId
+	self.dcWindmillInfo = dcWindmillInfo
 	self.buyLogic = buyLogic
 	self.successCallback = successCallback
 	self.failCallback = failCallback
 	self.cancelCallback = cancelCallback
 	self.updateFunc = updateFunc
 
-	self:handleWithNetwork()
+	self:buyWithWindmill()
 end
 
-function WMBBuyItemLogic:handleWithNetwork()
+function WMBBuyItemLogic:buyWithWindmill()
 	local singlePrice = self.buyLogic:getPrice()
+	self.dcWindmillInfo:setGoodsNum(self.goodsNum)
+	self.dcWindmillInfo:setWindMillPrice(self.goodsNum * singlePrice)
 
-	local function onSuccess(evt)
+	local function onSuccess(data)
 		local scene = HomeScene:sharedInstance()
 		local button = scene.goldButton
 		if button then button:updateView() end
@@ -34,31 +36,34 @@ function WMBBuyItemLogic:handleWithNetwork()
 			self.successCallback(self.goodsNum)
 		end
 
-		PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-								self.goodsNum, 0, 0, self.goodsNum * singlePrice, 0, nil, 0)
+		self.dcWindmillInfo:setResult(DCWindmillPayResult.kSuccess)
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
+		end
 	end
-	local function onFail(evt)
-		if evt and evt.data == 730330 then
+	local function onFail(errorCode)
+		if errorCode and errorCode == 730330 then
+			self.dcWindmillInfo:setResult(DCWindmillPayResult.kNoWindmill)
 			self:goldNotEnough()
 		else
-			local errorCode = nil
-			if evt and evt.data then 
-				CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(evt.data)), "negative")
-				errorCode = evt.data
+			self.dcWindmillInfo:setResult(DCWindmillPayResult.kFail, errorCode)
+			if errorCode then 
+				CommonTip:showTip(Localization:getInstance():getText("error.tip."..tostring(errorCode)), "negative")
 			end
 			if self.failCallback then 
 				self.failCallback()
 			end
-			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, self.goodsId, 1, 
-									self.goodsNum, 0, 0, self.goodsNum * singlePrice, 1, errorCode, 0)
+		end
+		if __ANDROID then 
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcWindmillInfo)
+		elseif __IOS then 
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcWindmillInfo)
 		end
 	end
 
-    local function onUserHasLogin()
-   		self.buyLogic:start(self.goodsNum, onSuccess, onFail)
-   	end
-   	onUserHasLogin()
-  	-- RequireNetworkAlert:callFuncWithLogged(onUserHasLogin)
+   	self.buyLogic:start(self.goodsNum, onSuccess, onFail)
 end
 
 function WMBBuyItemLogic:goldNotEnough()
@@ -85,7 +90,7 @@ function WMBBuyItemLogic:goldNotEnough()
 			self.cancelCallback()
 		end
 	end
-	local panel = GoldlNotEnoughPanel:create(createGoldPanel, cancelCallback, self.uniquePayId)
+	local panel = GoldlNotEnoughPanel:create(createGoldPanel, cancelCallback)
 	if panel then panel:popout() end 
 end
 

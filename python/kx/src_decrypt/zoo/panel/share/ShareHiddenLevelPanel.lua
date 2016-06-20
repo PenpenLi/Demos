@@ -6,18 +6,44 @@ function ShareHiddenLevelPanel:ctor()
 
 end
 
+local function getFirstAndLastLevel(currentLevel)
+	local firstLevel = 1
+	local lastLevel = 15
+	if currentLevel then 
+		if currentLevel%15 == 0 then
+			firstLevel = currentLevel - 15
+			lastLevel = currentLevel
+		else
+			firstLevel = currentLevel - (currentLevel%15)
+			lastLevel = firstLevel + 15
+		end
+		firstLevel = firstLevel + 1
+	end
+	return firstLevel, lastLevel
+end
+
 function ShareHiddenLevelPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self:runAnimalAction()
-	self:runVineAction()
 	self:runLightAction()
 	self:runCircleLightAction()
 	self:runStarParticle()
 	self:runAllLightStarAction()
+
+	local function vineAction()
+		self:runVineAction()
+	end
+
+	self.ui:runAction(CCCallFunc:create(vineAction))
 end
+
+function ShareHiddenLevelPanel:getShareTitleName()
+	local achi = self.achiManager:getAchievementWithId(self.shareId)
+	return Localization:getInstance():getText(self.shareTitleKey,{num = achi.achiLevel})
+end
+
 
 function ShareHiddenLevelPanel:runLightAction( ... )
 	local function lightAction( light_index )
@@ -163,7 +189,7 @@ function ShareHiddenLevelPanel:runVineAction()
 
 	local time = CCProgressTimer:create(vine.refCocosObj)
 	time:setAnchorPoint(ccp(0,1))
-	time:setPosition(ccp(vine:getPosition().x, vine:getPosition().y))
+	time:setPosition(ccp(vine:getPosition().x - 80, vine:getPosition().y))
 	parent:addChild(CocosObject.new(time))
 
 	time:setType(kCCProgressTimerTypeBar)
@@ -315,14 +341,28 @@ function ShareHiddenLevelPanel:runLightStarAction(lightStarUi)
 	end
 end
 
-function ShareHiddenLevelPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
+function ShareHiddenLevelPanel:create(shareId)
 	local panel = ShareHiddenLevelPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareHiddenLevelPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
+end
+
+function ShareHiddenLevelPanel:beforeSrnShot(srnShot, afterSrnShot)
+	local function moreAdjust()
+		self:loadSpecialBackground()
+		if srnShot then
+			srnShot()
+		end
+		if afterSrnShot then
+			afterSrnShot()
+		end
+	end
+	ShareBasePanel.beforeSrnShot(self, moreAdjust)
+end
+
+function ShareHiddenLevelPanel:afterSrnShot()
+   	self:unloadSpecialBackground()
 end

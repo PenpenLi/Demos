@@ -113,8 +113,8 @@ function DropDownMode:tryCollectIngredient(r,c)
       result = true
 			-----1.得分				
       item1:AddItemStatus(GameItemStatusType.kDestroy)
-			local addScore = GamePlayConfig_Score_DropDown_Ingredient;
-			ScoreCountLogic:addScoreToTotal(mainLogic, addScore);
+			local addScore = GamePlayConfigScore.DropDownIngredient
+			ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
 				GameItemActionType.kItemScore_Get,
@@ -122,7 +122,7 @@ function DropDownMode:tryCollectIngredient(r,c)
 				nil,				
 				1)
 			ScoreAction.addInt = addScore;
-			mainLogic:addGameAction(ScoreAction);
+			mainLogic:addGameAction(ScoreAction)
 
 			-----2.收集动画
 			local CollectAction = GameBoardActionDataSet:createAs(

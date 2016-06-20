@@ -51,7 +51,7 @@ function SpecialMatchLogic:BirdLineSwapBomb(mainLogic, r1, c1, r2, c2)
 	local item1 = mainLogic.gameItemMap[r1][c1]		----鸟
 	local item2 = mainLogic.gameItemMap[r2][c2]		----颜色
 	local color2 = item2.ItemColorType
-	
+
 	local ColorAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemSpecial_ColorLine ,
@@ -83,6 +83,21 @@ function SpecialMatchLogic:BirdColorSwapBomb(mainLogic, r1, c1, r2, c2)
                     )
 		chargeAction.count = 4
 	    mainLogic:addDestroyAction(chargeAction)
+	
+	elseif item2.ItemType == GameItemType.kWukong 
+    		and item2.wukongProgressCurr < item2.wukongProgressTotal 
+    		and ( item2.wukongState == TileWukongState.kNormal or item2.wukongState == TileWukongState.kOnHit )
+    		and item2:isAvailable() and not mainLogic.isBonusTime then
+		local action = GameBoardActionDataSet:createAs(
+                    GameActionTargetType.kGameItemAction,
+                    GameItemActionType.kItem_Wukong_Charging,
+                    IntCoord:create(r1, c1),
+                    nil,
+                    GamePlayConfig_MaxAction_time
+                )
+		action.count = 3
+		--mainLogic:addDestroyAction(action)
+	    --产品需求，魔力鸟不额外获得能量（默认走SpecialCoverLogic的能量增加逻辑）
 	end
 	
 	-- 鸟需要在此时就进入destroy状态,以免滞后几帧destroy产生掉落,当鸟与悬空的大眼怪交换时可复现此类问题
@@ -112,14 +127,15 @@ function SpecialMatchLogic:LineLineSwapBomb(mainLogic, r1, c1, r2, c2)
 	local sp2 = item2.ItemSpecialType
 
 	-----1.计算分数
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Swap_LineLine);
+	local addScore = GamePlayConfigScore.SwapLineLine
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore);
 	local ScoreAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemScore_Get,
 		IntCoord:create(r1,c1),				
 		nil,				
 		1)
-	ScoreAction.addInt = GamePlayConfig_Score_Swap_LineLine;
+	ScoreAction.addInt = addScore
 	mainLogic:addGameAction(ScoreAction);
 	GamePlayMusicPlayer:playEffect(GameMusicType.kSwapLineLine)
 
@@ -136,14 +152,15 @@ function SpecialMatchLogic:WrapLineSwapBomb(mainLogic, r1, c1, r2, c2)
 	local sp2 = item2.ItemSpecialType
 
 	-----1.计算分数
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Swap_LineWrap);
+	local addScore = GamePlayConfigScore.SwapLineWrap
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 	local ScoreAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemScore_Get,
 		IntCoord:create(r1,c1),				
 		nil,				
 		1)
-	ScoreAction.addInt = GamePlayConfig_Score_Swap_LineWrap;
+	ScoreAction.addInt = addScore
 	mainLogic:addGameAction(ScoreAction);
 
 	mainLogic:tryDoOrderList(r2,c2,GameItemOrderType.kSpecialBomb, GameItemOrderType_SB.kLine)
@@ -206,14 +223,15 @@ function SpecialMatchLogic:WrapWrapSwapBomb(mainLogic, r1, c1, r2, c2)
 	local item2 = mainLogic.gameItemMap[r2][c2]
 
 	-----1.计算分数
-	ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_Swap_WrapWrap);
+	local addScore = GamePlayConfigScore.SwapWrapWrap
+	ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 	local ScoreAction = GameBoardActionDataSet:createAs(
 		GameActionTargetType.kGameItemAction,
 		GameItemActionType.kItemScore_Get,
 		IntCoord:create(r1,c1),				
 		nil,				
 		1)
-	ScoreAction.addInt = GamePlayConfig_Score_Swap_WrapWrap;
+	ScoreAction.addInt = addScore
 	mainLogic:addGameAction(ScoreAction);
 	mainLogic:tryDoOrderList(r1,c1,GameItemOrderType.kSpecialBomb, GameItemOrderType_SB.kWrap)
 	mainLogic:tryDoOrderList(r2,c2,GameItemOrderType.kSpecialBomb, GameItemOrderType_SB.kWrap)
@@ -231,4 +249,101 @@ function SpecialMatchLogic:WrapWrapSwapBomb(mainLogic, r1, c1, r2, c2)
 		IntCoord:create(r2, c2),
 		GamePlayConfig_SpecialBomb_WrapWrap)
 	mainLogic:addDestructionPlanAction(WrapWrapAction)
+end
+
+-- 染色宝宝和区域特效
+function SpecialMatchLogic:CrystalStoneWithWrap(mainLogic, r1, c1, r2, c2)
+	local item1 = mainLogic.gameItemMap[r1][c1]
+	local item2 = mainLogic.gameItemMap[r2][c2]
+	local color1 = item1.ItemColorType
+	local color2 = item2.ItemColorType
+
+	local theAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemSpecial_CrystalStone_Animal ,
+		IntCoord:create(r2,c2), 			----交换之后的染色宝宝位置
+		IntCoord:create(r1,c1),				----交换之后的区域特效位置
+		GamePlayConfig_SpecialBomb_CrystalStone_Animal_Time1
+		)
+
+	theAction.addInt1 = color1 ----染色宝宝的颜色
+	theAction.addInt2 = color2 ----目标颜色
+	theAction.addInt3 = item2.ItemSpecialType ----目标特效
+	mainLogic:addDestructionPlanAction(theAction)
+end
+
+-- 染色宝宝和直线特效
+function SpecialMatchLogic:CrystalStoneWithLine(mainLogic, r1, c1, r2, c2)
+	local item1 = mainLogic.gameItemMap[r1][c1]
+	local item2 = mainLogic.gameItemMap[r2][c2]
+	local color1 = item1.ItemColorType
+	local color2 = item2.ItemColorType
+
+	local theAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemSpecial_CrystalStone_Animal ,
+		IntCoord:create(r2,c2), 			----交换之后的染色宝宝位置
+		IntCoord:create(r1,c1),				----交换之后的区域特效位置
+		GamePlayConfig_SpecialBomb_CrystalStone_Animal_Time1
+		)
+
+	theAction.addInt1 = color1 ----染色宝宝的颜色
+	theAction.addInt2 = color2 ----目标颜色
+	theAction.addInt3 = item2.ItemSpecialType ----目标特效
+	mainLogic:addDestructionPlanAction(theAction)
+end
+
+--染色宝宝和普通动物
+function SpecialMatchLogic:CrystalStoneWithColor(mainLogic, r1, c1, r2, c2)
+	local item1 = mainLogic.gameItemMap[r1][c1] -- 染色宝宝
+	local item2 = mainLogic.gameItemMap[r2][c2] -- 普通动物
+	local color1 = item1.ItemColorType
+	local color2 = item2.ItemColorType
+
+	local theAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemSpecial_CrystalStone_Animal ,
+		IntCoord:create(r2,c2), 			----交换之后的染色宝宝位置
+		IntCoord:create(r1,c1),				----交换之后的区域特效位置
+		GamePlayConfig_SpecialBomb_CrystalStone_Animal_Time1
+		)
+
+	theAction.addInt1 = color1 ----染色宝宝的颜色
+	theAction.addInt2 = color2 ----目标颜色
+	theAction.addInt3 = item2.ItemSpecialType ----目标特效
+	mainLogic:addDestructionPlanAction(theAction)
+end
+
+--染色宝宝和染色宝宝
+function SpecialMatchLogic:CrystalStoneWithCrystalStone(mainLogic, r1, c1, r2, c2)
+	local item1 = mainLogic.gameItemMap[r1][c1]
+	local item2 = mainLogic.gameItemMap[r2][c2]
+	local color1 = item1.ItemColorType
+	-- local color2 = item2.ItemColorType
+
+	local theAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemSpecial_CrystalStone_CrystalStone,
+		IntCoord:create(r2,c2), 			----交换之后的染色宝宝1位置
+		IntCoord:create(r1,c1),				----交换之后的染色宝宝2位置
+		GamePlayConfig_SpecialBomb_CrystalStone2_Time1
+		)
+	
+	theAction.addInt1 = color1 ----选定染色宝宝的颜色
+	mainLogic:addDestructionPlanAction(theAction)
+end
+
+function SpecialMatchLogic:CrystalStoneWithBird(mainLogic, r1, c1, r2, c2)
+	local item1 = mainLogic.gameItemMap[r1][c1]
+	local item2 = mainLogic.gameItemMap[r2][c2]
+
+	local theAction = GameBoardActionDataSet:createAs(
+		GameActionTargetType.kGameItemAction,
+		GameItemActionType.kItemSpecial_CrystalStone_Bird,
+		IntCoord:create(r2,c2), 			----交换之后的染色宝宝位置
+		IntCoord:create(r1,c1),				----交换之后的魔力鸟位置
+		GamePlayConfig_SpecialBomb_CrystalStone_Bird_Time1
+		)
+	
+	mainLogic:addDestructionPlanAction(theAction)
 end

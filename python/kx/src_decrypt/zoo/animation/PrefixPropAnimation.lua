@@ -86,7 +86,7 @@ function PrefixPropAnimation:createAddMoveAnimation(icon, delay, flyFinishedCall
 	end
 	local function onIconAnimationFinished()
 		local winSize = CCDirector:sharedDirector():getVisibleSize()
-		local star = FallingStar:create(ccp(x, y), ccp(winSize.width - 100, winSize.height - 100), onStarAnimationFinished, flyFinishedCallback)
+		local star = BezierFallingStar:create(ccp(x, y), ccp(winSize.width - 100, winSize.height - 100), onStarAnimationFinished, flyFinishedCallback)
 		layer:addChild(star)
 	end 
 
@@ -108,7 +108,19 @@ function PrefixPropAnimation:createAddMoveAnimation(icon, delay, flyFinishedCall
 
 	local fadeout = CCArray:create()
 	fadeout:addObject(CCScaleTo:create(0.5, 0.3))
-	fadeout:addObject(CCEaseSineInOut:create(CCMoveTo:create(time, topright)))
+
+	local startPos = icon:getPosition()
+	local bezierConfig = ccBezierConfig:new() 
+	local controlPoint = ccp(
+		(startPos.x + topright.x)/2+(topright.y-startPos.y)/4, 
+		(startPos.y + topright.y)/2+(-topright.x+startPos.x)/4
+	)
+	bezierConfig.controlPoint_1 = controlPoint
+	bezierConfig.controlPoint_2 = controlPoint
+	bezierConfig.endPosition = topright
+
+	fadeout:addObject(CCEaseSineInOut:create(CCBezierTo:create(time, bezierConfig)))
+
 	fadeout:addObject(CCSequence:createWithTwoActions(CCDelayTime:create(0.2), CCFadeOut:create(0.2)) )
 	
 	local action_move = CCEaseElasticOut:create(CCMoveBy:create(0.8, ccp(0, 30)))
@@ -221,4 +233,21 @@ function PrefixPropAnimation:createReviveMissileAnimation( icon, animationCallba
 	array_action:addObject(action_callback)
 	sprite:runAction(CCSequence:create(array_action))
 	return sprite
+end
+
+
+-- 道具后面发光动画
+function PrefixPropAnimation:createShineAnimation( )
+	local container = CocosObject:create()
+
+	local shine = Sprite:createWithSpriteFrameName("Prop_shine_inner0000")
+	shine:ignoreAnchorPointForPosition(false)
+	shine:setAnchorPoint(ccp(0.5,0.5))
+	container:addChild(shine)
+	shine:runAction(CCRepeatForever:create(CCSequence:createWithTwoActions(
+		CCFadeTo:create(0.5,0.5 * 255),
+		CCFadeTo:create(0.5,1.0 * 255)
+	)))
+
+	return container
 end

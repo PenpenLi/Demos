@@ -1,11 +1,41 @@
+local encryptKeyMap = {
+	ItemColorType = true,
+}
+
+local function encrypt_class()
+	local class_type = {}
+	class_type.new = function(...)
+		local obj, _t = {}, {}
+
+		setmetatable(obj, { 
+			__index = function(table, key)
+				local result = nil
+        		if result == nil then result = _t[key] end --1st: get data from self.
+        		if result == nil then result = class_type[key] end --then find in class def
+        		return result
+			end,
+        	__newindex = function(table, key, value)
+        		if encryptKeyMap[key] then
+        			_t[key] = AnimalTypeConfig.generateColorType(value)
+        		else
+        			rawset(table, key, value)
+        		end
+			end	
+        })
+		if obj.ctor then obj:ctor(...) end
+		return obj
+	end
+	return class_type
+end
+
 require "zoo.config.TileMetaData"
 require "zoo.config.TileConfig"
 
 require "zoo.gamePlay.GamePlayConfig"
-require "zoo.gamePlay.config.MaydayConfig"
+require "zoo.gamePlay.config.SeasonWeeklyBossConfig"
 require "zoo.animation.TileBottleBlocker"
 
-GameItemData = class()
+GameItemData = encrypt_class()
 
 GameItemType = table.const
 {
@@ -38,6 +68,14 @@ GameItemType = table.const
 	kMagicStone = 27, 		-- 魔法石
 	kGoldZongZi = 28,       --金粽子，类似kDigJewel，自带一层云
 	kBottleBlocker = 29,    --瓶子妖精障碍
+	kHedgehogBox = 30,      --刺猬宝箱
+	kRocket = 31, 			--火箭
+	kKindMimosa = 32,       --新含羞草
+	kCrystalStone = 33,		--染色宝宝
+	kWukong = 34,  --悟空（春节关卡的猴子）
+	kTotems = 35,		 	--无敌小金刚
+	kLotus = 36,		 	--草地（荷叶）
+	kDrip = 37,		 	--水滴
 }
 
 GameItemStatusType = table.const
@@ -60,6 +98,13 @@ GameItemFurballType = table.const
 	kBrown = 2,				--褐色毛球
 }
 
+GameItemCrystalStoneBombType = table.const
+{
+	kNone = 0,
+	kNormal = 1,
+	kSpecial = 2, -- 染色宝宝和魔力鸟爆炸特效
+}
+
 GameItemRabbitState = table.const
 {
 	kNone = 0,            --无
@@ -68,11 +113,20 @@ GameItemRabbitState = table.const
 	kSuper = 3,
 }
 
+GameItemTotemsState = table.const {
+	kNone = 0,
+	kWattingActive = 1,
+	kActive = 2,
+	kWattingBomb = 3,
+	kBomb = 4,
+}
+
 IngredientShowType = table.const
 {
 	kIngredient = 0,  --金豆荚
 	kAcorn      = 1,  --橡果
 }
+
 function GameItemData:ctor()
 	------------------------
 	----添加属性请修改 ------copy()函数
@@ -96,6 +150,9 @@ function GameItemData:ctor()
 	self.digJewelLevel = 0
 	self.digGoldZongZiLevel = 0     --金粽子层数
 	self.honeyLevel = 0				--蜂蜜等级
+	self.crystalStoneEnergy = 0 	--染色宝宝收集的颜色数量
+	self.crystalStoneActive = false 	--染色宝宝是否处于激活状态
+	self.crystalStoneBombType = GameItemCrystalStoneBombType.kNone
 
 	self.x = 0
 	self.y = 0
@@ -120,7 +177,7 @@ function GameItemData:ctor()
 	self.balloonFrom = 0
 	self.isFromProductBalloon = false  	--标志位 用来防止新生成的气球步数减一
 	self.numAddMove = 0
-	self.digBlockCanbeDelete = true    	--地块，宝石块是否可以被消除
+	self.digBlockCanbeDelete = true    	--item是否可以被消除,false = 被保护，用户地块，宝石，蜂蜜
 	self.isReverseSide = false
 	self.reverseCount = 3
 
@@ -133,10 +190,12 @@ function GameItemData:ctor()
 	self.mimosaDirection = 0 			--0=no direction 1 = left 2 = right 3 = up 4 = down
 	self.mimosaLevel = 0 
 	self.mimosaHoldGrid = {}
-	self.beEffectByMimosa = false
+	self.beEffectByMimosa = 0
 
 	self.snailRoadType = nil
 	self.isSnail = false
+
+	self.hedgehogLevel = 0			 	--刺猬
 
 	self.bossLevel = 0
 	self.bossHp = nil
@@ -159,6 +218,19 @@ function GameItemData:ctor()
 
 	self.bottleLevel = 0
 	self.bottleState = BottleBlockerState.Waiting
+	self.bottleActionRunningCount = 0
+
+	self.wukongProgressCurr = 0
+	self.wukongProgressTotal = getBaseWukongChargingTotalValue()
+	self.wukongIsReadyToJump = false
+	self.wukongState = TileWukongState.kNormal
+	self.wukongJumpPos = IntCoord:create(0, 0)
+	self.totemsState = GameItemTotemsState.kNone
+	self.lotusLevel = 0
+
+	self.beEffectBySuperCute = false
+	self.dripState = 0
+	self.dripLeaderPos = IntCoord:create(0, 0)
 end
 
 function GameItemData:dispose()
@@ -189,6 +261,9 @@ function GameItemData:resetDatas()
 	self.digJewelLevel = 0
 	self.digGoldZongZiLevel = 1
 	self.honeyLevel = 0				--蜂蜜等级
+	self.crystalStoneEnergy = 0
+	self.crystalStoneActive = false
+	self.crystalStoneBombType = GameItemCrystalStoneBombType.kNone
 
 	self.isNeedUpdate = false
 	self.isEmpty = true
@@ -221,10 +296,12 @@ function GameItemData:resetDatas()
 	self.mimosaDirection = 0 			--0=no direction 1 = left 2 = right 3 = up 4 = down
 	self.mimosaLevel = 0 
 	self.mimosaHoldGrid = {}
-	self.beEffectByMimosa = false
+	self.beEffectByMimosa = 0
 
 	self.snailRoadType = nil
 	self.isSnail = false
+
+	self.hedgehogLevel = 0
 
 	self.bossLevel = 0
 	self.bossHp = nil
@@ -247,6 +324,19 @@ function GameItemData:resetDatas()
 
 	self.bottleLevel = 0
 	self.bottleState = BottleBlockerState.Waiting
+	self.bottleActionRunningCount = 0
+
+	self.wukongProgressCurr = 0
+	self.wukongProgressTotal = getBaseWukongChargingTotalValue()
+	self.wukongIsReadyToJump = false
+	self.wukongState = TileWukongState.kNormal
+	self.wukongJumpPos = IntCoord:create(0, 0)
+	self.totemsState = GameItemTotemsState.kNone
+	self.lotusLevel = 0
+
+	self.beEffectBySuperCute = false
+	self.dripState = 0
+	self.dripLeaderPos = IntCoord:create(0, 0)
 end
 
 function GameItemData.copyDatasFrom(toData, fromData )
@@ -304,6 +394,15 @@ function GameItemData.copyDatasFrom(toData, fromData )
 	toData.snailRoadType = fromData.snailRoadType
 	toData.isSnail = fromData.isSnail
 
+	toData.hedgehogLevel = fromData.hedgehogLevel
+	toData.hedge_before = fromData.hedge_before
+
+	toData.wukongProgressCurr = fromData.wukongProgressCurr
+	toData.wukongProgressTotal = fromData.wukongProgressTotal
+	toData.wukongIsReadyToJump = fromData.wukongIsReadyToJump
+	toData.wukongState = fromData.wukongState
+	toData.wukongJumpPos = IntCoord:clone(fromData.wukongJumpPos)
+
 	--------------- Mayday Boss Levels -----------
 	toData.bossLevel = fromData.bossLevel 
 	toData.blood = fromData.blood
@@ -343,6 +442,19 @@ function GameItemData.copyDatasFrom(toData, fromData )
 
 	toData.bottleLevel = fromData.bottleLevel
 	toData.bottleState = fromData.bottleState
+	toData.bottleActionRunningCount = fromData.bottleActionRunningCount
+	toData.crystalStoneEnergy = fromData.crystalStoneEnergy
+	toData.crystalStoneActive = fromData.crystalStoneActive
+	toData.crystalStoneBombType = fromData.crystalStoneBombType
+
+	toData.totemsState = fromData.totemsState
+
+	toData.lotusLevel = fromData.lotusLevel
+
+	toData.beEffectBySuperCute = fromData.beEffectBySuperCute
+	toData.dripState = fromData.dripState
+	toData.dripLeaderPos = IntCoord:clone(fromData.dripLeaderPos)
+
 end
 
 function GameItemData:copy()
@@ -367,10 +479,15 @@ function GameItemData:initByConfig( tileDef )
 	if tileDef:hasProperty(TileConst.kNone) then self.isEmpty = true end
 
 	if tileDef:hasProperty(TileConst.kAddMove) then self.ItemType = GameItemType.kAddMove self.isEmpty = false  
+	elseif tileDef:hasProperty(TileConst.kDrip) then self.ItemType = GameItemType.kDrip self.isBlock = false self.isEmpty = false self.ItemColorType = AnimalTypeConfig.kDrip self.dripState = DripState.kNormal
+	elseif tileDef:hasProperty(TileConst.kWukong) then self.ItemType = GameItemType.kWukong self.isBlock = true self.isEmpty = false self.ItemColorType = AnimalTypeConfig.kBlue self.wukongProgressCurr = 0 self.wukongState = TileWukongState.kNormal
 	elseif tileDef:hasProperty(TileConst.kGoldZongZi) then self.digGoldZongZiLevel = 1 self.ItemType = GameItemType.kGoldZongZi self.isBlock = true self.isEmpty = false self.isZongZiEnable = false
 	elseif tileDef:hasProperty(TileConst.kBottleBlocker) then self.ItemType = GameItemType.kBottleBlocker self.isBlock = true self.isEmpty = false self.bottleLevel = tileDef:getCrossStrengthValue() self.bottleState = BottleBlockerState.Waiting
 	elseif tileDef:hasProperty(TileConst.kAddTime) then self.ItemType = GameItemType.kAddTime self.isEmpty = false  --TODO
 	elseif tileDef:hasProperty(TileConst.kQuestionMark) then self.ItemType = GameItemType.kQuestionMark self.isEmpty = false
+	elseif tileDef:hasProperty(TileConst.kTotems) then self.ItemType = GameItemType.kTotems self.isEmpty = false
+	elseif tileDef:hasProperty(TileConst.kRocket) then self.ItemType = GameItemType.kRocket self.isEmpty = false
+	elseif tileDef:hasProperty(TileConst.kCrystalStone) then self.ItemType = GameItemType.kCrystalStone self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kAnimal) then self.ItemType = GameItemType.kAnimal self.isEmpty=false
 	elseif tileDef:hasProperty(TileConst.kCrystal) then self.ItemType = GameItemType.kCrystal self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kMagicLamp) then self.ItemType = GameItemType.kMagicLamp self.isEmpty = false self.lampLevel = 1 self.isBlock = true
@@ -403,7 +520,12 @@ function GameItemData:initByConfig( tileDef )
 	elseif tileDef:hasProperty(TileConst.kMimosaRight) then self.ItemType = GameItemType.kMimosa self.mimosaDirection = 2 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
 	elseif tileDef:hasProperty(TileConst.kMimosaUp) then self.ItemType = GameItemType.kMimosa self.mimosaDirection = 3 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
 	elseif tileDef:hasProperty(TileConst.kMimosaDown) then self.ItemType = GameItemType.kMimosa self.mimosaDirection = 4 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
+	elseif tileDef:hasProperty(TileConst.kKindMimosaLeft) then self.ItemType = GameItemType.kKindMimosa self.mimosaDirection = 1 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
+	elseif tileDef:hasProperty(TileConst.kKindMimosaRight) then self.ItemType = GameItemType.kKindMimosa self.mimosaDirection = 2 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
+	elseif tileDef:hasProperty(TileConst.kKindMimosaUp) then self.ItemType = GameItemType.kKindMimosa self.mimosaDirection = 3 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
+	elseif tileDef:hasProperty(TileConst.kKindMimosaDown) then self.ItemType = GameItemType.kKindMimosa self.mimosaDirection = 4 self.isBlock = true self.isEmpty = false self.mimosaLevel = 1
 	elseif tileDef:hasProperty(TileConst.kSnail) then  self.isBlock = true self.isEmpty = false self.isSnail = true
+	elseif tileDef:hasProperty(TileConst.kHedgehog) then self.isBlock = true self.isEmpty = false self.hedgehogLevel = 1 self.hedge_before = true
 	elseif tileDef:hasProperty(TileConst.kMayDayBlocker1) then self:initMaydayBoss(1)
 	elseif tileDef:hasProperty(TileConst.kMayDayBlocker2) then self:initMaydayBoss(2)
 	elseif tileDef:hasProperty(TileConst.kMayDayBlocker3) then self:initMaydayBoss(3)
@@ -413,15 +535,34 @@ function GameItemData:initByConfig( tileDef )
 	elseif tileDef:hasProperty(TileConst.kBlackCute) then self.ItemType = GameItemType.kBlackCuteBall self.isEmpty = false self.blackCuteStrength = 2
 	elseif tileDef:hasProperty(TileConst.kFudge) then self.ItemType = GameItemType.kIngredient self.isEmpty = false
 	elseif tileDef:hasProperty(TileConst.kBalloon) then self.ItemType = GameItemType.kBalloon self.isEmpty = false
-	elseif tileDef:hasProperty(TileConst.kSuperBlocker) then self.ItemType = GameItemType.kSuperBlocker self.isEmpty = false self.isBlock = true 
+	elseif tileDef:hasProperty(TileConst.kSuperBlocker) then self.ItemType = GameItemType.kSuperBlocker self.isEmpty = false self.isBlock = true
+	elseif tileDef:hasProperty(TileConst.kHedgehogBox) then self.ItemType = GameItemType.kHedgehogBox self.isEmpty = false self.isBlock = true
 	end
 
 	if tileDef:hasProperty(TileConst.kGreyCute) then self.furballLevel = 1 self.furballType = GameItemFurballType.kGrey self.isEmpty=false							--毛球类型
 	elseif tileDef:hasProperty(TileConst.kBrownCute) then self.furballLevel = 1 self.furballType = GameItemFurballType.kBrown self.isEmpty=false
+	elseif tileDef:hasProperty(TileConst.kSuperCute) then 
+		self.beEffectBySuperCute = true
+		self.isBlock = true 
 	end
 
 	if tileDef:hasProperty(TileConst.kLock) then self.cageLevel = 1 self.isBlock = true self.isEmpty=false		--牢笼类型
 	end
+
+	----[[
+	if tileDef:hasProperty(TileConst.kLotusLevel1) then
+		self.lotusLevel = 1 
+	end
+
+	if tileDef:hasProperty(TileConst.kLotusLevel2) then
+		self.lotusLevel = 2 
+		self.isBlock = true 
+	end
+	if tileDef:hasProperty(TileConst.kLotusLevel3) then
+		self.lotusLevel = 3 
+		self.isBlock = true 
+	end
+	--]]
 
 	if tileDef:hasProperty(TileConst.kHoney) then self.honeyLevel = 1 self.isBlock = true end
 
@@ -438,7 +579,7 @@ function GameItemData:initByConfig( tileDef )
 end
 
 function GameItemData:initByAnimalDef(animalDef)--animal的相关初始数据
-	if self:isColorful() then
+	if (self:isColorful() or self.ItemType == GameItemType.kCrystalStone) and self.ItemType ~= GameItemType.kDrip then
 		self.ItemColorType = AnimalTypeConfig.getType(animalDef)
 	end
 	if self.ItemType == GameItemType.kAnimal then
@@ -466,9 +607,18 @@ end
 
 function GameItemData:initSnailRoadType( gameboardData )
 	-- body
-	if self.isSnail then 
+	if self.isSnail or self:isHedgehog() then 
 		self.snailRoadType = gameboardData.snailRoadType
 	end
+
+	if self:isHedgehog() then
+		gameboardData:changeHedgehogRoadState(HedgeRoadState.kDestroy)
+	end
+end
+
+function GameItemData:isHedgehog( ... )
+	-- body
+	return self.hedgehogLevel > 0
 end
 
 function GameItemData:changeItemType(colortype, specialtype)
@@ -504,6 +654,17 @@ function GameItemData:changeToSnail( snailRoadType )
 	self.isEmpty = false
 	self.snailRoadType = snailRoadType
 	self.isSnail = true
+	self.isNeedUpdate = true
+end
+
+function GameItemData:changeToHedgehog( snailRoadType, hedgehogLevel )
+	-- body
+	self.ItemType = GameItemType.kNone
+	self.ItemColorType = 0
+	self.ItemSpecialType = 0
+	self.isEmpty = false
+	self.snailRoadType = snailRoadType
+	self.hedgehogLevel = hedgehogLevel or 1
 	self.isNeedUpdate = true
 end
 
@@ -556,11 +717,13 @@ end
 
 -- 是否可以参与三消匹配，但不一定被消除(比如神灯)
 function GameItemData:canBeCoverByMatch()
-	if not self:isColorful() then return false end
 	if not self.isUsed then return false end
-	if not self:isAvailable() then return false end
 	if self.isEmpty then return false end
+	if not self:isColorful() then return false end
+	if not self:isAvailable() then return false end
 	if self:hasFurball() then return false end
+	if self:isActiveTotems() then return false end
+	if self.lotusLevel == 3 then return false end
 
 	if self.ItemStatus == GameItemStatusType.kNone
 	or self.ItemStatus == GameItemStatusType.kItemHalfStable then
@@ -572,7 +735,7 @@ end
 
 -- 是否可以影响该物体下的冰块/流沙
 function GameItemData:canEffectLightUp()
-	if (not self.isBlock or self.ItemType == GameItemType.kMagicLamp)
+	if (not self.isBlock or self.ItemType == GameItemType.kMagicLamp or self.ItemType == GameItemType.kWukong or self.ItemType == GameItemType.kDrip)
 		and not self.isEmpty
 		and not self:hasFurball()
 		and not self:hasLock()
@@ -581,6 +744,7 @@ function GameItemData:canEffectLightUp()
 		and self.ItemType ~= GameItemType.kBlackCuteBall
 		and self.ItemType ~= GameItemType.kHoneyBottle
 		and self.ItemType ~= GameItemType.kBottleBlocker
+		and self.ItemType ~= GameItemType.kCrystalStone
 		then
 		return true
 	end
@@ -595,21 +759,39 @@ function GameItemData:canEffectChains()
 	return true
 end
 
+function GameItemData:canEffectAroundOnMatch()
+
+	if self.lotusLevel == 3 then
+		return true
+	end
+
+	if self.ItemType == GameItemType.kBottleBlocker or self:hasLock() then
+		return false
+	end
+	return true
+end
+
 -- 是否可以在三消匹配中被消除,前置判断是canBeCoverByMatch,此处不需重复过滤
 function GameItemData:canBeEliminateByMatch()
 	if self:hasLock() then return false end
 	if self.ItemType == GameItemType.kMagicLamp then return false end
+	if self.ItemType == GameItemType.kWukong then return false end
+	if self.ItemType == GameItemType.kDrip then return false end
 	if self.ItemType == GameItemType.kBottleBlocker then return false end
 	if self.ItemType == GameItemType.kQuestionMark then return false end
-
+	if self.ItemType == GameItemType.kTotems then return false end
+	if self.beEffectByMimosa == GameItemType.kKindMimosa then return false end
 	return true
 end
 
 -- 是否可以在三消匹配中参与特效合成,前置判断是canBeCoverByMatch,此处不需重复过滤
 function GameItemData:canBeMixToSpecialByMatch()
 	if self.ItemType == GameItemType.kMagicLamp then return false end
+	if self.ItemType == GameItemType.kWukong then return false end
 	if self.ItemType == GameItemType.kBottleBlocker then return false end
 	if self.ItemType == GameItemType.kQuestionMark then return false end
+	if self.ItemType == GameItemType.kTotems then return false end
+	
 	return true
 end
 
@@ -622,8 +804,10 @@ function GameItemData:canBeEliminateBySpecial()
 		or self.ItemType == GameItemType.kBalloon 
 		or self.ItemType == GameItemType.kAddMove
 		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRocket
 		or self.ItemType == GameItemType.kRabbit)
-		and not self.isEmpty and not self:hasFurball() and not self:hasLock() and self:isAvailable() 
+		and not self.isEmpty and not self:hasFurball() and not self:hasLock() 
+		and self:isAvailable() and self.digBlockCanbeDelete
 		then
 		return true
 	end
@@ -638,6 +822,7 @@ function GameItemData:canBeEliminateByBirdAnimal()
 		or self.ItemType == GameItemType.kBalloon
 		or self.ItemType == GameItemType.kAddMove
 		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRocket
 		or self.ItemType == GameItemType.kRabbit)
 		and not self:hasFurball() and not self:hasLock()
 		and self.isProduct == false 				------不是生产状态/通道通过状态
@@ -650,7 +835,7 @@ end
 
 -----可以被鸟和动物交换的特效影响，但不一定直接消除item，有可能影响了item上的牢笼、毛球等
 function GameItemData:canBeCoverByBirdAnimal()
-	if self.isEmpty == true or not self:isAvailable() then 
+	if self.isEmpty == true or not self:isAvailable() or self.beEffectByMimosa > 0 or self.lotusLevel == 3 then 
 		return false
 	end
 	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor)
@@ -661,8 +846,10 @@ function GameItemData:canBeCoverByBirdAnimal()
 		or self.ItemType == GameItemType.kAddTime
 		or self.ItemType == GameItemType.kRabbit
 		or self.ItemType == GameItemType.kMagicLamp
-		or self.ItemType == GameItemType.kBottleBlocker
+		or self.ItemType == GameItemType.kWukong
+		or (self.ItemType == GameItemType.kBottleBlocker and self.bottleActionRunningCount <= 0)
 		or self.ItemType == GameItemType.kQuestionMark
+		or self.ItemType == GameItemType.kRocket
 		then														
 		return true
 	end
@@ -671,6 +858,10 @@ end
 
 function GameItemData:canBecomeSpecialBySwapColorSpecial( )
 	-- body
+	if self.lotusLevel == 3 then
+		return false
+	end
+
 	if (self.ItemType == GameItemType.kAnimal
 		or self.ItemType == GameItemType.kGift
 		or self.ItemType == GameItemType.kCrystal
@@ -698,6 +889,8 @@ function GameItemData:isItemCanBeCoverByBirdBrid()
 		or self.ItemType == GameItemType.kBlackCuteBall
 		or self.ItemType == GameItemType.kRabbit
 		or self.ItemType == GameItemType.kQuestionMark
+		or self.ItemType == GameItemType.kRocket
+		or self.ItemType == GameItemType.kCrystalStone
 		then
 		return true
 	end
@@ -711,15 +904,19 @@ function GameItemData:isBlockerCanBeCoverByBirdBrid()
 		or self.ItemType == GameItemType.kDigGround
 		or self.ItemType == GameItemType.kDigJewel
 		or self.ItemType == GameItemType.kGoldZongZi
+		or self.ItemType == GameItemType.kWukong
 		or self.ItemType == GameItemType.kBottleBlocker
 		or self.ItemType == GameItemType.kRoost
 		or self.bigMonsterFrostingType > 0 
-		or self.ItemType == GameItemType.kMimosa 
-		or self.beEffectByMimosa
+		or self.ItemType == GameItemType.kMimosa
+		or self.ItemType == GameItemType.kKindMimosa
+		or self.beEffectByMimosa > 0
 		or self.bossLevel > 0
 		or self.ItemType == GameItemType.kMagicLamp
+		or self.ItemType == GameItemType.kWukong
 		or self.ItemType == GameItemType.kHoneyBottle
 		or self.ItemType == GameItemType.kMagicStone
+		or self.beEffectBySuperCute
 		then
 		return true
 	end
@@ -734,6 +931,7 @@ function GameItemData:isItemCanBeEliminateByBridBird()
 		or self.ItemType == GameItemType.kBalloon 
 		or self.ItemType == GameItemType.kAddMove
 		or self.ItemType == GameItemType.kAddTime
+		or self.ItemType == GameItemType.kRocket
 		or self.ItemType == GameItemType.kRabbit
 		)
 		and not self:hasLock() 
@@ -749,10 +947,17 @@ function GameItemData:canBeEffectByHammer()
 	if self.ItemType == GameItemType.kNone 
 		or self.ItemType == GameItemType.kIngredient
 		or self.ItemType == GameItemType.kPoisonBottle
+		or self.ItemType == GameItemType.kHedgehogBox
+		or ( self.ItemType == GameItemType.kDrip and self.mimosaLevel == 0 )
 		or (self.bigMonsterFrostingType > 0 and self.bigMonsterFrostingStrength <= 0)
 		or self.isReverseSide
 		or self.isSnail
-		or self.ItemType == GameItemType.kSuperBlocker then
+		or self:isHedgehog()
+		or self:isActiveTotems()
+		or self.ItemType == GameItemType.kSuperBlocker 
+		or (self.ItemType == GameItemType.kWukong 
+			and (self.wukongState == TileWukongState.kReadyToJump or self.wukongState == TileWukongState.kOnActive) )
+		then
 		return false
 	end
 	return true
@@ -760,6 +965,9 @@ end
 
 function GameItemData:isQuestionMarkcanBeDestroy()
 	-- body
+	if self.ItemType == GameItemType.kDrip then
+		return false
+	end
 	if self:hasFurball() or self:hasLock() or not self:isAvailable() then
 		return false
 	end
@@ -825,9 +1033,29 @@ function GameItemData:getAnimalLikeDataFrom(data)
 
 	self.bottleLevel = data.bottleLevel
 	self.bottleState = data.bottleState
+	self.bottleActionRunningCount = data.bottleActionRunningCount
+
+	self.crystalStoneEnergy = data.crystalStoneEnergy
+	self.crystalStoneActive = data.crystalStoneActive
+	self.crystalStoneBombType = data.crystalStoneBombType
+
+	self.totemsState = data.totemsState
+
+	self.wukongProgressCurr = data.wukongProgressCurr
+	self.wukongProgressTotal = data.wukongProgressTotal
+	self.wukongIsReadyToJump = data.wukongIsReadyToJump
+	self.wukongState = data.wukongState
+
+	self.wukongJumpPos = IntCoord:clone(data.wukongJumpPos)
+
+	self.lotusLevel = data.lotusLevel
+	self.beEffectBySuperCute = data.beEffectBySuperCute
+	self.dripState = data.dripState
+	self.dripLeaderPos = IntCoord:clone(data.dripLeaderPos)
 end
 
 function GameItemData:cleanAnimalLikeData()
+	self.isNeedUpdate = true
 	self.isEmpty = true
 	self.ItemType = GameItemType.kNone
 	self.ItemStatus = GameItemStatusType.kNone
@@ -840,7 +1068,6 @@ function GameItemData:cleanAnimalLikeData()
 	self.itemPosAdd = IntCoord:create(0,0)
 	self.bombRes = nil
 	self.isItemLock = false
-	self.isNeedUpdate = true
 	self.lightUpBombMatchPosList = nil
 	self.hasGivenScore = false
 	self.balloonFrom = 0
@@ -883,12 +1110,33 @@ function GameItemData:cleanAnimalLikeData()
 	self.showType = 0
 	self.bottleLevel = 0
 	self.bottleState = BottleBlockerState.Waiting
+	self.bottleActionRunningCount = 0
+	self.crystalStoneEnergy = 0
+	self.crystalStoneActive = false
+	self.crystalStoneBombType = GameItemCrystalStoneBombType.kNone
+
+	self.totemsState = GameItemTotemsState.kNone
+
+	-- --刺猬
+	-- self.hedgehogLevel = 0
+
+	self.wukongProgressCurr = 0
+	self.wukongProgressTotal = getBaseWukongChargingTotalValue()
+	--self.wukongState = TileWukongState.kNormal
+	self.wukongIsReadyToJump = false
+	self.wukongJumpPos = IntCoord:create(0,0)
+
+	self.lotusLevel = 0
+	self.dripState = 0
+	self.dripLeaderPos = IntCoord:create(0, 0)
+	self.beEffectBySuperCute = false
 end
 
 function GameItemData:isPermanentBlocker()
 	local ret = false
 	if self.ItemType == GameItemType.kRoost -- 鸡窝
 		or self.ItemType == GameItemType.kMimosa -- 含羞草
+		or self.ItemType == GameItemType.kKindMimosa  -- 新含羞草
 		or self.ItemType == GameItemType.kSuperBlocker -- 无敌障碍
 		or self.ItemType == GameItemType.kPoisonBottle -- 章鱼
 		then 
@@ -903,6 +1151,7 @@ function GameItemData:checkBlock()
 
 	if self.snowLevel > 0 
 		or self.cageLevel > 0
+		or self.lotusLevel > 1
 		or self.venomLevel > 0
 		or self.ItemType == GameItemType.kRoost
 		or self.digJewelLevel > 0 
@@ -914,13 +1163,22 @@ function GameItemData:checkBlock()
 		or self.ItemType == GameItemType.kBigMonsterFrosting
 		or self.ItemType == GameItemType.kBigMonster
 		or self.ItemType == GameItemType.kMimosa
+		or self.ItemType == GameItemType.kKindMimosa
 		or self.snailTarget 
+		or self.wukongState == TileWukongState.kJumping
 		or self.isSnail
+		or self:isHedgehog()
 		or self.ItemType == GameItemType.kBoss
 		or self.ItemType == GameItemType.kMagicLamp 
+		or self.ItemType == GameItemType.kWukong 
 		or self.ItemType == GameItemType.kSuperBlocker
 		or self.honeyLevel > 0
 		or self.ItemType == GameItemType.kMagicStone
+		or self.ItemType == GameItemType.kHedgehogBox
+		or self.beEffectByMimosa == GameItemType.kKindMimosa
+		or self:isActiveTotems()
+		or (self.dripState ~= 0 and self.dripState ~= DripState.kNormal)
+		or self:hasActiveSuperCuteBall()
 		then 
 		self.isBlock = true 
 		self.isUsed = true 
@@ -929,8 +1187,6 @@ function GameItemData:checkBlock()
 	if self.isBlock == false then  ----雪块 毒液 挖地地块 挖地宝石块 不再是block
 		if self.ItemType == GameItemType.kSnow
 			or self.ItemType == GameItemType.kVenom
-			or self.ItemType == GameItemType.kDigGround
-			or self.ItemType == GameItemType.kDigJewel
 			or self.ItemType == GameItemType.kGoldZongZi
 			or self.ItemType == GameItemType.kBottleBlocker
 		then
@@ -982,6 +1238,20 @@ function GameItemData:canBeComboNumRabbit()
 	return false
 end
 
+function GameItemData:canBeComboNumRocket()
+	if self.ItemType == GameItemType.kRocket then
+		return true
+	end
+	return false
+end
+
+function GameItemData:canBeComboTotems()
+	if self.ItemType == GameItemType.kTotems then
+		return true
+	end
+	return false
+end
+
 ------初始化的时候变成豆荚
 function GameItemData:canBeChangeToIngredient()
 	if self.ItemType == GameItemType.kAnimal then
@@ -1009,6 +1279,10 @@ function GameItemData:hasFurball()
 	return self.furballLevel > 0
 end
 
+function GameItemData:hasActiveSuperCuteBall()
+	return self.beEffectBySuperCute
+end
+
 function GameItemData:addFurball(furballType)
 	self.furballLevel = 1
 	self.furballType = furballType
@@ -1021,7 +1295,14 @@ function GameItemData:removeFurball()
 end
 
 function GameItemData:hasLock()
-	return self.cageLevel ~= 0 or self.honeyLevel ~= 0
+	local result = false
+	if self.cageLevel ~= 0 
+		or self.lotusLevel > 1
+		or self.honeyLevel ~= 0 
+		or self.beEffectByMimosa == GameItemType.kKindMimosa then
+		result = true
+	end
+	return result
 end
 
 --是否参与mathch， falling
@@ -1029,8 +1310,8 @@ end
 function GameItemData:isAvailable()
 	-- body
 	if self.isReverseSide 
-		or self.beEffectByMimosa then
-		
+		or self:hasActiveSuperCuteBall()
+		or self.beEffectByMimosa == GameItemType.kMimosa  then
 		return false
 	end
 	return true
@@ -1046,8 +1327,12 @@ function GameItemData:isColorful()
 		or self.ItemType == GameItemType.kAddTime
 		or self.ItemType == GameItemType.kRabbit
 		or self.ItemType == GameItemType.kMagicLamp
+		or self.ItemType == GameItemType.kWukong
+		or (self.ItemType == GameItemType.kDrip and self.dripState == DripState.kNormal)
 		or self.ItemType == GameItemType.kQuestionMark
-		or self.ItemType == GameItemType.kBottleBlocker
+		or (self.ItemType == GameItemType.kBottleBlocker and self.bottleActionRunningCount <= 0) 
+		or self.ItemType == GameItemType.kRocket
+		or (self.ItemType == GameItemType.kTotems and self.totemsState == GameItemTotemsState.kNone)
 		then
 		return true
 	end
@@ -1057,13 +1342,14 @@ end
 -- 是否可以交换移动
 function GameItemData:canBeSwap()
 	if self.isUsed
-		and (not self.isBlock or self.ItemType == GameItemType.kMagicLamp)
+		and (not self.isBlock or self.ItemType == GameItemType.kMagicLamp or (self.ItemType == GameItemType.kWukong and self.wukongState ~= TileWukongState.kReadyToJump) )
 		and not self.isEmpty
 		and not self:hasFurball()
 		and not self:hasLock()
 		and self:isAvailable()
 		and self.ItemType ~= GameItemType.kBlackCuteBall
 		and self.ItemStatus == GameItemStatusType.kNone --稳定状态的东西，才能移动
+		and self.totemsState == GameItemTotemsState.kNone -- 不是激活的小金刚
 		then
 		return true
 	end
@@ -1110,8 +1396,11 @@ function GameItemData:canInfectByHoneyBottle( ... )
 	if self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor 
 		or self.ItemType == GameItemType.kCrystal
 		or self.ItemType == GameItemType.kMagicLamp
-		--or self.ItemType == GameItemType.kBottleBlocker
-		or self.ItemType == GameItemType.kQuestionMark then
+		or self.ItemType == GameItemType.kWukong
+		or self.ItemType == GameItemType.kRocket
+		or self.ItemType == GameItemType.kCrystalStone
+		or self.ItemType == GameItemType.kQuestionMark 
+		or (self.ItemType == GameItemType.kTotems and self.totemsState == GameItemTotemsState.kNone) then
 		return true
 	end
 	return false
@@ -1122,6 +1411,14 @@ function GameItemData:changToSpecial( changeItem, changeColor )
 	self.ItemType = GameItemType.kAnimal
 	self.ItemSpecialType = AnimalTypeConfig.getSpecial(changeItem)
 	self.ItemColorType = changeColor
+end
+
+function GameItemData:changeToHedgehogBox( )
+	-- body
+	self:cleanAnimalLikeData()
+	self.isEmpty = false
+	self.ItemType = GameItemType.kHedgehogBox
+	self.isBlock = true
 end
 
 function GameItemData:changToFallingItems( changeItem,changeColor, addMoveBase )
@@ -1178,7 +1475,8 @@ function GameItemData:isBigMonsterEffectPrior1( ... )
 	if not self:isAvailable() then return false end
 
 	if 	self.honeyLevel > 0 
-		or self.snowLevel > 0 then 
+		or self.snowLevel > 0
+		or self.ItemType == GameItemType.kBottleBlocker then
 		return true
 	else
 		return false
@@ -1194,12 +1492,14 @@ function GameItemData:isBigMonsterEffectPrior2( ... )
 		or self:hasFurball()
 		or self.ItemType == GameItemType.kBlackCuteBall
 		or self.cageLevel > 0 
+		or self.lotusLevel > 1
 		or self.ItemType == GameItemType.kDigGround
 		or self.mimosaLevel > 0 
 		or self.ItemType == GameItemType.kMimosa
+		or self.ItemType == GameItemType.kKindMimosa
 		or self.ItemType == GameItemType.kHoneyBottle
 		or self.ItemType == GameItemType.kMagicLamp
-		or self.ItemType == GameItemType.kBottleBlocker
+		or self.ItemType == GameItemType.kWukong
 		or self.ItemType == GameItemType.kRoost
 		or self.ItemType == GameItemType.kMagicStone
 		then
@@ -1216,10 +1516,112 @@ function GameItemData:isBigMonsterEffectPrior3( ... )
 	end
 
 	if self.ItemType == GameItemType.kAnimal 
+		or self.ItemType == GameItemType.kRocket -- ?
+		or self.ItemType == GameItemType.kCrystalStone -- ?
+		or self.ItemType == GameItemType.kTotems -- ?
 		or (self.bigMonsterFrostingStrength and self.bigMonsterFrostingStrength > 0)
 		then
 		return true
 	end
 
 	return false
+end
+
+---------------------------------------------------
+function GameItemData:canCrystalStoneBeCharged()
+	if self.ItemType == GameItemType.kCrystalStone
+		and not self.crystalStoneActive
+		and self:isAvailable()
+		and self.honeyLevel <= 0
+		and not self:hasLock() then
+		return true
+	end
+	return false
+end
+
+function GameItemData:isActiveCrystalStoneAvailble()
+	if self:isCrystalStoneActive() then
+		if self.isEmpty == true or not self:isAvailable() 
+				or self:hasLock() or self.honeyLevel > 0 then
+			return false
+		else
+			return true
+		end
+	end
+	return false
+end
+
+function GameItemData:isCrystalStoneActive()
+	return self.crystalStoneActive
+end
+
+function GameItemData:setCrystalStoneActive(active)
+	self.crystalStoneActive = active
+end
+
+function GameItemData:chargeCrystalStoneEnergy(addEnergy)
+	if addEnergy and addEnergy ~= 0 then
+		local oldEnergy = self:getCrystalStoneEnergy()
+		self:setCrystalStoneEnergy(oldEnergy + addEnergy)
+	end
+end
+
+function GameItemData:getCrystalStoneEnergy()
+	return self.crystalStoneEnergy or 0
+	-- return decryptionFunc(self, "crystalStoneEnergy")
+end
+
+function GameItemData:setCrystalStoneEnergy(energy)
+	self.crystalStoneEnergy = energy
+	-- encryptionFunc(self, "crystalStoneEnergy", energy)
+end
+
+function GameItemData:canChargeCrystalStone()
+	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor)
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		then
+		return true
+	end
+	return false
+end
+
+function GameItemData:canBeCoverByCrystalStone()
+	if self.isEmpty == true or not self:isAvailable() 
+		or self:hasLock() or self:hasFurball() then
+		return false
+	end
+
+	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor)
+		or self.ItemType == GameItemType.kCrystal
+		or self.ItemType == GameItemType.kAddMove
+		or self.ItemType == GameItemType.kAddTime
+		then
+		return true
+	end
+	return false
+end
+
+-- 能被特效覆盖
+function GameItemData:canBeSpecialCoverByCrystalStone()
+	if self.isEmpty == true or not self:isAvailable() 
+		or self:hasLock() or self:hasFurball() then
+		return false
+	end
+
+	if (self.ItemType == GameItemType.kAnimal and self.ItemSpecialType ~= AnimalTypeConfig.kColor)
+		or self.ItemType == GameItemType.kCrystal
+		then
+		return true
+	end
+	return false
+end
+
+function GameItemData:isActiveTotems()
+	return self.totemsState == GameItemTotemsState.kActive
+end
+
+function GameItemData:getColorIndex()
+	return AnimalTypeConfig.convertColorTypeToIndex(self.ItemColorType)
 end

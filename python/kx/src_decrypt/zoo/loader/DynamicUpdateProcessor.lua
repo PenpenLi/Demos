@@ -46,12 +46,13 @@ function Processor:checkDynamicLoadRes()
     elseif __ANDROID then 
         haveNetwork = true 
     elseif __WP8 then 
-        haveNetwork = true 
+        haveNetwork = true   
     end
 
     local kMaxDynamicResource = 1024 * 300
     local kSkipDynamicResource = 1024 * 500
-    if haveNetwork and enableSilentDynamicUpdate and not PrepackageUtil:isPreNoNetWork() then
+    if (haveNetwork and enableSilentDynamicUpdate and not PrepackageUtil:isPreNoNetWork())
+     or _G.isCheckPlayModeActive then
         local function onResourceLoaderCallback( event, data )
             print("onResourceLoaderCallback")
             if event == ResCallbackEvent.onPrompt then 
@@ -69,11 +70,12 @@ function Processor:checkDynamicLoadRes()
                     force = config["force"] == "1"
                     review = config["review"] == "1"
                 end
+                print("config force ==="..config["force"])
                 print("require silent dynamic loading"..table.tostring(config))
                 print("needsize of dynamic update" .. tostring(needsize))
                 local canUpdate = false
                 if needsize > 0 then
-                    if review then
+                    if review or _G.isCheckPlayModeActive then
                         canUpdate = true
                     elseif needsize < kMaxDynamicResource then
                         canUpdate = true
@@ -153,7 +155,7 @@ function Processor:buildStartupUI()
     local winSize = CCDirector:sharedDirector():getVisibleSize()
     local origin = CCDirector:sharedDirector():getVisibleOrigin()
     local logoPng = addSpriteFramesWithFile( "materials/logo.plist", "materials/logo.png" )
-    local logoTexture = CCTextureCache:sharedTextureCache():textureForKey("materials/logo.png")
+    local logoTexture = CCTextureCache:sharedTextureCache():textureForKey(logoPng)
     if not logoTexture then
         he_log_error(getSysMemInfo() .. " cache logo not found...")
     end

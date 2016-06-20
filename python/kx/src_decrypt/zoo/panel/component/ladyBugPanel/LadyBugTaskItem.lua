@@ -8,7 +8,6 @@ require "zoo.panel.component.ladyBugPanel.LadyBugRewardItem"
 require "hecore.utils"
 require "zoo.panelBusLogic.GetLadyBugRewardsLogic"
 require "zoo.panelBusLogic.buyGoodsLogic.BuyReopenLadybugTaskGoods"
-
 ---------------------------------------------------
 -------------- LadyBugTaskItem
 ---------------------------------------------------
@@ -267,24 +266,27 @@ function LadyBugTaskItem:onReOpenBtnTapped(...)
 					panel:popout()
 				else enableTouch() end
 			end
-			-- local text = {
-			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			-- }
-			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, enableTouch)
-			GoldlNotEnoughPanel:create(createGoldPanel, enableTouch, nil):popout()
+			GoldlNotEnoughPanel:create(createGoldPanel, enableTouch):popout()
 		else
 
 			local function onSuccess()
 				-- print("LadyBugTaskItem:onReOpenBtnTapped onSuccess !")
+				local bounds = self.reOpenBtnRes:getGroupBounds()
+				self.reOpenBtn:playFloatAnimation(
+					'-'..tostring(goodsCash),
+					function()
+						if self and self.isDisposed==false then
+							self.reOpenBtn:setVisible(false)
+						end
+					end
+				)
 				HomeScene:sharedInstance().goldButton:updateView()
-				self.reOpenBtn:setVisible(false)
+				-- self.reOpenBtn:setVisible(false)
 			end
 
-			local function onFailed(event)
+			local function onFailed(errorCode)
 				-- print("LadyBugTaskItem:onReOpenBtnTapped onFailed !!")
-				CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+				CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 				enableTouch()
 			end
 
@@ -297,70 +299,12 @@ function LadyBugTaskItem:onReOpenBtnTapped(...)
 end
 
 function LadyBugTaskItem:playFlyingRewardAnim(...)
-	assert(#{...} == 0)
-
-	local rewardIds		= {}
-	local rewardAmounts = {}
-
-	for k,v in pairs(self.taskMeta.missionReward) do
-		table.insert(rewardIds, v.itemId)
-		table.insert(rewardAmounts, v.num)
-	end
-
-	local rewardAnims	= HomeScene:sharedInstance():createFlyingRewardAnim(rewardIds, rewardAmounts)
-
-	for index,v in ipairs(rewardAnims) do
-
-		-- Get Reward Pos
-		local item 		= self.rewardItems[index].item
-		local itemPosInWorld	= item:getPositionInWorldSpace()
-		local itemSize		= CCSizeMake(self.rewardItems[index].itemWidth, self.rewardItems[index].itemHeight)
-
-		v:setPosition(ccp(itemPosInWorld.x - itemSize.width,
-				itemPosInWorld.y + itemSize.height/2))
-
-		--------------------------------------------------------
-		-- number-decreasing animation
-		--------------------------------------------------------
-		local function decreaseToZero(label, total, duration)
-			local interval = 1/60
-			local times = duration / interval
-			local diff = total / times
-			local last = total 
-			local schedId = nil
-			local function __perFrame()
-				local new = last - diff
-				if new > 0 then 
-					local ceilNew = math.ceil(new)
-					if ceilNew ~= math.ceil(last) then
-						if not label.isDisposed then
-							label:setString('x'..ceilNew)
-						end
-					end
-					last = new
-				else 
-					if not label.isDisposed then
-						label:setString('x0')
-					end
-					if not schedId then
-						CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(schedId)
-					end
-				end
-			end
-			schedId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(__perFrame,interval,false)
-		end
-
-
-		local label1 = self.reward1.numberLabel
-		local label2 = self.reward2.numberLabel
-		local num1 = self.reward1.itemNumber
-		local num2 = self.reward2.itemNumber
-		local interval = 0.2
-		decreaseToZero(label1, num1, num1*interval)
-		decreaseToZero(label2, num2, num2*interval)
-
-
-		v:playFlyToAnim()
+	
+	for index,v in ipairs(self.taskMeta.missionReward) do
+		local anim = FlyItemsAnimation:create({v})
+		local bounds = self.rewardItems[index].item:getGroupBounds()
+		anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+		anim:play()
 	end
 end
 

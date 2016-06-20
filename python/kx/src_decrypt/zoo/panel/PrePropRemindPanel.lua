@@ -135,7 +135,7 @@ end
 
 PrePropRemindPanelLogic = class()
 function PrePropRemindPanelLogic:buyPreProp(goodsId, successCallback, failCallback)
-	local function onSuccess()
+	local function onSuccess(data)
 		-- reduce item and then callback
 		local meta = MetaManager:getInstance():getGoodMeta(goodsId)
 		if meta then
@@ -143,8 +143,8 @@ function PrePropRemindPanelLogic:buyPreProp(goodsId, successCallback, failCallba
 		end
 		if successCallback then successCallback(meta.items) end
 	end
-	local function onFail(evt)
-		if failCallback then failCallback(evt.data) end
+	local function onFail(errorCode)
+		if failCallback then failCallback(errorCode) end
 	end
 	local logic = BuyLogic:create(goodsId, 1)
 	logic:getPrice()

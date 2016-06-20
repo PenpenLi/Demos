@@ -4,7 +4,7 @@ require "zoo.model.LuaXml"
 require "zoo.data.DataRef"
 
 local debugDataRef = false
-
+--[[
 local allGameMode = 
 {
 	"Classic moves", 
@@ -24,10 +24,12 @@ local allGameMode =
     "halloween",
     "Mobile Drop down",
     "Summer_Weekly",
+    "HedgehogDigEndless",  --蜗牛无尽挖地
 }
+]]
 
-local kGameModeType = {}
-for i,v in ipairs(allGameMode) do kGameModeType[v] = i end
+--local kGameModeType = {}
+--for i,v in ipairs(allGameMode) do kGameModeType[v] = i end
 	
 --
 -- LevelMapManager ---------------------------------------------------------
@@ -39,7 +41,9 @@ LevelMapManager = {
 }
 -- private
 local levelMap = nil
+local originLevelMap = nil
 local kStorageFileName = "levelUpdate.inf"
+local kLevelUpdateVersionFileName = "levelUpdateVersion"
 
 function LevelMapManager.getInstance()
 	if not instance then instance = LevelMapManager end
@@ -54,10 +58,17 @@ function LevelMapManager:initialize()
 	assert(gameConfigData)
 
 	levelMap = {}
+	if _G.isCheckPlayModeActive then originLevelMap = {} end
 	for i,v in ipairs(gameConfigData) do
 		local data = LevelMapMeta.new()
 		data:fromLua(v)
 		levelMap[data.id] = data
+
+		if _G.isCheckPlayModeActive then 
+			local data2 = LevelMapMeta.new()
+			data2:fromLua(v)
+			originLevelMap[data2.id] = data2
+		end
 	end
 
 	------------------------
@@ -73,6 +84,16 @@ function LevelMapManager:isNormalNode(nodeId, ...)
 
 	return tonumber(nodeId) < self.hiddenNodeRange
 end
+
+-- 到toLevel的全部主线关最高星级，包含toLevel
+function LevelMapManager:getTotalStar(toLevel)
+	local ret = 0
+	for i=1,toLevel do
+		ret = ret + levelMap[i]:getTotalStarNumber()
+	end
+	return ret
+end
+
 
 function LevelMapManager:getLevelDisplayName(levelId)
 	if self:isNormalNode(levelId) then
@@ -96,29 +117,68 @@ local function getStorageLevelUpdateConfig()
     return nil
 end
 
+local function getStorageLevelUpdateConfigVersion()
+	local filePath = HeResPathUtils:getUserDataPath() .. "/" .. kLevelUpdateVersionFileName
+	local file = io.open(filePath, "rb")
+	if file then
+		local version = file:read("*a")
+		file:close()
+		return version
+	end
+	return nil
+end
+
 -- 获取原始关卡信息 类型为LevelMapMeta{id, gameData, score1, score2, score3, score4}
 function LevelMapManager:getMeta( levelId )
-	if not self.hasLoadLevelUpdate then
-		self.hasLoadLevelUpdate = true
 
-		local storageConfig = getStorageLevelUpdateConfig()
-		if storageConfig then
-			local path = HeResPathUtils:getUserDataPath() .. "/" .. kStorageFileName
-			local decodeContent = HeFileUtils:decodeFile(path)
-			if decodeContent and decodeContent ~= "" then
-				local jsonContent = table.deserialize(decodeContent)
-				if jsonContent and type(jsonContent) == "table" then
-					for i, v in ipairs(jsonContent) do
-						local data = LevelMapMeta.new()
-						data:fromLua(v)
-						levelMap[data.id] = data
+	if _G.isCheckPlayModeActive then 
+
+		local diffTable = CheckPlay:getCheckPlayDiffTable()
+		if diffTable and type(diffTable) == "table" then
+			levelMap = {}
+
+			for i, v in pairs(originLevelMap) do
+				levelMap[v.id] = v
+			end
+
+			for i, v in ipairs(diffTable) do
+
+				local data = LevelMapMeta.new()
+				data:fromLua(v)
+				levelMap[data.id] = data
+			end
+
+			self.levelUpdateVersion = "12345"
+		end
+	else
+		if not self.hasLoadLevelUpdate then
+			self.hasLoadLevelUpdate = true
+			local storageConfig = getStorageLevelUpdateConfig()
+			if storageConfig then
+				local path = HeResPathUtils:getUserDataPath() .. "/" .. kStorageFileName
+				local decodeContent = HeFileUtils:decodeFile(path)
+				if decodeContent and decodeContent ~= "" then
+					local jsonContent = table.deserialize(decodeContent)
+					if jsonContent and type(jsonContent) == "table" then
+						for i, v in ipairs(jsonContent) do
+							local data = LevelMapMeta.new()
+							data:fromLua(v)
+							levelMap[data.id] = data
+						end
 					end
 				end
+				self.levelUpdateVersion = getStorageLevelUpdateConfigVersion()
 			end
 		end
 	end
 
+	
+
 	return levelMap[levelId]
+end
+
+function LevelMapManager:getLevelUpdateVersion()
+	return self.levelUpdateVersion
 end
 
 function LevelMapManager:getMaxLevelId( ... )
@@ -148,7 +208,7 @@ function LevelMapManager:getLevelGameMode( levelId )
 		local gameData = levelMeta.gameData
 		if gameData then
 			if LevelType:isSummerMatchLevel( levelId ) then
-				return self:getLevelGameModeByName("Summer_Weekly")
+				return self:getLevelGameModeByName(  GameModeType.SUMMER_WEEKLY )
 			else
 				return self:getLevelGameModeByName(gameData.gameModeName)
 			end
@@ -158,7 +218,7 @@ function LevelMapManager:getLevelGameMode( levelId )
 end
 
 function LevelMapManager:getLevelGameModeByName( gameModeName )
-	local result = kGameModeType[gameModeName]
+	local result = getGameModeTypeIdFromModeType(gameModeName)
 	if result == nil then
 		print("getLevelGameMode", gameModeName, result)
 	end

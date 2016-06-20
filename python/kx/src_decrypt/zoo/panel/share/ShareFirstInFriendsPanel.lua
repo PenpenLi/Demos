@@ -8,8 +8,7 @@ end
 
 function ShareFirstInFriendsPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self)
 
 	self:runNpcAction()
 	self:runCrownAction()
@@ -18,6 +17,12 @@ function ShareFirstInFriendsPanel:init()
 	self:runStarGroup3Action()
 	self:runPaperGroupAction(self.ui:getChildByName("paperGroup1"))
 	self:runPaperGroupAction(self.ui:getChildByName("paperGroup2"))
+end
+
+function ShareFirstInFriendsPanel:getShareTitleName()
+	local level = self.achiManager:getData(self.achiManager.LEVEL)
+	local levelText = tostring(LevelMapManager.getInstance():getLevelDisplayName(level))
+	return Localization:getInstance():getText(self.shareTitleKey,{num = levelText})
 end
 
 function ShareFirstInFriendsPanel:runNpcAction()
@@ -222,14 +227,11 @@ function ShareFirstInFriendsPanel:runStarParticle()
 	end
 end
 
-function ShareFirstInFriendsPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
+function ShareFirstInFriendsPanel:create(shareId)
 	local panel = ShareFirstInFriendsPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareFirstInFriendsPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

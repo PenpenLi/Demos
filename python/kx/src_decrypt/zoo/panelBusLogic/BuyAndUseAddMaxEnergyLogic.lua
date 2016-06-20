@@ -192,12 +192,9 @@ function BuyAndUseAddMaxEnergyLogic:start(onSuccessCallback, onFailedCallback, o
 			--onUseSuccess()
 		end
 
-		local function onBuyFailed(event)
-
-			--print("BuyAndUseAddMaxEnergyLogic:start onBuyFailed Called !")
-			--debug.debug()
+		local function onBuyFailed(errCode, errMsg)
 			if onFailedCallback then
-				onFailedCallback(event)
+				onFailedCallback(errCode, errMsg)
 			end
 		end
 

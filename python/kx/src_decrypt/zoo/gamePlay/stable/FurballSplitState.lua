@@ -105,7 +105,7 @@ function FurballSplitStateInSwapFirst:getClassName()
 end
 
 function FurballSplitStateInSwapFirst:getNextState()
-	return self.context.productRabbitState
+	return self.context.superCuteBallState
 end
 
 FurballSplitStateInLoop = class(FurballSplitState)

@@ -45,7 +45,7 @@ function DevTestGamePlayScene:usePropCallback(propId, usePropType, isRequireConf
 	end
 end
 
-function DevTestGamePlayScene:confirmPropUsed(pos, ...)
+function DevTestGamePlayScene:confirmPropUsed(pos, successCallback)
 
 	-- Previous Must Recorded The Used Prop
 	assert(self.needConfirmPropId)
@@ -54,8 +54,10 @@ function DevTestGamePlayScene:confirmPropUsed(pos, ...)
 	local function onUsePropSuccess()
 		self.propList:confirm(self.needConfirmPropId, pos)
 		self.needConfirmPropId 			= false
-		-- self.needConfirmPropIsTempProperty 	= false
 		self.useItem = true
+		if successCallback and type(successCallback) == 'function' then
+			successCallback()
+		end
 	end
 	onUsePropSuccess()
 end
@@ -110,7 +112,7 @@ function DevTestGamePlayScene:passLevel(levelId, score, star, stageTime, coin, t
 			rewardItems = tmp
 		elseif levelType == GameLevelType.kMayDay then
 			local tmp = {}
-			table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
+			-- table.insert(tmp, {itemId = ItemType.XMAS_BOSS, num = bossCount})
 			table.insert(tmp, {itemId = ItemType.XMAS_BELL, num = targetCount})
 			table.insert(tmp, rewardItems[1])
 			rewardItems = tmp
@@ -192,7 +194,7 @@ function DevTestGamePlayScene:failLevel(levelId, score, star, stageTime, coin, t
 	if not self.levelFinished then
 		self.levelFinished = true
 	end
-	local levelFailPanel = LevelFailPanel:create(levelId, levelType, score, star, isTargetReached, failReason)
+	local levelFailPanel = LevelFailPanel:create(levelId, levelType, score, star, isTargetReached, failReason, 0)
 	levelFailPanel:popout(false)
 end
 
@@ -203,10 +205,7 @@ function DevTestGamePlayScene:onPauseBtnTapped(...)
 	
 	self:pause()
 	local function onQuitCallback()
-		if __use_low_effect then 
-			FrameLoader:unloadImageWithPlists(self.fileList, true)
-		end
-		Director:sharedDirector():popScene()
+		self:onQuitLevel()
 	end
 
 	local function onClosePanelBtnTappedCallback()
@@ -240,11 +239,18 @@ function DevTestGamePlayScene:onPauseBtnTapped(...)
 			self:passLevel(self.levelId, levelConfig.scoreTargets[starLevel] + 10, starLevel, 100, 0, targetCount, nil, 5)
 		end)
 		quitPanel:setAddScoreTappedCallback(function()
-			self.scoreProgressBar:addScore(50000, ccp(0, 0))
+			self:addScore(50000, ccp(0, 0))
 		end)
 	end
 	
 	PopoutManager:sharedInstance():add(quitPanel, false, false)
+end
+
+function DevTestGamePlayScene:onQuitLevel()
+	if __use_low_effect then 
+		FrameLoader:unloadImageWithPlists(self.fileList, true)
+	end
+	Director:sharedDirector():popScene()
 end
 
 -- This Function Is Called By Game Board Locig

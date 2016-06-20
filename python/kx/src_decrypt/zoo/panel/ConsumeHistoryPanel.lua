@@ -53,6 +53,7 @@ function ConsumeHistoryPanel:init( ... )
 	local title = self.ui:getChildByName("title")
 	-- local desc = self.ui:getChildByName("desc")
 	local desc2 = self.ui:getChildByName("desc2")
+	local desc3 = self.ui:getChildByName("desc3")
 	local tableViewTitleBg = self.ui:getChildByName("tableViewTitleBg")
 
 	-- "我的消费记录"
@@ -64,19 +65,40 @@ function ConsumeHistoryPanel:init( ... )
 	title:setPositionX((size.width - titleSize.width) / 2)
 
 	self.clearBtn = self:createTouchButton("btnClearLogs", function(...) self:clearLogs() end)
+	self.helpBtn = self:createTouchButton("helpBtn", function(...) self:onHelpBtnTap() end)
 	--self.clearBtn:setPositionY(-visibleSize.height + 75)
 	self:setClearState(false)
 	-- "仅显示最近两个月消费记录"
 	-- desc:setString(Localization:getInstance():getText("consume.history.panel.desc"))	
 	
+	local desc2InUse = false
+	local desc3InUse = false
 	if self.isShowCustomerPhone() then 
 		desc2:setString(Localization:getInstance():getText("consume.history.panel.desc1",{n="\n"}))	
+		desc2InUse = true
+	end	
+
+	if  __IOS or __WIN32 then 
+		if desc2InUse then 
+			desc3:setString(Localization:getInstance():getText('buy.gold.panel.tip'))
+			desc3InUse  = true
+		else
+			desc2:setString(Localization:getInstance():getText('buy.gold.panel.tip'))
+			desc2InUse = true
+		end
+	end
+
+	if desc3InUse then 
+		local height = desc3:getDimensions().height
+		desc3:setDimensions(CCSizeMake(desc3:getDimensions().width,0))
+		tableViewTitleBg:setPositionY(tableViewTitleBg:getPositionY() - desc3:getContentSize().height + height)
+	elseif desc2InUse then 
 		local height = desc2:getDimensions().height
 		desc2:setDimensions(CCSizeMake(desc2:getDimensions().width,0))
-		tableViewTitleBg:setPositionY(tableViewTitleBg:getPositionY() - desc2:getContentSize().height + height)
+		tableViewTitleBg:setPositionY(tableViewTitleBg:getPositionY() + height)
 	else
 		tableViewTitleBg:setPositionY(tableViewTitleBg:getPositionY() + desc2:getDimensions().height)
-	end	
+	end
 
 	local tableViewTitleBgBounds = tableViewTitleBg:boundingBox()
 
@@ -96,7 +118,7 @@ function ConsumeHistoryPanel:init( ... )
 
 	self.tableView = self:buildTableView(
 		visibleSize.width,
-		visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY() - 150)
+		visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY() - 80)
 	)
 	self.tableView:ignoreAnchorPointForPosition(false)
 	self.tableView:setAnchorPoint(ccp(0,1))
@@ -109,7 +131,25 @@ function ConsumeHistoryPanel:init( ... )
 
 	local bottomHeight = visibleSize.height - math.abs(tableViewTitleBgBounds:getMinY() - self.tableView:getViewSize().height)
 	print("bottom height: ", bottomHeight)
-	self.clearBtn:setPositionY(bottomHeight/2 - visibleSize.height)
+	self.clearBtn:setPositionY(-visibleSize.height + 40)
+	self.helpBtn:setPositionY(-visibleSize.height + 40)
+
+	if __IOS or __WIN32 or self:checkAndroidNeedHelpBtn() then
+		self.helpBtn:setVisible(true)
+	else
+		self.helpBtn:setVisible(false)
+	end
+end
+
+function ConsumeHistoryPanel:checkAndroidNeedHelpBtn()
+	if not __ANDROID then return false end
+	local thirdPaymentConfig = AndroidPayment.getInstance().thirdPartyPayment
+	for i,v in ipairs(thirdPaymentConfig) do
+		if v == Payments.ALIPAY or v == Payments.WECHAT then 
+			return true
+		end
+	end	
+	return false
 end
 
 function ConsumeHistoryPanel:setClearState(isEnabled)
@@ -123,7 +163,7 @@ function ConsumeHistoryPanel:clearLogs()
 		if self.isDisposed then
 			return
 		end
-
+		CommonTip:showTip("记录已清除成功~", "negative")
 		self.dataList = {}
 		self.logList = {}
 		self.tableView:reloadData()
@@ -143,6 +183,17 @@ function ConsumeHistoryPanel:clearLogs()
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFailed)
 	http:syncLoad()
+end
+
+function ConsumeHistoryPanel:onHelpBtnTap()
+	if __IOS or __WIN32 then 
+		require 'zoo.panel.IosPayGuidePanels'
+		IosPayCartoonPanel:create():popout()
+	elseif self:checkAndroidNeedHelpBtn() then
+        -- GspProxy:setExtraParams(FAQ:getParams())
+        GspProxy:setFAQurl(FAQ:getUrl("http://buluo.qq.com/mobile/detail.html?&_wv=1027#bid=130050&pid=4340576-1461227167&source=buluoadmin&from=buluoadmin"), {})
+        GspProxy:showCustomerDiaLog()  
+	end
 end
 
 function ConsumeHistoryPanel:buildItemLoading( ... )
@@ -443,28 +494,17 @@ function ConsumeHistoryPanel:loadDataAsync( successCallback,failCallback )
 		failCallback()
 	end
 
-	-- do
-	-- 	self:runAction(CCSequence:createWithTwoActions(
-	-- 		CCDelayTime:create(2),
-	-- 		CCCallFunc:create(function( ... )
-
-	-- 			local data = {}
-	-- 			for i=1,20 do
-	-- 				data[#data + 1] = { time = os.time({year=2013, month=09, day=12, hour=23, min=59, sec=59,}) * 1000 }
-	-- 			end
-	-- 			successCallback(data)
-	-- 		end)
-	-- 	))
-	-- 	return 
-	-- end
-
 	self:setClearState(false)
 
-	local http = GetCashLogsHttp.new()
-	http.timeout = 0.5
-	http:addEventListener(Events.kComplete, onSuccess)
-	http:addEventListener(Events.kError, onFail)
-	http:syncLoad(#self.logList,#self.logList + pageSize - 1)
+	local function doGetCashLog()
+
+		local http = GetCashLogsHttp.new()
+		http.timeout = 0.5
+		http:addEventListener(Events.kComplete, onSuccess)
+		http:addEventListener(Events.kError, onFail)
+		http:syncLoad(#self.logList,#self.logList + pageSize - 1)
+	end
+	RequireNetworkAlert:callFuncWithLogged(doGetCashLog)
 end
 
 function ConsumeHistoryPanel:onKeyBackClicked()

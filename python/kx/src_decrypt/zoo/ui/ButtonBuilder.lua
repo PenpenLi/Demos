@@ -285,7 +285,8 @@ function GroupButtonBase:useBubbleAnimation()
 	animations:addObject(CCScaleTo:create(deltaTime, scaleX * 1.01, scaleY * 0.96))
 	animations:addObject(CCScaleTo:create(deltaTime, scaleX * 0.98, scaleY * 1.03))
 	animations:addObject(CCScaleTo:create(deltaTime, scaleX * 1, scaleY * 1))
-	startButton:runAction(CCRepeatForever:create(CCSequence:create(animations)))
+	local action = CCRepeatForever:create(CCSequence:create(animations))
+	startButton:runAction(action)
 	startButton:setButtonMode(false)
 
 	local btnWithoutShadow = self.background
@@ -301,6 +302,75 @@ function GroupButtonBase:useBubbleAnimation()
 	end
 	startButton:addEventListener(DisplayEvents.kTouchBegin, __onButtonTouchBegin)
 	startButton:addEventListener(DisplayEvents.kTouchEnd, __onButtonTouchEnd)
+
+	local ret = {}
+	ret.cancelBubbleAnimation = function(self)
+		startButton:setScaleX(scaleX)
+		startButton:setScaleY(scaleY)
+		startButton:stopAction(action)
+		startButton:removeEventListener(DisplayEvents.kTouchBegin, __onButtonTouchBegin)
+		startButton:removeEventListener(DisplayEvents.kTouchEnd, __onButtonTouchEnd)
+	end
+
+	return ret
+end
+
+function GroupButtonBase:playFloatAnimation(text, callback)
+	local label = self.label
+	local floatText = nil
+
+	if label.class == BitmapText then--使用位图字体的按钮
+		local fntFile = label:getFntFile()
+		fntFile = string.gsub(fntFile, '@2x', '')
+		floatText = BitmapText:create('', fntFile, -1, kCCTextAlignmentCenter)
+		floatText:setPreferredSize(1024, self.labelRect.height)
+	end
+	if label.class == TextField then
+		floatText = TextField:createCopy(label)
+		floatText:setHorizontalAlignment(kCCTextAlignmentCenter)
+		floatText:setAnchorPoint(ccp(0.5, 0.5))
+	end
+
+	if floatText then
+		floatText:setString(text)
+		local parent = self.groupNode:getParent()
+		if parent then
+			parent:addChild(floatText)
+			floatText:setScaleX(self.groupNode:getScaleX()*floatText:getScaleX())
+			floatText:setScaleY(self.groupNode:getScaleY()*floatText:getScaleY())
+			local startPos = ccp(
+				self.groupNode:getGroupBounds():getMidX(),
+				self.groupNode:getGroupBounds():getMidY()
+			)
+			startPos = parent:convertToNodeSpace(startPos)
+			local endPos = ccp(
+				startPos.x,
+				startPos.y + self.labelRect.height
+			)
+			floatText:setPositionXY(startPos.x, startPos.y)
+			local moveTo = CCMoveTo:create(1.2, endPos)
+			local delay = CCDelayTime:create(0.8)
+			local fadeOut = CCFadeOut:create(0.4)
+
+			local seq = CCSequence:createWithTwoActions(delay, fadeOut)
+			local spawn = CCSpawn:createWithTwoActions(seq, moveTo)
+
+			local finish = CCCallFunc:create(
+					function()
+						floatText:removeFromParentAndCleanup(true)
+						if callback then
+							callback()
+						end
+					end
+				)
+			local action = CCSequence:createWithTwoActions(spawn, finish)
+			floatText:runAction(action)
+		end
+	else
+		if callback then
+			callback()
+		end
+	end
 end
 
 --
@@ -536,4 +606,66 @@ function ButtonStartGame:enableInfiniteEnergy( enable )
 	end
 	local str = self:getString() or ""
 	self:setString(str)
+end
+
+
+
+
+
+--
+-- SelectableButton ---------------------------------------------------------
+--
+SelectableButton = class(GroupButtonBase)
+function SelectableButton:create( buttonGroup )
+	local button = SelectableButton.new(buttonGroup)
+	button:buildUI()
+	return button
+end
+
+function SelectableButton:buildUI()
+	if not self.groupNode then return end
+
+	-- GroupButtonBase.buildUI(self)
+
+	local groupNode = self.groupNode
+	local label = groupNode:getChildByName("label")
+	local labelSize = groupNode:getChildByName("labelSize")
+	local background = groupNode:getChildByName("background")
+	local size = labelSize:getContentSize() --labelSize:getGroupBounds() --
+	local position = labelSize:getPosition()
+	local scaleX = labelSize:getScaleX()
+	local scaleY = labelSize:getScaleY()
+	self.labelRect = {x=position.x, y=position.y, width=size.width*scaleX, height=size.height*scaleY}
+	self.label = label
+	self.background = background
+	
+	-- self:setColorMode(kGroupButtonColorMode.green)
+	self:setEnabled(true)
+	groupNode:setButtonMode(true)
+	labelSize:removeFromParentAndCleanup(true)
+
+	local function onTouchTap( evt )
+		self:dispatchEvent(DisplayEvent.new(DisplayEvents.kTouchTap, self, evt.globalPosition))
+		GamePlayMusicPlayer:playEffect(GameMusicType.kClickCommonButton)
+	end
+	groupNode:addEventListener(DisplayEvents.kTouchTap, onTouchTap)
+
+	-- ------------------ inhiret end -----------------------
+	local groupNode = self.groupNode
+	self.backgroundSelected = groupNode:getChildByName("backgroundSelected")
+
+	self:setSelect(false)
+end
+
+function SelectableButton:setSelect(value)
+	self.select = value
+
+	if (value) then 
+		self.background:setVisible(false)
+		self.backgroundSelected:setVisible(true)
+	else
+		self.background:setVisible(true)
+		self.backgroundSelected:setVisible(false)
+	end
+
 end

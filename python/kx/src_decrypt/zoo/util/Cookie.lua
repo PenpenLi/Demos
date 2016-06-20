@@ -4,6 +4,9 @@ CookieKey = {
 	kHiddenAreaIntroduction = "hiddenAreaIntro",
     kFishPromotionActivityStartTime = "fishPromotionActivityStartTime",
     kLocationProvince = "locationProvince",
+    kHiddenAreaLastGuideTime = "hiddenAreaLastGuideTime",
+    kHiddenAreaLastRewardGuideTime = "hiddenAreaLastRewardGuideTime",
+    kHiddenAreaLastMaxBranchId = "hiddenAreaLastMaxBranchId",
 }
 
 -----------------------------------------

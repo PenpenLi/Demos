@@ -110,6 +110,7 @@ function Fruit:refresh(data, source)
 	if self.norm and not self.norm.isDisposed then
 		local name = FruitModel:sharedInstance():getFruitName(self.id)
 		if not name then return end
+		builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.fruitTreeScene)
 		local sprite = builder:buildGroup(name)
 		local position = self.norm.fruit:getPosition()
 		sprite:setPosition(ccp(position.x, position.y))
@@ -164,6 +165,7 @@ function Fruit:refresh(data, source)
 	if self.clicked and not self.clicked.isDisposed then
 		local name = FruitModel:sharedInstance():getFruitName(self.id)
 		if not name then return end
+		builder = InterfaceBuilder:create(PanelConfigFiles.fruitTreeScene)
 		local sprite = builder:buildGroup(name)
 		local position = self.clicked.fruit:getPosition()
 		sprite:setPosition(ccp(position.x, position.y))
@@ -271,6 +273,7 @@ function Fruit:_playUpdateAnim(oldLevel, newLevel, target, beforeSprite, afterSp
 end
 
 function Fruit:_playUpdateSuccessAnim(target, beforeSprite, afterSprite, source)
+	builder = InterfaceBuilder:create(PanelConfigFiles.fruitTreeScene)
 	local beforeSize = beforeSprite:getGroupBounds().size
 	beforeSize = {width = beforeSize.width, height = beforeSize.height}
 	local afterSize = afterSprite:getGroupBounds().size
@@ -432,6 +435,7 @@ function Fruit:createClickedFruit(hasGuide, animDuration)
 	if self.norm.isDisposed then return end
 
 	-- get & create control
+	builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.fruitTreeScene)
 	self.clicked = builder:buildGroup("clickedFruit")
 	self.clicked.fruit = self.clicked:getChildByName("fruit")
 	self.clicked.methodRing = self.clicked:getChildByName("methodRing")
@@ -604,23 +608,33 @@ function Fruit:_regenerate()
 end
 
 function Fruit:_pick()
+
+	local beforePickEnergy = 0
+	local afterPickEnergy = 0
+
 	local function onSuccess(data)
 		if self.isDisposed then return end
 		local scene = HomeScene:sharedInstance()
 		if scene and not scene.isDisposed then scene:checkDataChange() end
+		local runningScene = Director:sharedDirector():getRunningSceneLua()
+		local position = self:getParent():convertToWorldSpace(self:getPosition())
 		local fType = FruitModel:sharedInstance():getType(self.id)
 		if fType == kFruitType.kCoin then
-			local animation = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation({updateButton = true})
-			self.norm:addChildAt(animation.sprites, 10000)
-			animation:play()
+			local anim = FlyCoinStackAnimation:create(data.reward.num)
+			anim:setWorldPosition(position)
+			anim:play()
 		elseif fType == kFruitType.kEnergy then
-			local animation = HomeSceneFlyToAnimation:sharedInstance():energyFlyToAnimation({updateButton = true})
-			for k, v in ipairs(animation.sprites) do self.norm:addChildAt(v, 10000) end
-			animation:play()
+			afterPickEnergy = UserManager:getInstance().user:getEnergy()
+			
+			local anim = FlyEnergyAnimation:create(afterPickEnergy - beforePickEnergy)
+			anim:setWorldPosition(position)
+			anim:play()
+
 		elseif fType == kFruitType.kGold then
-			local animation = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation({updateButton = true})
-			for k, v in ipairs(animation.sprites) do self.norm:addChildAt(v, 10000) end
-			animation:play()
+			local anim = FlyGoldAnimation:create(data.reward.num)
+			anim:setWorldPosition(position)
+			anim:play()
+
 		end
 		self:refresh(data.fruit, "pick")
 		self:dispatchEvent(Event.new(kFruitEvents.kPick, nil, self))
@@ -638,6 +652,8 @@ function Fruit:_pick()
 		if self.isDisposed then return end
 		if self.clicked and not self.clicked.isDisposed then self.clicked.pick:setTouchEnabled(false) end
 		local scene = Director:sharedDirector():getRunningScene()
+
+		beforePickEnergy = UserManager:getInstance().user:getEnergy()
 		self.fruitLogic:pick(self.id, onSuccess, onFail)
 	end
 	if FruitModel:sharedInstance():askEnergyPick(self.id) then
@@ -659,7 +675,7 @@ function Fruit:_speed()
 			no = Localization:getInstance():getText("fruit.tree.scene.no.speed.no"),
 		}
 		local function gotoBuySpeed()
-			local panel = BuyPropPanel:create(29, nil, tonumber(count))
+			local panel = PayPanelWindMill:create(29, nil, nil, tonumber(count))
 			if panel then panel:popout() end
 		end
 		CommonTipWithBtn:showTip(text, "negative", gotoBuySpeed)

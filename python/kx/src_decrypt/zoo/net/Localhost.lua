@@ -16,9 +16,11 @@ local kDefaultConfigName = "conf"..kLocalDataExt
 local kUpdatedConfigName = "updatedConfig" .. kLocalDataExt
 local kFriendsCacheDataName = "friendsCache" .. kLocalDataExt
 local kLocalExtraDataName = "localExtraData" .. kLocalDataExt
+local kLocalDailyDataName = "localDailyData" .. kLocalDataExt
 local fullPathOfLocalData = HeResPathUtils:getUserDataPath()
 local kPhoneListName = "phoneList" .. kLocalDataExt
 local kSummerWeeklyMatchDataName = "summerWeekly"..kLocalDataExt
+local kUserMissionDataName = "userMission"..kLocalDataExt
 
 local instance = nil
 Localhost = {}
@@ -119,6 +121,7 @@ end
 function Localhost:setLastLoginUserConfig(uid, sessionKey, platform)
 	if uid == nil then uid = 0 end
 	local time = Localhost:time()
+	-- local time = os.time() * 1000
 	local config = {uid = uid, sk = sessionKey, time=time, p=platform}
 	local defaultUdid = MetaInfo:getInstance():getUdid()
 	if defaultUdid == sessionKey then
@@ -240,6 +243,48 @@ function Localhost:writeCachePhoneListData(newPhoneNumber)
 	self:writeToStorage(phoneList,kPhoneListName)
 end
 
+-- local daily data
+function Localhost:getLocalDailyDataKey(uid)
+	return tostring(uid).."_"..kLocalDailyDataName
+end
+
+function Localhost:readLocalDailyData(uid, needRefresh)
+	if needRefresh ~= false then needRefresh = true end
+	local uid = uid or UserManager.getInstance().uid
+	local dailyData = self:readFromStorage(Localhost:getLocalDailyDataKey(uid))
+
+	local function resetDailyData()
+		dailyData = {}
+		dailyData.resetTime = Localhost:timeInSec()
+		Localhost:writeLocalDailyData(uid, dailyData)
+	end
+
+	if type(dailyData) ~= "table" then
+		resetDailyData()
+	elseif needRefresh then
+		local updateDate = os.date("*t", dailyData.resetTime)
+		local curDate = os.date("*t", Localhost:timeInSec())
+
+		if not (updateDate.year == curDate.year and updateDate.month == curDate.month and updateDate.day == curDate.day) then
+			resetDailyData()
+		end
+	end
+	return dailyData
+end
+
+function Localhost:writeLocalDailyData(uid, dailyData)
+	if type(dailyData) ~= "table" then
+		return
+	end
+	local uid = uid or UserManager.getInstance().uid
+	self:writeToStorage(dailyData, Localhost:getLocalDailyDataKey(uid))
+end
+
+function Localhost:deleteLocalDailyData(uid)
+	local filePath = fullPathOfLocalData.."/"..Localhost:getLocalDailyDataKey(uid)
+   	os.remove(filePath)
+end
+
 -- 周赛数据
 function Localhost:writeWeeklyMatchData(data)
 	self:writeToStorage(data,kSummerWeeklyMatchDataName)
@@ -254,6 +299,48 @@ function Localhost:deleteWeeklyMatchData()
    	os.remove(filePath)
 end
 
+-- 任务系统
+function Localhost:deleteUserMissionData()
+	local filePath = fullPathOfLocalData.."/"..kUserMissionDataName
+   	os.remove(filePath)
+end
+
+-- 关卡本地数据
+function Localhost:readLocalLevelData( uid )
+	local filePath = "localLevelData_" .. tostring(uid)
+	return self:readFromStorage(filePath) or {}
+end
+function Localhost:writeLocalLevelData( uid,data )
+	local filePath = "localLevelData_" .. tostring(uid)
+	self:writeToStorage(data,filePath)
+end
+function Localhost:readLocalLevelDataByLevelId( uid,levelId )
+	return self:readLocalLevelData(uid)[tostring(levelId)] or {}
+end
+function Localhost:writeLocalLevelDataByLevelId( uid,levelId,levelData )
+	local data = self:readLocalLevelData(uid)
+	data[tostring(levelId)] = levelData
+
+	self:writeLocalLevelData(uid,data)
+end
+
+-- 掩藏关卡本地数据
+function Localhost:readLocalBranchData( uid )
+	local filePath = "lcoalBranchData_" .. tostring(uid)
+	return self:readFromStorage(filePath) or {}
+end
+function Localhost:readLocalBranchDataByBranchId( uid,branchId )
+	return self:readLocalBranchData(uid)[tostring(branchId)] or {}
+end
+function Localhost:writeLocalLevelDataByBranchId( uid,branchId,branchData )
+	local filePath = "lcoalBranchData_" .. tostring(uid)
+	local data = self:readLocalBranchData(uid)
+	data[tostring(branchId)] = branchData
+
+	return self:writeToStorage(data,filePath)
+end
+
+
 --将string中的内容以二进制的方式写入文件,
 --	此方法先创建临时文件，将内容写入临时文件，
 --	最后把临时文件move成正式文件
@@ -265,6 +352,16 @@ function Localhost:writeToStorage(data, fileName)
         local am3data = amf3.encode(data)
         --TODO: encypt data
         self:safeWriteStringToFile(am3data, filePath)
+    end
+end
+
+function Localhost:writeToStorageDebug(data, fileName)
+	assert(data and fileName, "data and fileName should not be nil")
+    if data and fileName then
+    	local filePath = fullPathOfLocalData.."/"..fileName
+        -- local am3data = amf3.encode(data)
+        --TODO: encypt data
+        self:safeWriteStringToFile(table.serialize(data), filePath)
     end
 end
 
@@ -342,6 +439,29 @@ function Localhost:readFromStorage( fileName )
 				return result
 				--return amf3.decode(data)
 			end
+		end
+	end
+	return nil
+end
+
+function Localhost:readFromStorageDebug(fileName)
+	assert(fileName, "fileName should not be nil")
+	if fileName then
+		local filePath = fullPathOfLocalData.."/"..fileName
+		local file = io.open(filePath, "rb")
+		if file then
+			local data = file:read("*a") 
+			file:close()
+
+			-- if data then
+			-- 	local result = nil 
+			-- 	local function decodeAmf3() result = amf3.decode(data) end
+			-- 	--TODO: decypt data
+			-- 	pcall(decodeAmf3)
+			-- 	return result
+			-- 	--return amf3.decode(data)
+			-- end
+			return table.deserialize(data)
 		end
 	end
 	return nil
@@ -435,6 +555,8 @@ function Localhost:passLevel(levelId, score, flashStar, stageTime, coinAmount, t
 		rewardItems, success, err = UserLocalLogic:updateTaskForUnlockArealevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
 	elseif gameLevelType == GameLevelType.kSummerWeekly then
 		rewardItems, success, err = UserLocalLogic:updateRabbitWeeklyLevelScore(levelId, score, flashStar, stageTime, coinAmount, targetCount, opLog, gameLevelType, requestTime)
+	elseif gameLevelType == GameLevelType.kWukong then
+		rewardItems, success, err = UserLocalLogic:updateMaydayEndlessLevelScore(levelId, score, flashStar, useItem, stageTime, targetCount, opLog, requestTime)
 	else
 		assert(false, 'level type not supported')
 	end
@@ -532,7 +654,7 @@ function Localhost:getPropsInGame(actId, levelId, itemIds)
 			UserService.getInstance():addTimeProp(propId, 1)
 		end
 		if LevelType:isSummerMatchLevel( levelId ) then
-			SummerWeeklyMatchManager:getInstance():onDropPropInGame()
+			SeasonWeeklyRaceManager:getInstance():onDropPropInGame()
 		else
 			local evtData = {actId=actId, levelId=levelId, itemIds=itemIds}
 			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new("activity.incDropPropCount", evtData))
@@ -621,7 +743,7 @@ function Localhost:unlockLevelArea(unlockType, friendUids)
 	if #levelIds < topLevelId then print("length not enough", #levelIds) checkFailed = true end
 	if not checkFailed then
 		for k, v in pairs(levelIds) do
-			if v.star < 1 then
+			if v.star < 1 and JumpLevelManager:getLevelPawnNum(v.levelId) <= 0 then
 				print("star less than one", k)
 				checkFailed = true
 				break
@@ -658,6 +780,7 @@ function Localhost:clearLastLoginUserData()
     Localhost.getInstance():deleteMarkPriseRecord()
     Localhost.getInstance():deletePushRecord()
     Localhost.getInstance():deleteWeeklyMatchData()
+    Localhost.getInstance():deleteUserMissionData()
     Localhost.getInstance():deleteLocalExtraData()
     LocalNotificationManager.getInstance():cancelAllAndroidNotification()
 

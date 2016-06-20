@@ -294,22 +294,14 @@ local loadedPlistSprite = {}
 local scaledResource = {}
 function SpriteUtil:addSpriteFramesWithFile(plistFilename, textureFileName)
   local prefix = string.split(plistFilename, ".")[1]
-  local realPlistPath = plistFilename
-  local realPngPath = textureFileName
-  --HeFileUtils:exists(CCFileUtils:sharedFileUtils():fullPathForFilename(prefix .. "@2x.plist"))
+  local realPlistPath = SpriteUtil:getRealResourceName(plistFilename)
+  local realPngPath = SpriteUtil:getRealResourceName(textureFileName)
   if __use_small_res then  
-    realPlistPath = prefix .. "@2x.plist"
-    realPngPath = prefix .. "@2x.png"
+    -- realPlistPath = prefix .. "@2x.plist"
+    -- realPngPath = prefix .. "@2x.png"
     scaledResource[plistFilename] = realPlistPath
     scaledResource[textureFileName] = realPngPath
-    --print(realPngPath)
   end
-
-  -- if __IOS and ResourceConfigPvrReplace[plistFilename] then
-  --   local prefixPvr = string.split(realPngPath, ".")[1]
-  --   realPngPath = prefixPvr..".pvr.ccz"
-  --   scaledResource[textureFileName] = realPngPath
-  -- end
 
   if loadedPlistSprite[plistFilename] then 
     return realPlistPath, realPngPath 
@@ -319,7 +311,6 @@ function SpriteUtil:addSpriteFramesWithFile(plistFilename, textureFileName)
   
   if __kTexturePixelFormat__[textureFileName] then
     CCTexture2D:setDefaultAlphaPixelFormat(__kTexturePixelFormat__[textureFileName])
-    --print("setDefaultAlphaPixelFormat:", plistFilename, textureFileName)
     sharedSpriteFrameCache:addSpriteFramesWithFile(realPlistPath, realPngPath)
     CCTexture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
     loadedPlistSprite[plistFilename] = true
@@ -327,6 +318,41 @@ function SpriteUtil:addSpriteFramesWithFile(plistFilename, textureFileName)
     sharedSpriteFrameCache:addSpriteFramesWithFile(realPlistPath, realPngPath)
     loadedPlistSprite[plistFilename] = true
   end
+  return realPlistPath, realPngPath
+end
+
+function SpriteUtil:addSpriteFrameCacheAsync(plistFilename, textureFileName, completeCallback)
+  local prefix = string.split(plistFilename, ".")[1]
+  local realPlistPath = SpriteUtil:getRealResourceName(plistFilename)
+  local realPngPath =  SpriteUtil:getRealResourceName(textureFileName)
+  if __use_small_res then  
+    -- realPlistPath = prefix .. "@2x.plist"
+    -- realPngPath = prefix .. "@2x.png"
+    scaledResource[plistFilename] = realPlistPath
+    scaledResource[textureFileName] = realPngPath
+  end
+
+  if loadedPlistSprite[plistFilename] then 
+    return realPlistPath, realPngPath 
+  end
+
+  local function textureLoaded(tex)
+    print("Async load texture:", textureFileName)
+    if __kTexturePixelFormat__[textureFileName] then
+      CCTexture2D:setDefaultAlphaPixelFormat(__kTexturePixelFormat__[textureFileName])
+      CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(realPlistPath, tex)
+      CCTexture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+    else
+      CCSpriteFrameCache:sharedSpriteFrameCache():addSpriteFramesWithFile(realPlistPath, tex)
+    end
+    loadedPlistSprite[plistFilename] = true
+    if completeCallback and type(completeCallback) == 'function' then
+      completeCallback()
+    end
+  end
+
+  local loader = AsyncTextureLoader:create()
+  loader:loadTexture(realPngPath, textureLoaded)
   return realPlistPath, realPngPath
 end
 

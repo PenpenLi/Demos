@@ -8,7 +8,9 @@ function Processor:start(context)
     local function onSNSLoginResult( status, result )
         if status == SnsCallbackEvent.onSuccess then
             _G.sns_token = result
-            _G.sns_token.authorType = authorType
+            if _G.sns_token then
+                _G.sns_token.authorType = authorType
+            end
             self:dispatchEvent(Event.new(Events.kComplete, nil, self))
         else 
             self:dispatchEvent(Event.new(Events.kError, nil, self))
@@ -34,19 +36,22 @@ function Processor:start(context)
             self:dispatchEvent(Event.new(Events.kCancel, nil, self))
         end
     else
-
-        local logoutCallback = {
-            onSuccess = function(result)
-                SnsProxy:login(onSNSLoginResult)
-            end,
-            onError = function(errCode, msg) 
-                SnsProxy:login(onSNSLoginResult)
-            end,
-            onCancel = function()
-                SnsProxy:login(onSNSLoginResult)
-            end
-        }
-        SnsProxy:logout(logoutCallback)
+        if authorType == PlatformAuthEnum.k360 or authorType == PlatformAuthEnum.kWDJ then
+            SnsProxy:login(onSNSLoginResult)
+        else
+            local logoutCallback = {
+                onSuccess = function(result)
+                    SnsProxy:login(onSNSLoginResult)
+                end,
+                onError = function(errCode, msg) 
+                    SnsProxy:login(onSNSLoginResult)
+                end,
+                onCancel = function()
+                    SnsProxy:login(onSNSLoginResult)
+                end
+            }
+            SnsProxy:logout(logoutCallback)
+        end
 
 
         -- if PlatformConfig:isPlatform(PlatformNameEnum.kMI) then

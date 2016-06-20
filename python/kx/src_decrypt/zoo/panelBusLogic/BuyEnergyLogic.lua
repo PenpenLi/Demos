@@ -31,22 +31,22 @@ function BuyEnergyLogic:start(showTip, successCallback, failedCallback, ...)
 	assert(not failedCallback or type(failedCallback) == "function") 
 	assert(#{...} == 0)
 
-	local function onSuccess(event)
+	local function onSuccess(data)
 		print("BuyEnergyLogic:start onSuccess Called !")
 
 		-- Add User Energy
 		UserManager:getInstance():getUserRef():addEnergy(self.num)
 
 		if successCallback then
-			successCallback(event)
+			successCallback(data)
 		end
 	end
 
-	local function onFailed(event)
+	local function onFailed(errorCode)
 		print("BuyEnergyLogic:start onFailed Called !")
 
 		if failedCallback then
-			failedCallback(event)
+			failedCallback(errorCode)
 		end
 	end
 

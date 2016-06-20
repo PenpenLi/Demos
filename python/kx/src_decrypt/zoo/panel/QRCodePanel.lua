@@ -7,7 +7,8 @@ function QRCodePostPanel:getQRCodeURL()
 	local uid = UserManager:getInstance().uid
 	local inviteCode = UserManager:getInstance().inviteCode
 	local platformName = StartupConfig:getInstance():getPlatformName()
-	local link = NetworkConfig.dynamicHost.."qrcode.jsp?uid="..tostring(uid).."&invitecode="..tostring(inviteCode)
+	local link = NetworkConfig.dynamicHost.."qrcode.jsp?uid="..tostring(uid).."&invitecode="..tostring(inviteCode)..
+		"&pid="..tostring(platformName)
 	if PlatformConfig:isPlatform(PlatformNameEnum.k360) then
 		link = link.."&package=android_360"
 	end
@@ -100,14 +101,18 @@ function QRCodePostPanel:init()
 	self:setPositionForPopoutManager()
 end
 
-function QRCodePostPanel:popout()
+function QRCodePostPanel:popout(closeCallback)
 	PopoutManager:sharedInstance():add(self)
 	self.allowBackKeyTap = true
+	self.closeCallback = closeCallback
 end
 
 function QRCodePostPanel:onCloseBtnTapped()
 	self.allowBackKeyTap = false
 	PopoutManager:sharedInstance():remove(self)
+	if self.closeCallback then
+		self.closeCallback() 
+	end
 end
 
 function QRCodePostPanel:onShareTapped()

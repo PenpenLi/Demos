@@ -1,6 +1,8 @@
 require "zoo.scenes.AnimationScene"
 require "zoo.scenes.PanelsScene"
 require "zoo.scenes.GameChoiceScene"
+require "zoo.editor.EditorGameScene"
+require "zoo.editor.KeyboardTestScene"
 require "zoo.scenes.ReplayChoiceScene"
 require "zoo.util.AdvertiseSDK"
 require "zoo.panel.component.common.VerticalScrollable"
@@ -21,8 +23,8 @@ local function addSpriteFramesWithFile( plistFilename, textureFileName )
   	return realPngPath, realPlistPath
 end
 
-function PreloadingSceneUI.showUserAgreement()
-	local vSize = Director:sharedDirector():getVisibleSize()
+function PreloadingSceneUI.openAgreement(title, prefixContent)
+		local vSize = Director:sharedDirector():getVisibleSize()
 	local vOrigin = Director:sharedDirector():getVisibleOrigin()
 	local scene = Director:sharedDirector():getRunningScene()
 	if not scene or scene.isDisposed then return end
@@ -32,7 +34,7 @@ function PreloadingSceneUI.showUserAgreement()
 	layer:setColor(ccc3(255, 255, 255))
 	layer:setPositionXY(vOrigin.x, vOrigin.y)
 	layer:setTouchEnabled(true, 0, true)
-	local title = TextField:create(Localization:getInstance():getText("loading.agreement.layer.title"), nil, 36)
+	local title = TextField:create(Localization:getInstance():getText(title), nil, 36)
 	title:setColor(ccc3(0, 0, 0))
 	title:setPositionXY(vSize.width / 2, vSize.height - 60)
 	layer:addChild(title)
@@ -40,10 +42,11 @@ function PreloadingSceneUI.showUserAgreement()
 	local layout = VerticalTileLayout:create(vSize.width - 120)
 	local platform = "win32"
 	if __ANDROID then platform = "android"
-	elseif __IOS then platform = "ios" end
+	elseif __IOS then platform = "ios" 
+	elseif __WP8 then platform = "wp" end
 	local counter = 1
 	local function onTimeOut()
-		local key = "loading.agreement.layer.text."..platform..tostring(counter)
+		local key = prefixContent..platform..tostring(counter)
 		local value = Localization:getInstance():getText(key, {n = '\n', s = '　'})
 		if key == value or layer.isDisposed then return end
 		local text = TextField:create(nil, nil, 28)
@@ -88,11 +91,20 @@ function PreloadingSceneUI.showUserAgreement()
 	button:setButtonMode(true)
 	button:addEventListener(DisplayEvents.kTouchTap, onButton)
 	--scene:addChild(layer)
-	layer:runAction(CCMoveTo:create(0.2, ccp(vOrigin.x,  - vSize.height)))
+	-- layer:runAction(CCMoveTo:create(0.2, ccp(vOrigin.x,  - vSize.height)))
+	layer:setPosition(ccp(vOrigin.x,  - vSize.height))
 	--print("layer parent: ",layer:getParent())
 	PopoutManager:sharedInstance():add(layer, false, false)
 
 	return layer
+end
+
+function PreloadingSceneUI.showAliQuickPayAgreement()
+	return PreloadingSceneUI.openAgreement("alipay.agreement.kuaifu.title", "alipay.agreement.kuaifu.text.")
+end
+
+function PreloadingSceneUI.showUserAgreement()
+	return PreloadingSceneUI.openAgreement("loading.agreement.layer.title", "loading.agreement.layer.text.")
 end
 
 local function userAgreementTexts()
@@ -511,13 +523,20 @@ function PreloadingSceneUI:createAnimation(startButton)
 	startButton:addEventListener(DisplayEvents.kTouchEnd, __onButtonTouchEnd)
 end
 
+function PreloadingSceneUI:removeDebugButtons()
+	if (self.buttonLayer) then
+		self.buttonLayer:removeFromParentAndCleanup()
+	end
+end
+
+
 function PreloadingSceneUI:buildDebugButton(scene, onTouchStartGame)
 	local origin = Director:sharedDirector():getVisibleOrigin()
 	local size = Director:sharedDirector():getVisibleSize()
 
-	local buttonLayer = Layer:create()
-	buttonLayer:setPosition(ccp(origin.x, origin.y))
-	scene:addChild(buttonLayer)
+	self.buttonLayer = Layer:create()
+	self.buttonLayer:setPosition(ccp(origin.x, origin.y))
+	scene:addChild(self.buttonLayer)
 
 	local function buildLabelButton( label, x, y, func, width, height, fontSize)
 		width = width or 250
@@ -528,7 +547,7 @@ function PreloadingSceneUI:buildDebugButton(scene, onTouchStartGame)
 		labelLayer:setPosition(ccp(x - width / 2, y - height / 2))
 		labelLayer:setTouchEnabled(true, p, true)
 		labelLayer:addEventListener(DisplayEvents.kTouchTap, func)
-		buttonLayer:addChild(labelLayer)
+		self.buttonLayer:addChild(labelLayer)
 		local textLabel = TextField:create(label, nil, fontSize or 32)
 		textLabel:setPosition(ccp(width/2, height/2))
 		labelLayer:addChild(textLabel)
@@ -548,12 +567,17 @@ function PreloadingSceneUI:buildDebugButton(scene, onTouchStartGame)
 		--sdk:presentDomobListOfferWall()
 		
 		-- Director:sharedDirector():pushScene(PanelsScene:create())
-		require("zoo/test/TestCCParabolaMoveTo")
+		require("zoo/test/TestCCParabolaMoveTo"):createSence()
 	end
 
-	local fcButton = buildLabelButton("客服工具", size.width/2, origin.x + 700, onTouchFcLabel)
-	local animalButton = buildLabelButton("Play Animation", size.width/2, origin.x + 550, onTouchAnimationLabel)
-	local gamePlayButton = buildLabelButton("Play Demo", size.width/2, origin.x + 400, onTouchGamePlayLabel)
-	local userInterfaceButton = buildLabelButton("Home", size.width/2, origin.x + 250, onTouchUserInterfaceLabel)
-	local replayButton = buildLabelButton("Replay", size.width/2, origin.x + 100, onTouchReplayLabel)
+	if __WIN32 then
+		require "zoo.gameTools.GameToolsScene"
+		local function onTouchToolsLabel(evt) Director:sharedDirector():pushScene(GameToolsScene:create()) end
+		local toolsButton = buildLabelButton("Tools", size.width/2, origin.y + 720, onTouchToolsLabel)
+	end
+	local fcButton = buildLabelButton("客服工具", size.width/2, origin.y + 600, onTouchFcLabel)
+	local animalButton = buildLabelButton("Play Animation", size.width/2, origin.y + 480, onTouchAnimationLabel)
+	local gamePlayButton = buildLabelButton("Play Demo", size.width/2, origin.y + 360, onTouchGamePlayLabel)
+	local userInterfaceButton = buildLabelButton("Home", size.width/2, origin.y + 240, onTouchUserInterfaceLabel)
+	local replayButton = buildLabelButton("Replay", size.width/2, origin.y + 120, onTouchReplayLabel)
 end

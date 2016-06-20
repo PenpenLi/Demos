@@ -49,7 +49,7 @@ if __ANDROID then
 					elseif j == "he" then
 						local MainActivityHolder = luajava.bindClass("com.happyelements.android.MainActivityHolder")
 						local mmiapUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("mmiap.xml")
-						local sDataUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("assets/libmegbpp_02.02.10_00.so")
+						local sDataUrl = MainActivityHolder.ACTIVITY:getClassLoader():getResource("assets/libmegbpp_02.02.16_00.so")
 						if not mmiapUrl and not sDataUrl then
 							return 1
 						end

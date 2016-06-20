@@ -155,23 +155,29 @@ function RegionLayoutBar:layout(...)
 	local leftMostAvailableX	= 0
 	local topMostAvailableY		= 0
 
+	local maxWidth
+	if self.direction == LayoutBarDirection.VERTICAL then
+		for index,child in ipairs(self.addedChildren) do
+			local childWidth = child:getGroupBounds().size.width
+			if not maxWidth or childWidth > maxWidth then
+				maxWidth = childWidth
+			end
+		end
+	end
+
 	for index,child in ipairs(self.addedChildren) do
+		local marginLeft = (maxWidth - child:getGroupBounds().size.width) / 2
+		if self.direction == LayoutBarDirection.VERTICAL then leftMostAvailableX = marginLeft end
 
 		child:setPosition(ccp(leftMostAvailableX, topMostAvailableY))
 
-		--local worldSpacePoint = self:convertToWorldSpace(ccp(leftMostAvailableX, topMostAvailableY))
-
 		if self.direction == LayoutBarDirection.HORIZONTAL then
-
 			local childWidth	= child:getGroupBounds().size.width
 			leftMostAvailableX	= leftMostAvailableX + childWidth + self.horizontalInterval
-
 		elseif self.direction == LayoutBarDirection.VERTICAL then
-
 			local childHeight	= child:getGroupBounds().size.height
 			-- topMostAvailableY	= topMostAvailableY - childHeight - self.verticalInterval
 			topMostAvailableY = topMostAvailableY - 108
-
 		else
 			assert(false)
 		end

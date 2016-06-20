@@ -273,6 +273,11 @@ function table.size(t)
     return s;
 end
 
+-- added in ver 1.27
+function table.isEmpty(t)
+  return not t or not next(t)
+end
+
 function table.getNotKV(t,i)
     local index = 0;
     local key,value = nil,nil;
@@ -296,6 +301,15 @@ function table.exist(t,v)
         end
     end
     return false;
+end
+
+function table.getMapValue(t, k)
+    for _k, v in pairs(t) do
+        if _k == k then
+            return v;
+        end
+    end
+    return nil;
 end
 
 --
@@ -456,6 +470,34 @@ function convertSecondToHHMMSSFormat(second, ...)
   return str
 end
 
+function convertSecondToHHMMFormat(second, ...)
+  assert(type(second) == "number")
+  assert(#{...} == 0)
+
+  local minute    = math.floor(second / 60)
+  local lastSecond  = second - minute*60
+
+  local hour    = math.floor(minute / 60)
+  local lastMinute  = minute - hour*60
+
+  local str = string.format("%02d:%02d", hour, lastMinute)
+  return str
+end
+
+function convertSecondToMMSSFormat(second, ...)
+  assert(type(second) == "number")
+  assert(#{...} == 0)
+
+  local minute    = math.floor(second / 60)
+  local lastSecond  = second - minute*60
+
+  local hour    = math.floor(minute / 60)
+  local lastMinute  = minute - hour*60
+
+  local str = string.format("%02d:%02d",lastMinute, lastSecond)
+  return str
+end
+
 function convertDateTableToString(date, ...)
 	assert(type(date) == "table")
 	assert(#{...} == 0)
@@ -546,3 +588,48 @@ function compareDate(date1, date2)
       return 1
     end
 end
+
+-------------------------
+-- since v1.29
+-- 计算向量AB(point1->point2)与x轴的夹角
+-------------------------
+function angleFromPoint(point1, point2)
+  if point1.x == point2.x then
+    if point2.y > point1.y then return -90 else return 90 end
+  elseif point1.y == point2.y then
+    if point2.x > point1.x then return 0 else return -180 end
+  else
+    local ret = math.atan((point2.y-point1.y)/(point2.x-point1.x))*180/math.pi
+    if point2.x > point1.x then return (0-ret)
+    else return (180 - ret) end
+  end
+end
+
+
+function handler(obj, method)
+    return function(...)
+        return method(obj, ...)
+    end
+end
+
+------------------------------
+-- 真正的分割字符串
+------------------------------
+-- function split(str, pat)
+--     local t = {}
+--     local fpat = "(.-)" .. pat
+--     local last_end = 1
+--     local s, e, cap = str:find(fpat, 1)
+--     while s do
+--         if s ~= 1 or cap ~= "" then
+--             table.insert(t,cap)
+--         end
+--         last_end = e+1
+--         s, e, cap = str:find(fpat, last_end)
+--     end
+--     if last_end <= #str then
+--         cap = str:sub(last_end)
+--         table.insert(t, cap)
+--     end
+--     return t
+-- end

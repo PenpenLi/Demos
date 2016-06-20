@@ -3,16 +3,32 @@ require "hecore.display.Director"
 kFlowers = {
   flowerSeed = "flowerSeed",
 
+  flowerStarGray = "normalFlowerAnimGray",
   flowerStar0 = "normalFlowerAnim0",
   flowerStar1 = "normalFlowerAnim1",
   flowerStar2 = "normalFlowerAnim2",
   flowerStar3 = "normalFlowerAnim3",
   flowerStar4 = "normalFlowerAnim4",
 
+  hiddenFlowerGray = "hiddenFlowerAnimGray",
   hiddenFlower1 = "hiddenFlowerAnim1",
   hiddenFlower2 = "hiddenFlowerAnim2",
   hiddenFlower3 = "hiddenFlowerAnim3",
+
+  jumpedFlower = 'jumpedFlower',
 }
+
+kFlowerStars = {
+  normalStar1 = "flowerStar1",
+  normalStar2 = "flowerStar2",
+  normalStar3 = "flowerStar3",
+  normalStar4 = "flowerStar4",
+
+  hiddenStar1 = "hiddenFlowerStar1",
+  hiddenStar2 = "hiddenFlowerStar2",
+  hiddenStar3 = "hiddenFlowerStar3",
+}
+
 Flowers = class()
 
 function Flowers:buildGlowEffect(flower)

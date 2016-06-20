@@ -1,11 +1,11 @@
 
 -- Copyright C2009-2013 www.happyelements.com, all rights reserved.
--- Create Date:	2013Äê12ÔÂ23ÈÕ 11:59:04
+-- Create Date:	2013Ã„Ãª12Ã”Ã‚23ÃˆÃ• 11:59:04
 -- Author:	ZhangWan(diff)
 -- Email:	wanwan.zhang@happyelements.com
 --
 
-require "zoo.scenes.component.HomeScene.FriendPicture"
+require "zoo.scenes.component.HomeScene.FriendPicForStack"
 
 ---------------------------------------------------
 -------------- FriendPicStack
@@ -28,6 +28,23 @@ assert(not FriendPicStack)
 assert(Layer)
 FriendPicStack = class(Layer)
 
+function FriendPicStack:create(levelId, userPicture, ...)
+	assert(type(levelId) == "number")
+	assert(userPicture)
+	assert(#{...} == 0)
+
+	local newFriendPicStack = FriendPicStack.new()
+	newFriendPicStack:init(levelId, userPicture)
+	return newFriendPicStack
+end
+
+function FriendPicStack:dispose()
+	for i, v in ipairs(self.friendPics) do
+		self.friendPics:dispose()
+	end
+	Layer.disose(self)
+end
+
 function FriendPicStack:init(levelId, userPicture, ...)
 	assert(#{...} == 0)
 
@@ -35,6 +52,31 @@ function FriendPicStack:init(levelId, userPicture, ...)
 	-- Init Base Class
 	-- --------------
 	Layer.initLayer(self)
+
+	self.clipping = SimpleClippingNode:create()
+	self.clipping:setContentSize(CCSizeMake(300, 1600))
+	self.clipping:setRecalcPosition(true)
+	self:addChild(self.clipping)
+	local sprite = Sprite:createWithSpriteFrameName("friendpicforstackpictopsjdkflsjalkfsd0000")
+	self.bgStarBatch = SpriteBatchNode:createWithTexture(sprite:getTexture())
+	self.clipping:addChild(self.bgStarBatch)
+	self.starBatch = BMFontLabelBatch:create("fnt/hud.png", "fnt/hud.fnt", 220)
+	self.clipping:addChild(self.starBatch)
+	self.nameLayer = Layer:create()
+	self.clipping:addChild(self.nameLayer)
+
+	local picLayer = Layer:create()
+	self:addChild(picLayer)
+	local sprite2 = Sprite:createWithSpriteFrameName("ui_images/ui_image_headicon_20000")
+	self.picBgBatch = SpriteBatchNode:createWithTexture(sprite2:getTexture())
+	picLayer:addChild(self.picBgBatch)
+	self.headLayer = Layer:create()
+	picLayer:addChild(self.headLayer)
+	self.picTopBatch = SpriteBatchNode:createWithTexture(sprite:getTexture())
+	picLayer:addChild(self.picTopBatch)
+
+	sprite:dispose()
+	sprite2:dispose()
 
 	----------
 	-- Data
@@ -44,23 +86,12 @@ function FriendPicStack:init(levelId, userPicture, ...)
 
 	-- Added Friend Pic
 	self.friendPics = {}
-	self.deltaY	= 10
 
-	------------------
-	-- Callback Function
-	-- ----------------
-	self.expanHideCallback = false
-
-	--self.FRIEND_PIC_SHOW_STATE_EXPANDED	= 1
-	--self.FRIEND_PIC_SHOW_STATE_HIDEED	= 2
 	self.FRIEND_PIC_SHOW_STATE_EXPANDED	= FriendPicStackState.FRIEND_PIC_SHOW_STATE_EXPANDED
 	self.FRIEND_PIC_SHOW_STATE_HIDEED	= FriendPicStackState.FRIEND_PIC_SHOW_STATE_HIDEED
 
 	self.friendPicShowState			= self.FRIEND_PIC_SHOW_STATE_HIDEED
-
-	local function onTapped()
-		self:onTapped()
-	end
+	self.clipping:setVisible(false)
 end
 
 function FriendPicStack:isHitted(worldPos, ...)
@@ -71,14 +102,7 @@ function FriendPicStack:isHitted(worldPos, ...)
 		return self:hitTestPoint(worldPos, true)
 
 	elseif self.friendPicShowState == FriendPicStackState.FRIEND_PIC_SHOW_STATE_HIDEED then
-
-		for k,v in pairs(self.friendPics) do
-			if v.friendIcon:hitTestPoint(worldPos, true) then
-				return true
-			end
-		end
-
-		return false
+		return self.picBgBatch:hitTestPoint(worldPos, true)
 	end
 end
 
@@ -97,35 +121,30 @@ function FriendPicStack:onTapped(...)
 	local topLevel = UserManager:getInstance().user:getTopLevelId()
 
 	if self.friendPicShowState == self.FRIEND_PIC_SHOW_STATE_EXPANDED then
-		self.friendPicShowState	= self.FRIEND_PIC_SHOW_STATE_HIDEED
+		self.friendPicShowState	= self.FRIEND_PIC_SHOW_STATE_IN_ANIMATING
 
 		-- Stop Previous Action
 		self:stopAllActions()
 
-		if self.expanHideCallback then
-			self.expanHideCallback(self, FriendPicStackState.FRIEND_PIC_SHOW_STATE_HIDEED)
-		end
-
 		local function onAnimFinish()
 			self.friendPicShowState = self.FRIEND_PIC_SHOW_STATE_HIDEED
+			if self.expanHideCallback then self.expanHideCallback(self, FriendPicStackState.FRIEND_PIC_SHOW_STATE_HIDEED) end
 		end
 
-		self:playHideFriendPicsAnim(false)
+		self:playHideFriendPicsAnim(onAnimFinish)
 
 	elseif self.friendPicShowState == self.FRIEND_PIC_SHOW_STATE_HIDEED then
-		self.friendPicShowState	= self.FRIEND_PIC_SHOW_STATE_EXPANDED
+		self.friendPicShowState	= self.FRIEND_PIC_SHOW_STATE_IN_ANIMATING
 
 		-- Stop Previosu
 		self:stopAllActions()
 		
+		if self.expanHideCallback then self.expanHideCallback(self, FriendPicStackState.FRIEND_PIC_SHOW_STATE_EXPANDED) end
+
 		-- Position Self To Top
 		local selfParent = self:getParent()
 		self:removeFromParentAndCleanup(false)
 		selfParent:addChild(self)
-
-		if self.expanHideCallback then
-			self.expanHideCallback(self, FriendPicStackState.FRIEND_PIC_SHOW_STATE_EXPANDED)
-		end
 
 		local function onAnimFinish()
 			self.friendPicShowState = self.FRIEND_PIC_SHOW_STATE_EXPANDED
@@ -141,6 +160,22 @@ function FriendPicStack:onTapped(...)
 			local userPictureParent = self.userPicture:getParent()
 			self.userPicture:removeFromParentAndCleanup(false)
 			userPictureParent:addChild(self.userPicture)
+		elseif HomeSceneButtonsManager:getInstance():getRewardBtnPosLevelId() == self.levelId then
+			local button = HomeScene:sharedInstance().starRewardButton
+			self:playExpandFriendPicsAnim(onAnimFinish, button ~= nil)
+			if button then
+				local layer = button:getParent()
+				button:removeFromParentAndCleanup(false)
+				layer:addChild(button)
+			end
+		elseif HomeSceneButtonsManager:getInstance():getInviteButtonLevelId() == self.levelId then
+			local button = HomeScene:sharedInstance().inviteFriendBtn
+			self:playExpandFriendPicsAnim(onAnimFinish, button ~= nil)
+			if button then
+				local layer = button:getParent()
+				button:removeFromParentAndCleanup(false)
+				layer:addChild(button)
+			end
 		else
 			self:playExpandFriendPicsAnim(onAnimFinish, false)
 		end
@@ -163,11 +198,11 @@ function FriendPicStack:addFriendId(friendId, ...)
 	if friendPic then
 		friendPic.cleanFlag = false
 	else
-		local newFriendPic = FriendPicture:create(friendId)
+		local newFriendPic = FriendPicForStack:create(friendId)
 		newFriendPic.cleanFlag = false
 
 		-- Add To Self
-		self:addChild(newFriendPic)
+		newFriendPic:addToStack(self)
 		table.insert(self.friendPics, newFriendPic)
 
 		-- Re Position All FriendPicture
@@ -187,7 +222,8 @@ function FriendPicStack:removeFriendId(friendId, ...)
 	if not friendPic then
 		return
 	else
-		friendPic:removeFromParentAndCleanup(true)
+		friendPic:removeFromStack(true)
+		friendPic:dispose()
 		table.remove(self.friendPics, friendPicIndex)
 	end
 end
@@ -228,147 +264,45 @@ function FriendPicStack:getFriendPicIndexById(id, ...)
 	end
 end
 
-function FriendPicStack:repositionFriendPics(...)
-	assert(#{...} == 0)
-
-	local deltaY	= self.deltaY
-	local startY	= 0
-	local count = #self.friendPics
-	local low = count - 4
-	if low < 0 then low = 0 end
-	for index = count, low + 1, -1 do
-		self.friendPics[index]:setPositionY(startY)
-		self.friendPics[index].foldedPosY = startY
-		startY = startY + deltaY
+function FriendPicStack:repositionFriendPics()
+	local length = #self.friendPics
+	for i, v in ipairs(self.friendPics) do
+		v:reposition(length - i + 1)
 	end
-
-	for index = low, 1, -1 do 
-		self.friendPics[index]:setPositionY(0)
-		self.friendPics[index].foldedPosY = 0
-	end
-
-	-- for index = #self.friendPics,1,-1 do
-	-- 	self.friendPics[index]:setPositionY(startY)
-	-- 	startY = startY + deltaY
-	-- end
 end
 
 function FriendPicStack:playExpandFriendPicsAnim(animFinishCallback, expandOneExtra, ...)
-	assert(false == animFinishCallback or type(animFinishCallback) == "function")
-	assert(type(expandOneExtra) == "boolean")
-	assert(#{...} == 0)
-
-	self:stopAllActions()
-	
-	local friendPictureHeight = false
-	local animTime	= 0.2
-
-	local actionArray = CCArray:create()
-
-	for index,v in ipairs(self.friendPics) do
-
-		if not friendPictureHeight then
-			friendPictureHeight = self.friendPics[index]:getGroupBounds().size.height - 20
+	print("FriendPicStack:playExpandFriendPicsAnim")
+	self.clipping:setVisible(true)
+	local length, count = #self.friendPics, #self.friendPics
+	for i, v in ipairs(self.friendPics) do
+		local function onAnimFinish()
+			count = count - 1
+			if count == 0 then
+				if animFinishCallback then animFinishCallback() end
+			end
 		end
-
-		local destPosY = false
-
 		if expandOneExtra then
-			destPosY	= (#self.friendPics - index + 1) * (friendPictureHeight - self.deltaY - 15)	- 15 -- ( The las -15 Is To Move All Pic 15 Pixel Below)
+			v:playShowNameAndStarAnim(length - i + 2, onAnimFinish)
 		else
-			destPosY	= (#self.friendPics - index) * (friendPictureHeight - self.deltaY - 15)	-- 15 is the Bottom Angle's Height
-			--destPosY	= (#self.friendPics - index + 1) * (friendPictureHeight - self.deltaY - 15)
-		end
-
-		local moveTo	= CCMoveTo:create(animTime, ccp(0, destPosY))
-		local target	= CCTargetedAction:create(self.friendPics[index].refCocosObj, moveTo)
-
-		local function expanFunc()
-			if not self.friendPics or not self.friendPics[index] then return end
-			-- --------------------------------------------
-			-- Check If Expan Right Will Exceed The Screen
-			-- -------------------------------------------
-			local visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
-			local visibleSize	= CCDirector:sharedDirector():getVisibleSize()
-
-			-- FriendPicture Expaned Width
-			local expandedWidth = self.friendPics[index]:getExpandedWidth()
-
-			local selfPosX = self:getPositionX()
-			-- Convert To WorldPos
-			local parent 		= self:getParent()
-			local posXInWorldSpace	= parent:convertToWorldSpace(ccp(selfPosX, 0))
-
-			local function onFinish() 
-				-- fix: will set false when hide animation completes
-				-- see onFinish() in playHideFriendPicsAnim()
-				--self.friendPics[index]:setRecalcMaskPosition(false) 
-			end
-			self.friendPics[index]:setRecalcMaskPosition(true)
-			if posXInWorldSpace.x + expandedWidth > visibleOrigin.x + visibleSize.width then
-				-- Exceed Right Screen
-				self.friendPics[index]:playShowNameAndStarAnim(FriendPictureAnimDirection.LEFT, onFinish)
-			else
-				-- Not Exceed Right Screen
-				self.friendPics[index]:playShowNameAndStarAnim(FriendPictureAnimDirection.RIGHT, onFinish)
-			end
-		end
-		local expanAction = CCCallFunc:create(expanFunc)
-
-		local seq = CCSequence:createWithTwoActions(target, expanAction)
-
-		actionArray:addObject(seq)
-	end
-
-	local spawn = CCSpawn:create(actionArray)
-
-	-- Anim Finish Callback
-	local function animFinishFunc()
-		if animFinishCallback then
-			animFinishCallback()
+			v:playShowNameAndStarAnim(length - i + 1, onAnimFinish)
 		end
 	end
-	local animFinishAction = CCCallFunc:create(animFinishFunc)
-
-	-- Seq
-	local seq = CCSequence:createWithTwoActions(spawn, animFinishAction)
-
-	self:runAction(seq)
 end
 
 function FriendPicStack:playHideFriendPicsAnim(animFinishCallback, ...)
-	assert(false == animFinishCallback or type(animFinishCallback) == "function")
-	assert(#{...} == 0)
-
-	self:stopAllActions()
-
-	if #self.friendPics < 1 then return end
-
-	local animTime = 0.2
-	local actionArray = CCArray:create()
-	for index,v in ipairs(self.friendPics) do
-		local function onFinish() self.friendPics[index]:setRecalcMaskPosition(false) end
-		local function hideFunc()
-			self.friendPics[index]:setRecalcMaskPosition(true)
-			self.friendPics[index]:playHideNameAndStarAnim(onFinish)
+	print("FriendPicStack:playHideFriendPicsAnim")
+	local length, count = #self.friendPics, #self.friendPics
+	for i, v in ipairs(self.friendPics) do
+		local function onAnimFinish()
+			count = count - 1
+			if count == 0 then
+				self.clipping:setVisible(false)
+				if animFinishCallback then animFinishCallback() end
+			end
 		end
-		local hideAction = CCCallFunc:create(hideFunc)
-		local destPosY = v.foldedPosY
-		local moveTo 	= CCMoveTo:create(animTime, ccp(0, destPosY))
-		local target	= CCTargetedAction:create(self.friendPics[index].refCocosObj, moveTo)
-		local seq = CCSequence:createWithTwoActions(hideAction, target)
-		actionArray:addObject(seq)
+		v:playHideNameAndStarAnim(length - i + 1, onAnimFinish)
 	end
-	local spawn = CCSpawn:create(actionArray)
-
-	local function animFinishFunc()
-		if animFinishCallback then
-			animFinishCallback()
-		end
-	end
-	local animFinishAction = CCCallFunc:create(animFinishFunc)
-	local seq = CCSequence:createWithTwoActions(spawn, animFinishAction)
-	self:runAction(seq)
 end
 
 function FriendPicStack:setFriendPicsCleanFlag(...)
@@ -383,19 +317,20 @@ function FriendPicStack:cleanFriendPicsBasedOnCleanFlag(...)
 	assert(#{...} == 0)
 
 	for k,v in pairs(self.friendPics) do
-
 		if v.cleanFlag then
 			self:removeFriendId(v:getFriendId())
 		end
 	end
 end
 
-function FriendPicStack:create(levelId, userPicture, ...)
-	assert(type(levelId) == "number")
-	assert(userPicture)
-	assert(#{...} == 0)
-
-	local newFriendPicStack = FriendPicStack.new()
-	newFriendPicStack:init(levelId, userPicture)
-	return newFriendPicStack
+function FriendPicStack:getLayerList()
+	return {
+		clipping = self.clipping,
+		bgAndStar = self.bgStarBatch,
+		star = self.starBatch,
+		name = self.nameLayer,
+		picBg = self.picBgBatch,
+		head = self.headLayer,
+		picTop = self.picTopBatch,
+	}
 end

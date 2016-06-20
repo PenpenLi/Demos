@@ -32,7 +32,8 @@ function EndCycleStateEnter:onExit()
 end
 
 function EndCycleStateEnter:getNextState()
-	return self.context.roostReplaceStateInLoop
+	--return self.context.roostReplaceStateInLoop
+	return self.context.dripCastingStateInLoop
 end
 
 function EndCycleStateEnter:checkTransition()

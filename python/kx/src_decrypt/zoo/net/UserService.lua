@@ -17,7 +17,11 @@ function UserService:getInstance()
 
 		--local storage
 		instance.httpData = HttpDataInfo.new()
+		local userData = Localhost:readLastLoginUserData()
 		instance.levelDataInfo = LevelDataInfo.new()
+		if userData and userData.user and userData.user.levelDataInfo then
+			instance.levelDataInfo:fromLua(userData.user.levelDataInfo)
+		end
 		instance.metals = {}
 	end
 	return instance
@@ -45,6 +49,7 @@ function UserService:encode()
 	dst.funcs = encodeListDataRef(self.funcs)
 	dst.decos = encodeListDataRef(self.decos)
 	dst.scores = encodeListDataRef(self.scores)
+	dst.jumpedLevelInfos = encodeListDataRef(self.jumpedLevelInfos)
 
 	dst.achis = encodeListDataRef(self.achis)
 	--dst.requestInfos = encodeListDataRef(self.requestInfos) DO not save this as it require online
@@ -69,6 +74,10 @@ function UserService:encode()
 	dst.userType = self.userType
 	dst.setting = self.setting
 
+	dst.achievement = self.achievement
+
+	dst.ingameLimit = self.ingameLimit
+	
 	return dst
 end
 
@@ -87,7 +96,6 @@ function UserService:decodeLocalStorageData( userData )
 		self.httpData:fromLua(httpData)
 
 		local levelDataInfo = userData.levelDataInfo
-		--print("levelDataInfo"..table.tostring(levelDataInfo))
 		self.levelDataInfo = LevelDataInfo.new()
 		self.levelDataInfo:fromLua(levelDataInfo)
 
@@ -193,5 +201,7 @@ function UserService:syncLocal()
 	local user = self.user
 	local scores = self.scores
 	local props = self.props
-	UserManager:getInstance():updateUserData({user = user, scores = scores, props = props})
+	local jumpedLevelInfos = self.jumpedLevelInfos
+	UserManager:getInstance():updateUserData({user = user, 
+		scores = scores, props = props, jumpedLevelInfos = jumpedLevelInfos})
 end

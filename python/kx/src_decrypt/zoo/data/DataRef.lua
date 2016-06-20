@@ -42,6 +42,10 @@ function ProfileRef:ctor(src)
 	self.headUrl = "0"
 	self.snsId = ""
 	self.snsMap = {}
+	self.constellation = 0
+	self.age = 0
+	self.gender = 0
+	self.secret = false
 	if src ~= nil then self:fromLua(src) end
 end
 function ProfileRef:haveName()
@@ -53,7 +57,7 @@ function ProfileRef:setDisplayName( name )
 end
 function ProfileRef:getDisplayName()
 	if self:haveName() then return HeDisplayUtil:urlDecode(self.name)
-	else return "ID:"..tostring(self.uid) end
+	else return localize("game.setting.panel.use.device.name.default") end
 end
 
 function ProfileRef:getSnsInfo(authorizeType)
@@ -65,6 +69,20 @@ function ProfileRef:getSnsInfo(authorizeType)
 		end
 	end
 	return nil
+end
+
+function ProfileRef:setProfile( constellation, age, gender )
+	if constellation then
+		self.constellation = constellation
+	end
+
+	if age then
+		self.age = age
+	end
+
+	if gender then
+		self.gender = gender
+	end
 end
 
 function ProfileRef:setSnsInfo( authorizeType,snsName,name,headUrl )
@@ -83,7 +101,15 @@ function ProfileRef:setSnsInfo( authorizeType,snsName,name,headUrl )
 		if headUrl then
 			snsInfo.headUrl = headUrl
 		end
-	end
+  		if _G.sns_token and authorizeType == SnsProxy:getAuthorizeType() then
+			if name then 
+				self.name = HeDisplayUtil:urlEncode(name)
+			end
+			if headUrl then
+				self.headUrl = headUrl
+			end
+        end
+    end
 end
 
 function ProfileRef:getSnsUsername(authorizeType)
@@ -145,7 +171,15 @@ function ProfileRef:fromLua( src )
 	self.headUrl = src.headUrl
 	self.snsId = src.snsId
 
+	self.constellation = src.constellation or 0
+	self.age = src.age or 0
+	self.gender = src.gender or 0
+	self.secret = src.secret or false
+
 	self.snsMap = src.snsMap or {}
+
+	self.fileId = src.fileId
+
 	-- for k, v in pairs(src.snsMap or {}) do
 	-- 	if v.snsPlatform then
 	-- 		self.snsMap[v.snsPlatform] = v.snsName or ""
@@ -360,6 +394,8 @@ function UserExtendRef:ctor( )
 	self.tutorialStep = 0 --新手引导步骤
 	self.playStep = 0 --玩法引导步骤
 	self.topLevelFailCount = 0 -- 最高关卡连续失败次数
+
+	self.rewardedHideAreaIds = {} --掩藏关卡领奖标志
 end
 
 function UserExtendRef:getFruitTreeLevel()
@@ -528,6 +564,13 @@ end
 
 function UserExtendRef:resetTopLevelFailCount()
 	self.topLevelFailCount = 0
+end
+
+function UserExtendRef:isHideAreaRewardReceived( hideAreaId  )
+	return table.exist(self.rewardedHideAreaIds,hideAreaId)
+end
+function UserExtendRef:setHideAreaRewardReceived( hideAreaId  )
+	self.rewardedHideAreaIds[hideAreaId] = 1
 end
 
 function UserExtendRef:fromLua( src )
@@ -705,6 +748,13 @@ function ScoreRef:ctor()
 	self.updateTime = 0 --上次更新时间
 end
 
+JumpLevelRef = class(DataRef) -- 用户跳关信息
+function JumpLevelRef:ctor()
+	-- body
+	self.levelId = 0
+	self.pawnNum = 0
+end
+
 --
 -- AchiRef ---------------------------------------------------------
 --
@@ -833,6 +883,9 @@ function DailyDataRef:ctor( )
 	self.videoAdRewardLeft = 0  ---每日观看广告视频剩余次数
 	self.videoAdReward = {}     --- 观看广告视频奖励
 	self.videoAdCycle = {}      ---不同视频广告的循环规则
+
+	self.wxPayRmb = 0
+	self.wxPayCount = 0
 	
 end
 function DailyDataRef:resetAll()
@@ -853,6 +906,9 @@ function DailyDataRef:resetAll()
 	self.videoAdRewardLeft = 0 
 	self.videoAdReward = {}
 	self.videoAdCycle = {}
+
+	self.wxPayRmb = 0
+	self.wxPayCount = 0
 end
 function DailyDataRef:fromLua( src )
 	if not src then
@@ -974,6 +1030,28 @@ function DailyDataRef:removeSendId(sendId)
 	end
 end
 
+function DailyDataRef:setWxPayRmb(v)
+	print('wenkan setWxPayRmb ', v)
+	if v == nil then v = 0 end
+	v = tonumber(v)
+	self.wxPayRmb = v
+end
+
+function DailyDataRef:getWxPayRmb()
+	return self.wxPayRmb or 0
+end
+
+function DailyDataRef:setWxPayCount(v)
+	print('wenkan setWxPayCount ', v)
+	if v == nil then v = 0 end
+	v = tonumber(v)
+	self.wxPayCount = v
+end
+
+function DailyDataRef:getWxPayCount()
+	return self.wxPayCount or 0
+end
+
 ---------------------------------------------------
 -------------- LeaveArea
 ---------------------------------------------------
@@ -1015,36 +1093,66 @@ end
 --
 -- LevelDataInfo ---------------------------------------------------------
 --
-local kMaxComboStoreTime = 24 * 60 * 60 * 1000
+local kMaxComboStoreTime = 24 * 60 * 60
 LevelDataInfo = class(DataRef)
 function LevelDataInfo:ctor()
 	self.maxConbo = 0
-	self.comboStartTime = 0
+	self.comboStartTime = os.time()
 	self.levels = {}
 end
 function LevelDataInfo:getLevelInfo( levelId )
 	local key = tostring(levelId)
 	local level = self.levels[key]
-	if level == nil then 
-		level = {playTimes = 0, win = 0, failTimes = 0, lastUpdateTime = os.time(), createTime = os.time()}
+	if level == nil then
+		local now = os.time()
+		level = {playTimes = 0, win = 0, failTimes = 0, lastUpdateTime = now, createTime = now}
 		self.levels[key] = level
 	end
 	return level
 end
+--只保留24小时之内的数据
+function LevelDataInfo:clearData(now)
+	local removeT = {}
+	for key,v in pairs(self.levels) do
+		local id = tonumber(key)
+		if now - v.lastUpdateTime > kMaxComboStoreTime then
+			table.insert(removeT, key)
+			if LevelType:isMainLevel( id ) then
+				self.maxConbo = self.maxConbo - 1
+			end
+		end
+	end
+
+	for _,key in ipairs(removeT) do
+		self.levels[key] = nil
+	end
+end
+
 function LevelDataInfo:onLevelWin( levelId, score )
-	local now = os.time()
-	local level = self:getLevelInfo(levelId)
-	local winBefore = level.win
+	local isNeedUpdateCombo = true
 
-	if self.maxConbo > 15 then self.maxConbo = 0 end
-
-	local comboStartTime = self.comboStartTime
-	if now - comboStartTime > kMaxComboStoreTime then
-		self.maxConbo = 0
-		self.comboStartTime = 0
+	if not LevelType:isMainLevel( levelId ) then
+		isNeedUpdateCombo = false
 	end
 	
-	if winBefore == 0 then
+	local preScore = AchievementManager:getData(AchievementManager.PRE_SCORE)
+
+	if preScore and preScore.star > 0 then
+	 	isNeedUpdateCombo = false
+	end
+
+	local now = os.time()
+
+	self:clearData(now)
+
+	if self.maxConbo == nil or self.maxConbo < 0 then
+		self.maxConbo = 0
+	end
+
+	local level = self:getLevelInfo(levelId)
+	local winBefore = level.win
+	
+	if winBefore == 0 and isNeedUpdateCombo then
 		if self.maxConbo == 0 then self.comboStartTime = now end
 		self.maxConbo = self.maxConbo + 1
 	end
@@ -1053,11 +1161,12 @@ function LevelDataInfo:onLevelWin( levelId, score )
 	level.playTimes = level.playTimes + 1
 	level.lastUpdateTime = now
 end
+
 function LevelDataInfo:onLevelFail( levelId, score )
-	self.maxConbo = 0
-	self.comboStartTime = 0
+	local now = os.time()
+	self:clearData(now)
 	local level = self:getLevelInfo(levelId)
-	level.lastUpdateTime = os.time()
+	level.lastUpdateTime = now
 	level.playTimes = level.playTimes + 1
 	level.failTimes = level.failTimes + 1
 end
@@ -1122,4 +1231,40 @@ end
 function RabbitCount:getValue()
 	local key = "RabbitCount.rabbitCount"..tostring(self)
 	return decrypt_integer(key)
+end
+
+AchievementRef = class(DataRef)
+
+function AchievementRef:ctor()
+	self.achievements = {}
+	self.points = 0
+	self.pctOfRank = 0
+	self.uid = 0
+end
+
+function AchievementRef:fromLua( src )
+	if not src then
+		print("  [WARNING] lua data is nil at AchievementRef:fromLua")
+		return
+	end
+	self.achievements = src.achievements or {}
+	self.points = src.points or 0
+	self.pctOfRank = src.pctOfRank or 0
+	self.uid = src.uid or 0
+end
+
+
+
+function AchievementRef:encode()
+	local dst = {}
+	dst.achievements = self.achievements
+	dst.points = self.points
+	dst.pctOfRank = self.pctOfRank
+	dst.uid = self.uid
+
+	return dst
+end
+
+function AchievementRef:decode(src)
+	self:fromLua(src)
 end

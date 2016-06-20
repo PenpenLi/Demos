@@ -6,15 +6,15 @@ ActivityButton = class(IconButtonBase)
 
 function ActivityButton:ctor( ... )
 	self.id = "ActivityButton"
-	self.playTipPriority = 1
+	self.playTipPriority = 1000
 end
 
 function ActivityButton:playHasNotificationAnim(...)
-	IconButtonManager:getInstance():addPlayTipIcon(self)
+	IconButtonManager:getInstance():addPlayTipActivityIcon(self)
 end
 
 function ActivityButton:stopHasNotificationAnim(...)
-	IconButtonManager:getInstance():removePlayTipIcon(self)
+	IconButtonManager:getInstance():removePlayTipActivityIcon(self)
 end
 
 
@@ -26,6 +26,13 @@ function ActivityButton:dispose( ... )
 			break
 		end
 	end
+	if self.onUserLogin then
+		GlobalEventDispatcher:getInstance():removeEventListener(
+			kGlobalEvents.kUserLogin,
+			self.onUserLogin
+		)
+	end
+
 
 	IconButtonBase.dispose(self)
 end
@@ -37,15 +44,14 @@ function ActivityButton:init()
 
 	self.ui:getChildByName("text3"):setVisible(false)
 	
-	self.wrapper:setTouchEnabled(false)
-	self.wrapper:setTouchEnabled(true,0,false)
+	self.wrapper:setTouchEnabled(true)
 	self.wrapper:setButtonMode(true)
 
 	self:setTipPosition(IconButtonBasePos.LEFT)
 	self.clickReplaceScene = true
 	for _,v in pairs(ActivityUtil:getNoticeActivitys()) do		
 		local config = require("activity/"..v.source)
-		if config.tips  then
+		if config.tips then
 			self.tips = config.tips
 			self.id = "ActivityButton_" .. v.source
 			if not IconButtonManager:getInstance():todayIsShow(self) then
@@ -61,11 +67,13 @@ function ActivityButton:init()
 
 	self.wrapper:addEventListener(DisplayEvents.kTouchTap, function()
 		if PopoutManager:sharedInstance():haveWindowOnScreen() then return end
-		self.wrapper:setTouchEnabled(false)
+		-- self.wrapper:setTouchEnabled(false)
 
 		self:runAction(CCCallFunc:create(function( ... )
 			Director.sharedDirector():pushScene(ActivityScene:create(),ActivityUtil:getNoticeActivitys())
-			self.wrapper:setTouchEnabled(true)
+			-- self.wrapper:setTouchEnabled(true)
+
+			DcUtil:UserTrack({ category="ui",sub_category="click_activity_center_icon" })
 		end))
 	end)
 
@@ -81,6 +89,16 @@ function ActivityButton:init()
 		obj = self,
 		func = self.onActivityStatusChange
 	})
+
+	if not _G.kUserLogin then
+		self.onUserLogin = function( ... )
+			self:onActivityStatusChange()
+		end
+		GlobalEventDispatcher:getInstance():addEventListener(
+			kGlobalEvents.kUserLogin,
+			self.onUserLogin
+		)
+	end
 
 	self:onActivityStatusChange()
 end
@@ -192,12 +210,36 @@ function ActivityButton:onActivityStatusChange( ... )
 		return false
 	end
 
+	local function needPlayIconAnim( ... )
+		if self.tip then --有tip动画
+			return true
+		end
+		for _,v in pairs(ActivityUtil:getNoticeActivitys()) do
+			local config = require("activity/"..v.source)
+			if not _G.kUserLogin and config.notLoginPlayIconAnim then
+				return true
+			elseif ActivityUtil:getMsgNum(v.source) > 0 and v.playIconAnim then
+				return true
+			elseif ActivityUtil:hasRewardMark(v.source) and v.playIconAnim then
+				return true
+			end
+		end
+		return false
+	end
+
 	self:setMsgNum(getMsgNum())
 	if hasRewardAcitviy() then 
 		self:showRewardIcon()
 	else
 		self:hideRewardIcon()
 	end
+
+	if needPlayIconAnim() then
+		self:playOnlyIconAnim()
+	else
+		self:stopOnlyIconAnim()
+	end
+
 	-- 
 	local function hasNewActivity( ... )
 		for _,v in pairs(ActivityUtil:getNoticeActivitys()) do

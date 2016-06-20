@@ -10,9 +10,7 @@ end
 
 function CDKeyButton:init(...)
 	self.ui	= ResourceManager:sharedInstance():buildGroup("exchangeIcon")
-
 	IconButtonBase.init(self, self.ui)
-
 end
 
 

@@ -359,7 +359,8 @@ function TileDragonBoss:playCasting(destPositions, callback)
 
     self.sprite:stopAllActions()
     
-    local spriteSize = self.sprite:getGroupBounds().size
+    local rectSize = self.sprite:getGroupBounds().size
+    local spriteSize = {width = rectSize.width, height = rectSize.height}
 
     local count = 0
     local function ballCallback()

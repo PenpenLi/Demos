@@ -16,11 +16,15 @@ assert(IconButtonBase)
 GoldButton = class(IconButtonBase)
 
 function GoldButton:ctor()
+	self.idPre = "GoldButton"
+    self.playTipPriority = 20
 end
 
-function GoldButton:init(...)
-	assert(#{...} == 0)
+function GoldButton:init(belongScene)
+	self.clickReplaceScene = true
 
+	self.id = self.idPre .. self.tipState
+	self["tip"..IconTipState.kNormal] = Localization:getInstance():getText("buy.gold.icon.tip")
 	-- Get UI Resource
 	self.ui	= ResourceManager:sharedInstance():buildGroup("newGoldButton")
 	assert(self.ui)
@@ -33,6 +37,10 @@ function GoldButton:init(...)
 	-- -------------
 	-- Get UI Resource
 	-- -------------
+	self.oneYuanFlag = self.ui:getChildByName("oneYuanFlag")
+	self.oneYuanFlag:setVisible(false)
+	self.flagChildIndex = self.ui:getChildIndex(self.oneYuanFlag)
+
 	self.glow = self.ui:getChildByName("glow");
 	self.numberLabelPlaceholder	= self.wrapper:getChildByName("numberLabel")
 	self.bubbleItemRes	= self.wrapper:getChildByName("bubbleItem")
@@ -80,7 +88,7 @@ function GoldButton:init(...)
 	local luaClipping	= ClippingNode.new(cppClipping)
 	stencil:dispose()
 	
-	self.ui:addChild(luaClipping)
+	self.ui:addChildAt(luaClipping, self.flagChildIndex)
 	self.bubbleItem:removeFromParentAndCleanup(false)
 	luaClipping:addChild(self.bubbleItem)
 
@@ -113,7 +121,7 @@ function GoldButton:init(...)
 		self.userRef	= UserManager.getInstance().user
 		self:setGoldNumber(self.userRef:getCash())
 	end
-	 CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(perFrameCallback, 1/60, false)
+	CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(perFrameCallback, 1/60, false)
 
 	-- ---------------------------------
 	-- Add Event Listener
@@ -122,20 +130,42 @@ function GoldButton:init(...)
 		self:onTapped(event)
 	end
 
-	self.ui:setTouchEnabled(true, 0, true)
-	self.ui:addEventListener(DisplayEvents.kTouchTap, onTapped)
+	self.wrapper:setTouchEnabled(true,0,true)
+	self.wrapper:addEventListener(DisplayEvents.kTouchTap, onTapped)
+	self:registerScriptHandler(function(event)
+			if event == "enter" and not self.wrapper.isDisposed then
+				self.wrapper.isTouched = false
+			end
+		end)
+
+	if belongScene then
+		self.belongScene	= belongScene
+		self.belongScene:addEventListener(HomeSceneEvents.USERMANAGER_CASH_CHANGE, self.onCashDataChange, self)
+	end
 end
 
-function GoldButton:playHighlightAnim(...)
+function GoldButton.onCashDataChange(event, ...)
+	assert(event)
+	assert(event.name == HomeSceneEvents.USERMANAGER_CASH_CHANGE)
+	assert(event.context)
 	assert(#{...} == 0)
 
+	local self = event.context
+
+	local newCash = UserManager.getInstance().user:getCash()
+	self:setGoldNumber(newCash)
+
+	print("GoldButton:onCashDataChange Called !")
+	print("New Cash: " .. newCash)
+	--debug.debug()
+end
+
+function GoldButton:playHighlightAnim()
 	local highlightRes = ResourceManager:sharedInstance():buildSprite("goldHighlightWrapper")
 	self.bubbleItem:playHighlightAnim(highlightRes)
 end
 
-function GoldButton:centerLabel(...)
-	assert(#{...} == 0)
-
+function GoldButton:centerLabel()
 	local curLabelPos 	= self.numberLabel:getPosition()
 	local curLabelSize	= self.numberLabel:getContentSize()
 
@@ -147,24 +177,20 @@ function GoldButton:centerLabel(...)
 	self.numberLabel:setPositionY(self.placeholderPos.y - deltaHeight/2)
 end
 
-function GoldButton:onTapped(event, ...)
-	assert(#{...} == 0)
-
+function GoldButton:onTapped(event)
 	if self.onTappedCallback then
 		self.onTappedCallback()
 	end
 end
 
-function GoldButton:setOnTappedCallback(onTappedCallback, ...)
+function GoldButton:setOnTappedCallback(onTappedCallback)
 	assert(type(onTappedCallback) == "function")
-	assert(#{...} == 0)
 
 	self.onTappedCallback = onTappedCallback
 end
 
-function GoldButton:setGoldNumber(number, ...)
+function GoldButton:setGoldNumber(number)
 	assert(number)
-	assert(#{...} == 0)
 
 	if self.goldNumber == number then
 		return
@@ -173,9 +199,7 @@ function GoldButton:setGoldNumber(number, ...)
 	end
 end
 
-function GoldButton:updateView(...)
-	assert(#{...} == 0)
-
+function GoldButton:updateView()
 	local delay = CCDelayTime:create(2/30)
 
 	local function callFunc()
@@ -188,36 +212,65 @@ function GoldButton:updateView(...)
 	self:runAction(seq)
 end
 
-function GoldButton:create(...)
-	assert(#{...} == 0)
-
+function GoldButton:create(belongScene)
 	local newGoldButton = GoldButton.new()
-	newGoldButton:init()
+	newGoldButton:init(belongScene)
 	
 	return newGoldButton
 end
 
-function GoldButton:delayCreateTipLeft(...)
-	self.tip = IconButtonBase.delayCreateTipLeft(self);
-	self.tipPos = ccp(self.tipPos.x - 50, self.tipPos.y);
-	self.tip.setPosition(self.tipPos);
+function GoldButton:getTipPos()
+	local tipSize = self.tip:getGroupBounds().size
+	self.wrapperSize	= self.wrapper:getGroupBounds().size
+	self.wrapperSize	= {width = self.wrapperSize.width, height = self.wrapperSize.height}
+	local deltaHeight	= self.wrapperSize.height - tipSize.height
+	local tipPos = ccp(-tipSize.width - self.tipLeftMarginToIconBtn -40 , -deltaHeight / 2)
 
-	self.tip:setScale(self.tip:getScale()/self:getScale())
-
-	return self.tip;
+	return tipPos
 end
 
-function GoldButton:playOnlyTipAnim( ... )
-	IconButtonBase.playOnlyTipAnim(self);
-	self.glow:setVisible(true);
+function GoldButton:delayCreateTipLeft()
+	if not self.tip	then
+		self.tip = ResourceManager:sharedInstance():buildGroup("tip/tipLeft")
+		self.tip:setScale(self.tip:getScale()/self:getScale())
+		self.ui:addChild(self.tip)
 
-	local animationTime = 0.5;
-	local fadeIn = CCEaseSineInOut:create(CCFadeIn:create(animationTime))
-	local fadeOut = CCEaseSineInOut:create(CCFadeOut:create(animationTime))
-	local seq = CCSequence:createWithTwoActions(fadeIn, fadeOut)
-	assert(self.glow);
-	self.glow:runAction(CCRepeatForever:create(seq))
-	self:setTipString(Localization:getInstance():getText("buy.gold.icon.tip"));
+		self.tipPos = self:getTipPos()
+		self.tip:setPosition(self.tipPos)
+		self:setTipString(self["tip"..IconTipState.kNormal]);
+		-- self.tip:setVisible(false)
+	end
+	return self.tip
+end
+
+function GoldButton:_createShiftingTipActionLeft()
+	local secondPerFrame = 1 / 60
+	local tip = self:delayCreateTipLeft()
+
+	local function initActionFunc()
+		-- tip:setVisible(true)
+		tip:setPosition(ccp(self.tipPos.x, self.tipPos.y))
+	end
+	local initAction	= CCCallFunc:create(initActionFunc)
+	local scaleDelta = self:getScale()
+	-- Shifting Action
+	-- local moveTo1	= CCMoveTo:create(secondPerFrame * 11, 	ccp(self.tipPos.x - 4, self.tipPos.y))
+	local moveTo2	= CCMoveTo:create(secondPerFrame * 10,	ccp(self.tipPos.x + 12/scaleDelta, self.tipPos.y))
+	local moveTo3	= CCMoveTo:create(secondPerFrame * 10,	ccp(self.tipPos.x + 10/scaleDelta, self.tipPos.y))
+	local moveTo4	= CCMoveTo:create(secondPerFrame * 29,	ccp(self.tipPos.x - 0, self.tipPos.y))
+	
+	-- Action Array
+	local actionArray = CCArray:create()
+	actionArray:addObject(initAction)
+	-- actionArray:addObject(moveTo1)
+	actionArray:addObject(moveTo2)
+	actionArray:addObject(moveTo3)
+	actionArray:addObject(moveTo4)
+
+	local seq = CCSequence:create(actionArray)
+	local targetSeq	= CCTargetedAction:create(tip.refCocosObj, seq)
+
+	return targetSeq
 end
 
 function GoldButton:getFlyToPosition()
@@ -232,15 +285,44 @@ function GoldButton:getFlyToSize()
 	return size
 end
 
-function GoldButton:stopHasNotificationAnim(...)
-	IconButtonBase.stopHasNotificationAnim(self);
+function GoldButton:getBubbleItemRes( ... )
+	return self.bubbleItemRes
+end
+
+function GoldButton:playHasNotificationAnim()
+    IconButtonManager:getInstance():addPlayTipNormalIcon(self)
+end
+function GoldButton:stopHasNotificationAnim()
+    IconButtonManager:getInstance():removePlayTipNormalIcon(self)
+end
+
+function GoldButton:stopOnlyTipAnim()
+	IconButtonBase.stopOnlyTipAnim(self);
 	self.glow:stopAllActions();
 	self.glow:setVisible(false);
 
-	if self.onTappedCallback then
-		self.onTappedCallback()
-	end
+	-- if self.onTappedCallback then
+	-- 	self.onTappedCallback()
+	-- end
 	print("stopHasNotificationAnim in goldbutton called!");
+end
+
+function GoldButton:playOnlyTipAnim()
+	IconButtonBase.playOnlyTipAnim(self);
+	self.glow:setVisible(true);
+
+	local animationTime = 0.5;
+	local fadeIn = CCEaseSineInOut:create(CCFadeIn:create(animationTime))
+	local fadeOut = CCEaseSineInOut:create(CCFadeOut:create(animationTime))
+	local seq = CCSequence:createWithTwoActions(fadeIn, fadeOut)
+	assert(self.glow);
+	self.glow:runAction(CCRepeatForever:create(seq))
+end
+
+function GoldButton:playOnlyIconAnim()
+end
+
+function GoldButton:stopOnlyIconAnim()
 end
 
 function GoldButton:playTip(text, seconds)
@@ -255,6 +337,9 @@ function GoldButton:playTip(text, seconds)
 		local seq = CCSequence:createWithTwoActions(fadeIn, fadeOut)
 		assert(self.glow);
 		self.glow:runAction(CCRepeatForever:create(seq))
+
+		self.tipState = IconTipState.kReward
+		self.id = self.idPre .. self.tipState
 		self:setTipString(text);
 	end
 	IconButtonBase.stopHasNotificationAnim(self);
@@ -276,5 +361,20 @@ function GoldButton:playTip(text, seconds)
 		self.schedId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(onTick, seconds, false)
 	else
 		_playTip()
+	end
+end
+
+-- function GoldButton:removeOneYuanFCashTip()
+-- 	IconButtonBase.stopHasNotificationAnim(self)
+-- 	if self.schedId then
+-- 		CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.schedId)
+-- 		self.schedId = nil
+-- 	end
+-- end
+
+function GoldButton:setOneYuanCashFlagVisible(isVisible)
+	if self.isDisposed then return end
+	if self.oneYuanFlag then 
+		self.oneYuanFlag:setVisible(isVisible)
 	end
 end

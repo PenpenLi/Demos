@@ -26,7 +26,7 @@ function BombItemLogic:BombByMatch(mainLogic)
 					local item = mainLogic.gameItemMap[r][c]
 					local specialType = mainLogic.gameItemMap[r][c].ItemSpecialType 	--特殊类型
 					
-					if specialType >= AnimalTypeConfig.kLine and specialType <= AnimalTypeConfig.kColor then
+					if AnimalTypeConfig.isSpecialTypeValid(specialType) then
 						if not item.isItemLock then
 							local matchPosList = getMatchPosList(matchFlag)
 							item.lightUpBombMatchPosList = matchPosList
@@ -90,7 +90,7 @@ function BombItemLogic:_BombItemLine(mainLogic, r, c, isBombScore, scoreScale, i
 		item.isItemLock = true
 
 		if not (mainLogic.gameItemMap[r][c].hasGivenScore or isFromSpecialMatch) then
-			local scoreAdd = GamePlayConfig_Score_SpecialBomb_kLine;
+			local scoreAdd = GamePlayConfigScore.SpecialBombkLine
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
 		
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -132,7 +132,7 @@ function BombItemLogic:_BombItemColumn(mainLogic, r, c, isBombScore, scoreScale,
 		item.isItemLock = true
 
 		if not (mainLogic.gameItemMap[r][c].hasGivenScore or isFromSpecialMatch) then
-			local scoreAdd = GamePlayConfig_Score_SpecialBomb_kCloumn;
+			local scoreAdd = GamePlayConfigScore.SpecialBombkColumn
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
 			
 			local ScoreAction = GameBoardActionDataSet:createAs(
@@ -176,7 +176,7 @@ function BombItemLogic:_BombItemWrap(mainLogic, r, c, isBombScore, scoreScale, i
 		item.isItemLock = true
 
 		if not mainLogic.gameItemMap[r][c].hasGivenScore then 
-			local scoreAdd = GamePlayConfig_Score_SpecialBomb_kWrap;
+			local scoreAdd = GamePlayConfigScore.SpecialBombkWrap
 			ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
 			local ScoreAction = GameBoardActionDataSet:createAs(
 				GameActionTargetType.kGameItemAction,
@@ -287,7 +287,6 @@ function BombItemLogic:tryCoverByBomb(mainLogic, r, c, coverFalling, scoreScale,
 	elseif item.isEmpty then 
 		SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 	end
-
 	return 0
 end
 
@@ -354,9 +353,11 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 				local scoreAdd = 0
 				local scoreBase = 0
 				if item.ItemType == GameItemType.kAnimal then
-					scoreBase = 10
+					scoreBase = GamePlayConfigScore.MatchDeletedBase
 				elseif item.ItemType == GameItemType.kCrystal then
-					scoreBase = 100
+					scoreBase = GamePlayConfigScore.MatchDeletedCrystal
+				elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kRocket then
+					scoreBase = GamePlayConfigScore.Rocket
 				end
 				scoreAdd = scoreBase * scoreScale 
 
@@ -380,6 +381,10 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 					CoverAction.addInfo = "kAnimal"
 					mainLogic:addDestroyAction(CoverAction)
 					item:AddItemStatus(GameItemStatusType.kDestroy) 		----修改状态
+
+					if item:canChargeCrystalStone() then
+						GameExtandPlayLogic:chargeCrystalStone(mainLogic, r, c, item.ItemColorType)
+					end
 				else
 					item:AddItemStatus(GameItemStatusType.kIsSpecialCover) 		----修改状态
 				end
@@ -399,11 +404,13 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 				----1.获得分数
 				local scoreBase = 0
 				if item.ItemType == GameItemType.kAnimal then
-					scoreBase = 10
+					scoreBase = GamePlayConfigScore.MatchDeletedBase
 				elseif item.ItemType == GameItemType.kCrystal then
-					scoreBase = 100
+					scoreBase = GamePlayConfigScore.MatchDeletedCrystal
+				elseif item.ItemType == GameItemType.kRocket then
+					scoreBase = GamePlayConfigScore.Rocket
 				end
-				local scoreAdd = 10 * scoreScale;
+				local scoreAdd = scoreBase * scoreScale;
 
 				ScoreCountLogic:addScoreToTotal(mainLogic, scoreAdd);
 				local ScoreAction = GameBoardActionDataSet:createAs(
@@ -426,6 +433,10 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 					CoverAction.addInfo = "kAnimal"
 					mainLogic:addDestroyAction(CoverAction)
 					item:AddItemStatus(GameItemStatusType.kDestroy) 		----修改状态
+
+					if item:canChargeCrystalStone() then
+						GameExtandPlayLogic:chargeCrystalStone(mainLogic, r, c, item.ItemColorType)
+					end
 				else
 					item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
 				end
@@ -439,6 +450,8 @@ function BombItemLogic:tryCoverByBird(mainLogic, r, c, r2, c2, scoreScale)
 		end
 	elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
 		GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
+	-- elseif item.beEffectByMimosa == GameItemType.kKindMimosa then
+	-- 	GameExtandPlayLogic:backMimosaToRC(mainLogic, r, c)
 	else
 		----其他类别
 	end
@@ -455,10 +468,18 @@ function BombItemLogic:setSignOfBombResWithBirdFlying(mainLogic, r1, c1, theColo
 		local r = v.x;
 		local c = v.y;
 		local item = mainLogic.gameItemMap[r][c]
+		local borad = mainLogic.boardmap[r][c]
+		if borad.lotusLevel > 0 and borad.lotusLevel ~= 3 then
+			GameExtandPlayLogic:decreaseLotus( mainLogic , r ,c , 1 , false)
+		end
 
 		if item.ItemSpecialType ~= AnimalTypeConfig.kColor
 			and item:canBecomeSpecialBySwapColorSpecial()
 			then
+
+			if item.beEffectByMimosa == GameItemType.kKindMimosa then
+				GameExtandPlayLogic:backMimosaToRC(mainLogic, r, c)
+			end
 
 			if item:hasFurball() then
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, v.x, v.y, 3)
@@ -505,14 +526,28 @@ function BombItemLogic:setSignOfBombResWithBirdFlying(mainLogic, r1, c1, theColo
 				-- item:AddItemStatus(GameItemStatusType.kWaitBomb)
 			end
 		elseif item.ItemType == GameItemType.kMagicLamp and item.lampLevel > 0 and item:isAvailable() then
-			local action = GameBoardActionDataSet:createAs(
+			SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3)
+			-- local action = GameBoardActionDataSet:createAs(
+   --                      GameActionTargetType.kGameItemAction,
+   --                      GameItemActionType.kItem_Magic_Lamp_Charging,
+   --                      IntCoord:create(r, c),
+   --                      nil,
+   --                      GamePlayConfig_MaxAction_time
+   --                  )
+			-- action.count = 1
+		 --    mainLogic:addDestroyAction(action)
+    	elseif item.ItemType == GameItemType.kWukong 
+    		and item.wukongProgressCurr < item.wukongProgressTotal 
+    		and ( item.wukongState == TileWukongState.kNormal or item.wukongState == TileWukongState.kOnHit or item.wukongState == TileWukongState.kOnActive )
+    		and item:isAvailable() and not mainLogic.isBonusTime then
+    		local action = GameBoardActionDataSet:createAs(
                         GameActionTargetType.kGameItemAction,
-                        GameItemActionType.kItem_Magic_Lamp_Charging,
+                        GameItemActionType.kItem_Wukong_Charging,
                         IntCoord:create(r, c),
                         nil,
                         GamePlayConfig_MaxAction_time
                     )
-			action.count = 1
+			action.count = 3
 		    mainLogic:addDestroyAction(action)
 		end
 	end
@@ -542,8 +577,7 @@ end
 function BombItemLogic:canBeBombByBirdBird(mainLogic, r, c)
 	local item = mainLogic.gameItemMap[r][c]
 	if item.ItemType == GameItemType.kAnimal
-		and item.ItemSpecialType >= AnimalTypeConfig.kLine
-		and item.ItemSpecialType <= AnimalTypeConfig.kColor
+		and AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType)
 		and item:isAvailable()
 		then
 		return true
@@ -613,24 +647,26 @@ function BombItemLogic:getNumSpecialBomb(mainLogic)
 	return result
 end
 
--------鸟鸟交换清屏-----
-function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, scoreScale)
+-- 效果与魔力鸟与魔力鸟效果完全相同，只是动画不一样
+function BombItemLogic:bombAllByCrystalStone(mainLogic, isBombScore, scoreScale)
 	for r = 1, #mainLogic.gameItemMap do
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
 			if item:isItemCanBeCoverByBirdBrid() then
 				if item:isItemCanBeEliminateByBridBird() then
 					----1.分数
-					if scoreScale == 0 then scoreScale = 1 end
+					if not scoreScale or scoreScale == 0 then scoreScale = 1 end
 					if scoreScale < 0 then scoreScale = 0 end
 
-					local addScore = GamePlayConfig_Score_MatchDeleted_Base * scoreScale
+					local addScore = GamePlayConfigScore.MatchDeletedBase * scoreScale
 					if mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCrystal then 	 -----水晶则消除增加100分
-						addScore = GamePlayConfig_Score_MatchDeleted_Crystal * scoreScale
+						addScore = GamePlayConfigScore.MatchDeletedCrystal * scoreScale
 					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kBalloon then 
-						addScore = GamePlayConfig_Score_Balloon * scoreScale
+						addScore = GamePlayConfigScore.Balloon * scoreScale
 					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kRabbit then
-						addScore = GamePlayConfig_Score_Rabbit * scoreScale
+						addScore = GamePlayConfigScore.Rabbit * scoreScale
+					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kRocket then
+						addScore = GamePlayConfigScore.Rocket * scoreScale
 					end
 					ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 					local ScoreAction = GameBoardActionDataSet:createAs(
@@ -642,30 +678,7 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 					ScoreAction.addInt = addScore
 					mainLogic:addGameAction(ScoreAction)
 
-					----2.动画
-					if item.ItemType == GameItemType.kAnimal then
-						if item.ItemSpecialType >= AnimalTypeConfig.kLine and item.ItemSpecialType <= AnimalTypeConfig.kColor then
-							item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
-						else
-							local CoverAction = nil
-							CoverAction = GameBoardActionDataSet:createAs(
-								GameActionTargetType.kGameItemAction,
-								GameItemActionType.kItemSpecial_ColorColor_ItemDeleted,
-								IntCoord:create(r,c),
-								IntCoord:create(birdBirdPos.r, birdBirdPos.c),
-								GamePlayConfig_SpecialBomb_BirdBird_Time5)
-							CoverAction.addInfo = "kAnimal"
-							CoverAction.addInt2 = scoreScale
-							mainLogic:addDestroyAction(CoverAction)
-
-							item:AddItemStatus(GameItemStatusType.kDestroy)
-							mainLogic:tryDoOrderList(r, c, GameItemOrderType.kAnimal, mainLogic.gameItemMap[r][c].ItemColorType)
-						end
-						mainLogic.gameItemMap[r][c].gotoPos = nil
-						mainLogic.gameItemMap[r][c].comePos = nil
-					else
-						item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
-					end
+					item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
 
 					if mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCrystal or mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCoin then
 						ProductItemLogic:shoundCome(mainLogic, mainLogic.gameItemMap[r][c].ItemType)
@@ -673,12 +686,15 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 
 					SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale)
 					SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
+					if mainLogic.boardmap[r][c].lotusLevel > 0 then
+						GameExtandPlayLogic:decreaseLotus(mainLogic, r, c , 1 , false)
+					end
 				elseif item:hasLock() then
 					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
 				elseif item:hasFurball() then
 					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
 				elseif item.ItemType == GameItemType.kCoin then
-					local addScore = GamePlayConfig_Score_MatchDeleted_Crystal * scoreScale
+					local addScore = GamePlayConfigScore.MatchDeletedCrystal * scoreScale
 					ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
 					local ScoreAction = GameBoardActionDataSet:createAs(
 						GameActionTargetType.kGameItemAction,
@@ -698,14 +714,16 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 							SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
 						end
 						
-						ScoreCountLogic:addScoreToTotal(mainLogic, GamePlayConfig_Score_MatchAt_BlackCuteBall * scoreScale)
+						local addScore = GamePlayConfigScore.MatchAt_BlackCuteBall * scoreScale
+						ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+
 						local ScoreAction = GameBoardActionDataSet:createAs(
 							GameActionTargetType.kGameItemAction,
 							GameItemActionType.kItemScore_Get,
 							IntCoord:create(r, c),
 							nil,
 							1)
-						ScoreAction.addInt = GamePlayConfig_Score_MatchAt_BlackCuteBall * scoreScale
+						ScoreAction.addInt = addScore
 						mainLogic:addGameAction(ScoreAction)
 						--add todo
 						local duringTime = 1
@@ -723,6 +741,145 @@ function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, s
 					end
 				elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
 					GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
+				elseif item.ItemType == GameItemType.kCrystalStone then
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, scoreScale)
+				end
+			elseif item:isBlockerCanBeCoverByBirdBrid() then
+				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
+			elseif item.isEmpty then
+				SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
+			else
+				SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale)
+			end
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r, c, {ChainDirConfig.kUp, ChainDirConfig.kDown, ChainDirConfig.kLeft, ChainDirConfig.kRight})
+		end
+	end
+end
+
+-------鸟鸟交换清屏-----
+function BombItemLogic:tryCoverByBirdBird(mainLogic, birdBirdPos, isBombScore, scoreScale)
+	for r = 1, #mainLogic.gameItemMap do
+		for c = 1, #mainLogic.gameItemMap[r] do
+			local item = mainLogic.gameItemMap[r][c]
+			if item:isItemCanBeCoverByBirdBrid() then
+				if item:isItemCanBeEliminateByBridBird() then
+					----1.分数
+					if scoreScale == 0 then scoreScale = 1 end
+					if scoreScale < 0 then scoreScale = 0 end
+
+					local addScore = GamePlayConfigScore.MatchDeletedBase * scoreScale
+					if mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCrystal then 	 -----水晶则消除增加100分
+						addScore = GamePlayConfigScore.MatchDeletedCrystal * scoreScale
+					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kBalloon then 
+						addScore = GamePlayConfigScore.Balloon * scoreScale
+					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kRabbit then
+						addScore = GamePlayConfigScore.Rabbit * scoreScale
+					elseif mainLogic.gameItemMap[r][c].ItemType == GameItemType.kRocket then
+						addScore = GamePlayConfigScore.Rocket * scoreScale
+					end
+					ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+					local ScoreAction = GameBoardActionDataSet:createAs(
+						GameActionTargetType.kGameItemAction,
+						GameItemActionType.kItemScore_Get,
+						IntCoord:create(r,c),
+						nil,				
+						1)
+					ScoreAction.addInt = addScore
+					mainLogic:addGameAction(ScoreAction)
+
+					----2.动画
+					if item.ItemType == GameItemType.kAnimal then
+						if AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType) then
+							item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
+						else
+							local CoverAction = nil
+							CoverAction = GameBoardActionDataSet:createAs(
+								GameActionTargetType.kGameItemAction,
+								GameItemActionType.kItemSpecial_ColorColor_ItemDeleted,
+								IntCoord:create(r,c),
+								IntCoord:create(birdBirdPos.r, birdBirdPos.c),
+								GamePlayConfig_SpecialBomb_BirdBird_Time5)
+							CoverAction.addInfo = "kAnimal"
+							CoverAction.addInt2 = scoreScale
+							mainLogic:addDestroyAction(CoverAction)
+
+							item:AddItemStatus(GameItemStatusType.kDestroy)
+							mainLogic:tryDoOrderList(r, c, GameItemOrderType.kAnimal, mainLogic.gameItemMap[r][c].ItemColorType)
+
+							if item:canChargeCrystalStone() then
+								GameExtandPlayLogic:chargeCrystalStone(mainLogic, r, c, item.ItemColorType)
+							end
+						end
+						mainLogic.gameItemMap[r][c].gotoPos = nil
+						mainLogic.gameItemMap[r][c].comePos = nil
+					else
+						item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
+					end
+
+					if mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCrystal or mainLogic.gameItemMap[r][c].ItemType == GameItemType.kCoin then
+						ProductItemLogic:shoundCome(mainLogic, mainLogic.gameItemMap[r][c].ItemType)
+					end
+
+					SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, scoreScale)
+					SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
+
+					if mainLogic.boardmap[r][c].lotusLevel > 0 then
+						GameExtandPlayLogic:decreaseLotus(mainLogic, r, c , 1 , false)
+					end
+				elseif item:hasLock() then
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
+				elseif item:hasFurball() then
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
+				elseif item.ItemType == GameItemType.kCoin then
+					local addScore = GamePlayConfigScore.MatchDeletedCrystal * scoreScale
+					ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+					local ScoreAction = GameBoardActionDataSet:createAs(
+						GameActionTargetType.kGameItemAction,
+						GameItemActionType.kItemScore_Get,
+						IntCoord:create(r,c),
+						nil,				
+						1)
+					ScoreAction.addInt = addScore
+					mainLogic:addGameAction(ScoreAction)
+					item:AddItemStatus(GameItemStatusType.kIsSpecialCover)
+				elseif item.ItemType == GameItemType.kBlackCuteBall then
+					if item.blackCuteStrength > 0 then 
+
+						item.blackCuteStrength = item.blackCuteStrength - 1
+						if item.blackCuteStrength == 0 then 
+							item:AddItemStatus(GameItemStatusType.kDestroy)
+							SnailLogic:SpecialCoverSnailRoadAtPos( mainLogic, r, c )
+						end
+						
+						local addScore = GamePlayConfigScore.MatchAt_BlackCuteBall * scoreScale
+						ScoreCountLogic:addScoreToTotal(mainLogic, addScore)
+						
+						local ScoreAction = GameBoardActionDataSet:createAs(
+							GameActionTargetType.kGameItemAction,
+							GameItemActionType.kItemScore_Get,
+							IntCoord:create(r, c),
+							nil,
+							1)
+						ScoreAction.addInt = addScore
+						mainLogic:addGameAction(ScoreAction)
+						--add todo
+						local duringTime = 1
+						if item.blackCuteStrength == 0 then 
+							duringTime = GamePlayConfig_BlackCuteBall_Destroy
+						end
+						local blackCuteAction = GameBoardActionDataSet:createAs(
+							GameActionTargetType.kGameItemAction,
+							GameItemActionType.kItem_Black_Cute_Ball_Dec,
+							IntCoord:create(r, c),
+							nil,
+							duringTime)
+						blackCuteAction.blackCuteStrength = item.blackCuteStrength
+						mainLogic:addDestroyAction(blackCuteAction)
+					end
+				elseif item.ItemType == GameItemType.kQuestionMark and item:isQuestionMarkcanBeDestroy() then
+					GameExtandPlayLogic:questionMarkBomb( mainLogic, r, c )
+				elseif item.ItemType == GameItemType.kCrystalStone then
+					SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, scoreScale)
 				end
 			elseif item:isBlockerCanBeCoverByBirdBrid() then
 				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3, scoreScale)
@@ -794,7 +951,7 @@ function BombItemLogic:initRandomAnimalChangeList(mainLogic)
 		for c=1,#mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
 			if item.ItemType == GameItemType.kAnimal 
-				and item.ItemColorType > 0 
+				and AnimalTypeConfig.isColorTypeValid(item.ItemColorType) 
 				and item.ItemSpecialType == 0 
 				and not item:hasFurball() 
 				and not item:hasLock()
@@ -817,6 +974,97 @@ function BombItemLogic:getRandomAnimalChangeToLineSpecial(mainLogic)
 	local ret = IntCoord:create(pos.x, pos.y)
 	table.remove(mainLogic.randomAnimalHelpList, rid)
 	return ret
+end
+
+function BombItemLogic:forceClearItemWithCover(mainLogic , r, c)
+	local gameItemMap = mainLogic.gameItemMap
+	local item = nil
+	if gameItemMap and gameItemMap[r] and gameItemMap[r][c] then
+		item = gameItemMap[r][c]
+	end
+
+	local function clearItem( r, c , times, bomb, special)
+		for i=1, times do
+			if bomb then
+				BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1, true, true)
+			end
+			if special then
+				SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, nil, nil, true, true) 
+			end
+		end
+	end
+
+	if item then
+		if item.ItemType == GameItemType.kDigGround then
+			--[[
+			clearItem(item.digGroundLevel , false , true)
+			]]
+			for i = 1, item.digGroundLevel do
+				if item.digGroundLevel > 0 then
+					--if item.digBlockCanbeDelete then
+						GameExtandPlayLogic:decreaseDigGround(mainLogic, r, c, 1, true)
+					--end
+				end
+			end
+
+		elseif item.ItemType == GameItemType.kDigJewel then
+			for i = 1, item.digJewelLevel do
+				if item.digJewelLevel > 0 then
+					--if item.digBlockCanbeDelete then
+						GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, nil, true, true)
+					--end
+				end
+			end
+		else				
+			clearItem(r, c, 1, true, true)					
+		end			
+	end
+end
+
+function BombItemLogic:clearItemWithoutCover(mainLogic , r, c)
+	local gameItemMap = mainLogic.gameItemMap
+	local item = nil
+	if gameItemMap and gameItemMap[r] and gameItemMap[r][c] then
+		item = gameItemMap[r][c]
+	end
+
+	local function clearItem( r, c , times, bomb, special)
+		for i=1, times do
+			if bomb then
+				BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1.5, true, false)
+			end
+			if special then
+				--SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 0, nil, nil, true, true) 
+			end
+
+			SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1.5, true)
+			SpecialCoverLogic:specialCoverChainsAtPos(mainLogic, r , c)
+
+			if SpecialCoverLogic:canBeEffectBySpecialAt(mainLogic, r, c) then
+				SpecialCoverLogic:effectBlockerAt(mainLogic, r, c, 1.5 , nil , false, false)
+			end
+		end
+	end
+	clearItem(r, c, 1, true, false)	
+	--[[
+	if item then
+		if item.ItemType == GameItemType.kDigGround then
+			if item.digGroundLevel > 0 then
+				--if item.digBlockCanbeDelete then
+					GameExtandPlayLogic:decreaseDigGround(mainLogic, r, c, 1, true)
+				--end
+			end
+		elseif item.ItemType == GameItemType.kDigJewel then
+			if item.digJewelLevel > 0 then
+				--if item.digBlockCanbeDelete then
+					GameExtandPlayLogic:decreaseDigJewel(mainLogic, r, c, nil, true, true)
+				--end
+			end
+		else				
+			clearItem(r, c, 1, true, false)					
+		end			
+	end
+	]]
 end
 
 function BombItemLogic:springFestivalBombScreen(mainLogic)
@@ -843,6 +1091,7 @@ function BombItemLogic:springFestivalBombScreen(mainLogic)
 	end
 
 	local gameItemMap = mainLogic.gameItemMap
+	he_log_error( "RRR  [BombItemLogic:springFestivalBombScreen]    ++++++++++++++++++++++++++++++++++++++++++++++++++" ) 
 	for r = 1, #gameItemMap do
 		for c = 1, #gameItemMap[r] do
 			local item = gameItemMap[r][c]

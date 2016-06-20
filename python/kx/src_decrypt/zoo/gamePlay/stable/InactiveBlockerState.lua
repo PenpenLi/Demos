@@ -129,7 +129,9 @@ function InactiveBlockerState:checkAllTypeBlocker(flag)
 end
 
 function InactiveBlockerState:getNextState()
-	return self.context.sandTransferState
+	return self.context.lotusUpdateState
+	--return self.context.sandTransferState
+
 end
 
 function InactiveBlockerState:onExit()

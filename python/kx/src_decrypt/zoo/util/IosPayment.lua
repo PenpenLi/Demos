@@ -1,7 +1,8 @@
 require "zoo.util.IosPaymentCallback"
 require 'zoo.gameGuide.IosPayGuide'
 require "zoo.payment.PaymentEventDispatcher"
-require "zoo.payment.PaymentIosDCUtil"
+require "zoo.payment.paymentDC.PaymentIosDCUtil"
+require "zoo.payment.paymentDC.DCIosRmbObject"
 
 IosPayment = {}
 

@@ -20,6 +20,7 @@ IconButtonBase = class(BaseUI)
 
 function IconButtonBase:ctor( ... )
 	self.playTipPriority = 10000
+	self.tipState = IconTipState.kNormal
 end
 
 function IconButtonBase:init(ui, ...)
@@ -37,6 +38,7 @@ function IconButtonBase:init(ui, ...)
 	-- Get Data About UI
 	-- --------------------
 	self.wrapperSize	= self.wrapper:getGroupBounds().size
+	self.wrapperSize	= {width = self.wrapperSize.width, height = self.wrapperSize.height}
 	self.wrapperWidth	= self.wrapperSize.width
 	self.wrapperHeight	= self.wrapperSize.height
 
@@ -49,8 +51,8 @@ function IconButtonBase:init(ui, ...)
 
 	self.tip		= false
 
-	self.tipOriginalWidth		= false
-	self.tipOriginalHeight		= false
+	self.tipOriginalWidth = 200
+	self.tipOriginalHeight = 45
 
 	self.tipLeftMarginToIconBtn	= 20
 	self.tipPos			= false
@@ -79,9 +81,9 @@ function IconButtonBase:init(ui, ...)
 			self:runAction(CCCallFunc:create(function()
 				if self.isDisposed then return end
 				if self.tip then
-					local label = self.tip:getChildByName("label")
-					label:setString("default tip text")
-					label:setString(self.tipLabelTxt)
+					if self.tipLabel then
+						self.tipLabel:setString(self.tipLabelTxt)
+					end
 				end
 			end))
 		end
@@ -89,48 +91,74 @@ function IconButtonBase:init(ui, ...)
 	end
 end
 
-function IconButtonBase:setTipString(str, ...)
+function IconButtonBase:setTipString(str)
 	assert(type(str) == "string")
-	assert(#{...} == 0)
-
-	self.tipLabelTxt	= str
+	self.tipLabelTxt = str
 	if self.tip then
+		if self.tipLabel and self.tip:contains(self.tipLabel) then 
+			self.tipLabel:removeFromParentAndCleanup(true)
+			self.tipLabel = nil
+		end
+		self.tipLabel = TextField:create(str, nil, 20)
+		self.tipLabel:setColor(ccc3(147, 71, 9))
+		self.tip:addChild(self.tipLabel)
 
-		local tipLabel	= self.tip:getChildByName("label")
-		tipLabel:setString(str)
+		local tipLabelSize = self.tipLabel:getContentSize()
+		local tipLeftExceedTxtWidth	= 10
+		local tipRightExceedTxtWidth = 10
+		local newTipWidth = tipLabelSize.width + tipLeftExceedTxtWidth + tipRightExceedTxtWidth 
 
-		---- Adjust Bg Size, According To Text Width
-		--self.tipLabelSize = tipLabel:getContentSize()
-		--local tipLeftExceedTxtWidth	= 34
-		--local tipRightExceedTxtWidth	= 20
-		--local newTipWidth		= self.tipLabelSize.width + tipLeftExceedTxtWidth + tipRightExceedTxtWidth 
-		--if newTipWidth < self.tipOriginalWidth then
-		--	newTipWidth = self.tipOriginalWidth
-		--end
-		--self.tip:getChildByName("scale9Bg"):setPreferredSize(CCSizeMake(newTipWidth, self.tipOriginalHeight))
+		self.tip:getChildByName("tipBg"):setPreferredSize(CCSizeMake(newTipWidth, self.tipOriginalHeight))
+		local tipArrow = self.tip:getChildByName("tipArrow")
+
+		if _G.__use_small_res then 
+			local arrowSize = tipArrow:getContentSize()
+			local scale = self.tipOriginalHeight/arrowSize.height
+			tipArrow:setScale(scale)
+		end
+
+		if self.iconPos == IconButtonBasePos.LEFT then
+			self.tipLabel:setPosition(ccp(tipLabelSize.width/2 + tipLeftExceedTxtWidth,-self.tipOriginalHeight/2))
+
+			local tipArrowPos = ccp(178, 0)
+			local posXDelta = newTipWidth - 200
+			tipArrow:setPosition(ccp(tipArrowPos.x + posXDelta, tipArrowPos.y))
+
+			self.tipPos = self:getTipPos()
+			self.tip:setPosition(self.tipPos)
+		elseif self.iconPos == IconButtonBasePos.RIGHT then
+			local tipArrowPos = ccp(0, 0)
+			tipArrow:setPosition(ccp(tipArrowPos.x, tipArrowPos.y))
+
+			self.tipLabel:setPosition(ccp(tipLabelSize.width/2 + tipLeftExceedTxtWidth + 23,-self.tipOriginalHeight/2))
+		end
 	end
 end
 
-function IconButtonBase:delayCreateTip(...)
-	assert(#{...} == 0)
+function IconButtonBase:getTipPos()
+	local tipSize = self.tip:getGroupBounds().size
 
+	local tipPos = nil
+	if self.iconPos == IconButtonBasePos.LEFT then
+		self.wrapperSize = self.wrapper:getGroupBounds().size
+		local deltaHeight = self.wrapperSize.height - tipSize.height
+		tipPos = ccp(-tipSize.width - self.tipLeftMarginToIconBtn, -deltaHeight / 2)
+	elseif self.iconPos == IconButtonBasePos.RIGHT then
+		self.wrapperSize = self.wrapper:getGroupBounds().size
+		local deltaHeight = self.wrapperSize.height - tipSize.height
+		tipPos = ccp(self.wrapperSize.width + self.tipLeftMarginToIconBtn, -deltaHeight / 2)
+	end
+	return tipPos
+end
+
+function IconButtonBase:delayCreateTipRight()
 	if not self.tip	then
-	
-		-- Get UI
-		self.tip	= ResourceManager:sharedInstance():buildGroup("iconTip")
+		self.tip = ResourceManager:sharedInstance():buildGroup("tip/tipRight")
 		self.ui:addChild(self.tip)
 
-		-- Calculate Tip Pos
-		local tipSize	= self.tip:getGroupBounds().size
-		self.tipOriginalWidth	= tipSize.width
-		self.tipOriginalHeight	= tipSize.height
-
-		self.wrapperSize	= self.wrapper:getGroupBounds().size
-		local deltaHeight	= self.wrapperSize.height - tipSize.height
-		self.tipPos		= ccp(self.wrapperSize.width + self.tipLeftMarginToIconBtn,
-						-deltaHeight / 2)
-
+		self.tipPos	= self:getTipPos()
 		self.tip:setPosition(self.tipPos)
+
 		self:setTipString(self.tipLabelTxt)
 		self.tip:setVisible(false)
 	end
@@ -138,26 +166,14 @@ function IconButtonBase:delayCreateTip(...)
 	return self.tip
 end
 
-function IconButtonBase:delayCreateTipLeft(...)
-
+function IconButtonBase:delayCreateTipLeft()
 	if not self.tip	then
-	
-		-- Get UI
-		--self.tip	= ResourceManager:sharedInstance():buildGroup("iconTip")
-		self.tip	= ResourceManager:sharedInstance():buildGroup("iconTipLeft")
+		self.tip = ResourceManager:sharedInstance():buildGroup("tip/tipLeft")
 		self.ui:addChild(self.tip)
 
-		-- Calculate Tip Pos
-		local tipSize	= self.tip:getGroupBounds().size
-		self.tipOriginalWidth	= tipSize.width
-		self.tipOriginalHeight	= tipSize.height
-
-		self.wrapperSize	= self.wrapper:getGroupBounds().size
-		local deltaHeight	= self.wrapperSize.height - tipSize.height
-		self.tipPos		= ccp(-tipSize.width - self.tipLeftMarginToIconBtn,
-						-deltaHeight / 2)
-
+		self.tipPos	= self:getTipPos()
 		self.tip:setPosition(self.tipPos)
+
 		self:setTipString(self.tipLabelTxt)
 		self.tip:setVisible(false)
 	end
@@ -165,9 +181,7 @@ function IconButtonBase:delayCreateTipLeft(...)
 	return self.tip
 end
 
-function IconButtonBase:_createIconAction(...)
-	assert(#{...} == 0)
-
+function IconButtonBase:_createIconAction()
 	local secondPerFrame	= 1 / 60
 
 	-- Init Action
@@ -192,11 +206,9 @@ function IconButtonBase:_createIconAction(...)
 	return targetSeq
 end
 
-function IconButtonBase:_createShiftingTipAction(...)
-	assert(#{...} == 0)
-
+function IconButtonBase:_createShiftingTipActionRight()
 	local secondPerFrame 	= 1 / 60
-	local tip		= self:delayCreateTip()
+	local tip		= self:delayCreateTipRight()
 
 	-- Init Action
 	local function initActionFunc()
@@ -225,13 +237,10 @@ function IconButtonBase:_createShiftingTipAction(...)
 	return targetSeq
 end
 
-function IconButtonBase:_createShiftingTipActionLeft(...)
-	assert(#{...} == 0)
-
+function IconButtonBase:_createShiftingTipActionLeft()
 	print("IconButtonBase:_createShiftingTipActionLeft Called !")
 
 	local secondPerFrame 	= 1 / 60
-	--local tip		= self:delayCreateTip()
 	local tip		= self:delayCreateTipLeft()
 
 	-- Init Action
@@ -241,11 +250,6 @@ function IconButtonBase:_createShiftingTipActionLeft(...)
 	end
 	local initAction	= CCCallFunc:create(initActionFunc)
 
-	---- Shifting Action
-	--local moveTo1	= CCMoveTo:create(secondPerFrame * (12-1), 	ccp(self.tipPos.x + 7.15 - 3.15, self.tipPos.y))
-	--local moveTo2	= CCMoveTo:create(secondPerFrame * (22 - 12),	ccp(self.tipPos.x - 8.85 - 3.15, self.tipPos.y))
-	--local moveTo3	= CCMoveTo:create(secondPerFrame * (32 - 22),	ccp(self.tipPos.x - 6.75 - 3.15, self.tipPos.y))
-	--local moveTo4	= CCMoveTo:create(secondPerFrame * (50 - 32),	ccp(self.tipPos.x + 3.15 - 3.15, self.tipPos.y))
 	-- Shifting Action
 	local moveTo1	= CCMoveTo:create(secondPerFrame * (12-1), 	ccp(self.tipPos.x - (7.15 - 3.15	), self.tipPos.y))
 	local moveTo2	= CCMoveTo:create(secondPerFrame * (22 - 12),	ccp(self.tipPos.x + (8.85 + 3.15	), self.tipPos.y))
@@ -264,11 +268,6 @@ function IconButtonBase:_createShiftingTipActionLeft(...)
 	local targetSeq	= CCTargetedAction:create(tip.refCocosObj, seq)
 
 	return targetSeq
-
-	----
-	--local testdelay = CCDelayTime:create(0)
-	--tip:setVisible(true)
-	--return testdelay
 end
 
 function IconButtonBase:setTipPosition(pos, ...)
@@ -279,12 +278,12 @@ function IconButtonBase:playHasNotificationAnim(...)
 	self:playOnlyIconAnim()
 	self:playOnlyTipAnim()
 end
-function IconButtonBase:stopHasNotificationAnim(...)
+function IconButtonBase:stopHasNotificationAnim()
 	self:stopOnlyIconAnim()
 	self:stopOnlyTipAnim()
 end
 
-function IconButtonBase:playOnlyIconAnim( ... )
+function IconButtonBase:playOnlyIconAnim()
 	self:stopOnlyIconAnim()
 
 	local action = CCRepeatForever:create(self:_createIconAction())
@@ -292,14 +291,14 @@ function IconButtonBase:playOnlyIconAnim( ... )
 	self:runAction(action)
 end
 
-function IconButtonBase:playOnlyTipAnim(...)
+function IconButtonBase:playOnlyTipAnim()
 	self:stopOnlyTipAnim()
 
 	local tipAnim = nil
 	if self.iconPos == IconButtonBasePos.LEFT then
 		tipAnim	= self:_createShiftingTipActionLeft()
 	elseif self.iconPos == IconButtonBasePos.RIGHT then
-		tipAnim	= self:_createShiftingTipAction()
+		tipAnim	= self:_createShiftingTipActionRight()
 	end
 
 	local action	= CCRepeatForever:create(tipAnim)
@@ -309,12 +308,12 @@ end
 
 
 
-function IconButtonBase:stopOnlyIconAnim( ... )
+function IconButtonBase:stopOnlyIconAnim()
 	self:stopActionByTag(100)
 	self.wrapper:setScale(1)
 end
 
-function IconButtonBase:stopOnlyTipAnim( ... )
+function IconButtonBase:stopOnlyTipAnim()
 	self:stopActionByTag(200)
 	if self.tip then
 		self.tip:removeFromParentAndCleanup(true)

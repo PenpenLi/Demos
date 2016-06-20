@@ -102,12 +102,13 @@ function SnsUtil.sendImageLinkMessage( shareType, title, message, thumb, imageUR
 
 	if shareType == PlatformShareEnum.kWechat then
 		print("WeChatSDK sendImageLinkMessage")
-		WeChatSDK.new():sendImageLinkMessage(txtToShare, thumb, imageURL, shareCallback)
+		WeChatSDK.new():sendImageLinkMessage(message, thumb, imageURL, shareCallback)
 	else
 		SnsProxy:shareImage( shareType, title, message, imageURL, thumb, shareCallback )
 	end
 end
 
+--米聊不支持这个
 function SnsUtil.sendLinkMessage( shareType, title, message, thumb, webpageUrl, isSendToFeeds, shareCallback)
 	title = title or ""
 	message = message or ""
@@ -119,12 +120,7 @@ function SnsUtil.sendLinkMessage( shareType, title, message, thumb, webpageUrl, 
 end
 
 function SnsUtil.addTipsItem( msg )
-	local item = RequireNetworkAlert.new(CCNode:create())
-	item:buildUI(msg)
-	local scene = Director:sharedDirector():getRunningScene()
-	if scene then 
-		scene:addChild(item) 
-	end
+	CommonTip:showTip(msg, 'negative', nil, 2)
 end
 
 function SnsUtil.sendLevelMessage( shareType, levelType, levelId, shareCallback )
@@ -249,13 +245,28 @@ end
 
 function SnsUtil.shareSummerWeeklyMatchFeed( shareType, shareCallback)
 	local datetime = tostring(os.date("%y%m%d", timer))
-	local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/thumb_main.png")
-	local imageURL = CCFileUtils:sharedFileUtils():fullPathForFilename("share/summer_weekly_match_feed.jpg")
-
-	if __IOS or PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
-		imageURL = string.format("http://static.manimal.happyelements.cn/feed/summer_weekly_match_feed.jpg?v="..datetime)
+	local imageURL = string.format("http://static.manimal.happyelements.cn/feed/spring_weekly_2016_feed.jpg?v="..datetime)
+	local index = CCUserDefault:sharedUserDefault():getIntegerForKey("weekly.match.thumb.index")
+	local pool = {1, 2, 3, 4, 5, 6}
+	pool = table.filter(pool, function(v) return v ~= index end)
+	local finIndex = pool[math.random(#pool)]
+	CCUserDefault:sharedUserDefault():setIntegerForKey("weekly.match.thumb.index", finIndex)
+	local thumb
+	if shareType == PlatformShareEnum.kMiTalk then
+		thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/wechat_icon.png")
+	else
+		thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/sharethumb"..tostring(finIndex)..".png")
 	end
-	
+	print("thumb", thumb)
+	local uid = UserManager:getInstance().uid
+	local inviteCode = UserManager:getInstance().inviteCode
+	local platformName = StartupConfig:getInstance():getPlatformName()
+	local webpageUrl = NetworkConfig.dynamicHost.."summer_week_match_2016_share.html?uid="..tostring(uid)..
+		"&invitecode="..tostring(inviteCode).."&pid="..tostring(platformName).."&action=0&index="..finIndex.."&ts="..
+		tostring(Localhost:time())
+	print(webpageUrl)
+	local title = Localization:getInstance():getText("invite.friend.panel.share.title")
+	local message = Localization:getInstance():getText("weekly.race.winter.get.chance.share")
 	if not shareCallback then -- default callback
 		shareCallback = {
 			onSuccess = function(result)
@@ -268,7 +279,11 @@ function SnsUtil.shareSummerWeeklyMatchFeed( shareType, shareCallback)
 			end
 		}
 	end
-	SnsUtil.sendImageLinkMessage( shareType, nil, nil, thumb, imageURL, shareCallback)
+	if shareType == PlatformShareEnum.kMiTalk then
+		SnsUtil.sendImageLinkMessage( shareType, nil, nil, thumb, imageURL, shareCallback)
+	else
+		SnsUtil.sendLinkMessage( shareType, title, message, thumb, webpageUrl, false, shareCallback)
+	end
 end
 
 function SnsUtil.qixiShare( shareType, levelId, shareCallback)

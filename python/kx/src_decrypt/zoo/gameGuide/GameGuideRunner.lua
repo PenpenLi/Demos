@@ -50,6 +50,7 @@ function GameGuideRunner:removeClickFlower()
 end
 
 function GameGuideRunner:runStartPanel(paras)
+	if not paras or type(paras) ~= "table" then return end
 	local action = GameGuideData:sharedInstance():getRunningAction()
 	local hand = GameGuideAnims:handclickAnim(action.handDelay, action.handFade)
 	hand:setAnchorPoint(ccp(0, 1))
@@ -301,11 +302,70 @@ function GameGuideRunner:removeShowInfo()
 	return true, true
 end
 
-function GameGuideRunner:runShowTile()
+function GameGuideRunner:runClickTile( paras )
+	-- body
+	local action = GameGuideData:sharedInstance():getRunningAction()
+	if paras and type(paras) == "table" and paras.r and paras.c then
+		action.array[1].r = paras.r 
+		action.array[1].c = paras.c 
+	end
+
+	action.maskDelay = action.maskDelay or 0
+	action.maskFade = action.maskFade or 0.3
+	action.touchDelay = action.touchDelay or 0
+
+	local playUI = Director:sharedDirector():getRunningScene()
+	local layer = playUI.guideLayer
+	local trueMask = playUI:gameGuideMask(action.opacity, action.array, action.array[1], 1.5)
+	trueMask.setFadeIn(action.maskDelay, action.maskFade)
+	local panel = GameGuideUI:panelS(playUI, action)
+	local hand = GameGuideAnims:handclickAnim(0.5, 0.3)
+	local pos = playUI:getPositionFromTo(ccp(action.array[1].r, action.array[1].c), ccp(action.array[1].r, action.array[1].c))
+    hand:setAnchorPoint(ccp(0, 1))
+    hand:setPosition(pos)
+
+	if layer then
+		layer:addChild(trueMask)
+		layer:addChild(panel)
+		layer:addChild(hand)
+		GameGuideData:sharedInstance():setLayer(layer)
+		released = false
+	end
+end
+
+function GameGuideRunner:removeClickTile( paras )
+	-- body
+	if released then return false, false end
+	released = true
+	local layer = GameGuideData:sharedInstance():getLayer()
+	if layer and not layer.isDisposed then
+		layer:removeChildren(true)
+	end
+	return true, true
+end
+
+function GameGuideRunner:runShowTile(paras)
 	local action = GameGuideData:sharedInstance():getRunningAction()
 	action.maskDelay = action.maskDelay or 0
 	action.maskFade = action.maskFade or 0.3
 	action.touchDelay = action.touchDelay or 0
+	if paras and type(paras) == "table" and paras.wukongGuide == true then
+		if type(paras.pos) == "table" and #paras.pos > 0 then
+			action.array = {}
+			local item = nil
+			for ik, iv in pairs(paras.pos) do
+				item = {}
+				if iv.r then item.r = iv.r end
+				if iv.c then item.c = iv.c end
+				if iv.countR then item.countR = iv.countR else item.countR = 1 end
+				if iv.countC then item.countC = iv.countC else item.countC = 1 end
+				table.insert( action.array , item )
+			end
+		end
+	end
+
+
+
 	local playUI = Director:sharedDirector():getRunningScene()
 	local layer = playUI.guideLayer
 	local trueMask = playUI:gameGuideMask(action.opacity, action.array, {action.array[1]})
@@ -406,6 +466,8 @@ function GameGuideRunner:removeContinue()
 end
 
 function GameGuideRunner:runShowPreProp(paras)
+
+	if not paras or type(paras) ~= "table" then return end
 	local action = GameGuideData:sharedInstance():getRunningAction()
 	local startPanel = paras.actWin
 	action.maskDelay = action.maskDelay or 0
@@ -456,6 +518,7 @@ function GameGuideRunner:removeShowPreProp()
 end
 
 function GameGuideRunner:runStartInfo(paras)
+	if not paras or type(paras) ~= "table" then return end
 	local action = GameGuideData:sharedInstance():getRunningAction()
 	local startPanel = paras.actWin
 	action.maskDelay = action.maskDelay or 0
@@ -593,19 +656,10 @@ function GameGuideRunner:runShowProp()
 
 	local itemId = action.propId
 
-	local item = nil
-	if itemId == 9999 then
-		item = playUI.propList:findSpringItem()
-	else
-		item = playUI.propList:findItemByItemID(itemId).item
-	end
+	local itemCenterPos = playUI.propList:getItemCenterPositionById(itemId)
+	if not itemCenterPos then return end
 
-	if not item then return end
-	
-	local itemPos = item:getParent():convertToWorldSpace(item:getPosition())
-
-	local size = item:getGroupBounds().size
-	local pos = ccp(itemPos.x - 50 + size.width / 2 + offsetX , itemPos.y - 20 + size.height / 2 + offsetY)
+	local pos = ccp(itemCenterPos.x + offsetX , itemCenterPos.y + offsetY)
 	local layer = Layer:create()
 	local trueMask = GameGuideUI:mask(action.opacity, action.touchDelay, pos, 1.5, false, nil, nil, false)
 	trueMask.setFadeIn(action.maskDelay, action.maskFade)

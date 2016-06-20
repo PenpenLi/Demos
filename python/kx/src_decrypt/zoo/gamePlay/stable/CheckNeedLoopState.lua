@@ -20,10 +20,11 @@ function CheckNeedLoopState:onEnter()
 
 	if self.context.needLoopCheck then
 		self.context.needLoopCheck = false
-		self.nextState = self.context.roostReplaceStateInLoop
+		--self.nextState = self.context.roostReplaceStateInLoop
+		self.nextState = self.context.dripCastingStateInLoop
 		print("----------------------------- need loop once, skip refresh check")
 	else
-		self.nextState = self.context.productSnailState
+		self.nextState = self.context.hlloweenBossCastingState
 	end
 end
 

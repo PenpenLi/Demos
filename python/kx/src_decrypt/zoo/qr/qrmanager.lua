@@ -1,7 +1,24 @@
 QRManager = {}
 
-function QRManager:generatorQRNode( str, size, frameNum )
-	return QRLuaEncode:generatorQRNode(str, size, frameNum)
+-- generatorQRNode
+-- str: 被编码的字符串
+-- size: QR码的大小
+-- frameNum: 边框的宽度 单位是点的大小
+-- dotColor: QR码部分点的颜色
+-- blankColor: QR码部分没有点的颜色
+-- backgroundColor: QR码边缘的颜色，如果QR码是半透明的，底色会被此颜色影响。
+function QRManager:generatorQRNode( str, size, frameNum, dotColor, blankColor, backgroundColor )
+	print("QRManager:generatorQRNode")
+	print(str)
+	print(size)
+	print(frameNum)
+	print(dotColor)
+	print(blankColor)
+	print(backgroundColor)
+	dotColor = ccc4FFromccc4B(dotColor or ccc4(0, 0, 0, 255))
+	blankColor = ccc4FFromccc4B(blankColor or ccc4(255, 255, 255, 255))
+	backgroundColor = ccc4FFromccc4B(backgroundColor or ccc4(255, 255, 255, 255))
+	return QRLuaEncode:generatorQRNode(str, size, frameNum or 0, dotColor, blankColor, backgroundColor)
 end
 
 function QRManager:startQRScanning( callback, tip1, tip2 )

@@ -70,7 +70,7 @@ function WorldMapOptimizer:firstUpdate(...)
 			end
 		end
 	end
-	
+	instance.operMap = {}
 	instance:update()
 end
 

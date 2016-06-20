@@ -107,6 +107,18 @@ function PostLoginLogic:login( userId, sessionKey, platform )
 	http:load()
 end
 
+--sync 
+local function onCachedHttpDataResponse(endpoint, resp, err)
+	if err then 
+		if not table.exist(ExceptionErrorCodeIgnore, err) then  
+			LoginExceptionManager:getInstance():setErrorCodeCache(err)
+		end
+		he_log_warning("PostLoginLogic::onCachedHttpDataResponse data fail, err: " .. err)
+	else 
+		he_log_warning("PostLoginLogic::onCachedHttpDataResponse data success") 
+	end
+end
+
 function PostLoginLogic:sync()
 	local cachedLocalUserData, list = LoginLogic:readUserSyncDataFromLocal()
 
@@ -122,6 +134,10 @@ function PostLoginLogic:sync()
 				local errorCode = tonumber(err) or -1
 				local function onUseLocalFunc()
 					print("player choose local data (wrong data)")
+					if errorCode == 109 then
+						CCDirector:sharedDirector():endToLua()
+						return
+					end
 					self:onError(err)
 				end
 				local function onUseServerFunc()
@@ -134,7 +150,8 @@ function PostLoginLogic:sync()
 				
 				if errorCode > 10 then 
 					self:onException()
-					ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
+					local panel = ExceptionPanel:create(errorCode, onUseLocalFunc, onUseServerFunc)
+					if panel then panel:popout() end 
 				else self:onError(err) end
 			else
 				print("override local data with server data")
@@ -147,7 +164,7 @@ function PostLoginLogic:sync()
 				
 				if __ANDROID then AndroidPayment.getInstance():changeSMSPaymentDecisionScript(resp.smsPay) end
 
-				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kRestoreData))
 				
 				--finish login logic
 				self:onFinish()
@@ -187,6 +204,8 @@ function PostLoginLogic:sync()
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
 	-- 
 	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
+	userbody.deviceUdid = MetaInfo:getInstance():getUdid()
+	userbody.loginType = _G.kLoginType
 	
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()

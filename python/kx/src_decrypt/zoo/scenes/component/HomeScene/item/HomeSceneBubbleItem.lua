@@ -35,6 +35,7 @@ function HomeSceneBubbleItem:init(ui, ...)
 	---------------------
 	self.itemPlaceholderPos		= self.placeHolder:getPosition()
 	self.itemPlaceholderSize 	= self.placeHolder:getGroupBounds().size
+	self.itemPlaceholderSize 	= {width = self.itemPlaceholderSize.width, height = self.itemPlaceholderSize.height}
 	self.itemPlaceholderCenterPos	= ccp(self.itemPlaceholderPos.x + self.itemPlaceholderSize.width / 2,
 						self.itemPlaceholderPos.y - self.itemPlaceholderSize.height / 2)
 

@@ -75,7 +75,8 @@ function RecallItemPanel:showItemFlyAnimation()
 		endNodeSize = levelNode:getGroupBounds().size
 		endToPos = ccp(endToPos.x,endToPos.y-endNodeSize.height/2)
 	else
-		PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+		-- PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+		self:removeSelf()
 	end
 	if endToPos then 
 		self.ui:setVisible(false)
@@ -93,7 +94,8 @@ function RecallItemPanel:showItemFlyAnimation()
 			local function removeSelf()
 				itemIcon:removeFromParentAndCleanup(true)
 				if i==#self.iconTable then 
-					PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+					-- PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+					self:removeSelf()
 				end
 			end
 			local seqArr = CCArray:create()
@@ -108,13 +110,22 @@ function RecallItemPanel:showItemFlyAnimation()
 			itemIcon:runAction(CCSequence:create(seqArr)); 
 		end
 	else
-		PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+		-- PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+		self:removeSelf()
 	end
 
 end
 
-function RecallItemPanel:popout()
+function RecallItemPanel:removeSelf()
+	PopoutManager:sharedInstance():removeWithBgFadeOut(self, false, true)
+	if self.closeCallback then
+		self.closeCallback()
+	end
+end
+
+function RecallItemPanel:popout(closeCallback)
 	print("RecallItemPanel:popout")
+	self.closeCallback = closeCallback
 	PopoutQueue.sharedInstance():push(self, false)
 end
 

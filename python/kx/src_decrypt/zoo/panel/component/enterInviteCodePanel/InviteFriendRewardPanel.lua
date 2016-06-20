@@ -173,14 +173,29 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace)
 	end
 	self.ruleBtn:addEventListener(DisplayEvents.kTouchTap, onRuleBtnTapped)
 	-- fix: prevent this btn from being on top of the tip layer
-	local zorder = self.ruleBtn:getZOrder()
+	-- local zorder = self.ruleBtn:getZOrder()
 	self.ruleBtn:removeFromParentAndCleanup(false)
-	self.ui:addChildAt(self.ruleBtn, zorder)
+	self.ui:addChild(self.ruleBtn)
 
 	-- WeChat Button
 	self.weChatBtn = GroupButtonBase:create(self.ui:getChildByName('weChatBtn'))
 	self.weChatBtn.groupNode:getChildByName('icon'):setVisible(false)
 	self.weChatBtn:setString(localize('invite.friend.panel.button.text.wechat'))
+
+	-- self.weChatBtn.setEnabled = function(_self, value)
+	-- 	_self.groupNode._isEnabled = (value == true)
+	-- 	_self:setEnabledForColorOnly(value)
+	-- end
+
+	-- local oldFunc = self.weChatBtn.groupNode.hitTestPoint
+	-- self.weChatBtn.groupNode.hitTestPoint = function (_self, worldPosition, useGroupTest)
+	-- 	if _self._isEnabled == false then
+	-- 		return false
+	-- 	else
+	-- 		return oldFunc(_self, worldPosition, useGroupTest)
+	-- 	end
+	-- end
+
 	if __IOS_FB then
 		self.weChatBtn:setString(localize('invite.friend.panel.button.text.wdj'))
 		local function onInviteButtonTapped(event)
@@ -193,12 +208,12 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace)
 			self:onInviteButtonTapped(event, PlatformShareEnum.kMiTalk)
 		end
 		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
-	elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
-		self.weChatBtn:setString(localize('invite.friend.panel.button.text.360'))
-		local function onInviteButtonTapped(event)
-			self:onInviteButtonTapped(event, PlatformShareEnum.k360)
-		end
-		self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
+	-- elseif PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
+	-- 	self.weChatBtn:setString(localize('invite.friend.panel.button.text.360'))
+	-- 	local function onInviteButtonTapped(event)
+	-- 		self:onInviteButtonTapped(event, PlatformShareEnum.k360)
+	-- 	end
+	-- 	self.weChatBtn:addEventListener(DisplayEvents.kTouchTap, onInviteButtonTapped)
 	elseif PlatformConfig:isPlatform(PlatformNameEnum.kWDJ) then
 		local function onInviteButtonTapped(event)
 			self:onWdjBtnTapped(event)
@@ -218,19 +233,19 @@ function InviteFriendRewardPanel:init(scaleOriginPosInWorldSpace)
 
 	-- fix: prevent this btn from being on top of the tip layer
 	zorder = self.weChatBtn.groupNode:getZOrder()
-	self.weChatBtn:removeFromParentAndCleanup(false)
+	self.weChatBtn.groupNode:removeFromParentAndCleanup(false)
 	self.weChatBtn:useBubbleAnimation()
-	self.ui:addChildAt(self.weChatBtn.groupNode, zorder)
+	self.ui:addChild(self.weChatBtn.groupNode)
 
 	self.inviteCodeBtn = GroupButtonBase:create(self.ui:getChildByName('inviteCodeBtn'))
 	self.inviteCodeBtn:setColorMode(kGroupButtonColorMode.blue)
 	self.inviteCodeBtn:setEnabled(true)
 	self.inviteCodeBtn:setString(localize('回馈邀请人'))
 	self.inviteCodeBtn:ad(DisplayEvents.kTouchTap, function () self:onInviteCodeBtnTapped() end)
-	zorder = self.inviteCodeBtn.groupNode:getZOrder()
-	self.inviteCodeBtn:removeFromParentAndCleanup(false)
+	-- zorder = self.inviteCodeBtn.groupNode:getZOrder()
+	self.inviteCodeBtn.groupNode:removeFromParentAndCleanup(false)
 	self.inviteCodeBtn:useBubbleAnimation()
-	self.ui:addChildAt(self.inviteCodeBtn.groupNode, zorder)
+	self.ui:addChild(self.inviteCodeBtn.groupNode)
 
 
 	local meta = MetaManager:getInstance().rewards
@@ -305,7 +320,8 @@ end
 
 function InviteFriendRewardPanel:shouldShowInviteCodeBtn()
 	if __WIN32 then 
-		return true -- test
+		local flag = UserManager:getInstance().userExtend.flag or 0
+		return flag % 2 == 0  -- test
 	end
 	local userTopLevel = UserManager.getInstance().user:getTopLevelId()
 
@@ -317,7 +333,7 @@ function InviteFriendRewardPanel:shouldShowInviteCodeBtn()
 		local flag = UserManager:getInstance().userExtend.flag or 0
 		if flag % 2 == 0  then
 			-- Not Sended Invite Code Ever
-			if not __IOS_FB and not PlatformConfig:isPlatform(PlatformNameEnum.k360) then 
+			if not __IOS_FB  then 
 				return true
 			end
 		end
@@ -326,8 +342,17 @@ function InviteFriendRewardPanel:shouldShowInviteCodeBtn()
 end
 
 function InviteFriendRewardPanel:onInviteCodeBtnTapped()
+	local function callback()
+		-- self:onCloseBtnTapped()
+		if not self:shouldShowInviteCodeBtn() then
+			self.inviteCodeBtn:setVisible(false)
+			self.inviteCodeBtn:setEnabled(false)
+			self.weChatBtn:setPositionX(self.weChatBtn:getPositionX() + 114)
+			self.weChatBtnTag:setPositionX(self.weChatBtnTag:getPositionX() + 114)
+		end
+	end
 	local enterInviteCodePanel	= EnterInviteCodePanel:create()
-	enterInviteCodePanel:popout()
+	enterInviteCodePanel:popout(callback)
 end
 
 function InviteFriendRewardPanel:onWdjBtnTapped(event)
@@ -477,7 +502,7 @@ function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType)
 		SnsUtil.sendInviteMessage(shareType, shareCallback)
 	end
 
-	if shareType ~= PlatformShareEnum.k360 then -- 360分享不用隐藏按钮
+	-- if shareType ~= PlatformShareEnum.k360 then -- 360分享不用隐藏按钮
 		self.weChatBtn:setEnabled(false)
 		if shareType ~= PlatformShareEnum.kWechat then
 			setTimeOut(function()
@@ -486,7 +511,7 @@ function InviteFriendRewardPanel:onInviteButtonTapped( event, shareType)
 				end
 			end, 2)
 		end
-	end
+	-- end
 
 	local invited = CCUserDefault:sharedUserDefault():getBoolForKey("game.invite.friend.wechat.tutor")
 	if shareType == PlatformShareEnum.kWechat and not invited then
@@ -773,7 +798,7 @@ function InviteFriendRewardPanel:shouldForcePopInviteCodePanel() -- static
 	if flag % 2 ~= 0 then 
 		return false
 	end
-	if __IOS_FB or PlatformConfig:isPlatform(PlatformNameEnum.k360) then
+	if __IOS_FB then
 		return false
 	end
 	-- 播放引导后才能强弹

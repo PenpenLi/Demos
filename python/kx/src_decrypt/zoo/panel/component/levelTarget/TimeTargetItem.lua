@@ -2,12 +2,27 @@ TimeTargetItem = class(LevelTargetItem)
 
 function TimeTargetItem:init()
 	local spriteSize = self.sprite:getGroupBounds().size
-	
-	local label = self.sprite:getChildByName("label")
-	label.offsetX = label:getPosition().x
-	label:setAlignment(kCCTextAlignmentCenter)
-	label:setAnchorPoint(ccp(0.5, 0.5))
-	label:setString("0")
+	self.sprite:setContentSize(CCSizeMake(spriteSize.width, spriteSize.height))
+	self.shadowSprite:setContentSize(CCSizeMake(spriteSize.width, spriteSize.height))
+	self.sprite:setAnchorPoint(ccp(0,0))
+	self.shadowSprite:setAnchorPoint(ccp(0,0))
+	local pos = self.sprite:getPosition()
+	self.shadowSprite:setPosition(ccp(pos.x,pos.y))
+	self.context.attachSprite:addChild(self.shadowSprite)
+
+
+	local fntFile	= "fnt/score_objectives.fnt"
+	local text = BitmapText:create("", fntFile, -1, kCCTextAlignmentCenter)
+	text.fntFile 	= fntFile
+	text.hAlignment = kCCTextAlignmentCenter
+	text:setPosition(ccp(-75, -67.45))
+	text:setPreferredSize(150, 38)
+	text.offsetX = text:getPosition().x
+	text:setAlignment(kCCTextAlignmentCenter)
+	text:setAnchorPoint(ccp(0.5, 0.5))
+	text:setString("0")
+	self.shadowSprite:addChild(text)
+	self.label = text
 
 	local finished = self.sprite:getChildByName("finished")
 	local finishedPos = finished:getPosition()
@@ -21,11 +36,14 @@ function TimeTargetItem:init()
 	finished_icon:setAnchorPoint(ccp(0.5, 0.5))
 	finished_bg:setAnchorPoint(ccp(0.5, 0.5))
     highlight:setVisible(false)
+
+    self.finishedIcon = finished
+	finished:removeFromParentAndCleanup(false)
+	self.shadowSprite:addChild(finished)
     
     self.highlight = highlight
     self.finished_bg = finished_bg
     self.finished_icon = finished_icon
-    self.label = label
 end
 
 function TimeTargetItem:onTouchBegin(evt)
@@ -35,7 +53,7 @@ function TimeTargetItem:onTouchBegin(evt)
 end
 
 function TimeTargetItem:reset()
-	local finished = self.sprite:getChildByName("finished")
+	local finished = self.finishedIcon
 	finished:setVisible(false)
 end
 
@@ -43,7 +61,7 @@ function TimeTargetItem:finish()
 	if self.isFinished then return end
 	self.isFinished = true
 
-	local finished = self.sprite:getChildByName("finished")
+	local finished = self.finishedIcon
 	finished:setVisible(true)
 
 	self.finished_icon:stopAllActions()
@@ -89,7 +107,8 @@ function TimeTargetItem:fadeIn(delayTime )
 end
 
 function TimeTargetItem:setContentIcon( icon, number )
-	local label = self.sprite:getChildByName("label")
+	-- local label = self.sprite:getChildByName("label")
+	local label = self.label
 	if number ~= nil and label then
 		label:setString(tostring(number or 0))
 		label:setOpacity(0)

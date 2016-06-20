@@ -2,6 +2,7 @@ require "zoo.panel.PanelWithRankList"
 require "zoo.config.ui.StartGamePanelConfig"
 require "zoo.panel.basePanel.panelAnim.PanelWithRankExchangeAnim"
 require "zoo.panel.component.startGamePanel.LevelInfoPanel"
+require "zoo.mission.panels.MissionBugOnLevelInfoPanel"
 -- require "zoo.panel.rabbitWeekly.RabbitWeeklyLevelInfoPanel"
 -- require "zoo.panel.weeklyRace.WeeklyRaceLevelInfoPanel"
 
@@ -20,6 +21,10 @@ function StartGamePanel:init(levelId, levelType, ...)
 
 	self.hiddenRankList = false
 
+	-- 确认是否使用特殊活动UI，为了搜索方便使用完全相同的变量名
+	local useSpecialActivityUI = WorldSceneShowManager:getInstance():isInAcitivtyTime() and
+		(levelType == GameLevelType.kMainLevel or levelType == GameLevelType.kHiddenLevel)
+
 	-------------------
 	-- Get Data About UI
 	-- --------------------
@@ -27,7 +32,7 @@ function StartGamePanel:init(levelId, levelType, ...)
 	self.levelType 		= levelType
 	self.resourceManager	= ResourceManager:sharedInstance()
 	self.hiddenRankList = self:isNeedHideRankList(levelId, levelType)
-	self.levelInfoPanel	= self:createLevelInfoPanel(levelId, levelType)
+	self.levelInfoPanel	= self:createLevelInfoPanel(levelId, levelType, useSpecialActivityUI)
 
 	local panelPosYOffset = 0
 	if levelType == GameLevelType.kRabbitWeekly then
@@ -42,7 +47,7 @@ function StartGamePanel:init(levelId, levelType, ...)
 	-- ---------------
 	-- Init Base Class
 	-- ---------------
-	PanelWithRankList.init(self, self.levelId, self.levelType, self.levelInfoPanel, "startGamePanel")
+	PanelWithRankList.init(self, self.levelId, self.levelType, self.levelInfoPanel, "startGamePanel", useSpecialActivityUI)
 
 	--self.selfWidth = 713.95
 
@@ -51,6 +56,24 @@ function StartGamePanel:init(levelId, levelType, ...)
 	-- -------------------------------
 	local topPanel	= self:getTopPanel()
 	local rankList	= self:getRankList()
+
+	if HomeScene:sharedInstance().worldScene:checkMissionBubbleShow(levelId) then
+		--local wave = Sprite:createWithSpriteFrameName("wave_level_1_0001")
+		--FrameLoader:loadImageWithPlist("flash/missionAnime.plist")
+		--local missionBug = Sprite:createWithSpriteFrameName("mission_bug_on_level_info_panel")
+
+		local missionBug = MissionBugOnLevelInfoPanel:create(self.levelId)
+
+		--local targetDesLabelPosition = self.targetDesLabel:getPosition()
+		--self.ui:convertToWorldSpace( ccp( self.itemIcon:getPosition().x , self.itemIcon:getPosition().y) )
+		
+		--missionBug:setPosition( ccp( rankListInitX + 580 , rankListInitY - 180 ) )
+		missionBug:setPosition( ccp( 600 , -600 ) )
+		missionBug:setScale(1)
+		self.missionBug = missionBug
+		topPanel:addChild(missionBug)
+	end
+
 	self.exchangeAnim = PanelWithRankExchangeAnim:create(self, topPanel, rankList)
 	--self.
 
@@ -108,14 +131,14 @@ function StartGamePanel:init(levelId, levelType, ...)
 	--self:setToScreenCenterHorizontal()
 end
 
-function StartGamePanel:createLevelInfoPanel(levelId, levelType)
+function StartGamePanel:createLevelInfoPanel(levelId, levelType, useSpecialActivityUI)
 	local infoPanel = nil
 	if levelType == GameLevelType.kDigWeekly then
 		infoPanel = WeeklyRaceLevelInfoPanel:create(self, levelId)
 	-- elseif levelType == GameLevelType.kRabbitWeekly then
 	-- 	infoPanel = RabbitWeeklyLevelInfoPanel:create(self, levelId)
 	else 
-		infoPanel = LevelInfoPanel:create(self, levelId, levelType)
+		infoPanel = LevelInfoPanel:create(self, levelId, levelType, useSpecialActivityUI)
 	end
 	return infoPanel
 end
@@ -155,6 +178,11 @@ function StartGamePanel:popout(animFinishCallback, ...)
 		self.allowBackKeyTap = true
 		if self.levelInfoPanel and self.levelInfoPanel.afterPopout then
 			self.levelInfoPanel:afterPopout()
+		end
+
+		if self.useSpecialActivityUI then
+			local size = self.rankListPanelClipping:getContentSize()
+			self.rankListPanelClipping:setContentSize(CCSizeMake(size.width, size.height + 300))
 		end
 
 		if self.popoutAnimFinishCallback then
@@ -197,6 +225,10 @@ function StartGamePanel:remove(animFinishCallback, ...)
 
 	self:removeRankListPanelSceneListener()
 	self.exchangeAnim:remove(callback)
+
+	if self.missionBug and self.missionBug:getParent() then
+		self.missionBug:removeFromParentAndCleanup(true)
+	end
 end
 
 function StartGamePanel:removeWhileKeepBackground(animFinishCallback, ...)

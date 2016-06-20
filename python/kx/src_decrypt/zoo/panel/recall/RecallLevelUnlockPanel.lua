@@ -34,6 +34,9 @@ function RecallLevelUnlockPanel:init(lockedCloudId, totalStar, neededStar, cloud
 			return
 		end
 		self:remove(false)
+		if self.closeBtnCallback then
+			self.closeBtnCallback(self.isUnlockSuccess, self.friendIdsSent)
+		end
 	end
 	self.closeBtnRes:setTouchEnabled(true)
 	self.closeBtnRes:setButtonMode(true)
@@ -157,7 +160,12 @@ function RecallLevelUnlockPanel:initStarPart()
 	self.starPartTitle:setString(Localization:getInstance():getText("more.star.btn.txt", {}))
 
 	self.starNumLabel = self.starPart:getChildByName("starNum")
+	local size = self.starNumLabel:getDimensions()
+	local pos = self.starNumLabel:getPosition()
+	self.starNumLabel:setDimensions(CCSizeMake(0, 0))
 	self.starNumLabel:setString(self.totalStar .. "/" .. self.neededStar)
+	local newSize = self.starNumLabel:getContentSize()
+	self.starNumLabel:setPositionX(pos.x + size.width / 2 - newSize.width / 2)
 
 	self.moreStarBtn = GroupButtonBase:create(self.starPart:getChildByName('button'))
 	self.moreStarBtn:setString(Localization:getInstance():getText('recall_text_10'))
@@ -257,7 +265,6 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 		if curCash < goodMeta.qCash then
 			-- Not Has Enough Gold
 			-- Pop Out The Buy Gold Panel
-
 			local function createGoldPanel()
 				local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
 				if index ~= 0 then
@@ -266,14 +273,7 @@ function RecallLevelUnlockPanel:onUseWindmillBtnTapped()
 					panel:popout()
 				else onSendUnlockMsgCanceled() end
 			end
-			-- local text = {
-			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			-- }
-			-- CommonTipWithBtn:setShowFreeFCash(true)
-			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, onSendUnlockMsgCanceled)
-			GoldlNotEnoughPanel:create(createGoldPanel, onSendUnlockMsgCanceled, nil):popout()
+			GoldlNotEnoughPanel:create(createGoldPanel, onSendUnlockMsgCanceled):popout()
 		else
 			local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
 			logic:setOnSuccessCallback(onSendUnlockMsgSuccess)
@@ -307,13 +307,13 @@ function RecallLevelUnlockPanel:onAskFriendBtnTapped()
 				self.cloudCanOpenCallback()
 				print("onRemoveSelfFinish Called !")
 			end
-
+			self.isUnlockSuccess = true
 			self:remove(onRemoveSelfFinish)
 		end
 
-		local function onSendUnlockMsgFailed(event)
+		local function onSendUnlockMsgFailed(errorCode)
 			self.btnTappedState = self.BTN_TAPPED_STATE_NONE
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+			CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 		end
 
 		local function onSendUnlockMsgCanceled(event)
@@ -327,66 +327,20 @@ function RecallLevelUnlockPanel:onAskFriendBtnTapped()
 		logic:start(UnlockLevelAreaLogicUnlockType.USE_FRIEND, {})
 
 	else
-		-- On Friend Choosed
-		local function onFriendChoose(friendIds)
-
-			local function onSendFriendRequestSuccess(evt)
-				print("onSendFriendRequestSuccess Called !")
-				DcUtil:requestUnLockCloud(self.lockedCloudId ,#friendIds)
-				local tipKey	= "unlock.cloud.panel.request.friend.success"
-				local tipValue	= Localization:getInstance():getText(tipKey)
-				CommonTip:showTip(tipValue, "positive")
+		local function onSuccess(friendIds)
+			if not self.friendIdsSent then
+				self.friendIdsSent = {}
 			end
-
-			local function onSendFriendRequestFail(evt)
-				print("onSendFriendRequestFail Called !")
-
-				local tipKey	= "error.tip."..tostring(evt.data)
-				local tipValue	= Localization:getInstance():getText(tipKey)
-				CommonTip:showTip(tipValue, "negative")
-			end
-
-			if not friendIds or #friendIds == 0 then
-				CommonTip:showTip(Localization:getInstance():getText("unlock.cloud.panel.request.friend.noselect"), "negative")
-				return
-			end
-
-			local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
-			logic:setOnSuccessCallback(onSendFriendRequestSuccess)
-			logic:setOnFailCallback(onSendFriendRequestFail)
-			if __IOS_FB then
-				if SnsProxy:isShareAvailable() then
-					local callback = {
-						onSuccess = function(result)
-							logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-							DcUtil:logSendRequest("request",result.id,"request_uplock_area_help")
-						end,
-						onError = function(err)
-							print("failed")
-						end
-					}
-
-					local profile = UserManager.getInstance().profile
-					local userName = ""
-					if profile and profile:haveName() then
-						userName = profile:getDisplayName()
-					end
-					
-					local reqTitle = Localization:getInstance():getText("facebook.request.unlock.title", {user=userName})
-					local reqMessage = Localization:getInstance():getText("facebook.request.unlock.message", {user=userName})
-					
-					local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(friendIds)
-					SnsProxy:sendRequest(snsIds, reqTitle, reqMessage, false, FBRequestObject.ULOCK_AREA_HELP, callback)
+			if friendIds then
+				for k, v in pairs(friendIds) do
+					table.insert(self.friendIdsSent, v)
 				end
-			else
-				logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-			end	
+			end
 		end
+		local function onFail(evt)
 
-		-- Pop Out Choose Friend Panel
-		self.curAreaFriendIds = self.curAreaFriendIds or {}
-		local panel = ChooseFriendPanel:create(onFriendChoose, self.curAreaFriendIds)
-		panel:popout()
+		end
+		ChooseFriendPanel:popoutPanel(self.lockedCloudId, self.curAreaFriendIds, onSuccess, onFail)
 	end
 end
 
@@ -397,6 +351,10 @@ function RecallLevelUnlockPanel:onCloseBtnTapped()
 		return
 	end
 	self:remove(false)
+	if self.closeBtnCallback then
+		self.closeBtnCallback(self.isUnlockSuccess, self.friendIdsSent)
+	end
+
 end
 
 function RecallLevelUnlockPanel:updateView()
@@ -498,11 +456,13 @@ function RecallLevelUnlockPanel:remove(animFinishCallback)
 		animFinishCallback()
 	end
 	PopoutManager:sharedInstance():remove(self, true)
+	if self.closeCallback then
+		self.closeCallback()
+	end
 end
 
 function RecallLevelUnlockPanel:onMoreStarBtnTapped()
 	self:onCloseBtnTapped()
-	PopoutManager:sharedInstance():remove(self, true)
 	local panel = MoreStarPanel:create()
 	panel:popout()
 end

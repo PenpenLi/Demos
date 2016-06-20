@@ -260,12 +260,14 @@ function SnsProxy:syncSnsFriend()
 			if count > 0 then
 				local function onRequestError(evt)
 					print("syncSnsFriend onPreQzoneError callback")
+					GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncFailed))
 				end
 
 				local function onRequestFinish(evt)
 					print("syncSnsFriend onRequestFinish callback")
 					FriendManager.getInstance().lastSyncTime = os.time()
 					HomeScene:sharedInstance().worldScene:buildFriendPicture()
+					GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncSuccess))
 				end
 
 				print("friendOpenIds:"..table.tostring(friendOpenIds))

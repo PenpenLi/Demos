@@ -12,9 +12,8 @@ require "zoo.animation.CommonEffect"
 require "zoo.animation.Flowers"
 require "zoo.animation.Clouds"
 require "zoo.animation.HiddenBranchAnimation"
-require "zoo.animation.LadybugAnimation"
+require "zoo.scenes.component.gameplayScene.ScoreProgressAnimation"
 require "zoo.animation.PropListAnimation"
-require "zoo.animation.LevelTargetAnimation"
 require "zoo.animation.PrefixPropAnimation"
 require "zoo.animation.WinAnimation"
 require "zoo.animation.LadybugTaskAnimation"
@@ -1207,13 +1206,13 @@ function AnimationScene:testPath()
 
 		ladybug:addScoreStar(evt.globalPosition)
 --[[
-		local star = LadybugAnimation:createFinishStarAnimation(evt.globalPosition)
+		local star = ScoreProgressAnimation:createFinishStarAnimation(evt.globalPosition)
 		self.layer:addChild(star)
 
-		local explode = LadybugAnimation:createFinsihExplodeStar(ccp(evt.globalPosition.x + 100, evt.globalPosition.y))
+		local explode = ScoreProgressAnimation:createFinsihExplodeStar(ccp(evt.globalPosition.x + 100, evt.globalPosition.y))
 		self.layer:addChild(explode)
 
-		local overlay = LadybugAnimation:createFinsihShineStar(ccp(evt.globalPosition.x + 300, evt.globalPosition.y))
+		local overlay = ScoreProgressAnimation:createFinsihShineStar(ccp(evt.globalPosition.x + 300, evt.globalPosition.y))
 		self.layer:addChild(overlay)
 		]]
 	end
@@ -1231,7 +1230,7 @@ function AnimationScene:testPath()
 	colorLayer:setOpacity(30)
 	self.layer:addChild(colorLayer)
 
-	ladybug = LadybugAnimation:create()
+	ladybug = ScoreProgressAnimation:create()
 	ladybug:setPosition(ccp(100,800))
 	ladybug:setStarsPosition(0, 0.5, 1)
 	self.layer:addChild(ladybug.layer)	

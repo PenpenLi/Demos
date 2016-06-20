@@ -61,7 +61,28 @@ function UsePropState:runGamePropsActionLogic(mainLogic, theAction, actid)
 			self:runGamePropsBroomAction(mainLogic, theAction, actid)
 		elseif theAction.actionType == GamePropsActionType.kFirecracker then
 			self:runGamePropsFirecrackerAction(mainLogic, theAction, actid)
+		elseif theAction.actionType == GamePropsActionType.kHedgehogCrazy then
+			self:runGamePropsHedgehogCrazyAction(mainLogic, theAction, actid)
+		elseif theAction.actionType == GamePropsActionType.kWukongJump then
+			self:runGamePropsWukongJumpAction(mainLogic, theAction, actid)
 		end
+	end
+end
+
+function UsePropState:runGamePropsHedgehogCrazyAction( mainLogic, theAction, actid )
+	-- body
+	if theAction.addInfo == "over" then
+		mainLogic.propActionList[actid] = nil
+		mainLogic:setNeedCheckFalling()
+		self.nextState = self.context.fallingMatchState
+	end
+end
+
+function UsePropState:runGamePropsWukongJumpAction( mainLogic, theAction, actid )
+	if theAction.addInfo == "over" then
+		mainLogic.propActionList[actid] = nil
+		mainLogic:setNeedCheckFalling()
+		self.nextState = self.context.fallingMatchState
 	end
 end
 
@@ -157,6 +178,8 @@ end
 function UsePropState:runGamePropsHammerAction(mainLogic, theAction, actid)
 	local r = theAction.ItemPos1.x
 	local c = theAction.ItemPos1.y
+	GameExtandPlayLogic:specialCoverActiveCrystalStone(mainLogic, r, c, scoreScale) -- 作用于满能量的染色宝宝
+	SpecialCoverLogic:effectTotemsAt(mainLogic, r, c, 1)
 	SpecialCoverLogic:SpecialCoverLightUpAtPos(mainLogic, r, c, 1, true)  --可以作用银币
 	BombItemLogic:tryCoverByBomb(mainLogic, r, c, true, 1)
 	SpecialCoverLogic:SpecialCoverAtPos(mainLogic, r, c, 3) 
@@ -178,7 +201,9 @@ function UsePropState:runningGamePropSwapAction(mainLogic, theAction, actid)
 			local item2Clone = data2:copy()
 			data2:getAnimalLikeDataFrom(item1Clone)
 			data1:getAnimalLikeDataFrom(item2Clone)
-			if data1.ItemType == GameItemType.kMagicLamp or data2.ItemType == GameItemType.kMagicLamp then
+			if data1.ItemType == GameItemType.kMagicLamp or data2.ItemType == GameItemType.kMagicLamp 
+				or data1.ItemType == GameItemType.kWukong or data2.ItemType == GameItemType.kWukong 
+				then
 				mainLogic:checkItemBlock(r1, c1)
 				mainLogic:checkItemBlock(r2, c2)
 				FallingItemLogic:preUpdateHelpMap(mainLogic)
@@ -257,6 +282,10 @@ function UsePropState:runPropsActionView(boardView, theAction)
 			self:runGameItemActionBroom(boardView, theAction)
 		elseif theAction.actionType == GamePropsActionType.kFirecracker then
 			self:runGameItemActionFirecracker(boardView, theAction)
+		elseif theAction.actionType == GamePropsActionType.kHedgehogCrazy then
+			self:runGameItemActionHedeglogCrazy(boardView, theAction)
+		elseif theAction.actionType == GamePropsActionType.kWukongJump then
+			self:runGameItemActionWukongJump(boardView, theAction)
 		end
 	else
 		if theAction.actionType == GameItemActionType.kItemRefresh_Item_Flying then
@@ -264,6 +293,22 @@ function UsePropState:runPropsActionView(boardView, theAction)
 				self:runGameItemActionPassRefreshItemFlyingOver(boardView, theAction)
 			end
 		end
+	end
+end
+
+function UsePropState:runGameItemActionHedeglogCrazy( boardView, theAction )
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kWaitingForDeath 
+		theAction.addInfo = 'over'
+	end
+end
+
+function UsePropState:runGameItemActionWukongJump( boardView, theAction )
+	-- body
+	if theAction.actionStatus == GameActionStatus.kWaitingForStart then
+		theAction.actionStatus = GameActionStatus.kWaitingForDeath 
+		theAction.addInfo = 'over'
 	end
 end
 

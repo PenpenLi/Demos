@@ -8,12 +8,11 @@ local kCharacterAnimationTime = 1/30
 local kBalloonContentSize = 70
 
 function TileBalloon:toString()
-	return string.format("TileBalloon [%s]", self.name and self.name or "nil");
+	-- return string.format("TileBalloon [%s]", self.name and self.name or "nil");
 end
 
 function TileBalloon:create(color, balloonFrom)
 	local node = TileBalloon.new(CCNode:create()) 
-	node.name = color.."_balloon"
 	node.color = color
 	--绳子
 	node.rope = Sprite:createWithSpriteFrameName("balloon_rope_0000.png")

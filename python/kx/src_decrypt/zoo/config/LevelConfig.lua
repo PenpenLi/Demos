@@ -2,6 +2,7 @@ require "zoo.config.TileMetaData"
 require "zoo.config.SnailConfigData"
 require "zoo.data.LevelMapManager"
 require "zoo.config.UncertainCfgMeta"
+require "zoo.config.HedgehogBoxCfg"
 require "zoo.config.TileMoveConfig"
 
 
@@ -24,6 +25,8 @@ AnimalGameMode =
 	kSeaOrder = "seaOrder",
 	kHalloween = "halloween",
 	kTaskForUnlockArea = "Mobile Drop down",
+	kHedgehogDigEndless = "HedgehogDigEndless",
+	kWukongDigEndless = "MonkeyDigEndless",
 }
 
 local DependingAssetsTypeNameMap = 
@@ -54,6 +57,9 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kDigJewel_1]		= {"flash/dig_block.plist"},
 	[TileConst.kDigJewel_2]		= {"flash/dig_block.plist"},
 	[TileConst.kDigJewel_3]		= {"flash/dig_block.plist"},
+	[TileConst.kDigJewel_1_blue]= {"flash/dig_block.plist"},
+	[TileConst.kDigJewel_2_blue]= {"flash/dig_block.plist"},
+	[TileConst.kDigJewel_3_blue]= {"flash/dig_block.plist"},
 	[TileConst.kGoldZongZi]		= {"flash/dig_block.plist"},
 	[TileConst.kSuperBlocker]	= {"flash/dig_block.plist"},
 	[TileConst.kAddMove]		= {"flash/add_move.plist"},
@@ -65,13 +71,19 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kMimosaRight]	= {"flash/mimosa.plist"},
 	[TileConst.kMimosaUp]		= {"flash/mimosa.plist"},
 	[TileConst.kMimosaDown]		= {"flash/mimosa.plist"},
+	[TileConst.kKindMimosaLeft]		= {"flash/mimosa.plist"},
+	[TileConst.kKindMimosaRight]	= {"flash/mimosa.plist"},
+	[TileConst.kKindMimosaUp]		= {"flash/mimosa.plist"},
+	[TileConst.kKindMimosaDown]		= {"flash/mimosa.plist"},
 	[TileConst.kSnailSpawn]		= {"flash/snail.plist", "flash/snail_road.plist"},
 	[TileConst.kSnail]			= {"flash/snail.plist", "flash/snail_road.plist"},
 	[TileConst.kSnailCollect]	= {"flash/snail.plist", "flash/snail_road.plist"},
-	[TileConst.kMayDayBlocker1] = {"flash/boss_elephant.plist"},
-	[TileConst.kMayDayBlocker2] = {"flash/boss_elephant.plist"},
-	[TileConst.kMayDayBlocker3] = {"flash/boss_elephant.plist"},
-	[TileConst.kMayDayBlocker4] = {"flash/boss_elephant.plist"},
+	--[TileConst.kHedgehog]  		= {"flash/snail.plist", "flash/hedgehog.plist","flash/hedgehog_road.plist", "flash/hedgehog_target.plist", "flash/christmas_other.plist",},
+	[TileConst.kHedgehog]  		= {"flash/snail.plist", "flash/hedgehog_road.plist", "flash/hedgehog_target.plist", "flash/christmas_other.plist",},
+	[TileConst.kMayDayBlocker1] = {"flash/boss_mayday.plist"},
+	[TileConst.kMayDayBlocker2] = {"flash/boss_mayday.plist"},
+	[TileConst.kMayDayBlocker3] = {"flash/boss_mayday.plist"},
+	[TileConst.kMayDayBlocker4] = {"flash/boss_mayday.plist"},
 	[TileConst.kRabbitProducer] = {"flash/rabbit.plist", "flash/scenes/gamePlaySceneUI/rabbitModeText.plist"},
 	[TileConst.kMagicLamp]		= {"flash/magic_lamp.plist"},
 	[TileConst.kHoneyBottle]	= {"flash/honey_bottle.plist"},
@@ -111,6 +123,13 @@ local DependingAssetsTypeNameMap =
 	[TileConst.kMagicStone_Left]= {"flash/magic_stone.plist"},
 	[TileConst.kMoveTile]		= {"flash/map_move_tile.plist"},
 	[TileConst.kBottleBlocker]		= {"flash/bottle_blocker.plist"},
+	[TileConst.kCrystalStone]		= {"flash/crystal_stone.plist"},
+	[TileConst.kWukong]		= {"flash/wukong.plist" },
+	[TileConst.kTotems]			= {"flash/tile_totems.plist"},
+	[TileConst.kLotusLevel1]			= {"flash/lotus.plist"},
+	[TileConst.kLotusLevel2]			= {"flash/lotus.plist"},
+	[TileConst.kLotusLevel3]			= {"flash/lotus.plist"},
+	[TileConst.kSuperCute]			= {"flash/ball_super.plist"},
 }
 
 -----------------------------------------------------------------------------
@@ -155,6 +174,8 @@ function LevelConfig:ctor()
 
 	self.dropBuff = nil								-- 神奇掉落规则    
 	self.tileMoveCfg = nil      					-- 移动地块配置  
+	self.dropCrystalStoneTypes = nil
+	self.singleDropCfg = nil						-- 独立掉落口掉落规则（颜色）{"itemId":[color1, color2, ...], ...}
 end
 
 function LevelConfig:loadConfig(level, config)
@@ -170,11 +191,22 @@ function LevelConfig:loadConfig(level, config)
 		self.uncertainCfg2 = UncertainCfgMeta:create(config.uncertainCfg2)                      --boss死亡产生的问号障碍配置
 	end
 
-	if config.snailCfg then
+	if config.snailCfg and config.snailCfg.initNum and config.snailCfg.routeRawData then
 		self.snailInitNum = config.snailCfg.initNum
 		self.snailMoveToAdd = config.snailCfg.moveToAdd
 		self.routeRawData = SnailConfigData:convertArrayFromBitToTile(config.snailCfg.routeRawData)
 	end
+
+	if config.hedgehogConfig and config.hedgehogConfig.routeRawData then
+		self.snailInitNum = 1
+		self.routeRawData = SnailConfigData:convertArrayFromBitToTile(config.hedgehogConfig.routeRawData)
+		self.digExtendRouteData = SnailConfigData:convertArrayFromBitToTile(config.hedgehogConfig.digExtendRouteData, true)
+	end
+
+	if config.hedgehogBoxCfg then
+		self.hedgehogBoxCfg = HedgehogBoxCfg:create(config.hedgehogBoxCfg)
+	end
+
 	self.scoreTargets = config.scoreTargets;		--分数目标
 
 	self.randomSeed = config.randomSeed				--随机种子----服务器将随机种子发给客户端--
@@ -195,6 +227,8 @@ function LevelConfig:loadConfig(level, config)
 	self.seaFlagMap = config.seaFlagMap
 	self.dropBuff = config.dropBuff
 	self.tileMoveCfg = TileMoveConfig:create(config.moveTileCfg)
+	self.dropCrystalStoneTypes = self:getRealColorValues(config.dropCrystalStoneTypes)
+	self.singleDropCfg = self:initSingleDropConfig(config.singleDrop, config.dropCrystalStoneTypes)
 
 	self.rabbitInitNum = config.rabbitInitNum   	-- 初始兔子数量
 	self.honeys = config.honeys                     -- 蜂蜜罐转化为蜂蜜的数量
@@ -202,7 +236,6 @@ function LevelConfig:loadConfig(level, config)
 		self.timeLimit = 0;
 	end
 	self.addTime = config.addTime or 5 --时间关每个单位增加时间
-
     if self.gameMode == AnimalGameMode.kClassic then				--经典玩法--时间到则结束
 	elseif self.gameMode == AnimalGameMode.kOrder or self.gameMode == AnimalGameMode.kSeaOrder then				--指定物品消除指定次数
 		self.orderMap = config.orderList 			
@@ -222,14 +255,51 @@ function LevelConfig:loadConfig(level, config)
 		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.clearTargetLayers = config.clearTargetLayers
 		self.layerAmount = 0
-	elseif self.gameMode == AnimalGameMode.kMaydayEndless or self.gameMode == AnimalGameMode.kHalloween then
+	elseif self.gameMode == AnimalGameMode.kMaydayEndless 
+		or self.gameMode == AnimalGameMode.kHalloween 
+		or self.gameMode == AnimalGameMode.kWukongDigEndless then
 		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
 		self.clearTargetLayers = config.clearTargetLayers
 		self.layerAmount = 0
 		if self.gameMode == AnimalGameMode.kHalloween then
 			self.dragonBoatPropGen = config.dragonBoatPropGen	-- 端午关卡道具掉落配置
 		end
+
+		if self.gameMode == AnimalGameMode.kWukongDigEndless then
+			self.monkeyChestConfig = config.monkeyChestConfig
+		end
+	elseif self.gameMode == AnimalGameMode.kHedgehogDigEndless then
+		self.digTileMap = TileMetaData:convertArrayFromBitToTile(config.digTileMap or {}, config.digTileMap2)
+		self.clearTargetLayers = config.clearTargetLayers
+		self.layerAmount = 0
 	end
+end
+
+function LevelConfig:initSingleDropConfig(singleDrop, dropCrystalStoneTypes)
+	local ret = {}
+	if dropCrystalStoneTypes and #dropCrystalStoneTypes > 0 then -- 将水晶石也加到统一处理
+		ret[TileConst.kCrystalStone] = LevelConfig:getRealColorValues(dropCrystalStoneTypes)
+	end
+
+	if singleDrop and table.size(singleDrop) > 0 then
+		for itemId, colors in pairs(singleDrop) do
+			if colors and #colors > 0 then
+				ret[tonumber(itemId)+1] = LevelConfig:getRealColorValues(colors)
+			end
+		end
+	end
+	return ret
+end
+
+function LevelConfig:getRealColorValues(colors)
+	local ret = {}
+	if colors and #colors > 0 then
+		for _, v in pairs(colors) do
+			local c = AnimalTypeConfig.convertIndexToColorType(v)
+			if c then table.insert(ret, c) end
+		end
+	end
+	return ret
 end
 
 function LevelConfig:isIceOrSnowOrHoneyLevel()
@@ -330,7 +400,8 @@ function LevelConfig:getDependingSpecialAssetsList()
 	--ufo素材
 	if self.hasDropDownUFO then
 		-- debug.debug() 
-		resNameMap["flash/UFO.plist"] = true
+		resNameMap["flash/ufo_rocket.plist"] = true
+		-- resNameMap["flash/UFO.plist"] = true
 	end
 
 	--挖地关卡需要加载挖地云块素材，并且需要遍历digTileMap中的item类型信息
@@ -341,24 +412,57 @@ function LevelConfig:getDependingSpecialAssetsList()
 	if self.gameMode == AnimalGameMode.kDigMove or self.gameMode == AnimalGameMode.kDigTime then
 		calculateTileNeedAssets(self.digTileMap)
 	elseif self.gameMode == AnimalGameMode.kDigMoveEndless or self.gameMode == AnimalGameMode.kMaydayEndless
-	or self.gameMode == AnimalGameMode.kHalloween  
+	or self.gameMode == AnimalGameMode.kHalloween  or self.gameMode == AnimalGameMode.kHedgehogDigEndless
+	or self.gameMode == AnimalGameMode.kWukongDigEndless
 	 then
 	 	if self.gameMode == AnimalGameMode.kHalloween  then
 	 		-- resNameMap["flash/xmas_boss.plist"] = true
-	 		resNameMap["flash/dragonboat_boss1.plist"] = true
-	 		resNameMap["flash/dragonboat_boss2.plist"] = true
+	 		-- resNameMap["flash/dragonboat_boss1.plist"] = true
+	 		-- resNameMap["flash/dragonboat_boss2.plist"] = true
 	 		-- resNameMap["flash/dragonboat_boss3.plist"] = true
+	 		-- resNameMap["flash/qixi_boss.plist"] = true
+			
+			resNameMap["flash/add_five_step_ani.plist"] = true
+			resNameMap["flash/dig_block.plist"] = true
+			-- resNameMap["flash/halloween_2015.plist"] = true
+			-- resNameMap["flash/boss_pumpkin.plist"] = true
+			-- resNameMap["flash/boss_pumpkin_die.plist"] = true
+			-- resNameMap["flash/boss_pumpkin_ghost_1.plist"] = true
+			-- resNameMap["flash/boss_pumpkin_ghost_2.plist"] = true
+			resNameMap["flash/ball_brown.plist"] = true
+			resNameMap["flash/ball_grey.plist"] = true
+			resNameMap["flash/venom.plist"] = true
+			resNameMap["flash/mapLock.plist"] = true
+			resNameMap["flash/coin.plist"] = true
+			resNameMap["flash/venom.plist"] = true
+			resNameMap["flash/PoisonBottle.plist"] = true
+			resNameMap["flash/two_year_line_effect.plist"] = true
 	 	end
 	 	if self.gameMode == AnimalGameMode.kMaydayEndless  then
+	 		
+	 		resNameMap["flash/boss_mayday.plist"] = true
+	 		resNameMap["flash/question_mark.plist"] = true
 	 		-- resNameMap["flash/animation/spring_festival.plist"] = true
 	 		--resNameMap["flash/animation/boss_cat_item.plist"] = true
 	 		--resNameMap["flash/animation/boss_cat_item_use.plist"] = true
+	 	end
+
+	 	if self.gameMode == AnimalGameMode.kHedgehogDigEndless then
+	 		resNameMap["flash/hedgehog_road.plist"] = true
+	 		--FrameLoader:loadArmature("skeleton/hedgehog_V3_animation")
+			resNameMap["flash/ball_brown.plist"] = true
+			resNameMap["flash/ball_grey.plist"] = true
+			resNameMap["flash/venom.plist"] = true
+			resNameMap["flash/mapLock.plist"] = true
+			resNameMap["flash/coin.plist"] = true
+			resNameMap["flash/venom.plist"] = true
+			resNameMap["flash/PoisonBottle.plist"] = true
 	 	end
 		resNameMap["flash/add_move.plist"] = true
 		calculateTileNeedAssets(self.digTileMap)
 	elseif self.gameMode == AnimalGameMode.kRabbitWeekly then
 		-- TODO
-		resNameMap["flash/UFO.plist"] = true
+		resNameMap["flash/ufo_rocket.plist"] = true
 	elseif self.gameMode == AnimalGameMode.kSeaOrder then
 		resNameMap["flash/sea_animal.plist"] = true
 	end
@@ -398,6 +502,39 @@ function LevelDataManager:getLevelConfigByID(id)
 
 	assert(self.levelDatas[id])
 	return self.levelDatas[id]
+end
+
+function LevelDataManager:getMainLevelTotalStar()
+	if self.mainLevelTotalStar == nil then
+		local starSum = 0
+		local maxId = MetaManager.getInstance():getMaxNormalLevelByLevelArea()
+		local minId = 1
+		for levelId = minId, maxId do
+			starSum = starSum + #(LevelMapManager.getInstance():getMeta(levelId).gameData.scoreTargets)
+		end
+		self.mainLevelTotalStar = starSum
+	end
+	return self.mainLevelTotalStar
+end
+
+function LevelDataManager:getHiddenLevelTotalStar()
+	if self.hiddenLevelTotalStar == nil then
+		local starSum = 0
+		local levelIdGroup = MetaManager.getInstance():getHideAreaLevelIds()
+		table.each(
+			levelIdGroup,
+			function (levelId)
+				if levelId then
+					local levelData = LevelMapManager.getInstance():getMeta(levelId)
+					if levelData and levelData.gameData and levelData.gameData.scoreTargets then
+						starSum = starSum + #(levelData.gameData.scoreTargets)
+					end
+				end
+			end
+		)
+		self.hiddenLevelTotalStar = starSum
+	end
+	return self.hiddenLevelTotalStar
 end
 
 local ldm__ = nil

@@ -15,9 +15,7 @@ assert(not EnergyButton)
 
 EnergyButton = class(BaseUI)
 
-function EnergyButton:init(...)
-	assert(#{...} == 0)
-
+function EnergyButton:init( belongScene )
 	-- -------------
 	-- Get UI Resource
 	-- ---------------
@@ -39,7 +37,7 @@ function EnergyButton:init(...)
 	self.totalEnergy	= UserEnergyRecoverManager:sharedInstance():getMaxEnergy()
 
 	self.sepChar		= "/"
-	he_log_warning("Note: EnergyButton Total Energy Is Hard Coded 30 !")
+	-- he_log_warning("Note: EnergyButton Total Energy Is Hard Coded 30 !")
 
 	-- Displayed 
 	self.displayedCurEnergy		= false
@@ -83,6 +81,7 @@ function EnergyButton:init(...)
 	self.denominatorPhSize	= self.denominatorPlaceholder:getPreferredSize()
 
 	self.uiSize	= self.ui:getGroupBounds().size
+	self.uiSize	= {width = self.uiSize.width, height = self.uiSize.height}
 	self.uiWidth	= self.uiSize.width
 	self.uiHeight	= self.uiSize.height
 
@@ -191,35 +190,37 @@ function EnergyButton:init(...)
 	local energyLeftTimeTxtValue	= Localization:getInstance():getText(energyLeftTimeTxtKey, {time = ""})
 	self.energyLeftTimeTxtValue	= energyLeftTimeTxtValue
 
+
+
 	--------------------------------------
 	-- Add Scheduler To Check Data Change
 	--------------------------------------
 	local function perFrameCallback()
 		self:perFrameCheckEnergyChange()
 	end
-	CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(perFrameCallback, 1/60, false)
+	self.perFrameScheduleId = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(perFrameCallback, 1/60, false)
 
+	if belongScene then
+		-- Add Event Listener Dispatched From Home Scene
+		local function onHomeSceneDispatchEnergyChange()
+			self:onHomeSceneDispatchEnergyChange()
+		end
+		belongScene:addEventListener(HomeSceneEvents.USERMANAGER_ENERGY_CHANGE, onHomeSceneDispatchEnergyChange)
 
-	-- Add Event Listener Dispatched From Home Scene
-	local function onHomeSceneDispatchEnergyChange()
-		self:onHomeSceneDispatchEnergyChange()
+		----------------------
+		-- Add Event Listener For UserEnergyRecoverManager,
+		-- When Count Down TIme Reached, Update The Energy Number
+		-- --------------------------------------------------
+		
+		local function onUserRecoverManagerCountDownReached()
+			print("EnergyButton:onUserRecoverManagerCountDownReached Called !")
+			local curEnergy = UserManager.getInstance().user:getEnergy()
+			self:setCurEnergy(curEnergy)
+			self:updateView()
+		end
+		UserEnergyRecoverManager:sharedInstance():addEventListener(UserEnergyRecoverManagerEvents.COUNT_DOWN_TIMER_REACHED, 
+							onUserRecoverManagerCountDownReached)
 	end
-	HomeScene:sharedInstance():addEventListener(HomeSceneEvents.USERMANAGER_ENERGY_CHANGE, onHomeSceneDispatchEnergyChange)
-
-	----------------------
-	-- Add Event Listener For UserEnergyRecoverManager,
-	-- When Count Down TIme Reached, Update The Energy Number
-	-- --------------------------------------------------
-	
-	local function onUserRecoverManagerCountDownReached()
-		print("EnergyButton:onUserRecoverManagerCountDownReached Called !")
-		local curEnergy = UserManager.getInstance().user:getEnergy()
-		self:setCurEnergy(curEnergy)
-		self:updateView()
-	end
-	UserEnergyRecoverManager:sharedInstance():addEventListener(UserEnergyRecoverManagerEvents.COUNT_DOWN_TIMER_REACHED, 
-						onUserRecoverManagerCountDownReached)
-
 	-- BUG fix: larger hit area while infinite energy state
 	local size = self.ui:getGroupBounds().size
 	size = {width = size.width, height = size.height}
@@ -241,6 +242,12 @@ function EnergyButton:init(...)
 	self.ui:addEventListener(DisplayEvents.kTouchTap, onTapped)
 end
 
+function EnergyButton:dispose( ... )
+ 	CCDirector:sharedDirector():getScheduler():unscheduleScriptEntry(self.perFrameScheduleId)
+	
+	BaseUI.dispose(self)
+end
+
 function EnergyButton:onHomeSceneDispatchEnergyChange(...)
 	assert(#{...} == 0)
 	print("EnergyButton:onHomeSceneDispatchEnergyChange Called !")
@@ -255,6 +262,9 @@ function EnergyButton:perFrameCheckEnergyChange(...)
 
 	-- Check Energy State
 	local energyState = UserEnergyRecoverManager:sharedInstance():getEnergyState()
+	if self.showTempEnergyState then
+		energyState = self.showTempEnergyState
+	end
 
 	if energyState == UserEnergyState.INFINITE then
 		self:changeToShowEnergyStateInfinite()
@@ -562,11 +572,9 @@ function EnergyButton:playHighlightAnim(...)
 	self.bubbleItem:playHighlightAnim(itemRes)
 end
 
-function EnergyButton:create(...)
-	assert(#{...} == 0)
-
+function EnergyButton:create( belongScene )
 	local newEnergyButton = EnergyButton.new()
-	newEnergyButton:init()
+	newEnergyButton:init(belongScene)
 	return newEnergyButton
 end
 
@@ -625,4 +633,15 @@ function EnergyButton:getFlyToSize()
 	local size = self.energyIcon:getGroupBounds().size
 	size.width, size.height = size.width, size.height
 	return size
+end
+
+function EnergyButton:getBubbleItemRes( ... )
+	return self.blueBubbleItemRes
+end
+
+
+-- 播放动画时候先显示正常状态，播放完再改回来
+function EnergyButton:setTempEnergyState( state )
+	self.showTempEnergyState = state
+	-- self.energyState = UserEnergyState.COUNT_DOWN_TO_RECOVER
 end

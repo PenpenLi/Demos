@@ -88,6 +88,27 @@ function UnlockLevelAreaLogic:init(lockedCloudId, ...)
 	self.itemIdToGoodsIdMap[40038] = 124
 	self.itemIdToGoodsIdMap[40039] = 125
 	self.itemIdToGoodsIdMap[40040] = 126
+	self.itemIdToGoodsIdMap[40041] = 193
+	self.itemIdToGoodsIdMap[40042] = 194
+	self.itemIdToGoodsIdMap[40043] = 195
+	self.itemIdToGoodsIdMap[40044] = 196
+	self.itemIdToGoodsIdMap[40045] = 197
+	self.itemIdToGoodsIdMap[40046] = 198
+	self.itemIdToGoodsIdMap[40047] = 199
+	self.itemIdToGoodsIdMap[40048] = 200
+	self.itemIdToGoodsIdMap[40049] = 201
+	self.itemIdToGoodsIdMap[40050] = 202
+	self.itemIdToGoodsIdMap[40051] = 203
+	self.itemIdToGoodsIdMap[40052] = 204
+	self.itemIdToGoodsIdMap[40053] = 205
+	self.itemIdToGoodsIdMap[40054] = 206
+	self.itemIdToGoodsIdMap[40055] = 207
+	self.itemIdToGoodsIdMap[40056] = 208
+	self.itemIdToGoodsIdMap[40057] = 209
+	self.itemIdToGoodsIdMap[40058] = 210
+	self.itemIdToGoodsIdMap[40059] = 211
+	self.itemIdToGoodsIdMap[40060] = 212
+
 
 	self.onSuccessCallback		= false
 	self.onFailCallback		= false
@@ -152,14 +173,20 @@ function UnlockLevelAreaLogic:start(unlockType, friendIds, ...)
 		if self.onSuccessCallback then
 			self.onSuccessCallback()
 		end
+
+		if MissionManager then
+			local triggerContext = TriggerContext:create(TriggerContextPlace.UNLOACK_AREA)
+			triggerContext:addValue( "unLockLevelAreaData" , {unlockType=unlockType,friendIds=friendIds} )
+			MissionManager:getInstance():checkAll(triggerContext)
+		end
 	end
 
 	-- ------------------
 	-- Failed Callback
 	-- ----------------
-	local function onSendUnlockLevelAreaFailed(evt)
+	local function onSendUnlockLevelAreaFailed(errorCode)
 		if self.onFailCallback then
-			self.onFailCallback(evt)
+			self.onFailCallback(errorCode)
 		end
 	end
 
@@ -199,19 +226,18 @@ function UnlockLevelAreaLogic:start(unlockType, friendIds, ...)
 		local num	= 1
 		local moneyType	= 2 -- Cash
 
-		--local logic = BuyLogic:create(itemId, num, moneyType)
-		--logic:start(onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed)
 		print("UnlockLevelAreaLogicUnlockType.USE_WINDMILL_COIN")
 		print(itemId, self.itemIdToGoodsIdMap[itemId])
 		if __ANDROID then -- ANDROID
 			if PaymentManager.getInstance():checkCanWindMillPay(self.itemIdToGoodsIdMap[itemId]) then
-				local uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
-				PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, uniquePayId, self.itemIdToGoodsIdMap[itemId], 1, 1, 0, 1)
+				self.dcAndroidInfo = DCWindmillObject:create()
+	            self.dcAndroidInfo:setGoodsId(self.itemIdToGoodsIdMap[itemId])
+	            PaymentDCUtil.getInstance():sendAndroidWindMillPayStart(self.dcAndroidInfo)
 
 	   			local logic = WMBBuyItemLogic:create()
 	            local buyLogic = BuyLogic:create(self.itemIdToGoodsIdMap[itemId], 2)
 	            buyLogic:getPrice()
-	            logic:buy(self.itemIdToGoodsIdMap[itemId], 1, uniquePayId, buyLogic, onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled, onSendUnlockLevelAreaCanceled)
+	            logic:buy(self.itemIdToGoodsIdMap[itemId], 1, self.dcAndroidInfo, buyLogic, onSendUnlockLevelAreaSuccess, onSendUnlockLevelAreaFailed, onSendUnlockLevelAreaCanceled, onSendUnlockLevelAreaCanceled)
 			else
 				local logic = IngamePaymentLogic:create(self.itemIdToGoodsIdMap[itemId])
 				logic:ignoreSecondConfirm(true)
@@ -251,11 +277,11 @@ function UnlockLevelAreaLogic:sendUnlockLevelAreaMessage(unlockType, friendIds, 
 	-- 4	: use friend to unlock
 
 	local function onSuccess(event)
-		onSuccessCallback(event)
+		onSuccessCallback(event.data)
 	end
 
 	local function onFailed(event)
-		onFailCallback(event)
+		onFailCallback(event.data)
 	end
 
 	local function onCancel()

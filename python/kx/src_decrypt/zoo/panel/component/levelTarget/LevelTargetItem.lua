@@ -7,10 +7,8 @@ function TargetItemFactory.create(class, itemSprite, index, context)
 	local function onTouchBegin(evt)
 		item:onTouchBegin(evt)
 	end
-
 	itemSprite:ad(DisplayEvents.kTouchBegin, onTouchBegin)
-	itemSprite:setTouchEnabled(true)
-
+	context:addTouchList(itemSprite)
 	return item
 end
 
@@ -20,20 +18,22 @@ function LevelTargetItem:ctor(itemSprite, index, context)
 	self.sprite = itemSprite
 	self.index = index
 	self.context = context
+	self.shadowSprite = Layer:create()
+	self.shadowSprite:setAnchorPoint(ccp(0,0))
 end
 
 function LevelTargetItem:create(itemSprite, index, context)
-	local item = LevelTargetItem.new(itemSprite, index, context)
-	item:init()
+	-- local item = LevelTargetItem.new(itemSprite, index, context)
+	-- item:init()
 
-	local function onTouchBegin(evt)
-		item:onTouchBegin(evt)
-	end
+	-- local function onTouchBegin(evt)
+	-- 	item:onTouchBegin(evt)
+	-- end
 
-	itemSprite:ad(DisplayEvents.kTouchBegin, onTouchBegin)
-	itemSprite:setTouchEnabled(true)
+	-- itemSprite:ad(DisplayEvents.kTouchBegin, onTouchBegin)
+	-- itemSprite:setTouchEnabled(true)
 
-	return item
+	-- return item
 end
 
 function LevelTargetItem:getContentSize()
@@ -41,6 +41,7 @@ function LevelTargetItem:getContentSize()
 end
 
 function LevelTargetItem:setVisible(visible)
+	self.shadowSprite:setVisible(visible)
 	return self.sprite:setVisible(visible)
 end
 
@@ -50,6 +51,7 @@ end
 
 function LevelTargetItem:setPosition(pos)
 	self.sprite:setPosition(pos)
+	self.shadowSprite:setPosition(ccp(pos.x, pos.y))
 end
 
 function LevelTargetItem:getGroupBounds()
@@ -76,32 +78,22 @@ function LevelTargetItem:onTouchBegin(evt)
 		he_log_info("auto_test_tap_target")
 end
 
-function LevelTargetItem:shakeObject( rotation )
-	if self.isShaking then return false end
-	self.isShaking = true
+function LevelTargetItem:shakeSprite(sprite, startRotation, finishCallback )
+    sprite:stopAllActions()
+    sprite:setRotation(0)
 
-    self.sprite:stopAllActions()
-    self.sprite:setRotation(0)
-
-    local original = self.sprite.original
+    local original = sprite.original
     if not original then
-    	original = self.sprite:getPosition() 
-    	self.sprite.original = {x=original.x, y=original.y}
+    	original = sprite:getPosition() 
+    	sprite.original = {x=original.x, y=original.y}
 	end
-    self.sprite:setPosition(ccp(original.x, original.y))
+    sprite:setPosition(ccp(original.x, original.y))
 
     local array = CCArray:create()
-    local direction = 1
-    if math.random() > 0.5 then direction = -1 end
-
-    rotation = rotation or 4
-    local startRotation = direction * (math.random() * 0.5 * rotation + rotation)
     local startTime = 0.35
-
     local function onShakeFinish()
-    	self.isShaking = false
+    	if finishCallback then finishCallback() end
     end
-
     array:addObject(CCSpawn:createWithTwoActions(CCRotateTo:create(startTime*0.3, startRotation), CCMoveBy:create(0.05, ccp(0, 6))))
     array:addObject(CCSpawn:createWithTwoActions(CCRotateTo:create(startTime, -startRotation*2), CCMoveBy:create(0.05, ccp(0, -6))))
     array:addObject(CCRotateTo:create(startTime, startRotation * 1.5))
@@ -111,26 +103,38 @@ function LevelTargetItem:shakeObject( rotation )
     array:addObject(CCRotateTo:create(startTime, 0))
     array:addObject(CCCallFunc:create(onShakeFinish))
 
-    self.sprite:runAction(CCSequence:create(array))
-    return true
+    sprite:runAction(CCSequence:create(array))
+end
+
+function LevelTargetItem:shakeObject( rotation )
+	-- body
+	if self.isShaking then return false end
+	self.isShaking = true
+
+	local function finish( ... )
+		-- body
+		self.isShaking = false
+	end
+	local direction = 1
+    if math.random() > 0.5 then direction = -1 end
+
+    rotation = rotation or 4
+    local startRotation = direction * (math.random() * 0.5 * rotation + rotation)
+	self:shakeSprite(self.sprite, startRotation, finish)
+	self:shakeSprite(self.shadowSprite, startRotation)
+	return true
 end
 
 function LevelTargetItem:initContent()
 	local content = self.sprite:getChildByName("content")
 	if content then
 	    local zOrder = content:getZOrder()
-	    self.zOrder = zOrder
+	    self.zOrder = 0--zOrder
 		local contentPos = content:getPosition()
 		local contentSize = content:getContentSize()
 
 		self.iconSize = {x = contentPos.x, y = contentPos.y, width=contentSize.width, height=contentSize.height}
 		content:removeFromParentAndCleanup(true)
-		
-		-- LevelTargetItem.iconSize = self.iconSize
-		-- LevelTargetItem.zOrder = zOrder
-	else
-		-- self.iconSize = LevelTargetItem.iconSize
-		-- self.zOrder = LevelTargetItem.zOrder
 	end
 end
 
@@ -138,15 +142,28 @@ function LevelTargetItem:init()
 
 	local spriteSize = self.sprite:getGroupBounds().size
 	self.sprite:setContentSize(CCSizeMake(spriteSize.width, spriteSize.height))
-
+	self.shadowSprite:setContentSize(CCSizeMake(spriteSize.width, spriteSize.height))
+	self.sprite:setAnchorPoint(ccp(0,0))
+	self.shadowSprite:setAnchorPoint(ccp(0,0))
+	local pos = self.sprite:getPosition()
+	self.shadowSprite:setPosition(ccp(pos.x,pos.y))
+	self.context.attachSprite:addChild(self.shadowSprite)
 	self:initContent()
-	
-	local label = self.sprite:getChildByName("label")
-	label.offsetX = label:getPosition().x
-	label:setAlignment(kCCTextAlignmentRight)
-	label:setString("0")
-	label:setOpacity(0)
-	label:setScale(2)
+
+	local fntFile	= "fnt/target_amount.fnt"
+	local text = BitmapText:create("", fntFile, -1, kCCTextAlignmentRight)
+	text.fntFile 	= fntFile
+	text.hAlignment = kCCTextAlignmentRight
+	text:setPosition(ccp(-39,  -94.45))
+	text.offsetX = text:getPosition().x
+	text:setAnchorPoint(ccp(0,1))
+	text:setPreferredSize(80, 38)
+	text:setAlignment(kCCTextAlignmentRight)
+	text:setString("0")
+	text:setScale(2)
+	text:setOpacity(0)
+	self.shadowSprite:addChild(text)
+	self.label = text
 
 	local finished = self.sprite:getChildByName("finished")
 	local finishedPos = finished:getPosition()
@@ -157,6 +174,10 @@ function LevelTargetItem:init()
 	finished:setPosition(ccp(finishedPos.x + finished_size.width/2, finishedPos.y - finished_size.height/2))
 	finished_icon:setAnchorPoint(ccp(0.5, 0.5))
 	finished_bg:setAnchorPoint(ccp(0.5, 0.5))
+	self.finishedIcon = finished
+
+	finished:removeFromParentAndCleanup(false)
+	self.shadowSprite:addChild(finished)
 
 	self.finished_icon = finished_icon
 	self.finished_bg = finished_bg
@@ -168,19 +189,18 @@ function LevelTargetItem:init()
 end
 
 function LevelTargetItem:reset()
-	local finished = self.sprite:getChildByName("finished")
+	-- local finished = self.sprite:getChildByName("finished")
+	local finished = self.finishedIcon
 	finished:setVisible(false)
-	local label = self.sprite:getChildByName("label")
-	label:setVisible(true)
+	self.label:setVisible(true)
 end
 
 function LevelTargetItem:finish()
 	if self.isFinished then return end
 	self.isFinished = true
-
-	local label = self.sprite:getChildByName("label")
-	label:setVisible(false)
+	self.label:setVisible(false)
 	local finished = self.sprite:getChildByName("finished")
+	local finished = self.finishedIcon
 	finished:setVisible(true)
 
 	self.finished_icon:stopAllActions()
@@ -207,7 +227,7 @@ function LevelTargetItem:shake()
 	if self.isFinished then return end
 	self:shakeObject()
 	local icon = self.icon
-	local label = self.sprite:getChildByName("label")
+	local label = self.label
 	
 	if icon then
 		local sequence = CCArray:create()
@@ -240,9 +260,9 @@ function LevelTargetItem:setContentIcon(icon, number )
 		local y = iconContentSize.y - (iconContentSize.height)/2
 		self.icon:setPosition(ccp(0, y - 3))
 		self.icon:setOpacity(0)
-		self.sprite:addChildAt(icon, self.zOrder)
+		self.shadowSprite:addChildAt(icon, self.zOrder)
 	end
-	local label = self.sprite:getChildByName("label")
+	local label = self.label
 	if number ~= nil and label then
 		label:setString(tostring(number or 0))
 		label:setOpacity(0)
@@ -265,22 +285,26 @@ function LevelTargetItem:setTargetNumber(itemId, itemNum, animate, globalPositio
 			local tx, ty = position.x, position.y
 			local function onIconScaleFinished()
 				cloned:removeFromParentAndCleanup(true)
-			end 
+				self.animNode = nil
+			end
+
 			local function onIconMoveFinished()			
-				self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+				self.label:setString(tostring(itemNum or 0))
 				self.context:playLeafAnimation(true)
 				self.context:playLeafAnimation(false)
 				self:shakeObject()
 				local sequence = CCSpawn:createWithTwoActions(CCScaleTo:create(0.3, 2), CCFadeOut:create(0.3))
 				cloned:setOpacity(255)
 				cloned:runAction(CCSequence:createWithTwoActions(sequence, CCCallFunc:create(onIconScaleFinished)))
-			end 
+			end
+
 			local moveTo = CCEaseSineInOut:create(CCMoveTo:create(0.5, ccp(tx, ty)))
 			local moveOut = CCSpawn:createWithTwoActions(moveTo, CCFadeTo:create(0.5, 150))
 			cloned:setPosition(targetPos)
+			self.animNode = cloned
 			cloned:runAction(CCSequence:createWithTwoActions(moveOut, CCCallFunc:create(onIconMoveFinished)))
 		else
-			self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+			self.label:setString(tostring(itemNum or 0))
 		end
 	end
 end
@@ -292,7 +316,7 @@ function LevelTargetItem:revertTargetNumber(itemId, itemNum )
 			self:reset()
 			self.isFinished = false 
 		end
-		self.sprite:getChildByName("label"):setString(tostring(itemNum or 0))
+		self.label:setString(tostring(itemNum or 0))
 	end
 end
 
@@ -382,5 +406,12 @@ function LevelTargetItem:highlight(enable, showRaccoon)
             end
             setTimeOut(remove, 5)
         end
+    end
+end
+
+function LevelTargetItem:forceStopAnimation()
+    if self.animNode and not self.animNode.isDisposed then
+        self.animNode:removeFromParentAndCleanup(true)
+        self.animNode = nil
     end
 end

@@ -57,16 +57,17 @@ local function isValidItem( item )
 	return true
 end
 
-function PropsModel:init(levelId, selectedItemsData, hasOctopus)
-	self:_createPropsInGame(levelId, selectedItemsData, hasOctopus)
+function PropsModel:init(levelId, levelType, selectedItemsData, hasOctopus)
+	self:_createPropsInGame(levelId, levelType, selectedItemsData, hasOctopus)
 	self:_separateProps()
 end
 
-function PropsModel:_createPropsInGame(levelId, selectedItemsData, hasOctopus)
+function PropsModel:_createPropsInGame(levelId, levelType, selectedItemsData, hasOctopus)
 	local addToBarProps		= {}
 	local notAddToBarPros		= {}
 	self.addToBarProps 	= addToBarProps
 	self.notAddToBarPros	= notAddToBarPros
+	self.levelType = levelType
 
 	for k,v in ipairs(selectedItemsData) do
 		local tmpItem = PropItemData:create(tonumber(v.id))
@@ -143,7 +144,7 @@ function PropsModel:_createPropsInGame(levelId, selectedItemsData, hasOctopus)
 	self.levelModeType = levelMeta.gameData.gameModeName
 
 	-- 春节爆竹必须要在第三个
-	if self.levelModeType == 'MaydayEndless' then
+	if self.levelModeType == 'MaydayEndless' and self.levelType ~= GameLevelType.kSummerWeekly then
 		local springItem = PropItemData:create(kSpringPropItemID)
 		springItem.itemNum = 0
 		springItem.temporary = 0

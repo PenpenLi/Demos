@@ -4,6 +4,7 @@ TileAddMove = class(CocosObject)
 local kCharacterAnimationTime = 1/30
 
 function TileAddMove:create(colortype, numAddMove)
+	colortype = AnimalTypeConfig.convertColorTypeToIndex(colortype)	
 	local node = TileAddMove.new(CCNode:create())
 	node.name = "addMove"
 

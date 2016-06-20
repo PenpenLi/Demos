@@ -48,6 +48,7 @@ function LadyBugRewardItem:init(ui, ...)
 	-- Get Data About UI
 	-- ------------------
 	self.itemPhSize	= self.itemPh:getGroupBounds().size
+	self.itemPhSize	= {width = self.itemPhSize.width, height = self.itemPhSize.height}
 	self.itemPhPos	= self.itemPh:getPosition()
 end
 

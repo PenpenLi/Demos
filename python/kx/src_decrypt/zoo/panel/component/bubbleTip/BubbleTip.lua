@@ -87,7 +87,7 @@ end
 
 -- rect: the box around which the tip should show itself
 -- direction: on which direction of the rect the tip should put itself
-function BubbleTip:pointTo(rect)
+function BubbleTip:pointTo(rect, preferredDirection)
 	local size = rect.size
 	local origin = rect.origin
 
@@ -130,58 +130,96 @@ function BubbleTip:pointTo(rect)
 		bottomOut = true
 	end
 
-	if not rightOut then
-		direction = right
-	elseif not leftOut then
-		direction = left
-	elseif not topOut then
-		direction = top
-	elseif not bottomOut then
-		direction = bottom
-	else 
-		direction = right
+
+	local panelOffset = arrowSize.width * (0.33) 
+
+	local function tryUpOrDown(isUp)
+		print('tryTop')
+		--先尝试居中
+		local maxOffset = panelSize.width / 2 - arrowSize.width / 2
+		local leftBorder = top.x - panelSize.width/2
+		local rightBorder = top.x + panelSize.width/2
+		local offset = 0
+		if leftBorder < visibleOrigin.x then
+			offset = visibleOrigin.x - leftBorder -- offset > 0
+			if offset > maxOffset then offset = maxOffset end
+		elseif rightBorder > visibleOrigin.x + visibleSize.width then
+			offset = (visibleOrigin.x + visibleSize.width) - rightBorder
+			if offset < -maxOffset then offset = -maxOffset end
+		end
+		print('offset', offset)
+		if isUp then
+			self.ui:setAnchorPoint(ccp(0.5, 0))
+			self.arrow:setRotation(0)
+			self.arrow:setPosition(ccp(0,0))
+			self.panel:setAnchorPoint(ccp(0.5, 0))
+			self.panel:setPosition(ccp(offset, panelOffset))
+			self.ui:setPosition(top)
+		else
+			self.ui:setAnchorPoint(ccp(0.5, 1))
+			self.arrow:setRotation(180)
+			self.arrow:setPosition(ccp(0, 0))
+			self.panel:setAnchorPoint(ccp(0.5, 1))
+			self.panel:setPosition(ccp(offset, -panelOffset))
+			self.ui:setPosition(bottom)
+		end
 	end
 
-
-	local panelOffset = arrowSize.width * (0.33) -- distance from arrow to panel
-
-	if direction == right then 
-		self.ui:setAnchorPoint(ccp(0, 0.5))
-		self.arrow:setRotation(90) -- point to left
-		self.arrow:setPosition(ccp(0, 0))
-		self.panel:setAnchorPoint(ccp(0, 0.5))
-		self.panel:setPosition(ccp(panelOffset, 0))
-		self.ui:setPosition(right)
-
-	elseif direction == left then
-		self.ui:setAnchorPoint(ccp(1, 0.5))
-		self.arrow:setRotation(-90)
-		self.arrow:setPosition(ccp(0, 0))
-		self.panel:setAnchorPoint(ccp(1, 0.5))
-		self.panel:setPosition(ccp(-panelOffset, 0))
-		self.ui:setPosition(left)
-
-	elseif direction == top then 
-		self.ui:setAnchorPoint(ccp(0.5, 0))
-		self.arrow:setRotation(0)
-		self.arrow:setPosition(ccp(0,0))
-		self.panel:setAnchorPoint(ccp(0.5, 0))
-		self.panel:setPosition(ccp(0, panelOffset))
-		self.ui:setPosition(top)
-	else -- bottom
-		self.ui:setAnchorPoint(ccp(0.5, 1))
-		self.arrow:setRotation(180)
-		self.arrow:setPosition(ccp(0, 0))
-		self.panel:setAnchorPoint(ccp(0.5, 1))
-		self.panel:setPosition(ccp(0, -panelOffset))
-		self.ui:setPosition(bottom)
-
+	local function tryLeftOrRight(isLeft)
+		print('tryLeft')
+		local maxOffset = panelSize.height / 2 - arrowSize.height / 2
+		local topBorder = left.y + panelSize.height/2
+		local bottomBorder = left.y - panelSize.height/2
+		local offset = 0
+		if bottomBorder < visibleOrigin.y then
+			offset = visibleOrigin.y - bottomBorder -- offset > 0
+			if offset > maxOffset then offset = maxOffset end
+		elseif topBorder > visibleOrigin.y + visibleSize.height then
+			offset = (visibleOrigin.y + visibleSize.height) - topBorder
+			if offset < -maxOffset then offset = -maxOffset end
+		end
+		print('offset', offset)
+		if isLeft then
+			self.ui:setAnchorPoint(ccp(1, 0.5))
+			self.arrow:setRotation(-90)
+			self.arrow:setPosition(ccp(0, 0))
+			self.panel:setAnchorPoint(ccp(1, 0.5))
+			self.panel:setPosition(ccp(-panelOffset, offset))
+			self.ui:setPosition(left)
+		else
+			self.ui:setAnchorPoint(ccp(0, 0.5))
+			self.arrow:setRotation(90) -- point to left
+			self.arrow:setPosition(ccp(0, 0))
+			self.panel:setAnchorPoint(ccp(0, 0.5))
+			self.panel:setPosition(ccp(panelOffset, offset))
+			self.ui:setPosition(right)
+		end
 	end
 
+	if preferredDirection == 'up' and not topOut then
+		tryUpOrDown(true)
+	elseif preferredDirection == 'down' and not bottomOut then
+		tryUpOrDown(false)
+	elseif preferredDirection == 'left' and not leftOut then
+		tryLeftOrRight(true)
+	elseif preferredDirection == 'right' and not rightOut then
+		tryLeftOrRight(false)
+	else
 
+		if not topOut then
+			tryUpOrDown(true)
+		elseif not leftOut then
+			tryLeftOrRight(true)
+		elseif not rightOut then
+			tryLeftOrRight(false)
+		elseif not bottomOut then
+			tryUpOrDown(false)
+		else 
+			tryUpOrDown(true)
+		end
+	end
 
 end
-
 
 
 function BubbleTip:onEnterHandler(evt)
@@ -193,7 +231,8 @@ function BubbleTip:isPopedOut()
 	return self._isPopedOut;
 end
 
-function BubbleTip:show(rect)
+-- preferredDirection : 'up' 'down' 'left' 'right'
+function BubbleTip:show(rect, preferredDirection)
 	local time = self.duration --sec
 	local function __hideDelegate(event)
 		self:hide()
@@ -207,7 +246,7 @@ function BubbleTip:show(rect)
 
 		print(self.ui:getGroupBounds().origin.x, self.ui:getGroupBounds().origin.y)
 		print(self.ui:getGroupBounds().size.width, self.ui:getGroupBounds().size.height)
-		self:pointTo(rect)
+		self:pointTo(rect, preferredDirection)
 		scene:addChild(self)
 		self._isPopedOut = true
 	end

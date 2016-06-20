@@ -11,7 +11,7 @@
 assert(not StartGameButton)
 StartGameButton = class(BaseUI)
 
-function StartGameButton:init(ui, ...)
+function StartGameButton:init(ui, isInterfaceBuilder, ...)
 	assert(ui)
 	assert(#{...} == 0)
 
@@ -55,14 +55,22 @@ function StartGameButton:init(ui, ...)
 	-- Update Start Button Label
 	local stringKey		= "start.game.panel.start.btn.txt"
 	local stringValue	= Localization:getInstance():getText(stringKey, {})
-	self.label:setString(stringValue)
+	-- TODO
+	if isInterfaceBuilder then
+		self.label:setText(stringValue)
+	else
+		self.label:setString(stringValue)
+	end
 	--self.label:setToParentCenterVertical()
 
 	self.labelUseEnergyPosX	= self.label:getPositionX()
 	self.labelUseEnergyPosY = self.label:getPositionY()
 
-
-	self.negative5Label:setString("-5")
+	if isInterfaceBuilder then
+		self.negative5Label:setText("-5")
+	else
+		self.negative5Label:setString("-5")
+	end
 	--self.negative5Label:setToParentCenterVertical()
 
 	local manualAdjustPosX	= 0
@@ -190,11 +198,11 @@ function StartGameButton:changeToEnergyCountdownState(...)
 	end
 end
 
-function StartGameButton:create(ui, ...)
+function StartGameButton:create(ui, isInterfaceBuilder, ...)
 	assert(ui)
 	assert(#{...} == 0)
 
 	local newStartGameButton = StartGameButton.new()
-	newStartGameButton:init(ui)
+	newStartGameButton:init(ui, isInterfaceBuilder)
 	return newStartGameButton
 end

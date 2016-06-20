@@ -55,10 +55,16 @@ function SnailConfigData:convertFromBitToTileIndex(value, x, y)
 	return t
 end
 
-
-function SnailConfigData:convertArrayFromBitToTile(map)
+---------
+--isDigExtened 表示挖地额外地形
+---------
+function SnailConfigData:convertArrayFromBitToTile(map, isDigExtend)
 	local t = {}
 	local maxRow = GamePlayConfig_Max_Item_Y - 1
+	if isDigExtend then
+		maxRow = #map
+	end
+
 	local maxCol = GamePlayConfig_Max_Item_Y - 1
 	for r = 1, maxRow do 
 		if not map[r] then map[r] = {} end

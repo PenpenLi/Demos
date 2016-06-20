@@ -31,14 +31,15 @@ function IsLockedCloudCanWaitToOpenLogic:start(...)
 	assert(topLevelId)
 
 	-- Get User Top Level Star
-	local topLevelStar	= UserManager.getInstance():getUserScore(topLevelId)
+	-- local topLevelStar	= UserManager.getInstance():getUserScore(topLevelId)
 
 	-- Get Locked Cloud Start Level Id
 	local curLevelAreaData	= MetaModel:sharedInstance():getLevelAreaDataById(self.lockedCloudId)
 	local curStartNodeId	= tonumber(curLevelAreaData.minLevel)
 	assert(curStartNodeId)
 
-	if topLevelId == curStartNodeId - 1 and topLevelStar ~= nil and topLevelStar.star > 0 then
+	if topLevelId == curStartNodeId - 1 
+			and (UserManager.getInstance():hasPassedLevel(topLevelId) or JumpLevelManager.getInstance():hasJumpedLevel(topLevelId)) then
 		return true
 	end
 

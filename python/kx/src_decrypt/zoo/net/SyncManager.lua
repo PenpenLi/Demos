@@ -9,6 +9,16 @@ require "zoo.data.UserManager"
 --
 local kMinDisplayTime = 3
 local instance = nil
+
+SyncFinishReason = {
+	kSuccess = 1,
+	kLoginError = 2,
+	kNoNetwork = 3,
+	kRestoreData = 4,
+	kNoLocalServer = 5,
+	kNoDataToUpload = 6,
+}
+
 SyncManager = {}
 
 function SyncManager.getInstance()
@@ -18,32 +28,40 @@ function SyncManager.getInstance()
 	return instance
 end
 
-function SyncManager:sync(onCurrentSyncFinish, onCurrentSyncError, showAnim)
+function SyncManager:sync(onCurrentSyncFinish, onCurrentSyncError, animationType)
 	local function onUserLogin()
-		self:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
+		self:flush(onCurrentSyncFinish, onCurrentSyncError, animationType)
 	end
 	local function onUserNotLogin()
 		if onCurrentSyncError then onCurrentSyncError() end
-		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kLoginError))
 	end
-	RequireNetworkAlert:callFuncWithLogged(onUserLogin, onUserNotLogin, kRequireNetworkAlertAnimation.kSync)
+
+	animationType = animationType or kRequireNetworkAlertAnimation.kSync
+	RequireNetworkAlert:callFuncWithLogged(onUserLogin, onUserNotLogin, animationType)
 end
 
 local function onCachedHttpDataResponse(endpoint, resp, err)
-	if err then he_log_warning("onCachedHttpDataResponse data fail, err: " .. err)
-	else he_log_warning("onCachedHttpDataResponse data success") end
+	if err then 
+		if not table.exist(ExceptionErrorCodeIgnore, err) then 
+			LoginExceptionManager:getInstance():setErrorCodeCache(err)
+		end
+		he_log_warning("SyncManager::onCachedHttpDataResponse data fail, err: " .. err)
+	else 
+		he_log_warning("SyncManager::onCachedHttpDataResponse data success") 
+	end
 end
 
-function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
-	if type(showAnim) ~= "boolean" then showAnim = true end
+function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, animationType)
+	
 	if __IOS and not ReachabilityUtil.getInstance():isNetworkAvailable() then
 		print("Network disabled on iOS? ignore sync this time.")
-		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kNoNetwork))
 		if onCurrentSyncError ~= nil then onCurrentSyncError() end
 		return
 	end
 	if not NetworkConfig.useLocalServer then 
-		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kNoLocalServer))
 		if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
 		return 
 	end
@@ -73,9 +91,22 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 	if list and #list > 0 then
 		--animation
 		local beginTime = os.clock()
+		local syncCanceled = false
 		local container
-		if showAnim then
-			container = CountDownAnimation:createSyncAnimation()
+		if animationType ~= kRequireNetworkAlertAnimation.kNoAnimation then
+			if animationType == kRequireNetworkAlertAnimation.kSync then
+				container = CountDownAnimation:createSyncAnimation()
+			else
+				container = CountDownAnimation:createNetworkAnimation(
+									Director:sharedDirector():getRunningScene(),
+									function() 
+										syncCanceled = true
+										container:removeFromParentAndCleanup(true)
+									end,
+									localize("loading.upload.data")
+							)
+			end
+
 			if self.container then self.container:removeFromParentAndCleanup(true) end
 			self.container = container
 		end
@@ -87,12 +118,20 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 		end
 		
 		local function onSyncCallback( endpoint, resp, err )
+			if syncCanceled then
+				return
+			end
+
 			--hide animation
 		    local delayTime = 0
 			local deltaTime = os.clock() - beginTime
 			if deltaTime < kMinDisplayTime then delayTime = kMinDisplayTime - deltaTime end
 			if type(container) ~= "nil" then
-				container:hide(delayTime)
+				if container.hide then
+					container:hide(delayTime)
+				else
+					container:removeFromParentAndCleanup(true)
+				end
 				self.container = nil
 			end
 
@@ -101,20 +140,25 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 				local errorCode = tonumber(err) or -1
 				local function onUseLocalFunc() 
 					print("player choose local data (wrong data)") 
-					if onCurrentSyncError ~= nil then onCurrentSyncError() end
+					if errorCode == 109 then
+						CCDirector:sharedDirector():endToLua()
+						return
+					end
+					if onCurrentSyncError ~= nil then onCurrentSyncError(errorCode) end
 				end
 				local function onUseServerFunc()
 					print("player clear local data")
 					UserService:getInstance():clearCachedHttp()
 					Localhost.getInstance():flushCurrentUserData()
-					self:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
+					self:syncAgain(onCurrentSyncFinish, onCurrentSyncError, animationType)
 				end
 				if errorCode > 10 then
 					ConnectionManager:syncFlush()
-					ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
+					local panel = ExceptionPanel:create(errorCode, onUseLocalFunc, onUseServerFunc)
+					if panel then panel:popout() end 
 				else 
 					-- local err
-					if onCurrentSyncError ~= nil then onCurrentSyncError() end
+					if onCurrentSyncError ~= nil then onCurrentSyncError(errorCode) end
 					ConnectionManager:syncFlush()
 				end
 		    else 
@@ -128,7 +172,7 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 				else print("Did not write user data to the device.") end
 				if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
 
-				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+				GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kSuccess))
 				ConnectionManager:syncFlush()
 			end
 		end
@@ -136,7 +180,7 @@ function SyncManager:flush(onCurrentSyncFinish, onCurrentSyncError, showAnim)
 		ConnectionManager:flush()
 		ConnectionManager:syncBlock()
 	else 
-		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished)) 
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kNoDataToUpload)) 
 		if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
 	end
 end
@@ -170,14 +214,20 @@ function SyncManager:flushCachedHttp()
 				if err then 
 					he_log_warning("sync data fail, err: " .. err)
 					local errorCode = tonumber(err) or -1
-					local function onUseLocalFunc() end
+					local function onUseLocalFunc()
+						if errorCode == 109 then
+							CCDirector:sharedDirector():endToLua()
+							return
+						end
+					end
 					local function onUseServerFunc()
 						UserService:getInstance():clearCachedHttp()
 						Localhost.getInstance():flushCurrentUserData()
 						self:syncAgain()
 					end
 					if errorCode > kErrorCodeRange then
-						ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
+						local panel = ExceptionPanel:create(errorCode, onUseLocalFunc, onUseServerFunc)
+						if panel then panel:popout() end 
 					else he_log_warning("onCachedHttpDataResponse data fail, err: " .. err) end
 			    else 
 			    	he_log_info("onCachedHttpDataResponse data success")
@@ -192,17 +242,45 @@ function SyncManager:flushCachedHttp()
 	end
 end
 
-function SyncManager:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
+function SyncManager:syncAgain(onCurrentSyncFinish, onCurrentSyncError, animationType)
+	local container
+	local syncCanceled = false
+
+	if animationType ~= kRequireNetworkAlertAnimation.kNoAnimation then
+		if animationType == kRequireNetworkAlertAnimation.kSync then
+			container = CountDownAnimation:createSyncAnimation()
+		else
+			container = CountDownAnimation:createNetworkAnimation(
+								Director:sharedDirector():getRunningScene(),
+								function() 
+									syncCanceled = true
+									container:removeFromParentAndCleanup(true)
+								end,
+								"正在为您同步关卡数据，请稍候"
+						)
+		end
+
+		if self.container then self.container:removeFromParentAndCleanup(true) end
+		self.container = container
+	end
+
 	local beginTime = os.clock()
-	local container = CountDownAnimation:createSyncAnimation()
-	if self.container then self.container:removeFromParentAndCleanup(true) end
-	self.container = container
 
 	local function onSyncCallback( endpoint, resp, err )
+		if syncCanceled then
+			return
+		end
+
 	 	local delayTime = 0
 		local deltaTime = os.clock() - beginTime
 		if deltaTime < kMinDisplayTime then delayTime = kMinDisplayTime - deltaTime end
-		container:hide(delayTime)
+		if container then
+			if container.hide then
+				container:hide(delayTime)
+			else
+				container:removeFromParentAndCleanup(true)
+			end
+		end
 		self.container = nil
 
 		if err then 
@@ -210,7 +288,11 @@ function SyncManager:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
 			local errorCode = tonumber(err) or -1
 			local function onUseLocalFunc() 
 				print("player choose local data again(wrong data)") 
-				if onCurrentSyncError ~= nil then onCurrentSyncError() end
+				if errorCode == 109 then
+					CCDirector:sharedDirector():endToLua()
+					return
+				end
+				if onCurrentSyncError ~= nil then onCurrentSyncError(errorCode) end
 			end
 			local function onUseServerFunc()
 				print("player clear local data again")
@@ -218,10 +300,12 @@ function SyncManager:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
 				Localhost.getInstance():flushCurrentUserData()
 				self:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
 			end
-			if errorCode > 10 then ExceptionPanel:create(onUseLocalFunc, onUseServerFunc):popout()
+			if errorCode > 10 then 
+				local panel = ExceptionPanel:create(errorCode, onUseLocalFunc, onUseServerFunc)
+				if panel then panel:popout() end 
 			else 
 				-- local err
-				if onCurrentSyncError ~= nil then onCurrentSyncError() end
+				if onCurrentSyncError ~= nil then onCurrentSyncError(errorCode) end
 			end
 	    else 
 	    	he_log_info("sync data success after player choose server data")
@@ -233,7 +317,7 @@ function SyncManager:syncAgain(onCurrentSyncFinish, onCurrentSyncError)
 			else print("Did not write user data to the device.") end
 			if onCurrentSyncFinish ~= nil then onCurrentSyncFinish() end
 
-			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished))
+			GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(kGlobalEvents.kSyncFinished, SyncFinishReason.kRestoreData))
 		end
 	end
 	ConnectionManager:sendRequest( "syncData", {}, onSyncCallback )

@@ -9,6 +9,11 @@ local tType = {
 }
 local panels = {}
 function CommonTip:showTip(text, panType, callback, duration)
+	--联网提示面板改动，在此截断
+	if text == Localization:getInstance():getText("dis.connect.warning.tips") then
+		return CommonTip:showNetworkAlert()
+	end
+
 	local panel = CommonTip:create(text, tType[panType], callback, duration)
 	local scene = Director:sharedDirector():getRunningScene()
 	if panel and scene then
@@ -24,6 +29,59 @@ function CommonTip:showTip(text, panType, callback, duration)
 	end
 
 	return panel
+end
+
+function CommonTip:showNetworkAlert()
+	local panel = CommonTip.new()
+	panel:loadRequiredResource(PanelConfigFiles.common_ui)
+	panel:initNetworkAlert()
+
+	local scene = Director:sharedDirector():getRunningScene()
+	if panel and scene then
+		table.insert(panels, panel)
+		while #panels > 2 do
+			panels[1]:removeSchedule()
+			--panels[1]:removeFromParentAndCleanup(true)
+			PopoutManager:sharedInstance():remove(panels[1], true)
+			table.remove(panels, 1)
+		end
+		--scene:addChild(panel)
+		PopoutManager:sharedInstance():add(panel, false, true)
+	end
+
+	return panel
+end
+
+function CommonTip:initNetworkAlert()
+	self.ui = self.builder:buildGroup("ui_groups/ui_group_tip_network")
+	BasePanel.init(self, self.ui)
+
+	self.text1 = self.ui:getChildByName("text1")
+	self.text2 = self.ui:getChildByName("text2")
+	self.text3 = self.ui:getChildByName("text3")
+	self.textRed = self.ui:getChildByName("textRed")
+
+	self.anim2 = self.ui:getChildByName("anim2")
+	self.background = self.ui:getChildByName("bg")
+	self.background2 = self.ui:getChildByName("bg2")
+
+	self.text1:setString(localize("payfail.neednet2.1"))
+	self.textRed:setString(localize("payfail.neednet2.2"))
+	self.text3:setString(",")
+	self.text2:setString(localize("payfail.neednet2.3"))
+
+	local originSize = self.ui:getGroupBounds().size
+	local wSize = Director:sharedDirector():getWinSize()
+	local vSize = Director:sharedDirector():getVisibleSize()
+	local vOrigin = Director:sharedDirector():getVisibleOrigin()
+	local size = originSize
+	self:setPosition(ccp(vSize.width / 2, (vSize.height - size.height) / 2 + vOrigin.y + originSize.height / 3 - vSize.height))
+	self:setScale(0)
+
+	local function onTimeout() self:fadeOut() end
+	local duration = duration or 1
+	local function onScaled() self.schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeout, duration, false) end
+	self:runAction(CCSequence:createWithTwoActions(CCEaseBackOut:create(CCScaleTo:create(0.2, 1)), CCCallFunc:create(onScaled)))
 end
 
 function CommonTip:loadRequiredResource( panelConfigFile )
@@ -101,7 +159,11 @@ function CommonTip:fadeOut()
 			if not self.ui.isDisposed then
 				self.background:runAction(CCFadeOut:create(0.2))
 				self.background2:runAction(CCFadeOut:create(0.2))
-				self.text:runAction(CCFadeOut:create(0.2))
+				if self.text then self.text:runAction(CCFadeOut:create(0.2)) end
+				if self.text1 then self.text1:runAction(CCFadeOut:create(0.2)) end
+				if self.text2 then self.text2:runAction(CCFadeOut:create(0.2)) end
+				if self.text3 then self.text3:runAction(CCFadeOut:create(0.2)) end
+				if self.textRed then self.textRed:runAction(CCFadeOut:create(0.2)) end
 				if self.anim1 then self.anim1:runAction(CCFadeOut:create(0.2)) end
 				if self.anim2 then self.anim2:runAction(CCFadeOut:create(0.2)) end
 			end

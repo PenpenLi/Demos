@@ -71,12 +71,12 @@ function TimerUtil.check()
 		if TimerUtil.now() >= v.t then
 			v.r = v.r - 1
 
+			local fun = nil
+			local funp = nil
+
 			if type(v.f) == "function" then
-				if v.p then
-					v.f(v.p)
-				else
-					v.f()
-				end
+				fun = v.f
+				funp = v.p
 			end
 
 			if tonumber(v.r) == 0 then
@@ -84,6 +84,19 @@ function TimerUtil.check()
 			else
 				v.t = TimerUtil.now() + v.i
 			end
+
+			if fun then
+
+				local doFun = function()
+					if funp then
+						fun(funp)
+					else
+						fun()
+					end
+				end
+				pcall(doFun)
+			end
+			
 		end
 	end
 end

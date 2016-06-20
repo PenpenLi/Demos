@@ -151,12 +151,15 @@ function SnsProxy:syncSnsFriend()
 
 	local function onRequestError(evt)
 		print("syncSnsFriend onPreQzoneError callback")
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncFailed))
 	end
 
 	local function onRequestFinish(evt)
 		print("syncSnsFriend onRequestFinish callback")
 		FriendManager.getInstance().lastSyncTime = os.time()
+		FriendManager.getInstance():setQQFriendsSynced()
 		HomeScene:sharedInstance().worldScene:buildFriendPicture()
+		GlobalEventDispatcher:getInstance():dispatchEvent(Event.new(SyncSnsFriendEvents.kSyncSuccess))
 	end
 
 	local http = SyncSnsFriendHttp.new()

@@ -71,12 +71,7 @@ local defaultShareCallback = {
 			CommonTip:showTip(Localization:getInstance():getText("share.feed.success.tips"), "positive")
 		end,
 		onError=function(errCode, msg) 
-			local scene = Director:sharedDirector():getRunningScene()
-			if scene then
-				local item = RequireNetworkAlert.new(CCNode:create())
-				item:buildUI(Localization:getInstance():getText("share.feed.invite.code.faild.tips"))
-				scene:addChild(item)  
-			end
+			CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.code.faild.tips"), 'negative', nil, 2)
 		end,
 		onCancel=function()
 			CommonTip:showTip(Localization:getInstance():getText("share.feed.cancel.tips"), "positive")
@@ -394,6 +389,14 @@ end
 --
 -- WeChatSDK ---------------------------------------------------------
 --
+if __ANDROID then -- init android wechat sdk
+	if PlatformConfig:isQQPlatform() then
+		WeChatAndroidQQ:getInstance()
+	else
+		WeChatAndroid:getInstance()
+	end
+end
+
 WeChatSDK = class()
 function WeChatSDK:ctor()
 	if __IOS then

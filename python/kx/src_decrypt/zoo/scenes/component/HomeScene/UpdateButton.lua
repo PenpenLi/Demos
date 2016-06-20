@@ -11,48 +11,53 @@ end
 
 function UpdateButton:init()
 
-    if _G.useTraditionalChineseRes then 
-    	self.ui = ResourceManager:sharedInstance():buildGroup("updateButtonIcon_ZH_TW") 
-    else
-    	self.ui = ResourceManager:sharedInstance():buildGroup('updateButtonIcon')
-    end
+    self.ui = ResourceManager:sharedInstance():buildGroup('updateButtonIcon')
     IconButtonBase.init(self, self.ui)
 
-    self.ui:setTouchEnabled(true)
-    self.ui:setButtonMode(true)
+    self.up = self.ui:getChildByName("up")
+    self.up.posX = self.up:getPositionX()
+    self.up.posY = self.up:getPositionY()
 
-    self.up = self.ui:getChildByName('up')
-    self.up:setAnchorPoint(ccp(0.5,0))
+    self.reward = self.ui:getChildByName("rewardIcon")
 
-    self.up:runAction(self:buildAnimation())
+    local rewards = nil
+    if UserManager:getInstance().updateInfo then
+    	rewards = UserManager:getInstance().updateInfo.rewards
+    end
+
+    self.reward:setVisible(type(rewards) == "table" and #rewards > 0)
+    self:startUpAnimation()
 
     self.text = self.ui:getChildByName("text")
+    self.text:setAnchorPoint(ccp(0.5,1))
+    self.text:setPositionX(self.wrapper:getGroupBounds():getMidX())
     self:setText()
 end
 
 function UpdateButton:setText(status, percentage)
 	if status == "ready" then
 		self.text:setText(Localization:getInstance():getText("new.version.button.ready"))
+		self:stopUpAnimation()
+
 	elseif status == "ing" then
 		self.text:setText(Localization:getInstance():getText("new.version.button.processing", {percent = tostring(percentage)}))
 	else
-		self.text:setText(Localization:getInstance():getText("new.version.button.download"))
+		--立即更新
+		self.text:setText(Localization:getInstance():getText("new.version.icon"))
 	end
-	local tSize = self.text:getContentSize()
-	local wSize = self.wrapper:getGroupBounds().size
-	self.text:setPositionX((wSize.width - tSize.width) / 2)
 end
 
-function UpdateButton:buildAnimation()
-	local arr = CCArray:createWithCapacity(4)
+function UpdateButton:startUpAnimation()
+	local arr = CCArray:createWithCapacity(2)
 
-	arr:addObject(CCScaleTo:create(5 / 24,1.1,0.88))
-	arr:addObject(CCSpawn:createWithTwoActions(
-		CCMoveBy:create(5 / 24,ccp(0,4)),
-		CCScaleTo:create(5 / 24,1.0,1.0)
-	))
-	arr:addObject(CCMoveBy:create(15 / 24,ccp(0,8)))
-	arr:addObject(CCMoveBy:create(15 / 24,ccp(0,-12)))
+	arr:addObject(CCMoveBy:create(10 / 24,ccp(0,9)))
+	arr:addObject(CCMoveBy:create(10 / 24,ccp(0,-9)))
 
-	return CCRepeatForever:create(CCSequence:create(arr))
+	self.up:setPositionXY(self.up.posX,self.up.posY)
+	self.up:runAction(CCRepeatForever:create(CCSequence:create(arr)))
+end
+
+function UpdateButton:stopUpAnimation()
+	self.up:stopAllActions()
+	self.up:setPositionXY(self.up.posX,self.up.posY)
 end

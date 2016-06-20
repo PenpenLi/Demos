@@ -170,7 +170,7 @@ function RecallManager:getLevelStayState()
 		if currentStayLevel%15==0 then 
 			local scoreOfLevel = UserManager:getInstance():getUserScore(currentStayLevel)
 			if scoreOfLevel then
-				if scoreOfLevel.star ~= 0 then 
+				if scoreOfLevel.star ~= 0 or JumpLevelManager:getLevelPawnNum(currentStayLevel) > 0 then 
 					--排除最高关卡通关的卡区情况 
 					if currentStayLevel >= self.configTopLevelId then 
 						return false
@@ -203,6 +203,18 @@ local function getDayStartTimeByTS(ts)
 	return ts - ((ts - utc8TimeOffset) % oneDaySeconds)
 end
 
+function RecallManager:getLeaveDay()
+	local today = getDayStartTimeByTS(os.time())
+
+	local lastLeaveTime =  self:getLastLeaveTime() or 0
+
+	local lastLoginDay = getDayStartTimeByTS(lastLeaveTime)
+	local leaveTime = today - lastLoginDay
+	--离开的天数
+	local leaveDay = leaveTime/oneDaySeconds
+
+	return leaveDay
+end
 
 function RecallManager:getRecallRewardState()
 	if self.recallInfoVO then 
@@ -227,7 +239,7 @@ function RecallManager:getRecallRewardState()
 				local scoreOfLevel = UserManager:getInstance():getUserScore(currentStayLevel)
 				if scoreOfLevel then
 					--有星级 表明此关已过 就是卡区解锁了
-					if scoreOfLevel.star ~= 0 then 
+					if scoreOfLevel.star ~= 0 or JumpLevelManager:getLevelPawnNum(currentStayLevel) > 0 then 
 						stayForLevel = false
 					end
 				end
@@ -353,4 +365,11 @@ function RecallManager:getRecallLevelState(levelId)
 	else
 		return false
 	end
+end
+
+function RecallManager:getLastLeaveTime()
+	if self.recallInfoVO then
+		return self.recallInfoVO.lastLeaveTime
+	end
+	return nil
 end

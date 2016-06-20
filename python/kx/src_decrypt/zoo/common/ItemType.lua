@@ -58,7 +58,8 @@ ItemType = {
 
 	KEY_GOLD            = 17,  ---解锁钥匙，临时展示用
 	KWATER_MELON        =18,
-	KELEPHANT           = 19
+	KELEPHANT           = 19,
+	WUKONG           = 20,
 
 }
 
@@ -87,11 +88,16 @@ TimePropMap = {
 
 function ItemType:getRealIdByTimePropId( propId )
 	assert(type(propId) == "number")
-	return TimePropMap[propId]
+
+	if TimePropMap[propId] then
+		return TimePropMap[propId]
+	else
+		return propId
+	end
 end
 
 function ItemType:isTimeProp(propId)
-	return ItemType:getRealIdByTimePropId(propId) ~= nil
+	return TimePropMap[propId] ~= nil
 end
 
 function ItemType:isPrePropAddStep(itemType)

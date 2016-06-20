@@ -1,9 +1,3 @@
-
--- Copyright C2009-2013 www.happyelements.com, all rights reserved.
--- Create Date:	2013Äê10ÔÂ22ÈÕ 21:56:19
--- Author:	ZhangWan(diff)
--- Email:	wanwan.zhang@happyelements.com
-
 require "zoo.common.CountdownTimer"
 require "zoo.panel.component.common.BubbleItem"
 require "zoo.common.ItemType"
@@ -17,18 +11,8 @@ require "zoo.panel.TimeLimitPanel"
 require "zoo.panelBusLogic.IapBuyPropLogic"
 require "zoo.panelBusLogic.AddFiveStepABCTestLogic"
 require "zoo.util.FUUUManager"
+require 'zoo.payment.WechatQuickPayLogic'
 
-
-
-local function setButtonIcon( button, propId )
-	-- body
-	local icon =  ResourceManager:sharedInstance():buildItemSprite(propId)
-	button.propIcon = button.groupNode:getChildByName("_fg")
-	button.propIcon:getParent():addChild(icon)
-	local pos = button.propIcon:getPosition()
-	icon:setPosition(ccp(pos.x, pos.y))
-	button.propIcon:removeFromParentAndCleanup(true)
-end
 
 local UseButton = class(GroupButtonBase)
 function UseButton:create(groupNode, propId)
@@ -67,8 +51,46 @@ function BuyButton:create(groupNode, propId)
 	button.dcNumber = button.discount:getChildByName("num")
 	button.dcText = button.discount:getChildByName("text")
 
+	button:initOriNumber(groupNode)
 	return button
 end
+
+function BuyButton:initOriNumber(groupNode)
+	self.oriNumber = groupNode:getChildByName("oriNumber")
+	self.redLine = groupNode:getChildByName("redLine")
+	if not self.oriNumber or not self.redLine then return end
+	self.oriNumber:setVisible(false)
+	self.redLine:setVisible(false)
+
+	self.oriNumberLabel = self.oriNumber:getChildByName("number")
+	local numberSize = self.oriNumber:getChildByName("numberSize")
+	local size = numberSize:getContentSize()
+	local position = numberSize:getPosition()
+	local scaleX = numberSize:getScaleX()
+	local scaleY = numberSize:getScaleY()
+	self.oriNumberRect = {x=position.x, y=position.y, width=size.width*scaleX, height=size.height*scaleY}
+	numberSize:removeFromParentAndCleanup(true)
+end
+
+function BuyButton:setOriNumber(str)
+	if not self.oriNumber or not self.redLine then return end
+	self.oriNumber:setVisible(true)
+	self.redLine:setVisible(true)
+	local oriNumberLabel = self.oriNumberLabel
+	if oriNumberLabel and oriNumberLabel.refCocosObj then
+		if self.isStaticNumberLabel then oriNumberLabel:setString(str)
+		else
+			oriNumberLabel:setText(str)
+			InterfaceBuilder:centerInterfaceInbox( oriNumberLabel, self.oriNumberRect )
+		end
+	end
+end
+
+function BuyButton:setOriNumberAlignment(alignment)
+	if not self.oriNumber then return end
+	self:setTextAlignment(self.oriNumberLabel, self.oriNumberRect, alignment, self.isStaticNumberLabel)
+end
+
 function BuyButton:setDiscount(number, text)
 	if number <= 0 or number == 10 then
 		self.dcNumber:setVisible(false)
@@ -81,12 +103,8 @@ function BuyButton:setDiscount(number, text)
 		self.discount:setVisible(true)
 		self.dcNumber:setText(number)
 		self.dcText:setText(text)
-		self.dcNumber:setScale(0.75)
-		self.dcText:setScale(0.35)
-
-		if math.ceil(number) == math.floor(number) then --是整数
-			self.dcNumber:setPositionX(self.dcNumber:getPositionX() + 8)		
-		end
+		self.dcNumber:setScale(2.5)
+		self.dcText:setScale(1.7)
 
 		--[[
 		local scaleBase = self.discount:getScale()
@@ -99,6 +117,7 @@ function BuyButton:setDiscount(number, text)
 		]]
 	end
 end
+
 function BuyButton:getDiscount(number)
 	return self.dcNumber:getString(), self.dcText:getString()
 end
@@ -112,14 +131,12 @@ local PropList = table.const{
 } 
 
 local function getGoodId( itemid )
-	-- body
 	for k, v in pairs(PropList) do 
 		if itemid == v.itemid then return v.goodId end
 	end
 end
 
 local function getDiscountId( itemid )
-	-- body
 	for k, v in pairs(PropList) do 
 		if itemid == v.itemid then return v.discountGoodsId end
 	end
@@ -130,8 +147,7 @@ local function getOneFenGoodsId(itemid)
 end
 
 function EndGamePropShowPanel:create(levelId, levelType, propId, onUseCallback, onCancelCallback)
-
-	local function popoutPanel(decision, paymentType, otherPaymentTable)
+	local function popoutPanel(decision, paymentType, dcAndroidStatus, otherPaymentTable, repayChooseTable)
 		local panel = EndGamePropShowPanel.new()
 		panel.levelType = levelType
 		panel.onUseTappedCallback = onUseCallback
@@ -140,7 +156,8 @@ function EndGamePropShowPanel:create(levelId, levelType, propId, onUseCallback, 
 		if __ANDROID then 
 			panel.adDecision = decision
 			panel.adPaymentType = paymentType
-			panel.adOtherPaymentTable = otherPaymentTable or {}
+			panel.dcAndroidStatus = dcAndroidStatus
+			panel.adRepayChooseTable = repayChooseTable
 		end
 		print("propId============================================",propId)
 		local isFUUU , fuuuId = FUUUManager:lastGameIsFUUU(true)
@@ -152,7 +169,7 @@ function EndGamePropShowPanel:create(levelId, levelType, propId, onUseCallback, 
 			panel:popout()
 		else
 			if panel:init(levelId, propId) then
-				AddFiveStepABCTestLogic:dcLog("pop_add_5_steps" , levelId , self.actSource , propId)
+				AddFiveStepABCTestLogic:dcLog("pop_add_5_steps", levelId, self.actSource, propId)
 				panel:popout() 
 			else
 				panel = nil
@@ -258,6 +275,7 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 	end
 
 	if __IOS then
+
 		local prop = UserManager:getInstance():getUserProp(propId)
 		if prop == nil or prop.num <= 0 then
 			local userExtend = UserManager:getInstance().userExtend
@@ -302,13 +320,15 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 						fuuuDailyData.isEnable = true
 					end
 
-					if continuousFailNum < 3 then
+					if continuousFailNum < FUUUConfig.oneYuanBuyContinuousFailNum then
 						self.lastGameIsFUUU = false
 					end
 				end
 
-				if userCash < needCash and self.lastGameIsFUUU then
+				if userCash < needCash then
+				end
 
+				if userCash < needCash and self.lastGameIsFUUU then
 					if fuuuDailyData then
 						fuuuDailyData.today = today
 						fuuuDailyData.isEnable = false
@@ -326,7 +346,6 @@ function EndGamePropShowPanel:initForAddStep(levelId, propId)
 			end
 		end
 	end
-
 	returnResult = self:init(levelId, propId)
 	doAddStepsDCLog()
 	return returnResult
@@ -340,26 +359,10 @@ function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
 	self:init(levelId, propId)
 	self.actSource = 3
 
-	self.buyButton2:setNumber(self.buyButton:getNumber())
-	self.buyButton2:setString(self.buyButton:getString())
-	local number, txt = self.buyButton:getDiscount()
-	self.buyButton2:setDiscount(tonumber(number), txt)
 	local icon = self.buyButton:getIcon()
 	icon:removeFromParentAndCleanup(false)
 	self.buyButton.icon = nil
 	self.buyButton:setColorMode(kGroupButtonColorMode.blue)
-	self.buyButton2:setIcon(icon)
-	self.buyButton2:setColorMode(kGroupButtonColorMode.blue)
-	self.buyButton2:setVisible(false)
-	local function enableButton()
-		self.buyButton2:setEnabled(true)
-		self.buyButton:setEnabled(true)
-	end
-	local function onBuyBtnTapped(evt)
-		self.buyButtonTarget = self.buyButton2
-		self:onBuyBtnTapped(nil, enableButton)
-	end
-	self.buyButton2:addEventListener(DisplayEvents.kTouchTap, onBuyBtnTapped)
 
 	local data = IapBuyPropLogic:addStep()
 	local meta = MetaManager:getInstance():getGoodMeta(data.goodsId)
@@ -413,34 +416,36 @@ function EndGamePropShowPanel:initForIapPayAddStep(levelId, propId)
 	end
 	local function onFail()
 		CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative", resumeTimer)
-		self.buyButton2:setEnabled(true)
 		self.buyButton:setEnabled(true)
 	end
 
-	self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
+	-- self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
 	self.data = data
-	PaymentIosDCUtil.getInstance():sendPayStart(Payments.IOS_RMB, 0, self.uniquePayId, data.productIdentifier, 1, 1, 1)
+	self.dcIosInfo = DCIosRmbObject:create()
+	self.dcIosInfo:setGoodsId(data.productIdentifier)
+	self.dcIosInfo:setGoodsType(1)
+	self.dcIosInfo:setGoodsNum(1)
+	self.dcIosInfo:setRmbPrice(data.iapPrice)
+
 	local peDispatcher = PaymentEventDispatcher.new()
 	local function successDcFunc(evt)
-		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, data.productIdentifier, 1, 1, 1, data.iapPrice, 0, 0)
+		self.dcIosInfo:setResult(IosRmbPayResult.kSuccess)
+		PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)
 	end
 	local function failedDcFunc(evt)
-		self.failBeforePayEnd = true
-		PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, data.productIdentifier, 1, 1, 1, data.iapPrice, 0, 1)
+		self.dcIosInfo:setResult(IosRmbPayResult.kSdkFail)
+		PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)
 	end
 	peDispatcher:addEventListener(PaymentEvents.kIosBuySuccess, successDcFunc)
 	peDispatcher:addEventListener(PaymentEvents.kIosBuyFailed, failedDcFunc)
 
 	local function onButton()
-		self.buyButton2:setEnabled(false)
 		self.buyButton:setEnabled(false)
 		self:stopCountdown()
 		IapBuyPropLogic:buy(data, onSuccess, onFail, peDispatcher)
 	end
 	self.buyButton:removeAllEventListeners()
 	self.buyButton:addEventListener(DisplayEvents.kTouchTap, onButton)
-	AddFiveStepABCTestLogic:dcLog("click_add_5_steps" , levelId , self.actSource , propId)
-
 end
 
 function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
@@ -551,18 +556,6 @@ function EndGamePropShowPanel:initForTimeLimitAddStep(levelId, propId)
 		string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getIngameBuyDiscountValue())
 	)
 
-	--self.android_price:setString(
-	--	string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), TimeLimitData:getInstance():getIngameBuyDiscountValue())
-	--)
-
-	-- self.buyButton:setDiscount(
-	-- 	math.ceil(TimeLimitData:getInstance():getIngameBuyDicount() * 100) / 10, 
-	-- 	Localization:getInstance():getText("buy.gold.panel.discount")
-	-- )
-	--self.android_discount:setVisible(true)
-	--self.android_discountTxt:setString(math.ceil(TimeLimitData:getInstance():getIngameBuyDicount() * 100) / 10)
-
-
 	self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 20)
 	originalPriceLabel:setPositionX(originalPriceLabel:getPositionX() - 40)
 	line:setPositionX(line:getPositionX() - 40)
@@ -597,10 +590,10 @@ function EndGamePropShowPanel:init(levelId, propId)
 	print("RRR   EndGamePropShowPanel:init  propId = " .. tostring(propId))
 	if not levelId then return false end
 
+	local needRefreshPos = false
 	-- data
 	self.levelId = levelId
 	self.propId = propId
-	
 	-- init panel
 	self.ui = self:buildInterfaceGroup("newAddStepPanel")
 	BasePanel.init(self, self.ui)
@@ -616,26 +609,14 @@ function EndGamePropShowPanel:init(levelId, propId)
 	self.ui:getChildByName('labelPh'):setVisible(false)
 	local useBtnRes = self.ui:getChildByName("useBtn")
 	local buyBtnRes = self.ui:getChildByName("buyBtn")
-	local buyBtnRes2 = self.ui:getChildByName("buyBtn2")
-	--带风车币标识的
 	self.buyButton = BuyButton:create(buyBtnRes, self.propId)
-	--带羊标识的
-	self.buyButton2 = BuyButton:create(buyBtnRes2)
 	self.useButton = UseButton:create(useBtnRes, self.propId)
-
 	self.animPh = self.ui:getChildByName("animPh")
-
-	self.otherPayBtnRes = self.ui:getChildByName("otherPayBtn")
 	self.moneyBar = self.ui:getChildByName("moneyBar")
-
-	self.otherPayBtnRes:setVisible(false)
 	self.moneyBar:setVisible(false)
 
 	self:saveBtnScaleInfo(self.buyButton)
-	self:saveBtnScaleInfo(self.buyButton2)
 	self:saveBtnScaleInfo(self.useButton)
-	self.buyButton2:setVisible(false)
-
 	self:createAnime(1)
 	-- set control state
 	self.msgLabelPh:setVisible(false)
@@ -669,11 +650,9 @@ function EndGamePropShowPanel:init(levelId, propId)
 		self.useButton:setString(Localization:getInstance():getText("add.step.panel.use.btn.txt"))
 		self.buyButton:setVisible(false)
 	else -- buy
+		self.buyButton:setColorMode(kGroupButtonColorMode.blue)
 		if __ANDROID then
 			self.buyButton.discount:setVisible(false)
-			self.buyButton2.discount:setVisible(false)
-			self.buyButton:setColorMode(kGroupButtonColorMode.blue)
-			self.buyButton2:setColorMode(kGroupButtonColorMode.blue)
 
 			if self.adDecision == IngamePaymentDecisionType.kPayWithWindMill then
 				self.moneyBar:setVisible(true)
@@ -681,10 +660,17 @@ function EndGamePropShowPanel:init(levelId, propId)
 				goldText:setString(Localization:getInstance():getText("buy.prop.panel.label.treasure"))
 				self.goldNum = self.moneyBar:getChildByName("gold")
 				self:updateGoldNum()
+			elseif self.adPaymentType == Payments.ALIPAY and UserManager.getInstance():isAliSigned() then
+				self.ui:getChildByName("labelAliQuickPay"):setString(localize("alipay.pay.kf.confirm"))
+			elseif self.adPaymentType == Payments.WECHAT and UserManager.getInstance():isWechatSigned() and _G.wxmmGlobalEnabled and WechatQuickPayLogic:getInstance():isMaintenanceEnabled() then
+				self.ui:getChildByName("labelAliQuickPay"):setString(localize("wechat.kf.enter2"))
 			end
 		end
 
-		local goods = MetaManager:getInstance():getGoodMeta(getDiscountId(self.propId))
+		local discountGoodsId = getDiscountId(self.propId)
+		local goodsInfo = GoodsIdInfoObject:create(discountGoodsId)
+		local discountOneYuanGoodsId = goodsInfo:getOneYuanGoodsId()
+		local goods = MetaManager:getInstance():getGoodMeta(discountGoodsId)
 		local normGood, discountGood
 		local adWindMillPay = false
 		if __ANDROID then -- ANDROID
@@ -693,6 +679,9 @@ function EndGamePropShowPanel:init(levelId, propId)
 				adWindMillPay = true
 				normGood, discountGood = goods.qCash, goods.discountQCash
 				self.buyButton:setIconByFrameName("ui_images/ui_image_coin_icon_small0000")
+			elseif self:isOneYuanDecision() then
+				local goodsMeta = MetaManager:getInstance():getGoodMeta(discountOneYuanGoodsId)
+				normGood, discountGood = goodsMeta.thirdRmb / 100, goodsMeta.thirdRmb / 100
 			else
 				normGood, discountGood = goods.rmb / 100, goods.discountRmb / 100
 			end
@@ -700,14 +689,20 @@ function EndGamePropShowPanel:init(levelId, propId)
 			normGood, discountGood = goods.qCash, goods.discountQCash
 			self.buyButton:setIconByFrameName("ui_images/ui_image_coin_icon_small0000")
 		end
-		local buyed = UserManager:getInstance():getDailyBoughtGoodsNumById(getDiscountId(self.propId))
-		if buyed >= goods.limit then
+		local buyed = UserManager:getInstance():getDailyBoughtGoodsNumById(discountGoodsId)
+		local buyedOneYuan = UserManager:getInstance():getDailyBoughtGoodsNumById(discountOneYuanGoodsId)
+		if buyed >= goods.limit or buyedOneYuan >= goods.limit  then
 			self.buyButton:setDiscount(10)
 			if __ANDROID then 
 				if adWindMillPay then 
 					self.adShowPriceForWindMill = normGood
 					self.buyButton:setNumber(normGood)
 				else
+					if self:isOneYuanDecision() then
+						--一元限购时显示原价
+						needRefreshPos = true
+						self.buyButton:setOriNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"),  goods.rmb / 100))
+					end
 					self.adShowPriceForRmb = normGood
 					self.buyButton:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), normGood))
 				end
@@ -719,7 +714,7 @@ function EndGamePropShowPanel:init(levelId, propId)
 			end
 			self.discount = false
 		else
-			self.buyButton:setDiscount(math.ceil(discountGood / normGood * 100) / 10, Localization:getInstance():getText("buy.gold.panel.discount"))
+			local discountNum = math.ceil(discountGood / normGood * 10)
 			if __ANDROID then 
 				if adWindMillPay then
 					self.adShowPriceForWindMill = discountGood 
@@ -727,6 +722,16 @@ function EndGamePropShowPanel:init(levelId, propId)
 				else
 					self.adShowPriceForRmb = discountGood
 					self.buyButton:setNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), discountGood))
+					--首次打折或者一元特价时显示原价
+					needRefreshPos = true
+					local oriPrice = normGood
+					if self:isOneYuanDecision() then
+						oriPrice = goods.rmb / 100
+						local goodsInfo = GoodsIdInfoObject:create(discountGoodsId)
+						goodsInfo:setGoodsIdChange(GoodsIdChangeType.kOneYuanChange)
+						discountNum = goodsInfo:getDiscountNum()
+					end
+					self.buyButton:setOriNumber(string.format("%s%0.2f", Localization:getInstance():getText("buy.gold.panel.money.mark"), oriPrice))
 				end
 				self.actSource = 4
 			else 
@@ -734,6 +739,7 @@ function EndGamePropShowPanel:init(levelId, propId)
 				self.buyButton:setNumber(discountGood)
 				self.actSource = 1 
 			end
+			self.buyButton:setDiscount(discountNum, Localization:getInstance():getText("buy.gold.panel.discount"))
 			self.discount = true
 		end
 		self.buyButton.numberLabel:setPositionX(self.buyButton.numberLabel:getPositionX() - 20)
@@ -793,6 +799,17 @@ function EndGamePropShowPanel:init(levelId, propId)
 		if self.adDecision ~= IngamePaymentDecisionType.kPayWithWindMill then
 			self.buyButton.label:setPositionX(65)
 			self.buyButton.numberLabel:setPositionX(-158)
+
+			if needRefreshPos then 
+				if self.buyButton.oriNumber then 
+					self.buyButton.numberLabel:setPositionY(11)
+
+					self.buyButton.oriNumber:setPosition(ccp(-115, 56))
+				end
+				if self.buyButton.redLine then 
+					self.buyButton.redLine:setPosition(ccp(-110, 50))
+				end
+			end
 		end
 	end
 
@@ -817,24 +834,50 @@ function EndGamePropShowPanel:init(levelId, propId)
 
 		if __ANDROID then 
 			self.adPayStart = true
-			--生成打点所需唯一支付ID
-			self.uniquePayId = PaymentDCUtil.getInstance():getNewPayID()
-
 			if self.adDecision == IngamePaymentDecisionType.kPayWithWindMill then
-				PaymentDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, 
-														goodsId, 1, 1, 1, 0)	
+				self.dcAndroidInfo = DCWindmillObject:create()
+				self.dcAndroidInfo:setGoodsId(goodsId)
+				self.dcAndroidInfo:setWindMillPrice(self.adShowPriceForWindMill)
+				self.dcAndroidInfo:setGoodsNum(1)
+				PaymentDCUtil.getInstance():sendAndroidWindMillPayStart(self.dcAndroidInfo)
 			else
-				self.alterListForDC = PaymentDCUtil.getInstance():getAlterPaymentList(self.adOtherPaymentTable)
-				PaymentDCUtil.getInstance():sendPayStart(self.adPaymentType, self.alterListForDC, self.uniquePayId, 
-														goodsId, 1, 1, 1, 0)
+				self.goodsIdInfo = GoodsIdInfoObject:create(goodsId)
+				if self:isOneYuanDecision() then
+					self.goodsIdInfo:setGoodsIdChange(GoodsIdChangeType.kOneYuanChange)
+				end
+				self.dcAndroidInfo = DCAndroidRmbObject:create()
+				self.dcAndroidInfo:setGoodsId(self.goodsIdInfo:getGoodsId())
+				self.dcAndroidInfo:setGoodsType(self.goodsIdInfo:getGoodsType())
+				self.dcAndroidInfo:setGoodsNum(1)
+				self.dcAndroidInfo:setTypeStatus(self.dcAndroidStatus)
+				if self.adDecision == IngamePaymentDecisionType.kPayFailed then 	
+					--加五步面板断网导致支付失败要特殊处理 因为此时面板已经弹出
+					if self.adPaymentType == AndroidRmbPayResult.kNoNet then 
+						self.dcAndroidInfo:setInitialTypeList(PaymentManager.getInstance():getDefaultThirdPartPayment())
+					end
+				else
+					self.dcAndroidInfo:setInitialTypeList(self.adPaymentType)
+				end
+				PaymentDCUtil.getInstance():sendAndroidRmbPayStart(self.dcAndroidInfo)
 			end
 		elseif __IOS and not self.iosRmbPay then 
-			self.uniquePayId = PaymentIosDCUtil.getInstance():getNewIosPayID()
-			PaymentIosDCUtil.getInstance():sendPayStart(Payments.WIND_MILL, 0, self.uniquePayId, goodsId, 1, 1, 1)
+			self.iosWindMillPay = true
+			self.dcIosInfo = DCWindmillObject:create()
+			self.dcIosInfo:setGoodsId(goodsId)
+			self.dcIosInfo:setWindMillPrice(self.iosShowPriceForWindMill)
+			self.dcIosInfo:setGoodsNum(1)
 		end
 	end
 
 	return true
+end
+
+function EndGamePropShowPanel:isOneYuanDecision()
+	if self.adDecision and self.adDecision == IngamePaymentDecisionType.kSmsWithOneYuanPay or 
+		self.adDecision == IngamePaymentDecisionType.kThirdOneYuanPay then
+		return true
+	end
+	return false
 end
 
 function EndGamePropShowPanel:updateGoldNum()
@@ -892,25 +935,21 @@ function EndGamePropShowPanel:onUseBtnTapped()
 	AddFiveStepABCTestLogic:dcLog("click_add_5_steps" , self.levelId , self.actSource , self.propId)
 end
 
-function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback, adPayment, changedGoodsId)
+function EndGamePropShowPanel:onBuyBtnTapped()
 	local goodsId
-	if changedGoodsId then 
-		goodsId = changedGoodsId
-	else
-		if self.isTimeLimitAddStep then
-			goodsId = self.timeLimitGoodsId
-		elseif self.discount then 
-			goodsId = getDiscountId(self.propId)
-		else 
-			goodsId = getGoodId(self.propId) 
-		end
+	if self.isTimeLimitAddStep then
+		goodsId = self.timeLimitGoodsId
+	elseif self.discount then 
+		goodsId = getDiscountId(self.propId)
+	else 
+		goodsId = getGoodId(self.propId) 
 	end
 
 	local function useAddStepSuccess()
 		local function onCallback()
 			AddFiveStepABCTestLogic:dcLog("buy_add_5_steps_success" , self.levelId , self.actSource , self.propId)
 			if self.onUseTappedCallback then
-				self.onUseTappedCallback(self.propId, UsePropsType.NORMAL)
+				self.onUseTappedCallback(self.propId, UsePropsType.NORMAL, true)
 			end
 		end
 		-- animation
@@ -920,7 +959,7 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback, adPa
 		if self.propId == PropList.kAddTime.itemid then
 			self:addPropUseAnimation(pos, onCallback)
 		else
-			onCallback()
+			setTimeOut(onCallback, 1.3)
 			self:addPropUseAnimation(pos)
 		end
 
@@ -933,7 +972,6 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback, adPa
 			self:startCountdown(onCountDown)
 		end
 		self.buyButtonTarget:setEnabled(true)
-		if failCallback then failCallback() end
 	end
 	local function onCreateGoldPanel()
 		local index = MarketManager:sharedInstance():getHappyCoinPageIndex()
@@ -967,183 +1005,156 @@ function EndGamePropShowPanel:onBuyBtnTapped(successCallback, failCallback, adPa
 			DcUtil:UserTrack({ category = 'activity', sub_category = 'buy_failure_panel'})
 		end
 		if __IOS then 
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, goodsId, 1, 
-										1, 1, 0, self.iosShowPriceForWindMill, 0)
+			self.dcIosInfo:setResult(DCWindmillPayResult.kSuccess)
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcIosInfo)
 		end
-		if successCallback then successCallback() end
 	end
-	local function onBuyFail(evt)
+	--for aliquick pay, the evt should be a number, this is for compatiable for other payment.
+	local function onBuyFail(errorCode, errorMsg)
 		self.onEnterForeGroundCallback = nil
-		self:setFailBeforePayEnd()
 
 		if not self.isDisposed then
 			self:stopAllActions()
 		end
-		if evt and evt.data == 730330 then -- not enough gold
-			local panel = GoldlNotEnoughPanel:create(onCreateGoldPanel, resumeTimer, self.uniquePayId)
+		if errorCode and errorCode == 730330 then -- not enough gold
+			if __IOS then 
+				self.dcIosInfo:setResult(DCWindmillPayResult.kNoWindmill)
+				PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcIosInfo)
+			end
+			local panel = GoldlNotEnoughPanel:create(onCreateGoldPanel, resumeTimer)
 			if panel then panel:popout() end 
 		else
 			if __ANDROID then -- ANDROID
+				if errorCode and errorCode == 730241 or errorCode == 730247 or errorCode == SelfDefinePayError.kPaySucCheckFail then
+					CommonTip:showTip(errorMsg, "negative")
+				else
+					CommonTip:showTip(Localization:getInstance():getText("add.step.panel.buy.fail.android"), "negative")
+				end
 				resumeTimer()
-				CommonTip:showTip(Localization:getInstance():getText("add.step.panel.buy.fail.android"), "negative")
-			elseif __IOS then 
-				PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, goodsId, 1, 
-																		1, 1, 0, self.iosShowPriceForWindMill, 1, evt.data)
-				CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative", resumeTimer)
 			else -- else, onIOS and PC we use gold!
-				CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative", resumeTimer)
+				if __IOS then 
+					self.dcIosInfo:setResult(DCWindmillPayResult.kFail, evt.data)
+					PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcIosInfo)
+				end
+				if errorCode then 
+					CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative", resumeTimer)
+				else
+					CommonTip:showTip(Localization:getInstance():getText("add.step.panel.buy.fail.android"), "negative")
+				end
 			end
 		end
 	end
-	local function onCancel(isExceedLimit)
+	local function onCancel()
 		self.onEnterForeGroundCallback = nil
 		if not self.isDisposed then
 			self:stopAllActions()
 		end
-		if isExceedLimit or PrepackageUtil:isPreNoNetWork() then
-			resumeTimer()
-		else
-			resumeTimer()
-			CommonTip:showTip(Localization:getInstance():getText("add.step.panel.buy.cancel.android"), "negative")
-		end
+		resumeTimer()
 	end
+
 	self.buyButtonTarget:setEnabled(false)
 	self:stopCountdown()
 
 	if __ANDROID then -- ANDROID
 		if self.adDecision == IngamePaymentDecisionType.kPayWithWindMill then
-			self:handleWithNetwork(goodsId, onBuySuccess, onBuyFail, onCancel, resumeTimer)
+			self:androidBuyWithWindMill(goodsId, onBuySuccess, onBuyFail, onCancel, resumeTimer)
 		else
-			local logic = IngamePaymentLogic:create(goodsId)
-			local finalPaymentType = self.adPaymentType
-			if adPayment then 
-				finalPaymentType = adPayment
-			end
-			--构造DC打点参数
-			logic.buyConfirmPanel = self
-			local dcParamsTable = {}
-			dcParamsTable.defaultPaymentType = self.adPaymentType
-			dcParamsTable.paySource = 1
-			logic:buyWithDecision(self.adDecision, finalPaymentType, onBuySuccess, onBuyFail, onCancel, dcParamsTable)
+			local logic = IngamePaymentLogic:createWithGoodsInfo(self.goodsIdInfo, self.dcAndroidInfo)
+			logic:setBuyConfirmPanel(self)
+			logic:endGameBuy(self.adDecision, self.adPaymentType, onBuySuccess, onBuyFail, onCancel, self.onCancelTappedCallback, self.adRepayChooseTable)
 			self.buyLogic = logic
 			self.onEnterForeGroundCallback = onCancel
 		end
 	else -- else, on IOS and PC we use gold!
-		local function onUserHasLogin()
-			local logic = BuyLogic:create(goodsId, 2)
-			logic:getPrice()
-			logic:setCancelCallback(onCancel)
-			logic:start(1, onBuySuccess, onBuyFail)
-		end
-		local function onUserNotLogin()
-			resumeTimer()
-		end
-		onUserHasLogin()
-		-- RequireNetworkAlert:callFuncWithLogged(onUserHasLogin, onUserNotLogin)
+		local logic = BuyLogic:create(goodsId, 2)
+		logic:getPrice()
+		logic:setCancelCallback(onCancel)
+		logic:start(1, onBuySuccess, onBuyFail)
 	end
 	AddFiveStepABCTestLogic:dcLog("click_add_5_steps" , self.levelId , self.actSource , self.propId)
 end
 
-function EndGamePropShowPanel:dcForAndroidWindMillPayEnd(choosenType, goodsId, payRmb, payCash, payResult, errorCode)
-	if __ANDROID and self.adPayStart and self.adDecision == IngamePaymentDecisionType.kPayWithWindMill then 
-		if payResult ~= 0 then 
-			self:setFailBeforePayEnd()
-		end
-		--rmb购买（方案B）的PayEnd已经在IngamePaymentLogic里打了点 这里只打风车币购买的（方案A）
-		PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, choosenType, self.uniquePayId, goodsId, 
-								1, 1, 1, payRmb, payCash, payResult, errorCode, 0)
-	end
-end
-
-function EndGamePropShowPanel:handleWithNetwork(goodsId, onBuySuccess, onBuyFail, onCancel, resumeTimer)
-	local function sucFuncWithDC()
-		self:dcForAndroidWindMillPayEnd(Payments.WIND_MILL, goodsId, 0, self.adShowPriceForWindMill, 0, nil)
-		if onBuySuccess then 
-			onBuySuccess()
-		end
+function EndGamePropShowPanel:androidBuyWithWindMill(goodsId, onBuySuccess, onBuyFail, onCancel, resumeTimer)
+	local function sucFuncWithDC(data)
+		self.dcAndroidInfo:setResult(DCWindmillPayResult.kSuccess)
+		PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcAndroidInfo)
+		if onBuySuccess then onBuySuccess() end
 	end
 
-	local function failFuncWithDC(evt)
-		local errorCode = nil
-		if evt and evt.data then 
-			errorCode = evt.data
+	local function failFuncWithDC(errorCode)
+		if errorCode and errorCode == 730330 then -- not enough gold
+			self.dcAndroidInfo:setResult(DCWindmillPayResult.kNoWindmill)
+		else
+			self.dcAndroidInfo:setResult(DCWindmillPayResult.kFail, errorCode)
 		end
-		self:dcForAndroidWindMillPayEnd(Payments.WIND_MILL, goodsId, 0, self.adShowPriceForWindMill, 1, errorCode)
-		if onBuyFail then 
-			onBuyFail(evt)
-		end
+		PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcAndroidInfo)
+		if onBuyFail then onBuyFail(errorCode) end
 	end
 
-	local function onUserHasLogin()
-		local logic = BuyLogic:create(goodsId, 2)
-		logic:getPrice()
-		logic:setCancelCallback(onCancel)
-		logic:start(1, sucFuncWithDC, failFuncWithDC)
-	end
-	local function onUserNotLogin()
-		if resumeTimer then 
-			resumeTimer()
-		end
-	end
-	RequireNetworkAlert:callFuncWithLogged(onUserHasLogin, onUserNotLogin)
-end
-
---IngamePaymentLogic那边支付失败时 调一下这个
-function EndGamePropShowPanel:setFailBeforePayEnd()
-	self.failBeforePayEnd = true
+	local logic = BuyLogic:create(goodsId, 2)
+	logic:getPrice()
+	logic:setCancelCallback(onCancel)
+	logic:start(1, sucFuncWithDC, failFuncWithDC)
 end
 
 function EndGamePropShowPanel:onCloseBtnTapped()
+	--三方查询订单时 不可关闭加五步面板
+	if PaymentManager.getInstance():getIsCheckingPayResult() then return end 
 	if self.adPayStart then 
-		local endResult = 3
-		if self.failBeforePayEnd then 
-			endResult = 4
-		end
-
-		local goodsId
-		if self.isTimeLimitAddStep then
-			goodsId = self.timeLimitGoodsId
-		elseif self.discount then 
-			goodsId = getDiscountId(self.propId)
-		else 
-			goodsId = getGoodId(self.propId) 
-		end
+		local payResult = self.dcAndroidInfo:getResult()
 		if self.adDecision == IngamePaymentDecisionType.kPayWithWindMill then
-			PaymentDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, 
-				goodsId, 1, 1, 1, self.adShowPriceForWindMill, 
-				0, endResult, 0, 0)
+			if payResult and payResult == DCWindmillPayResult.kNoWindmill then 
+				self.dcAndroidInfo:setResult(DCWindmillPayResult.kCloseAfterNoWindmill)
+			elseif payResult and payResult == DCWindmillPayResult.kFail then 
+				self.dcAndroidInfo:setResult(DCWindmillPayResult.kCloseAfterFail)
+			else
+				self.dcAndroidInfo:setResult(DCWindmillPayResult.kCloseDirectly)
+			end
+			PaymentDCUtil.getInstance():sendAndroidWindmillPayEnd(self.dcAndroidInfo)
 		else
-			PaymentDCUtil.getInstance():sendPayEnd(self.adPaymentType, self.adPaymentType, self.uniquePayId, 
-				goodsId, 1, 1, 1, self.adShowPriceForRmb, 
-				0, endResult, 0, 0)
+			if payResult and payResult == AndroidRmbPayResult.kNoNet then  
+				self.dcAndroidInfo:setResult(AndroidRmbPayResult.kCloseAfterNoNet)
+			elseif payResult and payResult == AndroidRmbPayResult.kNoPaymentAvailable then 
+				self.dcAndroidInfo:setResult(AndroidRmbPayResult.kCloseAfterNoPaymentAvailable)
+			else
+				self.dcAndroidInfo:setResult(AndroidRmbPayResult.kCloseDirectly)
+			end
+			PaymentDCUtil.getInstance():sendAndroidRmbPayEnd(self.dcAndroidInfo)
 		end
 	elseif __IOS then 
-		local endResult = 3
-		if self.failBeforePayEnd then 
-			endResult = 4
-		end
 		if self.iosRmbPay then 
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, self.uniquePayId, self.data.productIdentifier, 1, 1, 1, self.data.iapPrice, 0, endResult)
-		else
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.WIND_MILL, Payments.WIND_MILL, self.uniquePayId, goodsId, 1, 
-										1, 1, 0, self.iosShowPriceForWindMill, endResult)
+			local payResult = self.dcIosInfo:getResult()
+			if payResult and payResult == IosRmbPayResult.kSdkFail then 
+				self.dcIosInfo:setResult(IosRmbPayResult.kCloseAfterSdkFail)
+			else
+				self.dcIosInfo:setResult(IosRmbPayResult.kCloseDirectly)
+			end
+			PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(self.dcIosInfo)
+		elseif self.iosWindMillPay then 
+			local payResult = self.dcIosInfo:getResult()
+			if payResult and payResult == DCWindmillPayResult.kNoWindmill then 
+				self.dcIosInfo:setResult(DCWindmillPayResult.kCloseAfterNoWindmill)
+			elseif payResult and payResult == DCWindmillPayResult.kFail then 
+				self.dcIosInfo:setResult(DCWindmillPayResult.kCloseAfterFail)
+			else
+				self.dcIosInfo:setResult(DCWindmillPayResult.kCloseDirectly)
+			end
+			PaymentIosDCUtil.getInstance():sendIosWindmillPayEnd(self.dcIosInfo)
 		end
 	end
 
 	self:stopCountdown()
 	local function hideFinishCallback()
+		FUUUManager:clearLastFuuuID()
 		if self.onCancelTappedCallback then
 			self.onCancelTappedCallback()
 		end
-
 	end
-
 	self.allowBackKeyTap = false
 	self:remove(hideFinishCallback)
 end
 
 function EndGamePropShowPanel:onCountdownComplete(showAnime)
-
 	if AddFiveStepABCTestLogic:needAutoClosePanel() == true then
 		print("RRR   EndGamePropShowPanel:onCountdownComplete   needAutoClosePanel")
 		self:onCloseBtnTapped()
@@ -1162,17 +1173,6 @@ function EndGamePropShowPanel:onCountdownComplete(showAnime)
 				else
 					self.buyButton:setPositionY( self.buyButton:getPositionY() + fixY )
 				end
-			end
-
-			if self.buyButton2 and self.buyButton2.groupNode and self.buyButton2.groupNode.parent ~= nil then
-
-				if showAnime then
-					self.buyButton2.groupNode:runAction( 
-						CCMoveTo:create( 0.5 , ccp(self.buyButton2:getPositionX(), self.buyButton2:getPositionY() + fixY ) ) )
-				else
-					self.buyButton2:setPositionY( self.buyButton2:getPositionY() + fixY )
-				end
-				
 			end
 
 			if self.useButton and self.useButton.groupNode and self.useButton.groupNode.parent ~= nil then
@@ -1197,23 +1197,18 @@ function EndGamePropShowPanel:onCountdownComplete(showAnime)
 	end
 end
 
-function EndGamePropShowPanel:countdownCallback(...)
-	assert(#{...} == 0)
-
+function EndGamePropShowPanel:countdownCallback()
 	if self.second == 0 then
 		self.countdownLabel:stopAllActions()
 		self:onCountdownComplete(true)
-		
 	else
 		self:setCountdownSceond(self.second)
 	end
 end
 
-function EndGamePropShowPanel:startCountdown(callback, ...)
-	print(callback)
+function EndGamePropShowPanel:startCountdown(callback)
 	print("type(callback)", type(callback))
 	assert(type(callback) == "function")
-	assert(#{...} == 0)
 
 	local function callbackFunc()
 		if self.second and type(self.second) == "number" then
@@ -1229,34 +1224,25 @@ function EndGamePropShowPanel:startCountdown(callback, ...)
 	end
 end
 
-function EndGamePropShowPanel:stopCountdown(...)
-	assert(#{...} == 0)
-
+function EndGamePropShowPanel:stopCountdown()
 	self.countdownLabel:stopAllActions()
 end
 
-function EndGamePropShowPanel:setCountdownSceond(second, ...)
+function EndGamePropShowPanel:setCountdownSceond(second)
 	assert(type(second) == "number")
-	assert(#{...} == 0)
-
 	self.secondToCountdown = second
 	self.countdownLabel:setText(tostring(second))
 	self:positionCountdownLabel()
 end
 
-function EndGamePropShowPanel:positionCountdownLabel(...)
-	assert(#{...} == 0)
-
+function EndGamePropShowPanel:positionCountdownLabel()
 	local countdownLabelSize = self.countdownLabel:getContentSize()
 	local posX = self.countdownLabelPos.x - countdownLabelSize.width*self.countdownLabel:getScale()/2
 	self.countdownLabel:setPositionX(posX)
 end
 
-function EndGamePropShowPanel:popout(...)
-	assert(#{...} == 0)
+function EndGamePropShowPanel:popout()
 	print('EndGamePropShowPanel:popout(...)')
-	-- debug.debug()
-
 	local function popoutFinishCallback()
 		self.allowBackKeyTap = true
 		local function countdownCallback() self:countdownCallback() end
@@ -1272,82 +1258,21 @@ function EndGamePropShowPanel:popout(...)
 				FreeFCashPanel:showWithOwnerCheck(self)
 			end
 		end
-
-		--self:addBtnPopupEff(self.buyButton.groupNode.background)
 		self:addBtnPopupEff(self.buyButton)
-
-		self:showFirstRmbBuyPanel()
+	end
+	if self:isOneYuanDecision() then 
+		PaymentManager.getInstance():refreshOneYuanShowTime()
 	end
 	self.panelPopRemoveAnim:popout(popoutFinishCallback)
 end
 
-function EndGamePropShowPanel:showFirstRmbBuyPanel()
-	if not __ANDROID then return end
-	if self.adDecision ~= IngamePaymentDecisionType.kSmsWithOneYuanPay then return end
-	if self.discount then return end
-	if self.actSource == 6 then return end
-
-	self.buyButtonTarget = self.buyButton
-	
-	PaymentManager.getInstance():refreshOneYuanShowTime()
-
-	local popoutPos = self:getPosition()
-	local selfSize = self.ui:getGroupBounds().size
-	local energyPanelBottomPosY = popoutPos.y - selfSize.height
-	local selfParent = self:getParent()
-	local posInWorldSpace = selfParent:convertToWorldSpace(ccp(0, energyPanelBottomPosY))
-
-	local goodsId 
-	if self.isTimeLimitAddStep then
-		goodsId = self.timeLimitGoodsId
-	elseif self.discount then 
-		goodsId = getDiscountId(self.propId)
-	else 
-		goodsId = getGoodId(self.propId) 
-	end
-
-	local function resumeTimer()
-		if self.isDisposed then return end
-		local function onCountDown() self:countdownCallback() end
-		if AddFiveStepABCTestLogic:needShowCountdown() then
-			self:startCountdown(onCountDown)
-		end
-	end
-
-	local function onBuyWithChoosenTypeListener(event)
-		if self.isDisposed then return end
-		local choosenPaymentType = event.data.paymentType
-		local dcParamTable = {}
-		dcParamTable.defaultPaymentType = event.data.defaultPaymentType
-		dcParamTable.paySource = event.data.paySource
-		if choosenPaymentType then 
-			self:onBuyBtnTapped(nil, nil, choosenPaymentType, goodsId + 5000)
-		else
-			resumeTimer()
-		end
-	end
-
-	local function onTouchBtnCallback()
-		self:stopCountdown()
-	end
-
-	self.peDispatcher = PaymentEventDispatcher.new()
-	self.peDispatcher:addEventListener(PaymentEvents.kBuyWithChoosenType, onBuyWithChoosenTypeListener)
-
-	local panel = FirstRmbBuyPanel:create(goodsId, self.uniquePayId, self, self.peDispatcher, self.adOtherPaymentTable, posInWorldSpace.y - 100, onTouchBtnCallback)
-	panel:popout()
+function EndGamePropShowPanel:removePopout()	
+	--这个方法在PayPanelRePay里调用 对于加五步面板 不可以直接关闭 隐藏即可
+	self.ui:setVisible(false)
 end
 
-function EndGamePropShowPanel:setBuyBtnEnabled(isEnable)
-	if self.buyButtonTarget and not self.buyButtonTarget.isDisposed then 
-		self.buyButtonTarget:setEnabled(isEnable)
-	end
-end
-
-function EndGamePropShowPanel:remove(animFinishCallback, ...)
+function EndGamePropShowPanel:remove(animFinishCallback)
 	assert(animFinishCallback == false or type(animFinishCallback) == "function")
-	assert(#{...} == 0)
-	-- test
 	FreeFCashPanel:hideWithOwnerCheck(self)
 
 	if self.timeLimitPanel then 
@@ -1355,28 +1280,20 @@ function EndGamePropShowPanel:remove(animFinishCallback, ...)
 	end
 
 	self.panelPopRemoveAnim:remove(animFinishCallback)
-
-	if self.peDispatcher then 
-		self.peDispatcher:dispatchPanelCloseEvent()
-	end
 end
 
-function EndGamePropShowPanel:setOnUseTappedCallback(onUseCallback, ...)
+function EndGamePropShowPanel:setOnUseTappedCallback(onUseCallback)
 	assert(type(onUseCallback) == "function")
-	assert(#{...} == 0)
 
 	self.onUseTappedCallback = onUseCallback
 end
 
-function EndGamePropShowPanel:setOnCancelTappedCallback(onCancelCallback, ...)
+function EndGamePropShowPanel:setOnCancelTappedCallback(onCancelCallback)
 	assert(type(onCancelCallback) == "function")
-	assert(#{...} == 0)
-
 	self.onCancelTappedCallback = onCancelCallback
 end
 
-function EndGamePropShowPanel:addPropUseAnimation( pos, onAnimFinishedCallback )
-	-- body
+function EndGamePropShowPanel:addPropUseAnimation(pos, onAnimFinishedCallback )
 	if self.propId == PropList.kAddMove.itemid then 
 		local icon = ResourceManager:sharedInstance():buildItemSprite(self.propId)
 		local scene = Director:sharedDirector():getRunningScene()
@@ -1391,15 +1308,17 @@ function EndGamePropShowPanel:addPropUseAnimation( pos, onAnimFinishedCallback )
 end
 
 function EndGamePropShowPanel:onEnterForeGround()
-	-- body
 	if self.isDisposed then return end
 	if self.buyLogic and self.buyLogic.paymentType and self.buyLogic.paymentType == Payments.WECHAT then
 		self.buyLogic = nil
 		if self.onEnterForeGroundCallback then 
-			local function localCallback( ... )
-			-- body
-				if not self.isDisposed and self.onEnterForeGroundCallback then 
-					self.onEnterForeGroundCallback()
+			local function localCallback()
+				if self.ui:isVisible() and not PaymentManager.getInstance():getIsCheckingPayResult() then 
+					if not self.isDisposed and self.onEnterForeGroundCallback then 
+						self.onEnterForeGroundCallback()
+					end
+				else
+					self.onEnterForeGroundCallback = nil
 				end
 			end
 			self:runAction(CCSequence:createWithTwoActions(CCDelayTime:create(3), CCCallFunc:create(localCallback)))

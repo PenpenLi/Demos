@@ -172,8 +172,8 @@ function EnterInviteCodePanel:onReceiveRewardBtnTapped(event, ...)
 
 		-- On Success
 		local function onConfirmInviteSuccess(event)
-			assert(event)
-			assert(event.name == Events.kComplete)
+			-- assert(event)
+			-- assert(event.name == Events.kComplete)
 			--assert(event.data)
 
 			-- --------------
@@ -194,6 +194,9 @@ function EnterInviteCodePanel:onReceiveRewardBtnTapped(event, ...)
 			local function onTipClosed()
 				print("onTipClosed !")
 				self:onCloseBtnTapped()
+				if self.finishCallback then
+					self.finishCallback()
+				end
 			end
 
 			-- --------------
@@ -270,6 +273,11 @@ function EnterInviteCodePanel:onReceiveRewardBtnTapped(event, ...)
 			http:load(enteredCode)
 		end
 
+		if __WIN32 then
+			onConfirmInviteSuccess()
+			return
+		end
+
 		if UserManager:getInstance():isSameInviteCodePlatform(enteredCode) then 
 			RequireNetworkAlert:callFuncWithLogged(onCompleteFunc)
 		else
@@ -325,19 +333,11 @@ function EnterInviteCodePanel:getInviteReward()
 
 	home:checkDataChange()
 	for i = 1, 2 do
-		local sprite
-		if self.meta[i].itemId == 2 then 
-			sprite = home:createFlyingCoinAnim()
-		else 
-			-- sprite = home:createFloatingItemAnim(self.meta[i].itemId) 
-			sprite = home:createFlyToBagAnimation(self.meta[i].itemId, self.meta[i].num)
-		end
-
-		local position = self.items[i]:getChildByName("icon"):getPosition()
-		position = self.items[i]:convertToWorldSpace(ccp(position.x, position.y))
-		sprite:setPosition(ccp(position.x, position.y))
-
-		--home:addChild(sprite) --创建的时候已经添加过了
+		local anim = FlyItemsAnimation:create({self.meta[i]})
+		local icon = self.items[i]:getChildByName("icon")
+		local bounds = icon:getGroupBounds() 
+		anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+		anim:play()
 
 		--- decreasing number animation
 		local label = self.items[i].label
@@ -345,7 +345,27 @@ function EnterInviteCodePanel:getInviteReward()
 		local duration = 0.4
 		decreaseToZero(label, num, duration)
 
-		sprite:playFlyToAnim(false, false)
+		-- local sprite
+		-- if self.meta[i].itemId == 2 then 
+		-- 	sprite = home:createFlyingCoinAnim()
+		-- else 
+		-- 	-- sprite = home:createFloatingItemAnim(self.meta[i].itemId) 
+		-- 	sprite = home:createFlyToBagAnimation(self.meta[i].itemId, self.meta[i].num)
+		-- end
+
+		-- local position = self.items[i]:getChildByName("icon"):getPosition()
+		-- position = self.items[i]:convertToWorldSpace(ccp(position.x, position.y))
+		-- sprite:setPosition(ccp(position.x, position.y))
+
+		-- --home:addChild(sprite) --创建的时候已经添加过了
+
+		-- --- decreasing number animation
+		-- local label = self.items[i].label
+		-- local num = self.meta[i].num
+		-- local duration = 0.4
+		-- decreaseToZero(label, num, duration)
+
+		-- sprite:playFlyToAnim(false, false)
 	end
 	for __, v in ipairs(self.icons) do
 		v:removeFromParentAndCleanup(true)
@@ -361,8 +381,7 @@ function EnterInviteCodePanel:onContinueBtnTapped(event, ...)
 	PopoutManager:sharedInstance():removeWhileKeepBackground(self, true)
 end
 
-function EnterInviteCodePanel:popout(...)
-	assert(#{...} == 0)
+function EnterInviteCodePanel:popout(callback)
 
 	print("EnterInviteCodePanel:popout")
 	local function onAnimOver()
@@ -372,6 +391,8 @@ function EnterInviteCodePanel:popout(...)
 	PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false, onAnimOver)
 	self:setToScreenCenterHorizontal()
 	self:setToScreenCenterVertical()
+	self.finishCallback = callback
+
 end
 
 function EnterInviteCodePanel:onCloseBtnTapped()

@@ -1,4 +1,6 @@
 require "zoo.data.MetaManager"
+require "zoo.payment.paymentDC.DCWindmillObject"
+
 if __IOS then
 	require "zoo.util.IosPayment"
 elseif __ANDROID then
@@ -163,10 +165,6 @@ function BuyGoldLogic:getProductInfo(successCallback, failCallback, timeoutCallb
 	end
 end
 
-function BuyGoldLogic:setIsThirdPayPromotion()
-	self.isThirdPayPromotion = true
-end
-
 function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCallback)
 	local function onSuccess()
 		local user = UserManager:getInstance().user
@@ -200,9 +198,9 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 			)
 		end
 	end
-	local function onFail()
+	local function onFail(errCode, errMsg)
 		if failCallback then
-			failCallback()
+			failCallback(errCode, errMsg)
 		end
 	end
 	local function onCancel()
@@ -211,14 +209,20 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 		end
 	end
 	if __IOS then -- IOS
-		local payId = PaymentIosDCUtil.getInstance():getNewIosPayID()
-		PaymentIosDCUtil.getInstance():sendPayStart(Payments.IOS_RMB, 0, payId, data.productIdentifier, 2, 1, 0)
+		local dcIosInfo = DCIosRmbObject:create()
+	    dcIosInfo:setGoodsId(data.productIdentifier)
+	    dcIosInfo:setGoodsType(2)
+	    dcIosInfo:setGoodsNum(1)
+	    dcIosInfo:setRmbPrice(data.iapPrice)
+
 		local peDispatcher = PaymentEventDispatcher.new()
 		local function successDcFunc(evt)
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, payId, data.productIdentifier, 2, 1, 0, data.iapPrice, 0, 0)
+			dcIosInfo:setResult(IosRmbPayResult.kSuccess)
+        	PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(dcIosInfo)
 		end
 		local function failedDcFunc(evt)
-			PaymentIosDCUtil.getInstance():sendPayEnd(Payments.IOS_RMB, Payments.IOS_RMB, payId, data.productIdentifier, 2, 1, 0, data.iapPrice, 0, 1)
+			dcIosInfo:setResult(IosRmbPayResult.kSdkFail)
+        	PaymentIosDCUtil.getInstance():sendIosRmbPayEnd(dcIosInfo)
 		end
 		peDispatcher:addEventListener(PaymentEvents.kIosBuySuccess, successDcFunc)
 		peDispatcher:addEventListener(PaymentEvents.kIosBuyFailed, failedDcFunc)
@@ -226,11 +230,7 @@ function BuyGoldLogic:buy(index, data, successCallback, failCallback, cancelCall
 	elseif __ANDROID then -- ANDROID
 		local logic = IngamePaymentLogic:create(index, 2)
 		logic:ignoreSecondConfirm(true)
-		if not self.isThirdPayPromotion then
-			logic:buy(onSuccess, onFail, onCancel)
-		else
-			logic:buyWithThirdPartPayment(onSuccess, onFail, onCancel, nil, true)
-		end
+		logic:buy(onSuccess, onFail, onCancel)
 	elseif __WP8 then
 		local logic = Wp8Payment:create(index)
 		logic:buy(onSuccess, onFail, onCancel)

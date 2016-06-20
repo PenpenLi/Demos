@@ -11,15 +11,25 @@ require "zoo.net.Http"
 --
 -- ChooseFriendItem ---------------------------------------------------------
 --
+
+local LIMIT = 16
 ChooseFriendItem = class(CocosObject)
 function ChooseFriendItem:create(inviteIconMode, onTileItemTouch, userId)
 	local builder = InterfaceBuilder:create(PanelConfigFiles.AskForEnergyPanel)
 	local ui = builder:buildGroup("img/invite_friend_avatar")
 	local item = ChooseFriendItem.new(CCNode:create())
 	local function onItemTouchInside( evt )
-		item:select(not item.isSelected)
-		if onTileItemTouch ~= nil then onTileItemTouch(item) end
-	end
+        if onTileItemTouch ~= nil then 
+            if item.isSelected then
+                item:select(not item.isSelected)
+            else
+                local ret = onTileItemTouch(item) 
+                if ret then
+                    item:select(not item.isSelected)
+                end 
+            end           
+        end
+    end
 	item:buildUI(ui, inviteIconMode, userId)
 	ui:setTouchEnabled(true)
 	ui:ad(DisplayEvents.kTouchTap, onItemTouchInside)
@@ -162,6 +172,7 @@ function ChooseFriendPanel:create(onConfirmCallback, exceptIds)
 end
 
 function ChooseFriendPanel:init(onConfirmCallback, exceptIds)
+	self.exceptIds = exceptIds
 	-- 初始化视图
 	self.ui = self:buildInterfaceGroup("ChooseFriendPanel")
 	BasePanel.init(self, self.ui)
@@ -204,33 +215,70 @@ function ChooseFriendPanel:init(onConfirmCallback, exceptIds)
 	local listPos = listBg:getPosition()
 	local listHeight = listSize.height - 30
 
-	
-	--setContentOffset
+	self.listBg = listBg
+	self.listSize = listSize
+	self.listPos = listPos
+	self.listHeight = listHeight	
+
+	self:buildGridLayout()
+
+	-- 添加事件监听
+	local function onCloseTapped()
+		self:onKeyBackClicked()
+	end
+	self.closeBtn:setTouchEnabled(true)
+	self.closeBtn:setButtonMode(true)
+	self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseTapped)
+
+	local function onBtnAddTapped()
+		local selectedFriendsID = self.content:getSelectedFriendID()
+		if onConfirmCallback ~= nil then onConfirmCallback(selectedFriendsID) end
+	end
+	self.btnAdd:addEventListener(DisplayEvents.kTouchTap, onBtnAddTapped)
+
+	self:selectAll(LIMIT)
+
+	return true
+end
+
+function ChooseFriendPanel:buildGridLayout()
+
 	local function onTileItemTouch(item)
 		if item and item.inviteIconMode then
 			if __IOS_FB then
-				SnsProxy:inviteFriends(nil)
+				if ReachabilityUtil.getInstance():isNetworkAvailable() then 
+					SnsProxy:inviteFriends(nil)
+				else
+					CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
+				end
 			else
-				local panel = AddFriendPanel:create(ccp(0,0))
+				--local panel = AddFriendPanel:create(ccp(0,0))
+				local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(ccp(0,0))
+				-- panel:popout()
 				--if panel then panel:popout() end
 			end
 		end
+		return self:onItemSelectChange()
 	end
-	local list = VerticalScrollable:create(630, listHeight, true, false)
-	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, listHeight, exceptIds, list, self.shareNotiList)--Sprite:create("materials/logo.png")
+
+	self.scrollable = VerticalScrollable:create(630, self.listHeight, true, false)
+	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, self.listHeight, self.exceptIds, self.scrollable, self.shareNotiList)
+	self.content = content
+	self.numberOfFriends = numberOfFriends
 	if numberOfFriends > 0 then
-		list:setContent(content)
-		list:setPositionXY(listPos.x, listPos.y - 15)
-		self.ui:addChild(list)
+		self.scrollable:setContent(self.content)
+		self.scrollable:setPositionXY(self.listPos.x, self.listPos.y - 15)
+		self.ui:addChild(self.scrollable)
 	else
-		list:dispose()
-		content:dispose()
-		listBg:removeFromParentAndCleanup(true)
+		self.scrollable:dispose()
+		self.content:dispose()
+		self.listBg:removeFromParentAndCleanup(true)
 		self.btnAdd:setVisible(false)
 		local group = self.builder:buildGroup("AskForEnergyPanel_zero_friend")
 		local bg = group:getChildByName("bg")
 		local size = bg:getGroupBounds().size
 		size = {width = size.width, height = size.height}
+		local panelSize = self.ui:getGroupBounds().size
 		group:setPositionXY((panelSize.width - size.width) / 2 - 1, -(panelSize.height - size.height) / 2 + 40)
 		self.ui:addChild(group)
 		group:getChildByName("text1"):setString(Localization:getInstance():getText("request.message.panel.zero.unlock.tip"))
@@ -246,30 +294,17 @@ function ChooseFriendPanel:init(onConfirmCallback, exceptIds)
 			local function endCallback()
 				self:onKeyBackClicked()
 			end
-			local panel = AddFriendPanel:create(position, endCallback)
-			if panel then
+
+			local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(position, endCallback)
+			-- panel:popout()
+
+			--local panel = AddFriendPanel:create(position, endCallback)
+			--if panel then
 				--panel:popout()
-			end
+			--end
 		end
 		btn:addEventListener(DisplayEvents.kTouchTap, onButton)
 	end
-
-	-- 添加事件监听
-	local function onCloseTapped()
-		self:onKeyBackClicked()
-	end
-	self.closeBtn:setTouchEnabled(true)
-	self.closeBtn:setButtonMode(true)
-	self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseTapped)
-
-	local function onBtnAddTapped()
-		local selectedFriendsID = content:getSelectedFriendID()
-		--print("selectedFriendsID", table.tostring(selectedFriendsID))
-		PopoutManager:sharedInstance():remove(self, true)
-		if onConfirmCallback ~= nil then onConfirmCallback(selectedFriendsID) end
-	end
-	self.btnAdd:addEventListener(DisplayEvents.kTouchTap, onBtnAddTapped)
-	return true
 end
 
 function ChooseFriendPanel:onKeyBackClicked()
@@ -278,4 +313,126 @@ end
 
 function ChooseFriendPanel:popout()
 	PopoutManager:sharedInstance():add(self, true, false)
+end
+
+function ChooseFriendPanel:onItemSelectChange()
+    if self.content and not self.content.isDisposed then
+        local selectedFriendsID = self.content:getSelectedFriendID()
+        
+        print('#selectedFriendsID', #selectedFriendsID)
+        if #selectedFriendsID >= LIMIT then
+            CommonTip:showTip(localize('ask.friend.limit'), 'negative')
+            return false
+        end
+    end
+    return true
+end
+
+function ChooseFriendPanel:selectAll(limit)
+	if self.isDisposed  then return end
+	local items = self.content:getItems()
+	local count = #items
+	local maxIndex
+	if count >= limit then
+		maxIndex = limit
+	else
+		maxIndex = count
+	end
+	for index = 1, maxIndex do
+		local item = items[index]:getContent()
+		if item then
+			item:select(true)
+		end
+	end
+end
+
+function ChooseFriendPanel:refreshFriendItems()
+	if self.scrollable and not self.scrollable.isDisposed then
+		self.scrollable:removeFromParentAndCleanup(true)
+	end
+	self:buildGridLayout()
+end
+
+
+function ChooseFriendPanel:popoutPanel(cloudId, curAreaFriendIds, onRequestSuccess, onRequestFail)
+	local panel = nil
+	-- On Friend Choosed
+	local function onFriendChoose(friendIds)
+		DcUtil:UserTrack({category = 'friend', sub_category = 'push_button_unlock'})
+
+		local function onSuccess(evt)
+			print("onSuccess Called !")
+			DcUtil:requestUnLockCloud(cloudId ,#friendIds)
+			local tipKey	= "unlock.cloud.panel.request.friend.success"
+			local tipValue	= Localization:getInstance():getText(tipKey)
+			CommonTip:showTip(tipValue, "positive")
+
+
+
+			if onRequestSuccess then onRequestSuccess(friendIds) end
+			if panel and not panel.isDisposed then
+				if friendIds then
+					for k, v in pairs(friendIds) do
+						table.insert(panel.exceptIds, v)
+					end
+				end
+				panel:refreshFriendItems()
+				panel:selectAll(LIMIT)
+			end
+		end
+
+		local function onFail(errCode)
+			print("onFail Called !")
+
+			local tipKey	= "error.tip."..tostring(errCode)
+			local tipValue	= Localization:getInstance():getText(tipKey)
+			CommonTip:showTip(tipValue, "negative")
+			if onRequestFail then onRequestFail(errCode) end
+		end
+
+		if not friendIds or #friendIds == 0 then
+			CommonTip:showTip(Localization:getInstance():getText("unlock.cloud.panel.request.friend.noselect"), "negative")
+			return
+		end
+
+		local logic = UnlockLevelAreaLogic:create(cloudId)
+		logic:setOnSuccessCallback(onSuccess)
+		logic:setOnFailCallback(onFail)
+		if __IOS_FB then
+			if SnsProxy:isShareAvailable() then
+				local callback = {
+					onSuccess = function(result)
+						logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
+						DcUtil:logSendRequest("request",result.id,"request_uplock_area_help")
+					end,
+					onError = function(err)
+						print("failed")
+					end
+				}
+
+				local profile = UserManager.getInstance().profile
+				local userName = ""
+				if profile and profile:haveName() then
+					userName = profile:getDisplayName()
+				end
+				
+				local reqTitle = Localization:getInstance():getText("facebook.request.unlock.title", {user=userName})
+				local reqMessage = Localization:getInstance():getText("facebook.request.unlock.message", {user=userName})
+				
+				local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(friendIds)
+				SnsProxy:sendRequest(snsIds, reqTitle, reqMessage, false, FBRequestObject.ULOCK_AREA_HELP, callback)
+			end
+		else
+			logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
+		end	
+	end
+
+	local exceptIds
+	if curAreaFriendIds then
+		exceptIds = table.clone(curAreaFriendIds, true)
+	else
+		exceptIds = {}
+	end
+	panel = ChooseFriendPanel:create(onFriendChoose, exceptIds)
+	panel:popout()
 end

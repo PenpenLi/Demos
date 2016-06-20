@@ -30,8 +30,8 @@ function Processor:getLocationInfo()
     end
 
     local request = HttpRequest:createPost("http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json")
-    local timeout = 3
-    local connection_timeout = 2
+    local timeout = 1
+    local connection_timeout = 1
 
     if __WP8 then 
         timeout = 30

@@ -62,7 +62,7 @@ local currGameItemOrderDataClassID = 0
 function GameItemOrderData:ctor()
 	currGameItemOrderDataClassID = currGameItemOrderDataClassID + 1
 	self.__class_id = currGameItemOrderDataClassID
-	self.encryptValueKey = "Game."..self.__class_id
+	self.encryptValueKey = "GameItemOrderData."..self.__class_id
 
 	self.key1 = 0;
 	self.key2 = 0;

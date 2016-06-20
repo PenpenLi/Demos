@@ -23,14 +23,23 @@ function WorldSceneBranchInteractionController.onSceneTouchBegan(event, ...)
 	self.touchedBranch = nil
 
 	local touchedNode = self:getTouchedNode(globalPos)
+	local touchedReward = self:getTouchedReward(globalPos)
 	local touchedBranch = self:getTouchedBranch(globalPos)
+	local touchedFloatIcon = self:getTouchedFloatIcon(globalPos)
 
 	if touchedNode and LevelType:isHideLevel(touchedNode.levelId) then
 		self.touchState = WorldSceneScrollerTouchState.SOME_THING_ABOVE_SCROLLER_TOUCHED 
 		self.touchedNode = touchedNode
+	elseif touchedReward then
+		self.touchState = WorldSceneScrollerTouchState.SOME_THING_ABOVE_SCROLLER_TOUCHED 
+		self.touchedReward = touchedReward
 	elseif touchedBranch then
 		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
 		self.touchedBranch = touchedBranch
+		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED))
+	elseif touchedFloatIcon then
+		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
+		self.touchedFloatIcon = touchedFloatIcon
 		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.BRANCH_MOVING_STARTED))
 	else
 		self.touchState = WorldSceneScrollerTouchState.HORIZONTAL_SCROLLER_TOUCHED
@@ -59,6 +68,10 @@ function WorldSceneBranchInteractionController.onSceneTouchMoved(event, ...)
 		if self.touchedNode then
 			local flowerRes = self.touchedNode:getFlowerRes()
 			if not flowerRes:hitTestPoint(event.globalPosition, true) then
+				changeStateToScrollerTouched()
+			end
+		elseif self.touchedReward then
+			if not self.touchedReward:hitTestPoint(event.globalPosition, true) then
 				changeStateToScrollerTouched()
 			end
 		else
@@ -94,6 +107,8 @@ function WorldSceneBranchInteractionController.onSceneTouchEnded(event, ...)
 	if self.touchState == WorldSceneScrollerTouchState.SOME_THING_ABOVE_SCROLLER_TOUCHED then
 		if self.touchedNode then
 			self.touchedNode:dispatchEvent(Event.new(DisplayEvents.kTouchTap))
+		elseif self.touchedReward then
+			self.touchedReward:dispatchEvent(Event.new(DisplayEvents.kTouchTap))
 		else
 			assert(false)
 		end

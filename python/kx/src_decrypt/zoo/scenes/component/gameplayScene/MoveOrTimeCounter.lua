@@ -74,7 +74,7 @@ function MoveOrTimeCounter:stopShaking()
 	self.isShaking = false
 end
 
-function MoveOrTimeCounter:init(levelId, counterType, count, ...)
+function MoveOrTimeCounter:init(panelStyle, levelId, counterType, count, ...)
 	self.oldString = ''
 	assert(type(levelId) == "number")
 	assert(counterType == MoveOrTimeCounterType.MOVE_COUNT or counterType == MoveOrTimeCounterType.TIME_COUNT)
@@ -82,7 +82,7 @@ function MoveOrTimeCounter:init(levelId, counterType, count, ...)
 	assert(#{...} == 0)
 
 	-- Get UI Resource
-	self.ui = ResourceManager:sharedInstance():buildGroup("moveOrTimeCounter")
+	self.ui = ResourceManager:sharedInstance():buildGroup(panelStyle)
 	assert(self.ui)
 	local function onTouchBegin(evt) 
 		self:shake()
@@ -295,14 +295,14 @@ function MoveOrTimeCounter:animateString( newString, animate )
 	end
 end
 
-function MoveOrTimeCounter:create(levelId, counterType, count, ...)
+function MoveOrTimeCounter:create(panelStyle, levelId, counterType, count, ...)
 	assert(type(levelId) == "number")
 	assert(counterType == MoveOrTimeCounterType.MOVE_COUNT or counterType == MoveOrTimeCounterType.TIME_COUNT)
 	assert(type(count) == "number")
 	assert(#{...} == 0)
 
 	local newCounter = MoveOrTimeCounter.new()
-	newCounter:init(levelId, counterType, count)
+	newCounter:init(panelStyle, levelId, counterType, count)
 	return newCounter
 end
 

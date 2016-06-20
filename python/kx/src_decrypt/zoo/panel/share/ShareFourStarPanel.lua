@@ -8,14 +8,17 @@ end
 
 function ShareFourStarPanel:init()
 	--初始化文案内容
-	self.shareTitleName	= Localization:getInstance():getText(self.shareTitleKey,{})
-	ShareBasePanel.init(self, self.shareType, self.shareTitleName)
+	ShareBasePanel.init(self, self.shareType)
 
 	self:runNpcAction()
 	self:runStarGroup1Action()
 	self:runStarGroup2Action()
 	self:runStarGroup3Action()
 	self:runCircleLightAction()
+end
+
+function ShareFourStarPanel:getShareTitleName()
+	return Localization:getInstance():getText(self.shareTitleKey,{})
 end
 
 function ShareFourStarPanel:runNpcAction()
@@ -190,14 +193,11 @@ function ShareFourStarPanel:runCircleLightAction()
 	end
 end
 
-function ShareFourStarPanel:create(shareId, shareType, shareImageUrl, shareTitleKey)
+function ShareFourStarPanel:create(shareId)
 	local panel = ShareFourStarPanel.new()
 	panel:loadRequiredResource("ui/NewSharePanel.json")
 	panel.ui = panel:buildInterfaceGroup('ShareFourStarPanel')
 	panel.shareId = shareId
-	panel.shareType = shareType
-	panel.shareImageUrl = shareImageUrl
-	panel.shareTitleKey = shareTitleKey
 	panel:init()
 	return panel
 end

@@ -166,7 +166,8 @@ function GiveBackPanel:_buildItem(itemId, itemNum)
 	return ui
 end
 
-function GiveBackPanel:popout()
+function GiveBackPanel:popout(closeCallback)
+	self.closeCallback = closeCallback
 	PopoutQueue.sharedInstance():push(self)
 end
 
@@ -183,6 +184,9 @@ function GiveBackPanel:onCloseBtnTapped()
 		PopoutManager:sharedInstance():remove(self, true)
 	end
 	setTimeOut(onTimeOut, animTime)
+	if self.closeCallback then
+		self.closeCallback() 
+	end
 end
 
 function GiveBackPanel:_onEnterHandler(evt)
@@ -228,46 +232,14 @@ function GiveBackPanel:_rewardAnim()
 	local scene = HomeScene:sharedInstance()
 	if not scene then return end
 	scene:checkDataChange()
+
 	for k, v in ipairs(self.items) do
-		if v.itemId == 2 then
-			local config = {updateButton = true,}
-			local anim = HomeSceneFlyToAnimation:sharedInstance():coinStackAnimation(config)
-			local position = v:getPosition()
-			local wPosition = v:getParent():convertToWorldSpace(ccp(position.x, position.y))
-			anim.sprites:setPosition(ccp(wPosition.x + 100, wPosition.y - 90))
-			scene:addChild(anim.sprites)
-			anim:play()
-		elseif v.itemId == 14 then
-			local num = v.num
-			if num > 10 then num = 10 end
-			local config = {number = num, updateButton = true,}
-			local anim = HomeSceneFlyToAnimation:sharedInstance():goldFlyToAnimation(config)
-			local position = v:getPosition()
-			local size = v:getGroupBounds().size
-			local wPosition = v:getParent():convertToWorldSpace(ccp(position.x + size.width / 4, position.y - size.height / 4))
-			for k, v2 in ipairs(anim.sprites) do
-				v2:setPosition(ccp(wPosition.x, wPosition.y))
-				v2:setScaleX(v.item:getScaleX())
-				v2:setScaleY(v.item:getScaleY())
-				scene:addChild(v2)
-			end
-			anim:play()
-		else
-			local num = v.num
-			if num > 10 then num = 10 end
-			local config = {propId = v.itemId, number = num, updateButton = true,}
-			local anim = HomeSceneFlyToAnimation:sharedInstance():jumpToBagAnimation(config)
-			local position = v:getPosition()
-			local size = v:getGroupBounds().size
-			local wPosition = v:getParent():convertToWorldSpace(ccp(position.x + size.width / 8, position.y - size.height / 8))
-			for k, v2 in ipairs(anim.sprites) do
-				v2:setPosition(ccp(wPosition.x, wPosition.y))
-				v2:setScaleX(v.item:getScaleX())
-				v2:setScaleY(v.item:getScaleY())
-				scene:addChild(v2)
-			end
-			anim:play()
-		end
+		local anim = FlyItemsAnimation:create({v})
+		local bounds = v:getGroupBounds()
+		anim:setWorldPosition(ccp(bounds:getMidX(),bounds:getMidY()))
+		anim:setScaleX(v.item:getScaleX())
+		anim:setScaleY(v.item:getScaleY())
+		anim:play()
 	end
 end
 

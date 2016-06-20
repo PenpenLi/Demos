@@ -12,6 +12,8 @@ require "zoo.net.Http"
 -- AskForEnergyItem ---------------------------------------------------------
 --
 
+local LIMIT = 12
+
 AskForEnergyItem = class(CocosObject)
 function AskForEnergyItem:create(inviteIconMode, onTileItemTouch, userId)
 	local builder = InterfaceBuilder:create(PanelConfigFiles.AskForEnergyPanel)
@@ -19,9 +21,17 @@ function AskForEnergyItem:create(inviteIconMode, onTileItemTouch, userId)
 
 	local item = AskForEnergyItem.new(CCNode:create())
 	local function onItemTouchInside( evt )
-		item:select(not item.isSelected)
-		if onTileItemTouch ~= nil then onTileItemTouch(item) end
-	end
+        if onTileItemTouch ~= nil then 
+            if item.isSelected then
+                item:select(not item.isSelected)
+            else
+                local ret = onTileItemTouch(item) 
+                if ret then
+                    item:select(not item.isSelected)
+                end 
+            end           
+        end
+    end
 	item:buildUI(ui, inviteIconMode, userId)
 	ui:setTouchEnabled(true)
 	ui:ad(DisplayEvents.kTouchTap, onItemTouchInside)
@@ -149,7 +159,7 @@ end
 -- AskForEnergyPanel ---------------------------------------------------------
 --
 AskForEnergyPanel = class(BasePanel)
-
+local rewardItemId = 10013
 function AskForEnergyPanel:create(onConfirmCallback)
 	local panel = AskForEnergyPanel.new()
 	panel:loadRequiredResource(PanelConfigFiles.AskForEnergyPanel)
@@ -187,9 +197,14 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	self.otherBtnPos = self.ui:getChildByName("otherBtnPos")
 	self.sentIcon = self.ui:getChildByName("sentIcon")
 	self.btnAdd = ButtonIconsetBase:create(self.btnAdd) 
-	local askItemIcon = ResourceManager:sharedInstance():getItemResNameFromGoodsId(12)
-	self.btnAdd:setIcon(askItemIcon)
-	askItemIcon = ResourceManager:sharedInstance():buildItemSprite(10013)
+	-- local askItemIcon = ResourceManager:sharedInstance():getItemResNameFromGoodsId(12)
+	local iconBuilder = InterfaceBuilder:create(PanelConfigFiles.properties)
+	local askItemIcon1 = iconBuilder:buildGroup('Prop_'..rewardItemId)
+	local askItemIcon1Sprite = askItemIcon1:getChildByName('sprite')
+	askItemIcon1Sprite:removeFromParentAndCleanup(false)
+	askItemIcon1:dispose()
+	self.btnAdd:setIcon(askItemIcon1Sprite)
+	local askItemIcon = ResourceManager:sharedInstance():buildItemSprite(rewardItemId)
 	local pos = self.sentIcon:getPosition()
 	askItemIcon:setPosition(ccp(pos.x, pos.y))
 	self.ui:addChild(askItemIcon)
@@ -204,15 +219,18 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	self.commentText:setString(Localization:getInstance():getText("message.center.panel.ask.energy.comment"))
 	self.sentText:setString(Localization:getInstance():getText("message.center.panel.ask.energy.count"))
 
+
+	-- 全选功能不再有
 	self.all_select_txt = self.ui:getChildByName('all_select_txt')
 	self.select_mark = self.ui:getChildByName('select_mark')
 	self.select_mark:setVisible(false)
 	self.allSelected = false
 	self.select_all_btn = self.ui:getChildByName('select_all_btn')
 	self.select_all_btn:getChildByName('hit_area'):setVisible(false)
-	self.select_all_btn:setTouchEnabled(true)
-	self.select_all_btn:setVisible(true)
-	self.ui:getChildByName('all_select_txt'):setString(Localization:getInstance():getText('message.center.panel.selectall'))
+	self.select_all_btn:setTouchEnabled(false)
+	self.select_all_btn:setVisible(false)
+	self.all_select_txt:setVisible(false)
+
 
 	local tab = UserManager:getInstance():getWantIds()
 	local count = #tab
@@ -239,17 +257,73 @@ function AskForEnergyPanel:init(onConfirmCallback)
 	self.newCaptain:setPosition(ccp(position.x, position.y))
 	self:addChild(self.newCaptain)
 	self.newCaptain:setToParentCenterHorizontal()
-	-- self.captain:removeFromParentAndCleanup(true)
 	self.captain:setVisible(false)
 
 	local listBg = self.ui:getChildByName("Layer 2")
 	local listSize = listBg:getContentSize()
 	local listPos = listBg:getPosition()
 	local listHeight = listSize.height - 30
-	--setContentOffset
+
+	self.listBg = listBg
+	self.listSize = listSize
+	self.listPos = listPos
+	self.listHeight = listHeight	
+	self:buildGridLayout()
+	
+
+	-- 添加事件监听
+	local function onCloseTapped()
+		self:onKeyBackClicked()
+	end
+	self.closeBtn:setTouchEnabled(true)
+	self.closeBtn:setButtonMode(true)
+	self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseTapped)
+
+	local function onBtnAddTapped()
+		local selectedFriendsID = self.content:getSelectedFriendID()
+		--print("selectedFriendsID", table.tostring(selectedFriendsID))
+		
+		if #selectedFriendsID == 0 then 
+			CommonTip:showTip(Localization:getInstance():getText('unlock.cloud.panel.request.friend.noselect'), 'negative', nil)
+		else
+			if onConfirmCallback ~= nil then onConfirmCallback(selectedFriendsID) end
+		end
+	end
+	self.btnAdd:ad(DisplayEvents.kTouchTap, onBtnAddTapped)
+
+	if not PlatformConfig:isPlatform(PlatformNameEnum.kJinliPre) then
+		self:selectAll(LIMIT)
+	end
+
+	self:updateBtnAddShow()
+	return true
+end
+
+function AskForEnergyPanel:updateBtnAddShow()
+	local tab = UserManager:getInstance():getWantIds()
+	if #tab < 1 then 
+		if self.btnAdd then 
+			if self.btnAdd.icon then 
+				self.btnAdd.icon:setVisible(true)
+			end
+			if self.btnAdd.label then 
+				self.btnAdd.label:setPosition(ccp(-58.52, 45.2))
+			end
+		end
+	else
+		if self.btnAdd then 
+			if self.btnAdd.icon then 
+				self.btnAdd.icon:setVisible(false)
+			end
+			if self.btnAdd.label then 
+				self.btnAdd.label:setPosition(ccp(-101.52, 45.2))
+			end
+		end
+	end
+end
+
+function AskForEnergyPanel:buildGridLayout()
 	local function onTileItemTouch(item)
-		-- 更新全选状态
-		self:onItemSelectChange()
 		if item and item.inviteIconMode then
 			if __IOS_FB then
 				if ReachabilityUtil.getInstance():isNetworkAvailable() then 
@@ -258,27 +332,27 @@ function AskForEnergyPanel:init(onConfirmCallback)
 					CommonTip:showTip(Localization:getInstance():getText("dis.connect.warning.tips"))
 				end
 			else
-				local panel = AddFriendPanel:create(ccp(0,0))
+				--local panel = AddFriendPanel:create(ccp(0,0))
+				local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(ccp(0,0))
+				-- panel:popout()
 				--if panel then panel:popout() end
 			end
 		end
+		return self:onItemSelectChange()
 	end
-	local list = VerticalScrollable:create(630, listHeight, true, false)
-	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, listHeight, list)--Sprite:create("materials/logo.png")
+
+	self.scrollable = VerticalScrollable:create(630, self.listHeight, true, false)
+	local content, numberOfFriends = createChooseFriendList(onTileItemTouch, 630, self.listHeight, self.scrollable)--Sprite:create("materials/logo.png")
 	self.content = content
 	self.numberOfFriends = numberOfFriends
 	if numberOfFriends > 0 then
-		list:setContent(content)
-		list:setPositionXY(listPos.x + 18, listPos.y - 15)
-		self.ui:addChild(list)
-		self.select_all_btn:ad(DisplayEvents.kTouchTap, function () self:selectAll(content, not self.allSelected) end)
+		self.scrollable:setContent(content)
+		self.scrollable:setPositionXY(self.listPos.x + 18, self.listPos.y - 15)
+		self.ui:addChild(self.scrollable)
 	else
-		self.select_all_btn:setVisible(false)
-		self.all_select_txt:setVisible(false)
-		self.select_mark:setVisible(false)
-		list:dispose()
-		content:dispose()
-		listBg:removeFromParentAndCleanup(true)
+		self.scrollable:dispose()
+		self.content:dispose()
+		self.listBg:removeFromParentAndCleanup(true)
 		self.selectText:setVisible(false)
 		self.commentText:setVisible(false)
 		self.sentIcon:setVisible(false)
@@ -304,93 +378,23 @@ function AskForEnergyPanel:init(onConfirmCallback)
 			local function endCallback()
 				self:onKeyBackClicked()
 			end
-			local panel = AddFriendPanel:create(position,endCallback)
-			if panel then
+
+			local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(position,endCallback)
+			-- panel:popout()
+			--local panel = AddFriendPanel:create(position,endCallback)
+			--if panel then
 				--panel:popout()
-			end
+			--end
 		end
 		btn:addEventListener(DisplayEvents.kTouchTap, onButton)
 	end
-
-	-- 添加事件监听
-	local function onCloseTapped()
-		self:onKeyBackClicked()
-	end
-	self.closeBtn:setTouchEnabled(true)
-	self.closeBtn:setButtonMode(true)
-	self.closeBtn:ad(DisplayEvents.kTouchTap, onCloseTapped)
-
-	local function onBtnAddTapped()
-		local selectedFriendsID = content:getSelectedFriendID()
-		--print("selectedFriendsID", table.tostring(selectedFriendsID))
-		
-		if #selectedFriendsID == 0 then 
-			CommonTip:showTip(Localization:getInstance():getText('unlock.cloud.panel.request.friend.noselect'), 'negative', nil)
-		else
-			PopoutManager:sharedInstance():remove(self, true)
-			if onConfirmCallback ~= nil then onConfirmCallback(selectedFriendsID) end
-		end
-	end
-	self.btnAdd:ad(DisplayEvents.kTouchTap, onBtnAddTapped)
-
-	-- 初始化的全选不打点
-	self:selectAll(content, true, true)
-
-	return true
 end
 
-function AskForEnergyPanel:selectAll(content, enable, ignoreDc)
-	local items = content:getItems()
-	if enable then -- 全选只选中前12个（为了减轻服务器负担）
-		local count = #items
-		local maxIndex
-		if count >= 12 then
-			maxIndex = 12
-		else
-			maxIndex = count
-		end
-		for index = 1, maxIndex do
-			local item = items[index]:getContent()
-			if item then
-				item:select(true)
-			end
-		end
-	else -- 取消全选则取消所有
-		for k, v in pairs(items) do
-			local item = v:getContent()
-			if item then
-				item:select(false)
-			end
-		end
+function AskForEnergyPanel:refreshFriendItems()
+	if self.scrollable and not self.scrollable.isDisposed then
+		self.scrollable:removeFromParentAndCleanup(true)
 	end
-	self.allSelected = enable
-	self.select_mark:setVisible(enable)
-	if not ignoreDc then
-		local dcValue 
-		if enable then dcValue = 2 else dcValue = 1 end
-		DcUtil:UserTrack({category = 'energy', sub_category = 'click_request_select_all', enable = dcValue})
-	end
-end
-
-function AskForEnergyPanel:onItemSelectChange()
-	if self.content and not self.content.isDisposed then
-		local selectedFriendsID = self.content:getSelectedFriendID()
-		-- 选中>=12个条目就认为是全选
-		-- 不到12个的，选中全部就认为是全选
-		local checkCount 
-		if self.numberOfFriends >= 12 then
-			checkCount = 12
-		else
-			checkCount = self.numberOfFriends
-		end
-		if #selectedFriendsID >= checkCount then
-			self.allSelected = true
-			self.select_mark:setVisible(true)
-		else
-			self.allSelected = false
-			self.select_mark:setVisible(false)
-		end
-	end
+	self:buildGridLayout(self.listHeight)
 end
 
 function AskForEnergyPanel:onKeyBackClicked()
@@ -399,4 +403,95 @@ end
 
 function AskForEnergyPanel:popout()
 	PopoutManager:sharedInstance():add(self, true, false)
+end
+
+
+function AskForEnergyPanel:onItemSelectChange()
+    if self.content and not self.content.isDisposed then
+        local selectedFriendsID = self.content:getSelectedFriendID()
+        
+        print('#selectedFriendsID', #selectedFriendsID)
+        if #selectedFriendsID >= LIMIT then
+            CommonTip:showTip(localize('ask.friend.limit'), 'negative')
+            return false
+        end
+    end
+    return true
+end
+
+function AskForEnergyPanel:selectAll(limit)
+	if self.isDisposed  then return end
+	local items = self.content:getItems()
+	local count = #items
+	local maxIndex
+	if count >= limit then
+		maxIndex = limit
+	else
+		maxIndex = count
+	end
+	for index = 1, maxIndex do
+		local item = items[index]:getContent()
+		if item then
+			item:select(true)
+		end
+	end
+end
+
+-- 新方法：减少一些代码冗余
+function AskForEnergyPanel:popoutPanel(onRequestSuccess, onRequestFail)
+	local level = UserManager:getInstance().user:getTopLevelId()
+    local meta = MetaManager:getInstance():getFreegift(level)
+    local function onUpdateFriend(result, evt)
+        if result == "success" then
+        	local panel = nil
+            local function confirmAskFriend(selectedFriendsID)
+            	DcUtil:UserTrack({category = 'friend', sub_category = 'push_button_energy'})
+	            local todayWants = UserManager:getInstance():getWantIds()
+			    local todayWantsCount = #todayWants
+			    if panel and not panel.isDisposed then
+			    	panel.btnAdd:setEnabled(false)
+			    end
+                if #selectedFriendsID > 0 then
+                    local function onSuccess()
+                        DcUtil:requestEnergy(#selectedFriendsID,level)
+                        CommonTip:showTip(Localization:getInstance():getText("energy.panel.ask.energy.success"), "positive")
+                        if onRequestSuccess then onRequestSuccess(selectedFriendsID) end
+                        if panel and not panel.isDisposed then
+                        	if todayWants and todayWantsCount < 1 then
+	                        	local home = HomeScene:sharedInstance()
+		                        local sprite = home:createFlyToBagAnimation(rewardItemId, 1)
+					            local size = panel.sentIcon:getGroupBounds().size
+					            local pos = panel.sentIcon:getPosition()
+					            local parent = panel.sentIcon:getParent()
+					            pos = parent:convertToWorldSpace(ccp(pos.x, pos.y))
+					            sprite:setPosition(ccp(pos.x, pos.y))
+					            sprite:playFlyToAnim(false, false)
+					            panel.sentIcon:setVisible(false)
+					            panel.sentText:setVisible(false)
+					            todayWantsCount = #todayWants
+					        end
+
+                        	panel:refreshFriendItems()
+                        	panel:selectAll(LIMIT)
+                        	panel:updateBtnAddShow()
+                        	panel.btnAdd:setEnabled(true)
+                        end
+                    end
+                    local function onFail(evt)
+                        CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative")
+                        if onRequestFail then onRequestFail(evt) end
+                    end
+                    FreegiftManager:sharedInstance():requestGift(selectedFriendsID, meta.itemId, onSuccess, onFail)
+                end
+            end
+            panel = AskForEnergyPanel:create(confirmAskFriend)
+            if panel then panel:popout() end
+        else
+            local message = ''
+            local err_code = tonumber(evt.data)
+            if err_code then message = Localization:getInstance():getText("error.tip."..err_code) end
+            CommonTip:showTip(message, "negative")
+        end
+    end
+    FreegiftManager:sharedInstance():updateFriendInfos(true, onUpdateFriend)
 end

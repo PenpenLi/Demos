@@ -11,6 +11,7 @@ require "zoo.data.MetaManager"
 
 require "zoo.panel.component.common.BubbleCloseBtn"
 
+
 ---------------------------------------------------
 -------------- LevelSuccessTopPanel
 ---------------------------------------------------
@@ -18,12 +19,30 @@ require "zoo.panel.component.common.BubbleCloseBtn"
 assert(not LevelSuccessTopPanel)
 assert(BaseUI)
 LevelSuccessTopPanel = class(BaseUI)
+
+function LevelSuccessTopPanel:create(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin, activityForceShareData, useSpecialActivityUI, ...)
+	assert(parentPanel)
+	assert(type(levelId) == "number")
+	assert(type(levelType) == "number")
+	assert(type(newScore) == "number")
+	assert(rewardItemsDataFromServer)
+	assert(extraCoin)
+	assert(#{...} == 0)
+
+	local newLevelSuccessTopPanel = LevelSuccessTopPanel.new()
+	newLevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin, activityForceShareData, useSpecialActivityUI)
+	return newLevelSuccessTopPanel
+end
+
 function LevelSuccessTopPanel:dispose()
 	BaseUI.dispose(self)
+	if self.builder then
+		self.builder:unloadAsset(PanelConfigFiles.panel_game_start_activity)
+	end
 	print("dispose levelSuccessTopPanel")
 end
 
-function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin, ...)
+function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin, activityForceShareData, useSpecialActivityUI,...)
 	assert(parentPanel)
 	assert(type(levelId) == "number")
 	assert(type(newScore) == "number")
@@ -34,7 +53,44 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 	-- ---------------
 	-- Get UI Resource
 	-- ----------------
-	self.ui	= ResourceManager:sharedInstance():buildGroup("levelSuccessPanel/levelSuccessTopPanel")
+	self.useSpecialActivityUI = useSpecialActivityUI
+	if self.useSpecialActivityUI then
+		self.builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_game_start_activity)
+		self.ui = self.builder:buildGroup("Spring2016UI/levelSuccessTopPanel")
+	else
+		self.ui	= ResourceManager:sharedInstance():buildGroup("levelSuccessPanel/levelSuccessTopPanel")
+	end
+	
+	-- -------------------
+	-- Pattern in activity version
+	-- -------------------
+	if self.useSpecialActivityUI then
+		local pattern = self.ui:getChildByName("pattern")
+		pattern:removeFromParentAndCleanup(false)
+
+		local childList = {}
+		pattern:getVisibleChildrenList(childList)
+		if #childList > 0 then
+			local batch = SpriteBatchNode:createWithTexture(childList[1]:getTexture())
+			for i,v in ipairs(childList) do
+				v:removeFromParentAndCleanup(false)
+				batch:addChild(v)
+			end
+			batch:setPositionXY(pattern:getPositionX(), pattern:getPositionY())
+			pattern:dispose()
+			pattern = batch
+		end
+		
+		local mask = self.ui:getChildByName("mask")
+		local maskPosition = {x = mask:getPositionX(), y = mask:getPositionY()}
+		local maskIndex = self.ui:getChildIndex(mask)
+		mask:removeFromParentAndCleanup(false)
+		local clip = ClippingNode.new(CCClippingNode:create(mask.refCocosObj))
+		clip:setAlphaThreshold(0.7)
+		self.ui:addChildAt(clip, maskIndex)
+		pattern:setPositionXY(pattern:getPositionX() - maskPosition.x, pattern:getPositionY())
+		clip:addChild(pattern)
+	end
 
 	-- ----------------
 	-- Init Base Class
@@ -44,6 +100,9 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 	-----------------
 	---- Get UI Resource
 	---------------------
+
+
+
 	self.scoreLabel		= self.ui:getChildByName("scoreLabel")
 	self.rewardTxt		= self.ui:getChildByName("rewardTxt")
 	self.star1Res		= self.ui:getChildByName("star1")
@@ -157,9 +216,9 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 	-------------------------
 	---- Create UI Component
 	-----------------------
-	self.rewardItem1	= RewardItem:create(self.rewardItem1Res, false) 
-	self.rewardItem2	= RewardItem:create(self.rewardItem2Res, false)
-	self.rewardItem3	= RewardItem:create(self.rewardItem3Res, false)
+	self.rewardItem1	= RewardItem:create(self.rewardItem1Res, false, self.useSpecialActivityUI) 
+	self.rewardItem2	= RewardItem:create(self.rewardItem2Res, false, self.useSpecialActivityUI)
+	self.rewardItem3	= RewardItem:create(self.rewardItem3Res, false, self.useSpecialActivityUI)
 	self.rewardItems 	= {self.rewardItem1, self.rewardItem2, self.rewardItem3}
 
 	self.closeBtn		= BubbleCloseBtn:create(self.closeBtnRes)
@@ -173,7 +232,7 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 	self.extraCoin		= extraCoin
 
 	-- Create Panel Tilte
-	local panelTitle = self:createPanelTitle(levelId, self.levelType)
+	local panelTitle = self:createPanelTitle(levelId, self.levelType, self.useSpecialActivityUI)
 	-- local contentSize = panelTitle:getContentSize()
 	self.ui:addChild(panelTitle)
 	panelTitle:ignoreAnchorPointForPosition(false)
@@ -238,6 +297,9 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 	-- Cur Level Reward
 	self.level_reward = self.metaManager:getLevelRewardByLevelId(self.levelId)
 	assert(self.level_reward)
+
+	self.ingredientTip	= self.ui:getChildByName('ingredient_tip')
+	self.ingredientTip:setVisible(self:isIngredientRefunded())
 
 	---------------------------
 	-- Update View
@@ -351,7 +413,43 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 		self.ui:getChildByName('fourStarLocator'..i):setVisible(false)
 	end
 
-	if LevelType.isShareEnable(self.levelType) then
+	if activityForceShareData and activityForceShareData.activityId then
+
+		local function onActivityShareToWeiBoBtnTapped()
+			if PrepackageUtil:isPreNoNetWork() then
+				PrepackageUtil:showInGameDialog()
+			else
+				self:onActivityShareToWeiBoBtnTapped(activityForceShareData)
+			end
+		end
+		if activityForceShareData.reward then
+			self.nextLevelBtn.ui:setTouchEnabled(false)
+			self.nextLevelBtn:setVisible(false)
+			self.shareToWeiBoBtn:setPositionX(self.shareToWeiBoBtn:getPositionX() - 150)
+
+			local itemIcon = ResourceManager:sharedInstance():buildItemSprite(activityForceShareData.reward.itemId)
+			local facebookIcon = self.shareToWeiBoBtn.ui:getChildByName("facebookIcon")
+			local pos = facebookIcon:getPosition()
+			local size_const = 80
+			local size = facebookIcon:getGroupBounds().size
+			local itemIconSize = itemIcon:getGroupBounds().size
+			itemIcon:setPosition(ccp(pos.x - (size_const - size.width)/2, pos.y + (size_const - size.height)/2))
+			itemIcon:setScaleX(size_const/itemIconSize.width)
+			itemIcon:setScaleY(size_const/itemIconSize.height)
+			self.shareToWeiBoBtn.ui:addChild(itemIcon)
+			self.shareRewardIcon = itemIcon
+
+			local weiboIcon = self.shareToWeiBoBtnRes:getChildByName("weixinIcon")
+			local fbIcon = self.shareToWeiBoBtnRes:getChildByName("facebookIcon")
+			local miTalkIcon = self.shareToWeiBoBtnRes:getChildByName("miTalkIcon")
+			weiboIcon:setVisible(false)
+			fbIcon:setVisible(false)
+			miTalkIcon:setVisible(false)
+		end
+		self.shareToWeiBoBtn.ui:addEventListener(DisplayEvents.kTouchTap, onActivityShareToWeiBoBtnTapped)
+		
+		
+	elseif LevelType.isShareEnable(self.levelType) then
 		local function onShareToWeiBoBtnTapped()
 			if PrepackageUtil:isPreNoNetWork() then
 				PrepackageUtil:showInGameDialog()
@@ -365,6 +463,8 @@ function LevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, re
 		self.shareToWeiBoBtn:setVisible(false)
 		self.nextLevelBtn:setPositionX(self.nextLevelBtn:getPositionX() + 100)
 	end
+
+	self:fourStarGuide()
 end
 
 function LevelSuccessTopPanel:getAllRewardIds( levelId, levelType )
@@ -394,14 +494,28 @@ function LevelSuccessTopPanel:getAllRewardIds( levelId, levelType )
 	if self.levelType == GameLevelType.kDigWeekly then
 		allRewardIds[ItemType.GEM] = ItemType.GEM
 	elseif self.levelType == GameLevelType.kMayDay then
-		allRewardIds[ItemType.XMAS_BOSS] = ItemType.XMAS_BOSS
+		-- allRewardIds[ItemType.XMAS_BOSS] = ItemType.XMAS_BOSS
 		allRewardIds[ItemType.XMAS_BELL] = ItemType.XMAS_BELL
+	elseif self.levelType == GameLevelType.kWukong then
+		allRewardIds[ItemType.WUKONG] = ItemType.WUKONG
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		allRewardIds[ItemType.WEEKLY_RABBIT] = ItemType.WEEKLY_RABBIT
 	elseif self.levelType == GameLevelType.kTaskForUnlockArea then 
 		allRewardIds[ItemType.KEY_GOLD] = ItemType.KEY_GOLD
+	elseif self:isHasIngredientReward() then
+		allRewardIds[ItemType.INGREDIENT] = ItemType.INGREDIENT
 	end
 	return allRewardIds
+end
+
+function LevelSuccessTopPanel:isHasIngredientReward( ... )
+	-- body
+	for k, v in pairs(self.rewardItemsDataFromServer) do
+		if v.itemId == ItemType.INGREDIENT then
+			return true
+		end
+	end
+	return false
 end
 
 function LevelSuccessTopPanel:onNextLevelBtnTapped( event, ... )
@@ -447,8 +561,10 @@ function LevelSuccessTopPanel:getDefaultRewards( levelReward, smallestLevel )
 	if self.levelType == GameLevelType.kDigWeekly then
 		result[ItemType.GEM] = getRewardItemNumber(ItemType.GEM)
 	elseif self.levelType == GameLevelType.kMayDay then
-		result[ItemType.XMAS_BOSS] = getRewardItemNumber(ItemType.XMAS_BOSS)
+		-- result[ItemType.XMAS_BOSS] = getRewardItemNumber(ItemType.XMAS_BOSS)
 		result[ItemType.XMAS_BELL] = getRewardItemNumber(ItemType.XMAS_BELL)
+	elseif self.levelType == GameLevelType.kWukong then
+		result[ItemType.WUKONG] = getRewardItemNumber(ItemType.WUKONG)
 	elseif self.levelType == GameLevelType.kRabbitWeekly then
 		result[ItemType.WEEKLY_RABBIT] = getRewardItemNumber(ItemType.WEEKLY_RABBIT)
 	elseif self.levelType == GameLevelType.kTaskForUnlockArea then 
@@ -463,7 +579,7 @@ function LevelSuccessTopPanel:getDefaultRewards( levelReward, smallestLevel )
 	return result
 end
 
-function LevelSuccessTopPanel:createPanelTitle( levelId, levelType )
+function LevelSuccessTopPanel:createPanelTitle( levelId, levelType, useSpecialActivityUI )
 	local levelDisplayName
 	local panelTitle
 	if PublishActUtil:isGroundPublish() then
@@ -482,6 +598,10 @@ function LevelSuccessTopPanel:createPanelTitle( levelId, levelType )
 			levelDisplayName = Localization:getInstance():getText('activity.christmas.start.panel.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
 			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
+		elseif levelType == GameLevelType.kWukong then
+			levelDisplayName = Localization:getInstance():getText( "activity.wukong.start.panel.title" )
+			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
+			panelTitle = PanelTitleLabel:createWithString(levelDisplayName, len)
 		elseif levelType == GameLevelType.kRabbitWeekly then
 			levelDisplayName = Localization:getInstance():getText('weekly.race.panel.rabbit.begin.title')
 			local len = math.ceil(string.len(levelDisplayName) / 3) -- chinese char is 3 times longer
@@ -493,7 +613,7 @@ function LevelSuccessTopPanel:createPanelTitle( levelId, levelType )
 		else
 			print("levelId", levelId)
 			levelDisplayName = LevelMapManager.getInstance():getLevelDisplayName(levelId)
-			panelTitle = PanelTitleLabel:create(levelDisplayName)
+			panelTitle = PanelTitleLabel:create(levelDisplayName, nil, nil, nil, nil, nil, useSpecialActivityUI)
 		end
 	end
 	return panelTitle
@@ -624,6 +744,71 @@ function LevelSuccessTopPanel:getStarBgCenterByIndex(index, ...)
 
 end
 
+function LevelSuccessTopPanel:onActivityShareToWeiBoBtnTapped( activityForceShareData )
+	-- body
+	if not self.isOnShareToWeiBoBtnTappedCalled then
+		self.isOnShareToWeiBoBtnTappedCalled = true
+		local function closePanel( ... )
+			-- body
+			if self.isDisposed then return end
+			self:onCloseBtnTapped()
+		end
+		local shareCallback = {
+			onSuccess = function(result)
+				if self.isDisposed then return end
+				self.isOnShareToWeiBoBtnTappedCalled = false
+				if result and self.shareRewardIcon then
+					local weiboIcon = self.shareToWeiBoBtnRes:getChildByName("weixinIcon")
+					local fbIcon = self.shareToWeiBoBtnRes:getChildByName("facebookIcon")
+					local miTalkIcon = self.shareToWeiBoBtnRes:getChildByName("miTalkIcon")
+					weiboIcon:setVisible(false)
+					fbIcon:setVisible(false)
+					miTalkIcon:setVisible(false)
+					if __IOS_FB then fbIcon:setVisible(true) 
+					elseif PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then miTalkIcon:setVisible(true)
+					else weiboIcon:setVisible(true) 
+					end
+					local sprite = HomeScene:sharedInstance():createFlyToBagAnimation(result.itemId, 1)
+					local pos = self.shareRewardIcon:getPositionInWorldSpace()
+					local size = self.shareRewardIcon:getGroupBounds().size
+					sprite:setPosition(ccp(pos.x + size.width / 2, pos.y + size.height / 2))
+					sprite:playFlyToAnim()
+					self.shareRewardIcon:removeFromParentAndCleanup(true)
+				end
+				-- setTimeOut(closePanel,2)
+			end,
+			onError = function(errCode, msg)
+				if self.isDisposed then return end
+				self.isOnShareToWeiBoBtnTappedCalled = false
+			end,
+			onCancel = function()
+				if self.isDisposed then return end
+				self.isOnShareToWeiBoBtnTappedCalled = false
+			end
+		}
+
+		if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then
+			SnsUtil.sendLevelMessage( PlatformShareEnum.kMiTalk, self.levelType, self.levelId, shareCallback )
+		else
+			--back state of btn
+			local delay	= CCDelayTime:create(1)
+			local function onDelayFinished()
+			 	self.isOnShareToWeiBoBtnTappedCalled = false
+			end
+			local callFuncAction = CCCallFunc:create(onDelayFinished)
+
+			local seq = CCSequence:createWithTwoActions(delay, callFuncAction)
+			self:runAction(seq)
+
+			local evt = Event.new(kGlobalEvents.kActivityLevelShare)
+			evt.shareCallback = shareCallback
+			evt.rewards = self.rewardItemsDataFromServer
+			evt.activityId = activityForceShareData.activityId
+			GlobalEventDispatcher:getInstance():dispatchEvent(evt)
+		end
+	end
+end
+
 function LevelSuccessTopPanel:onShareToWeiBoBtnTapped(...)
 	assert(#{...} == 0)
 	
@@ -665,12 +850,7 @@ function LevelSuccessTopPanel:onShareToWeiBoBtnTapped(...)
 					onError = function(err)
 						print("err="..err)
 						self.isOnShareToWeiBoBtnTappedCalled = false
-						local item = RequireNetworkAlert.new(CCNode:create())
-						item:buildUI(Localization:getInstance():getText("share.feed.faild.tips"))
-						local scene = Director:sharedDirector():getRunningScene()
-						if scene then 
-							scene:addChild(item) 
-						end
+						CommonTip:showTip(Localization:getInstance():getText("share.feed.faild.tips"), 'negative', nil, 2)
 						DcUtil:shareFeed("next_level",self.levelId,self.newScore)
 					end
 				}
@@ -743,14 +923,22 @@ function LevelSuccessTopPanel:callLevelPassedCallback(isStartPanelAutoPopout, ..
 		local rewardItemPosInWorldspace	= rewardItemParent:convertToWorldSpace(ccp(rewardItemPos.x, rewardItemPos.y))
 		
 		--v.posInWorld	= ccp(rewardItemPosInWorldspace.x, rewardItemPosInWorldspace.y)
-		self.rewardsFromServer[itemId] = { itemId = itemId, posInWorld = ccp(rewardItemPosInWorldspace.x, rewardItemPosInWorldspace.y)}
+		self.rewardsFromServer[itemId] = { itemId = itemId, num = num, posInWorld = ccp(rewardItemPosInWorldspace.x, rewardItemPosInWorldspace.y)}
 	end
 
 	PopoutManager:sharedInstance():remove(self.parentPanel, true)
 
 	if self.levelType == GameLevelType.kMainLevel 
 			or self.levelType == GameLevelType.kHiddenLevel then	
-		HomeScene:sharedInstance():setEnterFromGamePlay(self.levelId)
+		local _type = self.four_star_guide_type
+		local _level = self.four_star_guide_recommend_level
+		local showLadybugFlyLevel = nil
+		if _type and not _level then
+			showLadybugFlyLevel = self.levelId
+		elseif _type and _level then
+			showLadybugFlyLevel = _level
+		end
+		HomeScene:sharedInstance():setEnterFromGamePlay(self.levelId, showLadybugFlyLevel)
 	end
 	
 	Director:sharedDirector():popScene()
@@ -758,7 +946,7 @@ function LevelSuccessTopPanel:callLevelPassedCallback(isStartPanelAutoPopout, ..
 	-- Return Successed Level Id, And Play Next Level = True
 	--self.levelPassedCallback(self.levelId, self.newStarLevelReward, true)
 
-	if self.levelType == GameLevelType.kMayDay then
+	if self.levelType == GameLevelType.kMayDay or self.levelType == GameLevelType.kWukong then
 		GamePlayEvents.dispatchPassLevelEvent({levelType=self.levelType, levelId=self.levelId, rewardsIdAndPos=self.rewardItemsDataFromServer, isPlayNextLevel=false})
 	else
 		GamePlayEvents.dispatchPassLevelEvent({levelType=self.levelType, levelId=self.levelId, rewardsIdAndPos=self.rewardsFromServer, isPlayNextLevel=isStartPanelAutoPopout})
@@ -936,6 +1124,12 @@ function LevelSuccessTopPanel:playAnimation(...)
 	local starRewardAction = CCSpawn:create(starRewardActionArray)
 	actionArray:addObject(starRewardAction)
 
+	local function creatLadyBugFourStarGuideAnimation( ... )
+		-- body
+		self:createLadybugFourStarGuideAnimation()
+	end
+	actionArray:addObject(CCCallFunc:create(creatLadyBugFourStarGuideAnimation))
+
 	local seq = CCSequence:create(actionArray)
 	self:runAction(seq)
 end
@@ -1001,7 +1195,7 @@ function LevelSuccessTopPanel:createHappyAnimalsAction(...)
 	local manualAdjustAnimPosX = 0
 
 	local function createAnimFun()
-		local anim = WinAnimation:create()
+		local anim = WinAnimation:create(self.useSpecialActivityUI)
 		self.happyAnimalsAnim = anim
 		self.happyAnimalBgLayer:addChild(anim)
 		anim:play(animPopoutTime)
@@ -1203,7 +1397,7 @@ function LevelSuccessTopPanel:createParabolaStarAction(starIndex, parabolaCallba
 	-- -------------------------------------
 	local function createShingStarFunc()
 		local scoreStarPos = ccp(self.starResInitPos[starIndex].x, self.starResInitPos[starIndex].y)
-		local star = LadybugAnimation:createFinishStarAnimation(scoreStarPos)
+		local star = ScoreProgressAnimation:createFinishStarAnimation(scoreStarPos)
 		self:addChild(star)
 	end
 	local createShingStarAction = CCCallFunc:create(createShingStarFunc)
@@ -1293,10 +1487,10 @@ function LevelSuccessTopPanel:createParabolaStarAction(starIndex, parabolaCallba
 	-- --------------------
 	local function finalExplodeFunc()
 		local pos = ccp(starBgCenter.x, starBgCenter.y)
-		local explode = LadybugAnimation:createFinsihExplodeStar(pos)
+		local explode = ScoreProgressAnimation:createFinsihExplodeStar(pos)
 		self:addChild(explode)
 
-		local overlay = LadybugAnimation:createFinsihShineStar(pos)
+		local overlay = ScoreProgressAnimation:createFinsihShineStar(pos)
 		self:addChild(overlay)
 		table.insert(self.overlayAnims, overlay)
 	end
@@ -1335,7 +1529,7 @@ function LevelSuccessTopPanel:createFourStarParabolaStarAction(starIndex, parabo
 	-- -------------------------------------
 	local function createShingStarFunc()
 		local scoreStarPos = ccp(self.starResInitPos[starIndex].x, self.starResInitPos[starIndex].y)
-		local star = LadybugAnimation:createFinishStarAnimation(scoreStarPos)
+		local star = ScoreProgressAnimation:createFinishStarAnimation(scoreStarPos)
 		self:addChild(star)
 	end
 	local createShingStarAction = CCCallFunc:create(createShingStarFunc)
@@ -1428,10 +1622,10 @@ function LevelSuccessTopPanel:createFourStarParabolaStarAction(starIndex, parabo
 	-- --------------------
 	local function finalExplodeFunc()
 		local pos = ccp(starCenterPos.x, starCenterPos.y)
-		local explode = LadybugAnimation:createFinsihExplodeStar(pos)
+		local explode = ScoreProgressAnimation:createFinsihExplodeStar(pos)
 		self:addChild(explode)
 
-		local overlay = LadybugAnimation:createFinsihShineStar(pos)
+		local overlay = ScoreProgressAnimation:createFinsihShineStar(pos)
 		self:addChild(overlay)
 		table.insert(self.overlayAnims, overlay)
 	end
@@ -1472,7 +1666,13 @@ function LevelSuccessTopPanel:createStarRewardAction(starIndex, ...)
 		-- ----------------------------
 		-- Create Flying Reward Resouce
 		-- ----------------------------
-
+		local function getRewardItemNumber(itemId)
+			for k, v in pairs(self.rewardsFromServer) do
+				if k == itemId then return v end
+			end
+			return 0
+		end
+		
 		--- Get Reward Data
 		local curStarReward = false
 		if starIndex == 1 then
@@ -1487,6 +1687,22 @@ function LevelSuccessTopPanel:createStarRewardAction(starIndex, ...)
 			assert(false)
 		end
 		assert(curStarReward)
+		if (self.newStarLevel == starIndex and self.newStarLevel <= 3)
+		or (self.newStarLevel == 4 and starIndex == 3) then
+			if self:isHasIngredientReward() then
+				local ingredientItem 
+				for k, v in pairs(curStarReward) do
+					if v.itemId == ItemType.INGREDIENT then
+						ingredientItem = v
+					end
+				end
+				if ingredientItem then
+					ingredientItem.num = getRewardItemNumber(ItemType.INGREDIENT)
+				else
+					table.insert(curStarReward, {itemId = ItemType.INGREDIENT, num = getRewardItemNumber(ItemType.INGREDIENT)})
+				end
+			end
+		end
 
 		if _isQixiLevel then -- qixi
 			curStarReward = {}
@@ -1968,20 +2184,6 @@ function LevelSuccessTopPanel:createStarScoreLabelAction(labelIndex, ...)
 	return targetedSeq
 end
 
-function LevelSuccessTopPanel:create(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin, ...)
-	assert(parentPanel)
-	assert(type(levelId) == "number")
-	assert(type(levelType) == "number")
-	assert(type(newScore) == "number")
-	assert(rewardItemsDataFromServer)
-	assert(extraCoin)
-	assert(#{...} == 0)
-
-	local newLevelSuccessTopPanel = LevelSuccessTopPanel.new()
-	newLevelSuccessTopPanel:init(parentPanel, levelId, levelType, newScore, rewardItemsDataFromServer, extraCoin)
-	return newLevelSuccessTopPanel
-end
-
 function LevelSuccessTopPanel:createFlowersAnimation(finishCallback)
 	local bloomTime = 24/60
 	local rotateTime = 20/60
@@ -2015,4 +2217,58 @@ function LevelSuccessTopPanel:createFlowersAnimation(finishCallback)
 		targetedActions:addObject(targetedAction)
 	end
 	return CCSpawn:create(targetedActions)
+end
+
+function LevelSuccessTopPanel:fourStarGuide( ... )
+	-- body
+	local _type, _level = FourStarManager:getInstance():getLadyBugAnimationType(self.levelId, self.newStarLevel)
+	self.four_star_guide_type = _type
+	self.four_star_guide_recommend_level = _level
+end
+
+function LevelSuccessTopPanel:createLadybugFourStarGuideAnimation( ... )
+	-- body
+	local _type = self.four_star_guide_type
+	local _level = self.four_star_guide_recommend_level
+	
+	local function callback( ... )
+		-- body
+		if _level then
+			self:onCloseBtnTapped()
+			local function timeoutcallback()
+				HomeScene:sharedInstance().worldScene:startLevel(_level)
+			end
+			setTimeOut(timeoutcallback, 0)
+		end
+	end
+
+	if _type then
+		local pos_to = self.rewardTxt:getPosition()
+		local txt_size = self.rewardTxt:getGroupBounds().size
+		pos_to.x = pos_to.x + txt_size.width/2
+		local txt = Localization:getInstance():getText("fourstar_this_stage_tips_1")
+		if _level then
+			txt = Localization:getInstance():getText("fourstar_other_stage_tips",{replace = _level})
+		end
+		local sprite = LadybugFourStarAnimation:create(pos_to, 300, _type, txt, callback)
+		self.ui:addChild(sprite)
+	end
+end
+
+-- 如果奖励的金豆荚多余配置中的数量，那就是跳关返回的
+function LevelSuccessTopPanel:isIngredientRefunded()
+	local threeStarReward = self.level_reward.threeStarReward
+	local baseCount = 0
+	for k, v in pairs(threeStarReward) do
+		if v.itemId == ItemType.INGREDIENT then
+			baseCount = baseCount + v.num
+		end
+	end
+	local totalCount = 0
+	for k, v in pairs(self.rewardItemsDataFromServer) do
+		if v.itemId == ItemType.INGREDIENT then
+			totalCount = totalCount + v.num
+		end
+	end
+	return totalCount > baseCount
 end

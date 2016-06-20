@@ -12,7 +12,10 @@ require "zoo.gamePlay.mode.MaydayEndlessMode"
 require "zoo.gamePlay.mode.RabbitWeeklyMode"
 require "zoo.gamePlay.mode.SeaOrderMode"
 require "zoo.gamePlay.mode.HalloweenMode"
+require "zoo.gamePlay.mode.WukongMode"
 require "zoo.gamePlay.mode.UnlockAreaDropDownMode"
+require "zoo.gamePlay.mode.HedgehogDigEndlessMode"
+require "zoo.gamePlay.mode.LotusMode"
 
 GameModeFactory = class()
 
@@ -45,6 +48,12 @@ function GameModeFactory:create(mainLogic)
         return HalloweenMode.new(mainLogic)
     elseif gameMode == GamePlayType.kUnlockAreaDropDown then
         return UnlockAreaDropDownMode.new(mainLogic)
+    elseif gameMode == GamePlayType.kHedgehogDigEndless then
+        return HedgehogDigEndlessMode.new(mainLogic)
+    elseif gameMode == GamePlayType.kWukongDigEndless then
+        return WukongMode.new(mainLogic)
+    elseif gameMode == GamePlayType.kLotus then
+        return LotusMode.new(mainLogic)
     else
         return GameMode.new(mainLogic)
     end

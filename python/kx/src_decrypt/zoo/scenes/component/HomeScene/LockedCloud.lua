@@ -1,6 +1,6 @@
 
 -- Copyright C2009-2013 www.happyelements.com, all rights reserved.
--- Create Date:	2013��09�� 9�� 13:47:28
+-- Create Date:	2013年09月 9日 13:47:28
 -- Author:	ZhangWan(diff)
 -- Email:	wanwan.zhang@happyelements.com
 
@@ -15,6 +15,201 @@ require "zoo.panel.recall.RecallLevelUnlockPanel"
 require "zoo.panel.recall.RecallItemPanel"
 require "zoo.panel.UnlockCloudPanelWithTask"
 
+require 'zoo.account.AccountBindingLogic'
+
+local UnlockGuidePanel = class(BasePanel)
+function UnlockGuidePanel:create()
+	local instance = UnlockGuidePanel.new()
+	instance:loadRequiredResource(PanelConfigFiles.unlock_guide_panel)
+	instance:init()
+	return instance
+end
+
+function UnlockGuidePanel:init()
+	local ui = self.builder:buildGroup('unlock_guide_panel')
+	BasePanel.init(self, ui)
+
+	self.title = TextField:createWithUIAdjustment(self.ui:getChildByName("rect"), self.ui:getChildByName("title"))
+	self.ui:addChild(self.title)
+	-- self.rect = ui:getChildByName('rect')
+	-- self.rect:setVisible(false)
+	self.title:setString(localize('unlock.cloud.alert.title'))
+
+	self.text = ui:getChildByName('text')
+
+	self.btn = GroupButtonBase:create(ui:getChildByName('btn'))
+
+	local qrcodeBtnUI = ui:getChildByName('qrcodeBtn')
+	self.qrcodeBtn = GroupButtonBase:create(qrcodeBtnUI)
+	self.qrcodeBtn.iconWechat = qrcodeBtnUI:getChildByName("iconSize")
+	self.qrcodeBtn.iconMi = qrcodeBtnUI:getChildByName("iconSizeMi")
+	self.qrcodeBtn.iconMi:setVisible(false)
+
+	self.closeBtn = ui:getChildByName('closeBtn')
+	self.closeBtn:setTouchEnabled(true, 0, true)
+	self.closeBtn:ad(DisplayEvents.kTouchTap, function() self:onCloseBtnTapped() end)
+
+	if FriendManager:getInstance():getAppFriendsCount() >= FriendManager:getInstance():getMaxFriendCount() then
+		self.btn:setString(localize('unlock.cloud.alert.btn'))
+		self.text:setString(localize('unlock.cloud.alert.text1'))
+		self.btn:ad(DisplayEvents.kTouchTap, function () self:sendWechatMessage() end)
+
+		self.qrcodeBtn:setVisible(false)
+	elseif PlatformConfig:hasAuthConfig(PlatformAuthEnum.kQQ) and not UserManager:getInstance().profile:getSnsUsername(PlatformAuthEnum.kQQ) then
+		self.btn:setString(localize('login.panel.button.5'))
+		self.btn:setColorMode(kGroupButtonColorMode.orange)
+		self.btn:ad(DisplayEvents.kTouchTap, function () self:doQQLogin() end)
+		self.text:setString(localize('unlock.cloud.alert.text2'))
+
+		self.qrcodeBtn:setVisible(false)
+	else
+		if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then 
+			self.qrcodeBtn.iconWechat:setVisible(false)
+			self.qrcodeBtn.iconMi:setVisible(true)
+			self.qrcodeBtn:setColorMode(kGroupButtonColorMode.blue)
+			self.qrcodeBtn:setString(localize('invite.friend.panel.button.text.mitalk'))
+		else
+			self.qrcodeBtn.iconWechat:setVisible(true)
+			self.qrcodeBtn.iconMi:setVisible(false)
+			self.qrcodeBtn:setString(localize('my.card.btn2'))
+		end
+		self.text:setString(localize('unlock.cloud.alert.text3'))
+		self.qrcodeBtn:ad(DisplayEvents.kTouchTap, function () self:sendQRCode() end)
+
+		self.btn:setVisible(false)
+	end
+end
+
+function UnlockGuidePanel:setFriendIds(friendIds)
+	self.friendIds = friendIds
+end
+
+function UnlockGuidePanel:setCloudId(cloudId)
+	self.cloudId = cloudId
+end
+
+function UnlockGuidePanel:sendWechatMessage()
+	local function restoreBtn()
+        if self.btn.isDisposed then return end
+        self.btn:setEnabled(true)
+    end
+	local shareCallback = {
+        onSuccess=function(result)
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.success.tips"), "positive")
+            restoreBtn()
+        end,
+        onError=function(errCode, msg)
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.code.faild.tips"), "positive")
+            restoreBtn()
+        end,
+        onCancel=function()
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.cancel.tips"), "positive")
+            restoreBtn()
+        end
+    }
+	local thumb = CCFileUtils:sharedFileUtils():fullPathForFilename("materials/wechat_icon.png")
+	local title = '帮我解锁吧~'
+	local message = '我想玩新关卡，请你帮忙哦~'
+	local link = NetworkConfig.dynamicHost.."unlock_area.html"
+	link = link.."?pf="..StartupConfig:getInstance():getPlatformName()
+	link = link.."&sender="..UserManager:getInstance().user.uid or "12345"
+	if self.friendIds then
+		link = link..'&receivers='
+		for i = 1, #self.friendIds do
+			link = link..self.friendIds[i]
+			if i ~= #self.friendIds then
+				link = link..'a'
+			end
+		end
+	end
+	if self.cloudId then
+		link = link..'&cloudId='..tostring(self.cloudId)
+	end
+	self.btn:setEnabled(false)
+	setTimeOut(restoreBtn, 2)
+	SnsUtil.sendLinkMessage(PlatformShareEnum.kWechat, title, message, thumb, link, false, shareCallback)
+end
+
+function UnlockGuidePanel:doQQLogin()
+	self.btn:setEnabled(false)
+    local authorizeType = PlatformAuthEnum.kQQ
+    local function finishCallback(mustExit)
+    	if not self.isDisposed then
+    		self:onCloseBtnTapped()
+    	end
+    end
+    local function errorCallback()
+    	if not self.isDisposed then
+    		self.btn:setEnabled(true)
+    	end
+        -- CommonTip:showTip('testing 登陆失败')
+    end
+    local function cancelCallback()
+    	if not self.isDisposed then
+    		self.btn:setEnabled(true)
+    	end
+        -- CommonTip:showTip('testing 登陆取消')
+    end
+    if __WIN32 then
+        finishCallback(false)
+    else
+        AccountBindingLogic:bindNewSns(authorizeType, finishCallback, errorCallback, cancelCallback)
+    end
+end
+
+function UnlockGuidePanel:sendQRCode()
+    local function restoreBtn()
+        if self.qrcodeBtn.isDisposed then return end
+        self.qrcodeBtn:setEnabled(true)
+    end
+
+    local function onSuccess()
+        restoreBtn()
+        DcUtil:UserTrack({category = 'message', sub_category = 'message_center_send_qrcode', where = 4}, true)
+    end
+    local function onError(errCode, msg)
+        restoreBtn()
+    end
+    local function onCancel()
+        restoreBtn()
+    end
+
+    --just for mitalk
+    local shareCallback = {
+        onSuccess=function(result)
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.success.tips"), "positive")
+            restoreBtn()
+            DcUtil:UserTrack({category = 'message', sub_category = 'message_center_send_qrcode', where = 4}, true)
+        end,
+        onError=function(errCode, msg)
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.invite.code.faild.tips"), "positive")
+            restoreBtn()
+        end,
+        onCancel=function()
+            CommonTip:showTip(Localization:getInstance():getText("share.feed.cancel.tips"), "positive")
+            restoreBtn()
+        end
+    }
+    self.qrcodeBtn:setEnabled(false)
+    setTimeOut(restoreBtn, 2)
+
+    if PlatformConfig:isPlatform(PlatformNameEnum.kMiTalk) then        
+        SnsUtil.sendInviteMessage(PlatformShareEnum.kMiTalk, shareCallback)
+    else
+        PersonalCenterManager:sendBusinessCard(onSuccess, onError, onCancel)
+    end 
+end
+
+function UnlockGuidePanel:onCloseBtnTapped()
+	PopoutManager:sharedInstance():removeWithBgFadeOut(self, true)
+end
+
+function UnlockGuidePanel:popout()
+	self.allowBackKeyTap = true
+
+	PopoutManager:sharedInstance():add(self, true, false)
+	self:setPositionForPopoutManager()
+end
 
 
 ---------------------------------------------------
@@ -97,6 +292,20 @@ function LockedCloud:init(lockedCloudId, animLayer, texture, ...)
 	local curStartNodeId = tonumber(curLevelAreaData.minLevel)
 	assert(curStartNodeId)
 	self.startNodeId = curStartNodeId
+
+	function self:hitTestPoint( worldPosition, useGroupTest )
+		local bounds = self:getGroupBounds()
+
+		bounds = CCRectMake(
+			360 - 250,
+			bounds:getMidY() - 120,
+			500,
+			240
+		)
+
+		return bounds:containsPoint(worldPosition)
+ 	end
+
 end
 
 function LockedCloud:updateState( ... )
@@ -260,6 +469,19 @@ function LockedCloud:endStateWaitToOpen(...)
 	-- Do Nothing
 end
 
+-- 在同步出错回退关卡进度的时候有可能导致从 WAIT_TO_OPEN 状态回到 STATIC 状态
+-- 鉴于 OPENING 状态对 WAIT_TO_OPEN 状态的依赖只好加这样一个接口手动删除显示对象
+function LockedCloud:manualDisposeWaitToOpenSprites()
+	if self.lock then
+		self.lock:removeFromParentAndCleanup(true)
+		self.lock = nil
+	end 
+	if self.waitedCloud then 
+		self.waitedCloud:removeFromParentAndCleanup(true)
+		self.waitedCloud = nil
+	end
+end
+
 ------------------------------------------------
 --------- State: Opening
 --------------------------------------------
@@ -328,6 +550,71 @@ end
 ---------- Event handler
 -----------------------------------------------
 
+function LockedCloud:handleWaitToOpen(finishCallback)
+	local function onSuccessCallback()
+
+		print("LockedCloud:onLockedCloudTapped Called ! onSuccessCallback !")
+
+		local function onOpeningAnimFinished()
+			local runningScene = HomeScene:sharedInstance()
+			runningScene:checkDataChange()
+			runningScene.starButton:updateView()
+			runningScene.goldButton:updateView()
+			runningScene.worldScene:onAreaUnlocked(self.id)
+		end
+		self:removeAllEventListeners()
+		self:changeState(LockedCloudState.OPENING, onOpeningAnimFinished)
+		if finishCallback then finishCallback() end
+	end
+
+	local function onHasNotEnoughStarCallback(userTotalStar, neededStar, ...)
+		assert(type(userTotalStar)	== "number")
+		assert(type(neededStar)		== "number")
+
+		local function closeBtnCallback(isUnlockSuccess, friendIdsSent)
+			if isUnlockSuccess ~= true 
+			and ((friendIdsSent and #friendIdsSent > 0) or (FriendManager:getInstance():getFriendCount() == 0)) then
+				self:showUnlockGuide(friendIdsSent)
+			end
+		end
+
+		local unlockCloudPanel = nil
+		if RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_SHORT or
+		   RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_MIDDLE then 
+			unlockCloudPanel = RecallLevelUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
+		elseif RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_LONG then 
+			unlockCloudPanel = RecallFriendUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
+		elseif MetaManager.getInstance():isTaskCanUnlockLevalArea(self.id) then
+			local taskLevelId = MetaManager.getInstance():getTaskLevelId(self.id)
+			unlockCloudPanel = UnlockCloudPanelWithTask:create(self.id, userTotalStar, neededStar, onSuccessCallback, taskLevelId)
+		else 
+			unlockCloudPanel = UnlockCloudPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
+		end
+		unlockCloudPanel.closeBtnCallback = closeBtnCallback -- 点关闭按钮
+		unlockCloudPanel.closeCallback = finishCallback -- 面板关闭（不区分哪种关闭）
+		if unlockCloudPanel then unlockCloudPanel:popout(false) end
+
+		-- Update Frinds Info
+		HomeScene:sharedInstance():updateFriends()
+	end
+
+	local function onFailCallback(errorCode)
+		-- CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative", finishCallback)
+		CommonTip:showTip(Localization:getInstance():getText("buy.gold.panel.err.undefined"), "negative", finishCallback)
+	end
+
+	local user = UserManager:getInstance().user
+
+	-- if user:getTopLevelId() == 15 or RequireNetworkAlert:popout() then
+	local unlockLevelAreaLogic = UnlockLevelAreaLogic:create(self.id)
+	unlockLevelAreaLogic:setOnSuccessCallback(onSuccessCallback)
+	unlockLevelAreaLogic:setOnFailCallback(onFailCallback)
+	unlockLevelAreaLogic:setOnHasNotEnoughStarCallback(onHasNotEnoughStarCallback)
+	unlockLevelAreaLogic:start(UnlockLevelAreaLogicUnlockType.USE_STAR, {})	-- Dafult Show COmmunicating Tip And Block The Input
+	-- end
+end
+
+
 function LockedCloud:onLockedCloudTapped(event, ...)
 	assert(event)
 	assert(event.name == DisplayEvents.kTouchTap)
@@ -337,70 +624,7 @@ function LockedCloud:onLockedCloudTapped(event, ...)
 		-- DO Nothing
 	elseif self.state == LockedCloudState.WAIT_TO_OPEN then
 
-		local function onSuccessCallback()
-
-			print("LockedCloud:onLockedCloudTapped Called ! onSuccessCallback !")
-
-			local function onOpeningAnimFinished()
-				local runningScene = HomeScene:sharedInstance()
-				runningScene:checkDataChange()
-				runningScene.starButton:updateView()
-				runningScene.goldButton:updateView()
-				runningScene.worldScene:onAreaUnlocked(self.id)
-			end
-			self:removeAllEventListeners()
-			self:changeState(LockedCloudState.OPENING, onOpeningAnimFinished)
-		end
-
-		local function onHasNotEnoughStarCallback(userTotalStar, neededStar, ...)
-			assert(type(userTotalStar)	== "number")
-			assert(type(neededStar)		== "number")
-
-			-- local function onUserLogin()
-			-- 	local unlockCloudPanel = nil
-			-- 	if RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_SHORT or
-			-- 	   RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_MIDDLE then 
-			-- 		unlockCloudPanel = RecallLevelUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-			-- 	elseif RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_LONG then 
-			-- 		unlockCloudPanel = RecallFriendUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-			-- 	else 
-			-- 		unlockCloudPanel = UnlockCloudPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-			-- 	end
-			-- 	if unlockCloudPanel then unlockCloudPanel:popout(false) end
-			-- end
-			-- if RequireNetworkAlert:popout(onUserLogin) then
-				local unlockCloudPanel = nil
-				if RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_SHORT or
-				   RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_MIDDLE then 
-					unlockCloudPanel = RecallLevelUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-				elseif RecallManager.getInstance():getFinalRewardState() == RecallRewardType.AREA_LONG then 
-					unlockCloudPanel = RecallFriendUnlockPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-				elseif MetaManager.getInstance():isTaskCanUnlockLevalArea(self.id) then
-					local taskLevelId = MetaManager.getInstance():getTaskLevelId(self.id)
-					unlockCloudPanel = UnlockCloudPanelWithTask:create(self.id, userTotalStar, neededStar, onSuccessCallback, taskLevelId)
-				else 
-					unlockCloudPanel = UnlockCloudPanel:create(self.id, userTotalStar, neededStar, onSuccessCallback)
-				end
-				if unlockCloudPanel then unlockCloudPanel:popout(false) end
-
-				-- Update Frinds Info
-				HomeScene:sharedInstance():updateFriends()
-			-- end
-		end
-
-		local function onFailCallback(evt)
-			CommonTip:showTip(Localization:getInstance():getText("error.tip."..evt.data), "negative")
-		end
-
-		local user = UserManager:getInstance().user
-
-		-- if user:getTopLevelId() == 15 or RequireNetworkAlert:popout() then
-		local unlockLevelAreaLogic = UnlockLevelAreaLogic:create(self.id)
-		unlockLevelAreaLogic:setOnSuccessCallback(onSuccessCallback)
-		unlockLevelAreaLogic:setOnFailCallback(onFailCallback)
-		unlockLevelAreaLogic:setOnHasNotEnoughStarCallback(onHasNotEnoughStarCallback)
-		unlockLevelAreaLogic:start(UnlockLevelAreaLogicUnlockType.USE_STAR, {})	-- Dafult Show COmmunicating Tip And Block The Input
-		-- end
+		self:handleWaitToOpen()
 
 	elseif self.state == LockedCloudState.OPENING then
 		-- Do Nothing
@@ -423,4 +647,18 @@ function LockedCloud:create(lockedCloudId, animLayer, texture, ...)
 	local newLockedCloud = LockedCloud.new()
 	newLockedCloud:init(lockedCloudId, animLayer, texture)
 	return newLockedCloud
+end
+local function now()
+    return os.time() + __g_utcDiffSeconds or 0
+end
+function LockedCloud:showUnlockGuide(friendIdsSent)
+	local today = os.date('*t', now())
+	local key = string.format('unlock.guide.%d.%d.%d', today.year, today.month, today.day)
+	if not CCUserDefault:sharedUserDefault():getBoolForKey(key, false) then
+		CCUserDefault:sharedUserDefault():setBoolForKey(key, true)
+		local panel = UnlockGuidePanel:create()
+		panel:setFriendIds(friendIdsSent)
+		panel:setCloudId(self.id)
+		panel:popout()
+	end
 end

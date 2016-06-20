@@ -225,3 +225,10 @@ function TileRabbit:changeColorEyes(spriteColorAdjust)
 	spriteColorAdjust:applyAdjustColorShader()
 end
 
+function TileRabbit:playInDangerAnimation( ... )
+	self:playHappyAnimation(true)
+end
+
+function TileRabbit:stopInDangerAnimation()
+	self:playNormalAnimation()
+end

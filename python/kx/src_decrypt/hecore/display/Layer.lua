@@ -202,7 +202,7 @@ function Layer:setTouchEnabledWithMoveInOut(isTouchEnable, priority, isSwallowsT
 	end
 end
 
-function Layer:setTouchEnabled(isTouchEnable, priority, isSwallowsTouches)
+function Layer:setTouchEnabled(isTouchEnable, priority, isSwallowsTouches, hitTestFunc)
 
 	self.isTouched	= false
 
@@ -222,7 +222,13 @@ function Layer:setTouchEnabled(isTouchEnable, priority, isSwallowsTouches)
 				return false 
 			end
 
-            local hit = context:hitTestPoint(worldPosition, true) -- override hitTestPoint function for some special usage.
+			local hit = false
+			if hitTestFunc then
+				hit = hitTestFunc(worldPosition)
+			else
+				hit = context:hitTestPoint(worldPosition, true) -- override hitTestPoint function for some special usage.
+			end
+            
             if hit then
             	if context.buttomMode then context:__onButtonTouchBegin(x, y) end
                 if context:hasEventListenerByName(DisplayEvents.kTouchBegin) then 
@@ -347,6 +353,14 @@ function LayerColor:create()
   layer:initLayer()
   return layer
 end
+
+function LayerColor:createWithColor(color, width, height)
+	local layer = LayerColor:create()
+	layer:setColor(color)
+	if type(width) == "number" then layer:changeWidth(width) end
+	if type(height) == "number" then layer:changeHeight(height) end
+	return layer
+end
 --
 -- LayerGradient ---------------------------------------------------------
 --
@@ -389,6 +403,15 @@ function LayerGradient:create()
   local layer = LayerGradient.new()
   layer:initLayer()
   return layer
+end
+
+function LayerGradient:createWithColor(startColor, endColor)
+  	local layer = LayerGradient:create()
+  	layer:setStartColor(startColor)
+  	layer:setEndColor(endColor)
+  	layer:setStartOpacity(255)
+  	layer:setEndOpacity(255)
+  	return layer
 end
 
 --

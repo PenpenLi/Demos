@@ -1,4 +1,3 @@
-require "zoo.panel.GameSettingPanel"
 
 PanelsScene = class(Scene)
 function PanelsScene:ctor()
@@ -72,7 +71,6 @@ function PanelsScene:tests()
 		local p = ExceptionPanel:create()
 		--p:popout()
 		PopoutManager:sharedInstance():add(EndGamePropShowPanel:create(1, 2, 10004), false, false)
-		--PopoutManager:sharedInstance():add(GameSettingPanel:create(), false, false)
 	end
 	
 	local function onQuitButtonTouch( evt )

@@ -19,7 +19,7 @@ function ItemInLayout:init()
 end
 
 function ItemInLayout:setArrayIndex(arrayIndex)
-    assert(arrayIndex > 0)
+    assert(arrayIndex > 0, "invalid arrayIndex: "..tostring(arrayIndex))
     self.arrayIndex = arrayIndex
 end
 
@@ -123,7 +123,7 @@ function ItemInClippingNode:setContent(uiContent)
             ui.hitTestPoint = function (uiSelfRef, worldPosition, useGroupTest)
                 -- first test if the click is outside the clipping node viewRect
                 -- print('ui.hitTestPoint')
-                if nodeSelfRef.parentView then
+                if nodeSelfRef.parentView  and nodeSelfRef.parentView.getViewRectInWorldSpace then
 
                     local rect = nodeSelfRef.parentView:getViewRectInWorldSpace()
                     -- print(worldPosition.x, worldPosition.y)

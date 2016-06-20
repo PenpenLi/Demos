@@ -303,6 +303,7 @@ WorldSceneScrollerEvents =
 	SCROLLED_TO_RIGHT	= "WorldSceneScrollerEvents.SCROLLED_TO_RIGHT",
 	SCROLLED_TO_LEFT	= "WorldSceneScrollerEvents.SCROLLED_TO_LEFT",
 	SCROLLED_TO_ORIGIN	= "WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN",
+	SCROLLED_FOR_TUTOR  = "WorldSceneScrollerEvents.SCROLLED_FOR_TUTOR",
 
 	START_SCROLLED_TO_RIGHT	= "WorldSceneScrollerEvents.START_SCROLLED_TO_RIGHT",
 	START_SCROLLED_TO_LEFT	= "WorldSceneScrollerEvents.START_SCROLLED_TO_LEFT",
@@ -996,7 +997,10 @@ function WorldSceneScroller:verticalScrollTo(newPositionY, callback)
 
 	local array = CCArray:create()
 	array:addObject(ease)
-	array:addObject(CCCallFunc:create(callback))
+	array:addObject(CCCallFunc:create(function( ... )
+		WorldMapOptimizer:getInstance():update()
+		callback()
+	end))
 	self.maskedLayer:runAction(CCSequence:create(array))
 end
 
@@ -1118,6 +1122,7 @@ function WorldSceneScroller:scrollToOrigin(...)
 		self:setScrollable(true)
 		self:setTouchEnabled(true)
 		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.SCROLLED_TO_ORIGIN))
+		self:dispatchEvent(Event.new(WorldSceneScrollerEvents.SCROLLED_FOR_TUTOR))
 
 		if __WP8 then self:checkFriendVisible() end
 	end

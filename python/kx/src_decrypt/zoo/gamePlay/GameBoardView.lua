@@ -17,28 +17,46 @@ GameBoardView = class(Layer)
 
 local needCopyLayers = {
 	ItemSpriteType.kTileBlocker,
+	ItemSpriteType.kSuperCuteLowLevel,
+	ItemSpriteType.kLotus_bottom,
+	ItemSpriteType.kItemLowLevel,
 	ItemSpriteType.kItem, 
 	ItemSpriteType.kItemShow,
 	ItemSpriteType.kMagicTileWater,
 	ItemSpriteType.kRope,
+	ItemSpriteType.kChain,
 	ItemSpriteType.kLock,
 	ItemSpriteType.kFurBall,
+	ItemSpriteType.kSnail,
+	ItemSpriteType.kHoney,
 	ItemSpriteType.kNormalEffect,
 	ItemSpriteType.kBigMonster,
+	ItemSpriteType.kBigMonsterIce,
 	ItemSpriteType.kDigBlocker,
+	ItemSpriteType.kSnailRoad,
+	ItemSpriteType.kHedgehogRoad,
+	ItemSpriteType.kItemHighLevel,
+	ItemSpriteType.kLotus_top,
+	ItemSpriteType.kSuperCuteHighLevel,
 }
 
 local DefaultVisibleLayers = {
 	ItemSpriteType.kBackground,
 	ItemSpriteType.kItemBack,
+	ItemSpriteType.kLotus_bottom,
+	ItemSpriteType.kItemLowLevel,
 	ItemSpriteType.kItem,
 	ItemSpriteType.kItemShow,
 	ItemSpriteType.kItemDestroy,
 	ItemSpriteType.kClipping,
 	ItemSpriteType.kEnterClipping,
 	ItemSpriteType.kRope,
+	ItemSpriteType.kChain,
 	ItemSpriteType.kLock,
+	ItemSpriteType.kSnail,
 	ItemSpriteType.kNormalEffect,
+	ItemSpriteType.kItemHighLevel,
+	ItemSpriteType.kLotus_top,
 	ItemSpriteType.kSpecial,
 }
 
@@ -75,6 +93,9 @@ function GameBoardView:ctor()
 	-- 道具使用状态
 	self.gamePropsType = GamePropsType.kNone
 	self.debugCounter = 0
+
+	self.startRowIndex = 1
+	self.rowCount = 9
 end
 
 function GameBoardView:dispose()
@@ -107,19 +128,46 @@ function GameBoardView:dispose()
 end
 
 
-function GameBoardView:create(isHalloween)
+function GameBoardView:create(rowCount, startRowIndex, isHalloween)
 	local v = GameBoardView.new()
+	if startRowIndex then v.startRowIndex = startRowIndex end
+	if rowCount then v.rowCount = rowCount end
 	v:initView(v, v, isHalloween)
 	return v
 end
 
+function GameBoardView:getUsedBoardMapData(boardMap)
+	local startRowIndex = 1
+	local rowCount = 9
+	if boardMap then
+		local firstRowUsed = 0
+		local lastRowUsed = -1
+		for r = 1, 9 do
+			for c = 1, 9 do
+				local board = boardMap[r] and boardMap[r][c] or nil
+				if board and board.isUsed then
+					if firstRowUsed == 0 then firstRowUsed = r end
+					lastRowUsed = r
+					break
+				end
+			end
+		end
+		startRowIndex = firstRowUsed
+		rowCount = lastRowUsed - firstRowUsed + 1
+	end
+	return rowCount, startRowIndex
+end
+
 function GameBoardView:createByGameBoardLogic(gameBoardLogic)
 	local isHalloween = gameBoardLogic.gameMode:is(HalloweenMode)
-	local theview = GameBoardView:create(isHalloween)
+
+	local boardMap = gameBoardLogic:getBoardMap();
+	local rowCount, startRowIndex = self:getUsedBoardMapData(boardMap)
+
+	local theview = GameBoardView:create(rowCount, startRowIndex, isHalloween)
 	theview.gameBoardLogic = gameBoardLogic;			--记录逻辑来源
 	gameBoardLogic.boardView = theview
 
-	local boardMap = gameBoardLogic:getBoardMap();
 	theview:initBaseMapByData(boardMap)					--加载地图信息
 	
 	local itemMap = gameBoardLogic:getItemMap()
@@ -145,42 +193,224 @@ function GameBoardView:initInteractionController()
 	self.interactionController:init()
 end
 
-function GameBoardView:useForceSwap(item1Pos, item2Pos)
-	if self.gameBoardLogic:useProps(self.gamePropsType, item1Pos.x, item1Pos.y, item2Pos.x, item2Pos.y) then
-        self:focusOnItem(nil)
-        self.gamePropsType = GamePropsType.kNone
-        self.PlayUIDelegate:confirmPropUsed()
-    end
+function GameBoardView:playMonkeyBar(row , colorIndex)
+	local layer = self.showPanel[ ItemSpriteType.kNormalEffect] 
 
-end
+	if layer then
+		local container = Layer:create()
+		local gridWid = GamePlayConfig_Tile_Width
+		local halfGridWid = gridWid/2
 
-function GameBoardView:useHammer(itemPos)
-	if self.gameBoardLogic:useProps(self.gamePropsType, itemPos.x, itemPos.y) then
-		self.gamePropsType = GamePropsType.kNone
-		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.x, itemPos.y))
+
+		local eff1 = ArmatureNode:create("wukong_monkeybar_animation/monkeyBar_light_eff")
+		local eff2 = ArmatureNode:create("wukong_monkeybar_animation/monkeyBar_light_eff")
+		local eff3 = ArmatureNode:create("wukong_monkeybar_animation/monkeyBar_light_eff")
+
+		eff1:setPosition( ccp( 0 , 0 ) )
+		eff2:setPosition( ccp( 0 , GamePlayConfig_Tile_Width * -1 ) )
+		eff3:setPosition( ccp( 0 , GamePlayConfig_Tile_Width ) )
+
+		eff1:playByIndex(0,0)
+		eff2:playByIndex(0,0)
+		eff3:playByIndex(0,0)
+
+		container:addChild(eff1)
+		container:addChild(eff2)
+		container:addChild(eff3)
+
+		local rotationeSprite = Sprite:createEmpty()
+
+		local rotationeff = Sprite:createWithSpriteFrameName("wukong_monkeybar_rotationeff_bg")
+		rotationeff:setAnchorPoint(ccp(0.5,0.5))
+
+		rotationeSprite:addChild(rotationeff)
+
+		local rotationBar = Sprite:createWithSpriteFrameName("wukong_monkeybar_rotationeff_" .. tostring(colorIndex) ) 
+		rotationBar:setAnchorPoint(ccp(0.5,0.5))
+
+		rotationeSprite:addChild(rotationBar)
+
+		rotationeSprite:setPosition( ccp(0,halfGridWid*-1) )
+
+		local actArr = CCArray:create()
+	
+		--actArr:addObject( CCEaseSineOut:create( CCRotateTo:create( 1, math.pi ) ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 90 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 180 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 270 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 359 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 90 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 180 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 270 ) )
+		actArr:addObject( CCRotateTo:create( 0.1, 359 ) )
+
+		--actArr:addObject( CCCallFunc:create( function ()  end ) )
+		rotationeSprite:runAction( CCRepeatForever:create( CCSequence:create(actArr) ) )
+		--rotationeff:runAction( CCRotateTo:create( 0.5, 360 ) )
+
+
+		container:addChild(rotationeSprite)
+
+		container:setPosition(
+			ccp(  
+				( gridWid * (GamePlayConfig_Max_Item_Y - 1) ) + (0 * 3) , 
+				( gridWid * (GamePlayConfig_Max_Item_Y - row) ) 
+				)
+			)
+
+		local actArr2 = CCArray:create()
+		actArr2:addObject( CCMoveTo:create( 2 , ccp( (0 * 3) , ( gridWid * (GamePlayConfig_Max_Item_Y - row) ) ) ) )
+		actArr2:addObject( CCCallFunc:create( function () 
+				if container and container:getParent() then
+					container:stopAllActions()
+					rotationeff:stopAllActions()
+					container:removeFromParentAndCleanup(false)
+				end
+			end ) )
+
+		container:runAction( CCSequence:create(actArr2) )
+
+		--convertToNodeSpace
+		--convertToWorldSpace
+
+		layer:addChild( container )
 	end
 end
 
-function GameBoardView:useBrush(itemPos, direction)
-	if self.gameBoardLogic:useProps(self.gamePropsType, itemPos.x, itemPos.y, direction.x, direction.y) then
-        self.gamePropsType = GamePropsType.kNone
-        self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.x, itemPos.y))
+function GameBoardView:updateWukongTargetBoard()
+
+	--setWukongTargetLightVisible(direction , visible)
+	local hasNoBlockTarget = false
+	for r=1,#self.baseMap do
+		for c=1,#self.baseMap[r] do
+
+			local itemview = self.baseMap[r][c]
+			if itemview and itemview.oldBoard and itemview.oldBoard.isWukongTarget then
+				local topBoard = nil
+				if self.baseMap[r - 1] then
+					topBoard = self.baseMap[r - 1][c]
+				end
+				
+				local bottomBoard = nil
+				if self.baseMap[r + 1] then
+					bottomBoard = self.baseMap[r + 1][c]
+				end
+				
+				local leftBoard = nil
+				if self.baseMap[r] then
+					leftBoard = self.baseMap[r][c - 1]
+				end
+				
+				local rightBoard = nil
+				if self.baseMap[r] then
+					rightBoard = self.baseMap[r][c + 1]
+				end
+
+				itemview:setWukongTargetLightVisible("top" , not( topBoard and topBoard.oldBoard and topBoard.oldBoard.isWukongTarget ) )
+				itemview:setWukongTargetLightVisible("bottom" , not( bottomBoard and bottomBoard.oldBoard and bottomBoard.oldBoard.isWukongTarget ) )
+				itemview:setWukongTargetLightVisible("left" , not( leftBoard and leftBoard.oldBoard and leftBoard.oldBoard.isWukongTarget ) )
+				itemview:setWukongTargetLightVisible("right" , not( rightBoard and rightBoard.oldBoard and rightBoard.oldBoard.isWukongTarget ) )
+
+				if itemview.oldData and not itemview.oldData.isBlock then
+					hasNoBlockTarget = true
+				end
+			end
+		end
+	end
+
+	for r=1,#self.baseMap do
+		for c=1,#self.baseMap[r] do
+			local itemview = self.baseMap[r][c]
+			if itemview and itemview.oldBoard and itemview.oldBoard.isWukongTarget then
+				if hasNoBlockTarget then
+					itemview:playWukongTargetLoopAnimation("slow")
+				else
+					itemview:playWukongTargetLoopAnimation("default")
+				end
+			end
+		end
+	end
+end
+
+
+function GameBoardView:useHedgehogCrazy( item1Pos )
+	-- body
+	if self.gameBoardLogic:useProps(self.gamePropsType, item1Pos.x, item1Pos.y) then
+		self:focusOnItem(nil)
+	end
+	self.gamePropsType = GamePropsType.kNone
+end
+
+function GameBoardView:useWukongJump( item1Pos )
+	-- body
+	if self.gameBoardLogic:useProps(self.gamePropsType, item1Pos.x, item1Pos.y) then
+		self:focusOnItem(nil)
+	end
+	self.gameBoardLogic.gameMode.useWukongJump = true
+	self.gamePropsType = GamePropsType.kNone
+end
+
+function GameBoardView:useForceSwap(item1Pos, item2Pos)
+	if self.gameBoardLogic:isUsePropsValid(self.gamePropsType, item1Pos.x, item1Pos.y, item2Pos.x, item2Pos.y) then
+        self:focusOnItem(nil)
+		local gamePropsType = self.gamePropsType
+        self.PlayUIDelegate:confirmPropUsed(nil, function() 
+        	self.gameBoardLogic:useProps(gamePropsType, item1Pos.x, item1Pos.y, item2Pos.x, item2Pos.y)
+        end)
+    else
+    	self:focusOnItem(nil)
+    	if self.PlayUIDelegate.propList then self.PlayUIDelegate.propList:cancelFocus() end
     end
+    self.gamePropsType = GamePropsType.kNone
+end
+
+function GameBoardView:useHammer(itemPos)
+	if self.gameBoardLogic:isUsePropsValid(self.gamePropsType, itemPos.x, itemPos.y) then
+		local gamePropsType = self.gamePropsType
+		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.x, itemPos.y), function()
+			self.gameBoardLogic:useProps(gamePropsType, itemPos.x, itemPos.y)
+		end)
+    else
+    	if self.PlayUIDelegate.propList then self.PlayUIDelegate.propList:cancelFocus() end
+	end
+	self.gamePropsType = GamePropsType.kNone
+end
+
+function GameBoardView:useBrush(itemPos, direction)
+	if self.gameBoardLogic:isUsePropsValid(self.gamePropsType, itemPos.x, itemPos.y, direction.x, direction.y) then
+		local gamePropsType = self.gamePropsType
+        self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.x, itemPos.y), function()
+			self.gameBoardLogic:useProps(gamePropsType, itemPos.x, itemPos.y, direction.x, direction.y)
+        end)
+    else
+    	if self.PlayUIDelegate.propList then self.PlayUIDelegate.propList:cancelFocus() end
+    end
+    self.gamePropsType = GamePropsType.kNone
 end
 
 function GameBoardView:useRandomBird()
 	local pos = self.gameBoardLogic:getPositionForRandomBird()
-	if pos and self.gameBoardLogic:useProps(self.gamePropsType, pos.r, pos.c) then
-		self.gamePropsType = GamePropsType.kNone
-		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(pos.r, pos.c))
+	if pos and self.gameBoardLogic:isUsePropsValid(self.gamePropsType, pos.r, pos.c) then
+		local gamePropsType = self.gamePropsType
+		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(pos.r, pos.c), function()
+			self.gameBoardLogic:useProps(gamePropsType, pos.r, pos.c)
+		end)
+    else
+    	if self.PlayUIDelegate.propList then self.PlayUIDelegate.propList:cancelFocus() end
 	end
+	self.gamePropsType = GamePropsType.kNone
 end
 
 function GameBoardView:useBroom(itemPos)
-	if self.gameBoardLogic:useProps(self.gamePropsType, itemPos.r, itemPos.c) then
-		self.gamePropsType = GamePropsType.kNone
-		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.r, itemPos.c))
+	if self.gameBoardLogic:isUsePropsValid(self.gamePropsType, itemPos.r, itemPos.c) then
+		local gamePropsType = self.gamePropsType
+		self.PlayUIDelegate:confirmPropUsed(self.gameBoardLogic:getGameItemPosInView(itemPos.r, itemPos.c), function()
+			self.gameBoardLogic:useProps(gamePropsType, itemPos.r, itemPos.c)
+		end)
+    else
+    	if self.PlayUIDelegate.propList then self.PlayUIDelegate.propList:cancelFocus() end
 	end
+	self.gamePropsType = GamePropsType.kNone
 end
 
 function GameBoardView:reInitByGameBoardLogic(gameBoardLogic)
@@ -301,6 +531,14 @@ function GameBoardView:initView(container, context, isHalloween)
 		self.specialEffectBatch:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/explode.png"),100))
 		self:addChild(self.specialEffectBatch)
 	end
+
+
+	-- 两周年活动特效使用，其他地方未使用
+	if self.rainbowBatch == nil then
+		self.rainbowBatch = CocosObject:create()
+		self.rainbowBatch:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/two_year_line_effect.png"),100))
+		self:addChild(self.rainbowBatch)
+	end
 end
 
 function GameBoardView:buildSingleLayerByType(layerType)
@@ -332,6 +570,9 @@ function GameBoardView:buildSingleLayerByType(layerType)
 	elseif layerType == ItemSpriteType.kSnailRoad then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/snail_road.png"), 100));
+	--elseif layerType == ItemSpriteType.kHedgehogRoad then
+		--result = CocosObject:create()
+		--result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/hedgehog_road.png"), 100));
 	elseif layerType == ItemSpriteType.kDigBlocker then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
@@ -340,7 +581,7 @@ function GameBoardView:buildSingleLayerByType(layerType)
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/dig_block.png"), 200));
 	elseif self.isHalloween and (layerType == ItemSpriteType.kTileBlocker or layerType == ItemSpriteType.kRope) then
 		result = SimpleClippingNode:create()
-		result:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * 8))
+		result:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * self.rowCount))
 	elseif layerType == ItemSpriteType.kSand then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sand_idle_clean.png"), 100));
@@ -353,6 +594,12 @@ function GameBoardView:buildSingleLayerByType(layerType)
 	elseif layerType == ItemSpriteType.kMagicStoneFire then
 		result = CocosObject:create()
 		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/magic_stone.png"), 100));
+	elseif layerType == ItemSpriteType.kCrystalStoneEffect then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/crystal_stone.png"), 100));
+	elseif layerType == ItemSpriteType.kSeaAnimal then
+		result = CocosObject:create()
+		result:setRefCocosObj(CCSpriteBatchNode:create(SpriteUtil:getRealResourceName("flash/sea_animal.png"), 25));
 	else
 		result = CocosObject:create()
 	end
@@ -415,6 +662,7 @@ function GameBoardView:RegisterAll()
 			end
 		end
 	end
+	self.___updateGame = _updateGame
 	if self.isRegisterUpdate == false then
 		local time_cd = 1.0 / GamePlayConfig_Action_FPS    
 		self.updateScheduler = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(_updateGame, time_cd, false)
@@ -426,6 +674,15 @@ function GameBoardView:RegisterAll()
 		end
 	end
 end
+
+-- 改变游戏速度
+-- multiple 倍数
+function GameBoardView:changeGameSpeed(multiple)
+	local time_cd = 1.0 / (GamePlayConfig_Action_FPS *　multiple)
+	Director:getScheduler():unscheduleScriptEntry(self.updateScheduler)
+	self.updateScheduler = CCDirector:sharedDirector():getScheduler():scheduleScriptFunc(self.___updateGame, time_cd, false)
+end
+
 
 function GameBoardView:unRegisterAll()
 	if self.isTouchReigister == true then
@@ -458,8 +715,9 @@ end
 
 function GameBoardView:getViewContext()
 	if not self.itemViewContext then
-		local levelType = self.gameBoardLogic.levelType
-		self.itemViewContext = {levelType = levelType}
+		self.itemViewContext = {}
+		self.itemViewContext.levelType = self.gameBoardLogic.levelType
+		self.itemViewContext.startRowIndex = self.startRowIndex
 	end
 	return self.itemViewContext
 end
@@ -493,18 +751,10 @@ function GameBoardView:initBaseMapByData(boardmap)--初始化基本地图
 end
 
 function GameBoardView:initBaseMapByItemData(ItemMap)--初始化基本地图
-	-- local function getItemContainer(layerType)
-	-- 	if not self.showPanel[layerType] then
-	-- 		self:insertNewLayer(self, self.showPanel, layerType)
-	-- 	end
-	-- 	return self.showPanel[layerType]
-	-- end
-
 	for i=1, #ItemMap do
 		if self.baseMap[i] == nil then self.baseMap[i] = {} end		--地图显示
 		for j=1,#ItemMap[i] do
 			if self.baseMap[i][j] == nil then self.baseMap[i][j] = ItemView:create(self:getViewContext()) end
-			-- self.baseMap[i][j].getContainer = getItemContainer
 			self.baseMap[i][j]:initByItemData(ItemMap[i][j])
 			self.baseMap[i][j]:initPosBoardDataPos(ItemMap[i][j], true)
 		end
@@ -613,12 +863,8 @@ function GameBoardView:scrollMoreDigView(gameItemMap, boardMap, completeCallback
 end
 
 function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode)
-	local startRowIndex = 1
-	local rowCount = 9
-	if isEightRowMode then
-		startRowIndex = 2
-		rowCount = 8
-	end
+	local startRowIndex = self.startRowIndex
+	local rowCount = self.rowCount
 
 	local clippingnode = SimpleClippingNode:create()
 	clippingnode:setContentSize(CCSizeMake(GamePlayConfig_Tile_Width * 9, GamePlayConfig_Tile_Height * rowCount))
@@ -635,7 +881,7 @@ function GameBoardView:createDigScrollView(gameItemMap, boardMap, isEightRowMode
 		if not self.digContext.showPanel[layerType] then
 			self:insertNewLayer(self.digViewContainer, self.digContext.showPanel, layerType)
 		end
-		return self.showPanel[layerType]
+		return self.digContext.showPanel[layerType]
 	end
 
 	local function initItemViewByData()
@@ -900,6 +1146,34 @@ function GameBoardView:paintBorder(boardMap)
 	end
 end
 
+function GameBoardView:clacRealUsedMap(boardMap)
+	local startRow, startCol = 9, 9
+	local endRow, endCol = 1, 1
+	for i = 1, #boardMap do
+		for j = 1, #boardMap[i] do
+			local board = boardMap[i][j]
+			if board.isUsed then
+				if j > endCol then endCol = j end
+				if j < startCol then startCol = j end
+				if i > endRow then endRow = i end
+				if i < startRow then startRow = i end
+
+				if board.isMoveTile and board.tileMoveMeta then
+					for _, meta in pairs(board.tileMoveMeta.routes) do
+						local r = meta.endPos.x
+						local c = meta.endPos.y
+						if c > endCol then endCol = c end
+						if c < startCol then startCol = c end
+						if r > endRow then endRow = r end
+						if r < startRow then startRow = r end
+					end
+				end
+			end
+		end
+	end
+	return startRow, startCol, endRow, endCol
+end
+
 function GameBoardView:resizeToFitScreen(boardMap)
 	-- 计算比例
 	local winSize = CCDirector:sharedDirector():getWinSize()
@@ -920,26 +1194,30 @@ function GameBoardView:resizeToFitScreen(boardMap)
 	GamePlayConfig_Tile_ScaleX = scaleX
 	GamePlayConfig_Tile_ScaleY = scaleY
 
+	local mapDown, mapLeft, mapHeight, mapWidth = self:clacRealUsedMap(boardMap)
+	print(">>>>>>> clacRealUsedMap:", mapDown, mapLeft, mapHeight, mapWidth)
 	-- 计算位置
-	local mapWidth, mapHeight = 0, 0
-	local mapLeft, mapDown = 9, 9
-	for i = 1, #boardMap do
-		for j = 1, #boardMap[i] do
-			if boardMap[i][j].isUsed then
-				if j > mapWidth then mapWidth = j end
-				if j < mapLeft then mapLeft = j end
-				if i > mapHeight then mapHeight = i end
-				if i < mapDown then mapDown = i end
-			end
-		end
-	end
+	-- local mapWidth, mapHeight = 0, 0
+	-- local mapLeft, mapDown = 9, 9
+	-- for i = 1, #boardMap do
+	-- 	for j = 1, #boardMap[i] do
+	-- 		if boardMap[i][j].isUsed then
+	-- 			if j > mapWidth then mapWidth = j end
+	-- 			if j < mapLeft then mapLeft = j end
+	-- 			if i > mapHeight then mapHeight = i end
+	-- 			if i < mapDown then mapDown = i end
+	-- 		end
+	-- 	end
+	-- end
 	mapLeft = mapLeft - 1
 	mapWidth = mapWidth - mapLeft
 	mapDown = mapDown - 1
 	mapHeight = mapHeight - mapDown
 	local posX = visibleSize.width / 2 - mapWidth * tWidth * scaleX / 2 - mapLeft * tWidth * scaleX + visibleOrigin.x
-	local posY = ((visibleSize.height - topHeight - bottomHeight) / 2 - mapHeight * tHeight * scaleY / 2 - (maxY -
-		mapHeight - mapDown - 1) * tHeight * scaleY / 2) / scaleY + visibleOrigin.y + bottomHeight
+	local posY = ((visibleSize.height - topHeight - bottomHeight) / 2 - (maxY - mapDown - 1) * tHeight * scaleY / 2) / scaleY + visibleOrigin.y + bottomHeight
+	if self.isHalloween then
+		posY = ((visibleSize.height - topHeight - bottomHeight) / 2 - (maxY - 1) * tHeight * scaleY / 2) / scaleY + visibleOrigin.y + bottomHeight
+	end
 	self.originPos = ccp(posX, posY)
 	self:setPosition(self.originPos)
 	self:setScaleX(scaleX)
@@ -959,7 +1237,7 @@ end
 
 function GameBoardView:viberateUpdate()
 	if self.viberateDelay == 0 and self.viberateCounter == -1 then return end
-
+	
 	if self.viberateDelay == 0 then
 		if self.viberateCounter == 0 then
 			self:setPosition(self.originPos)
@@ -1011,8 +1289,9 @@ function GameBoardView:animalStartTimeScale()
 	end
 end
 
-function GameBoardView:maskWithFewTouch(opacity, holeArray, allow)
+function GameBoardView:maskWithFewTouch(opacity, holeArray, allow, tileScale)
 	print(allow)
+	tileScale = tileScale or 1
 	local wSize = CCDirector:sharedDirector():getWinSize()
 	local mask = LayerColor:create()
 	local selfPos = self:getPosition()
@@ -1026,9 +1305,9 @@ function GameBoardView:maskWithFewTouch(opacity, holeArray, allow)
 
 	for __, v in ipairs(holeArray) do
 		local hole = LayerColor:create()
-		hole:changeWidthAndHeight(v.countC * tWidth * scaleX, v.countR * tHeight * scaleY)
+		hole:changeWidthAndHeight(v.countC * tWidth * scaleX * tileScale, v.countR * tHeight * scaleY * tileScale)
 		local pos = self.gameBoardLogic:getGameItemPosInView(v.r, v.c)
-		hole:setPosition(ccp(pos.x - tWidth * scaleX / 2, pos.y - tHeight * scaleY / 2))
+		hole:setPosition(ccp(pos.x - tWidth * scaleX* tileScale / 2, pos.y - tHeight * scaleY * tileScale / 2))
 		local blend = ccBlendFunc()
 		blend.src = GL_ZERO
 		blend.dst = GL_ZERO
@@ -1050,6 +1329,7 @@ function GameBoardView:maskWithFewTouch(opacity, holeArray, allow)
 		local position = evt.globalPosition
 		position.x = position.x - selfPos.x
 		position.y = position.y - selfPos.y
+		print("onTouchBegin ", position.x, position.y)
 		if position.x > (allow.c - 1) * tWidth * scaleX and position.y > (maxY - allow.r - 1) * tHeight * scaleY and
 			position.x < ((allow.c - 1) + allow.countC) * tWidth * scaleX and position.y < ((maxY - allow.r - 1) + allow.countR) * tHeight * scaleY then
 			return self:onTouchBegan(position.x + selfPos.x, position.y + selfPos.y)
@@ -1059,6 +1339,7 @@ function GameBoardView:maskWithFewTouch(opacity, holeArray, allow)
 		local position = evt.globalPosition
 		position.x = position.x - selfPos.x
 		position.y = position.y - selfPos.y
+		print("onTouchMove ", position.x, position.y)
 		if position.x > (allow.c - 1) * tWidth * scaleX and position.y > (maxY - allow.r - 1) * tHeight * scaleY and
 			position.x < ((allow.c - 1) + allow.countC) * tWidth * scaleX and position.y < ((maxY - allow.r - 1) + allow.countR) * tHeight * scaleY then
 			return self:onTouchMoved(position.x + selfPos.x, position.y + selfPos.y)
@@ -1068,6 +1349,7 @@ function GameBoardView:maskWithFewTouch(opacity, holeArray, allow)
 		local position = evt.globalPosition
 		position.x = position.x - selfPos.x
 		position.y = position.y - selfPos.y
+		print("onTouchEnd ", position.x, position.y)
 		if position.x > (allow.c - 1) * tWidth * scaleX and position.y > (maxY - allow.r - 1) * tHeight * scaleY and
 			position.x < ((allow.c - 1) + allow.countC) * tWidth * scaleX and position.y < ((maxY - allow.r - 1) + allow.countR) * tHeight * scaleY then
 			return self:onTouchEnded(position.x + selfPos.x, position.y + selfPos.y)
@@ -1132,3 +1414,4 @@ function GameBoardView:swapItemView( item1, item2 )
 	item2.oldData.ItemSpecialType = tempSpecialType
 	item2.itemShowType = tempShowType
 end
+

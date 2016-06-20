@@ -37,7 +37,7 @@ require "zoo.panel.component.startGamePanel.rankList.GetMoreButton"
 assert(not RankListTableViewRender)
 RankListTableViewRender = class(TableViewRenderer)
 
-function RankListTableViewRender:init(rankListDataCache, cacheRankType, ...)
+function RankListTableViewRender:init(rankListDataCache, cacheRankType, useSpecialActivityUI, ...)
 	assert(rankListDataCache)
 	assert(cacheRankType)
 	RankListCacheRankType.checkRankType(cacheRankType)
@@ -45,6 +45,7 @@ function RankListTableViewRender:init(rankListDataCache, cacheRankType, ...)
 
 	self.rankListDataCache	= rankListDataCache
 	self.cacheRankType	= cacheRankType
+	self.useSpecialActivityUI = useSpecialActivityUI
 
 	self.rankListItems = {}
 end
@@ -58,7 +59,7 @@ function RankListTableViewRender:dispose(  )
 end
 
 
-function RankListTableViewRender:create(rankListDataCache, cacheRankType, width, height, ...)
+function RankListTableViewRender:create(rankListDataCache, cacheRankType, width, height, useSpecialActivityUI, ...)
 	assert(rankListDataCache)
 	assert(cacheRankType)
 	RankListCacheRankType.checkRankType(cacheRankType)
@@ -67,7 +68,7 @@ function RankListTableViewRender:create(rankListDataCache, cacheRankType, width,
 	assert(#{...} == 0)
 
 	local render = RankListTableViewRender.new(width, height)
-	render:init(rankListDataCache, cacheRankType)
+	render:init(rankListDataCache, cacheRankType, useSpecialActivityUI)
 	return render
 end
 
@@ -79,7 +80,12 @@ function RankListTableViewRender:buildCell(cell, index, ...)
 	local numberOfCells	= self:numberOfCells()
 	local rankListItemRes	= false
 
-	rankListItemRes 	= ResourceManager:sharedInstance():buildGroup("rankListItem")
+	if self.useSpecialActivityUI then
+		local builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_game_start_activity)
+		rankListItemRes 	= builder:buildGroup("Spring2016UI/rankListItem")
+	else
+		rankListItemRes 	= ResourceManager:sharedInstance():buildGroup("rankListItem")
+	end
 	local rankListItem	= RankListItem:create(rankListItemRes)
 	self.rankListItems[index + 1] = rankListItem
 
@@ -118,7 +124,8 @@ function RankListTableViewRender:setData(rawCocosObj, index, ...)
 	assert(data)
 	local userName = data.name
 	if userName == nil or data.name == "" then userName = tostring(data.uid) end
-	rankListItemToControl:setData(index, userName, data.score, data.headUrl)
+	local uid = UserManager:getInstance():getUserRef().uid
+	rankListItemToControl:setData(index, userName, data.score, data.headUrl, uid == data.uid)
 end
 
 function RankListTableViewRender:numberOfCells(...)
@@ -137,7 +144,7 @@ assert(not RankList)
 assert(BaseUI)
 RankList = class(BaseUI)
 
-function RankList:init(levelId, panelWithRank, ...)
+function RankList:init(levelId, panelWithRank, useSpecialActivityUI, ...)
 	assert(levelId)
 	assert(#{...} == 0)
 
@@ -146,7 +153,44 @@ function RankList:init(levelId, panelWithRank, ...)
 	-- ----------------
 	-- Get UI Resource
 	-- ----------------
-	self.ui	= ResourceManager:sharedInstance():buildGroup("newRankListPanel")
+	self.useSpecialActivityUI = useSpecialActivityUI
+	if self.useSpecialActivityUI then
+		self.builder = InterfaceBuilder:createWithContentsOfFile(PanelConfigFiles.panel_game_start_activity)
+		self.ui = self.builder:buildGroup("Spring2016UI/newRankListPanel")
+	else
+		self.ui	= ResourceManager:sharedInstance():buildGroup("newRankListPanel")
+	end
+
+	-- -------------------
+	-- Pattern in activity version
+	-- -------------------
+	if self.useSpecialActivityUI then
+		local pattern = self.ui:getChildByName("pattern")
+		pattern:removeFromParentAndCleanup(false)
+
+		local childList = {}
+		pattern:getVisibleChildrenList(childList)
+		if #childList > 0 then
+			local batch = SpriteBatchNode:createWithTexture(childList[1]:getTexture())
+			for i,v in ipairs(childList) do
+				v:removeFromParentAndCleanup(false)
+				batch:addChild(v)
+			end
+			batch:setPositionXY(pattern:getPositionX(), pattern:getPositionY())
+			pattern:dispose()
+			pattern = batch
+		end
+		
+		local mask = self.ui:getChildByName("mask")
+		local maskPosition = {x = mask:getPositionX(), y = mask:getPositionY()}
+		local maskIndex = self.ui:getChildIndex(mask)
+		mask:removeFromParentAndCleanup(false)
+		local clip = ClippingNode.new(CCClippingNode:create(mask.refCocosObj))
+		clip:setAlphaThreshold(0.7)
+		self.ui:addChildAt(clip, maskIndex)
+		pattern:setPositionXY(pattern:getPositionX() - maskPosition.x, pattern:getPositionY())
+		clip:addChild(pattern)
+	end
 
 	-- ----------------
 	-- Init Base
@@ -297,14 +341,17 @@ function RankList:init(levelId, panelWithRank, ...)
 
 			local curFriendRank = UserManager:getInstance().selfNumberInFriendRank[self.levelId]
 			if self.panelWithRank.panelName == "levelSuccessPanel" then
-				ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK, curFriendRank)
+				--ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK, curFriendRank)
+				AchievementManager:onDataUpdate( AchievementManager.FRIEND_RANK, curFriendRank )
 				if self.rankListCache and self.rankListCache.friendRankList then
-					ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK_LIST, self.rankListCache.friendRankList)
-					ShareManager:setShareData(ShareManager.ConditionType.PASS_FRIEND_NUM, #self.rankListCache.friendRankList - 1)
+					--ShareManager:setShareData(ShareManager.ConditionType.FRIEND_RANK_LIST, self.rankListCache.friendRankList)
+					--ShareManager:setShareData(ShareManager.ConditionType.PASS_FRIEND_NUM, #self.rankListCache.friendRankList - 1)
+					AchievementManager:onDataUpdate( AchievementManager.FRIEND_RANK_LIST, self.rankListCache.friendRankList )
+					AchievementManager:onDataUpdate( AchievementManager.PASS_FRIEND_NUM, #self.rankListCache.friendRankList - 1 )
 				end
-				ShareManager:shareWithID(ShareManager.FRIST_RANK_FRIEND)
-				ShareManager:shareWithID(ShareManager.SCORE_OVER_FRIEND)
-				ShareManager:shareWithID(ShareManager.LEVEL_OVER_FRIEND)
+				--ShareManager:shareWithID(ShareManager.FRIST_RANK_FRIEND)
+				--ShareManager:shareWithID(ShareManager.SCORE_OVER_FRIEND)
+				--ShareManager:shareWithID(ShareManager.LEVEL_OVER_FRIEND)
 			end
 
 			self.isFriendRankHasData = true
@@ -351,7 +398,8 @@ function RankList:init(levelId, panelWithRank, ...)
 	end
 	
 	local size = self.rankListItemBg:getGroupBounds().size
-	self.serverRankListTableViewRender	= RankListTableViewRender:create(self.rankListCache, RankListCacheRankType.SERVER, rankListItemWidth, rankListItemHeight)
+	self.serverRankListTableViewRender	= RankListTableViewRender:create(self.rankListCache, RankListCacheRankType.SERVER,
+		rankListItemWidth, rankListItemHeight, useSpecialActivityUI)
 	-- self.serverRankListTableView		= TableView:create(self.serverRankListTableViewRender, rankListItemWidth, rankListItemHeight * 6.8)
 	self.serverRankListTableView		= TableView:create(self.serverRankListTableViewRender, rankListItemWidth, size.height - 25)
 	--self.serverRankListTableView:setTouchEnabled(false)
@@ -359,7 +407,8 @@ function RankList:init(levelId, panelWithRank, ...)
 	--------------------
 	-- Craete Friend Rank List
 	-- -----------------
-	self.friendRankListTableViewRender	= RankListTableViewRender:create(self.rankListCache, RankListCacheRankType.FRIEND, rankListItemWidth, rankListItemHeight)
+	self.friendRankListTableViewRender	= RankListTableViewRender:create(self.rankListCache, RankListCacheRankType.FRIEND,
+		rankListItemWidth, rankListItemHeight, useSpecialActivityUI)
 	-- self.friendRankListTableView		= TableView:create(self.friendRankListTableViewRender, rankListItemWidth, rankListItemHeight * 6.8)
 	self.friendRankListTableView		= TableView:create(self.friendRankListTableViewRender, rankListItemWidth, size.height - 25)
 	--elf.friendRankListTableView:setTouchEnabled(false)
@@ -422,7 +471,9 @@ function RankList:onAddFriendButtonTapped(...)
 		local addFriendBtnPosInWorldSpace	= self.addFriendBtn:getPositionInWorldSpace()
 		
 		-- Pop The Add Friend Panel
-		local panel = AddFriendPanel:create(addFriendBtnPosInWorldSpace)
+		local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(addFriendBtnPosInWorldSpace)
+		-- panel:popout()
+		--local panel = AddFriendPanel:create(addFriendBtnPosInWorldSpace)
 		--local selfParent = self:getParent():setRankListPanelTouchDisable()
 		self.panelWithRank:setRankListPanelTouchDisable()
 		if panel then 
@@ -758,13 +809,13 @@ function RankList:getRankListItemBg(...)
 	return self.rankListItemBg
 end
 
-function RankList:create(levelId, panelWithRank, ...)
+function RankList:create(levelId, panelWithRank, useSpecialActivityUI, ...)
 	assert(levelId)
 	assert(panelWithRank)
 	assert(#{...} == 0)
 
 	local newRankList = RankList.new()
-	newRankList:init(levelId, panelWithRank)
+	newRankList:init(levelId, panelWithRank, useSpecialActivityUI)
 	return newRankList
 end
 
@@ -773,4 +824,7 @@ function RankList:dispose()
 	self.serverRankListTableViewRender:dispose()
 	self.friendRankListTableViewRender:dispose()
 	BasePanel.dispose(self)
+	if self.builder then
+		self.builder:unloadAsset(PanelConfigFiles.panel_game_start_activity)
+	end
 end

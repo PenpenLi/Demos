@@ -6,6 +6,8 @@ function PropItemData:ctor(itemId)
 	self.itemId = itemId
   self.isOnceUsed = false
   self.usedTimes = 0
+  self.itemNum = 0
+  self.timePropNum = 0
 end
 
 function PropItemData:create(itemId)

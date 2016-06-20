@@ -240,12 +240,14 @@ function UnlockCloudPanelWithTask:onCloseBtnTapped()
 	else
 		return
 	end
+	if self.closeBtnCallback then
+		self.closeBtnCallback(self.isUnlockSuccess, self.friendIdsSent)
+	end
 	self:remove(false)
 end
 
 function UnlockCloudPanelWithTask:onMoreStarBtnTapped()
 	self:onCloseBtnTapped()
-	PopoutManager:sharedInstance():remove(self, true)
 	local panel = MoreStarPanel:create()
 	panel:popout()
 end
@@ -254,6 +256,9 @@ function UnlockCloudPanelWithTask:remove(animFinishCallback, ...)
 	if not self.isDisposed then 
 		PopoutManager:sharedInstance():removeWithBgFadeOut(self, animFinishCallback, true)
 		self:tryRemoveGuide()
+	end
+	if self.closeCallback then
+		self.closeCallback()
 	end
 end
 
@@ -288,13 +293,13 @@ function UnlockCloudPanelWithTask:sendUnlockMsg()
 			self.cloudCanOpenCallback()
 			print("onRemoveSelfFinish Called !")
 		end
-
+		self.isUnlockSuccess = true
 		self:remove(onRemoveSelfFinish)
 	end
 
-	local function onSendUnlockMsgFailed(event)
+	local function onSendUnlockMsgFailed(errorCode)
 		self.btnTappedState = self.BTN_TAPPED_STATE_NONE
-		CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+		CommonTip:showTip(Localization:getInstance():getText("error.tip."..errorCode), "negative")
 	end
 
 	local function onSendUnlockMsgCanceled(event)
@@ -309,66 +314,20 @@ function UnlockCloudPanelWithTask:sendUnlockMsg()
 end
 
 function UnlockCloudPanelWithTask:chooseUnlockFriend()
-	-- On Friend Choosed
-	local function onFriendChoose(friendIds)
-
-		local function onSendFriendRequestSuccess(evt)
-			print("onSendFriendRequestSuccess Called !")
-			DcUtil:requestUnLockCloud(self.lockedCloudId ,#friendIds)
-			local tipKey	= "unlock.cloud.panel.request.friend.success"
-			local tipValue	= Localization:getInstance():getText(tipKey)
-			CommonTip:showTip(tipValue, "positive")
+	local function onSuccess(friendIds)
+		if not self.friendIdsSent then
+			self.friendIdsSent = {}
 		end
-
-		local function onSendFriendRequestFail(evt)
-			print("onSendFriendRequestFail Called !")
-
-			local tipKey	= "error.tip."..tostring(evt.data)
-			local tipValue	= Localization:getInstance():getText(tipKey)
-			CommonTip:showTip(tipValue, "negative")
-		end
-
-		if not friendIds or #friendIds == 0 then
-			CommonTip:showTip(Localization:getInstance():getText("unlock.cloud.panel.request.friend.noselect"), "negative")
-			return
-		end
-
-		local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
-		logic:setOnSuccessCallback(onSendFriendRequestSuccess)
-		logic:setOnFailCallback(onSendFriendRequestFail)
-		if __IOS_FB then
-			if SnsProxy:isShareAvailable() then
-				local callback = {
-					onSuccess = function(result)
-						logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-						DcUtil:logSendRequest("request",result.id,"request_uplock_area_help")
-					end,
-					onError = function(err)
-						print("failed")
-					end
-				}
-
-				local profile = UserManager.getInstance().profile
-				local userName = ""
-				if profile and profile:haveName() then
-					userName = profile:getDisplayName()
-				end
-				
-				local reqTitle = Localization:getInstance():getText("facebook.request.unlock.title", {user=userName})
-				local reqMessage = Localization:getInstance():getText("facebook.request.unlock.message", {user=userName})
-				
-				local snsIds = FriendManager.getInstance():getFriendsSnsIdByUid(friendIds)
-				SnsProxy:sendRequest(snsIds, reqTitle, reqMessage, false, FBRequestObject.ULOCK_AREA_HELP, callback)
+		if friendIds then
+			for k, v in pairs(friendIds) do
+				table.insert(self.friendIdsSent, v)
 			end
-		else
-			logic:start(UnlockLevelAreaLogicUnlockType.REQUEST_FRIEND_TO_HELP, friendIds)
-		end	
+		end
 	end
+	local function onFail(evt)
 
-	-- Pop Out Choose Friend Panel
-	self.curAreaFriendIds = self.curAreaFriendIds or {}
-	local panel = ChooseFriendPanel:create(onFriendChoose, self.curAreaFriendIds)
-	panel:popout()
+	end
+	ChooseFriendPanel:popoutPanel(self.lockedCloudId, self.curAreaFriendIds, onSuccess, onFail)
 end
 
 
@@ -441,14 +400,7 @@ function UnlockCloudPanelWithTask:onUseWindmillBtnTapped(...)
 					panel:popout()
 				else onSendUnlockMsgCanceled() end
 			end
-			-- local text = {
-			-- 	tip = Localization:getInstance():getText("buy.prop.panel.tips.no.enough.cash"),
-			-- 	yes = Localization:getInstance():getText("buy.prop.panel.yes.buy.btn"),
-			-- 	no = Localization:getInstance():getText("buy.prop.panel.not.buy.btn"),
-			-- }
-			-- CommonTipWithBtn:setShowFreeFCash(true)
-			-- CommonTipWithBtn:showTip(text, "negative", createGoldPanel, onSendUnlockMsgCanceled)
-			GoldlNotEnoughPanel:create(createGoldPanel, onSendUnlockMsgCanceled, nil):popout()
+			GoldlNotEnoughPanel:create(createGoldPanel, onSendUnlockMsgCanceled):popout()
 		else
 			local logic = UnlockLevelAreaLogic:create(self.lockedCloudId)
 			logic:setOnSuccessCallback(onSendUnlockMsgSuccess)
@@ -461,7 +413,8 @@ end
 
 function UnlockCloudPanelWithTask:onTaskBtnTap( ... )
 	-- body
-	self:onCloseBtnTapped()
+	-- self:onCloseBtnTapped()
+	self:remove(false)
 	print(self.unlockAreaLevelId)
 	local startGamePanel = StartGamePanel:create(self.unlockAreaLevelId, GameLevelType.kTaskForUnlockArea)
 	startGamePanel:popout(false)

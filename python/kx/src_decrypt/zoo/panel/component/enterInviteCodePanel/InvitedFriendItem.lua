@@ -352,7 +352,7 @@ function InvitedFriendItem:sendReceiveRewardMsg(rewardId, onSuccessCallback, ...
 		assert(false)
 	end
 
-	local http = GetInviteFriendsReward.new()
+	local http = GetInviteFriendsReward.new(true)
 	http:addEventListener(Events.kComplete, onSuccess)
 	http:addEventListener(Events.kError, onFail)
 	local friendId = self.data.friendUid
@@ -432,7 +432,7 @@ function InvitedFriendItem:onLevelBoxTapped(event, ...)
 			--end
 
 			local pos = levelBoxOpened:getPosition()
-			self:playRewardAnim(rewardIds, levelBoxOpened)
+			self:playRewardAnim(boxReward.rewards, levelBoxOpened)
 		end
 
 		local rewardId = tappedBoxIndex + 1
@@ -494,18 +494,13 @@ function InvitedFriendItem:onLevelBoxTapped(event, ...)
 	end
 end
 
-function InvitedFriendItem:playRewardAnim(rewardIds, boxOpened, ...)
-	assert(rewardIds)
-	assert(boxOpened)
-	assert(#{...} == 0)
-
+function InvitedFriendItem:playRewardAnim(rewards, boxOpened, ...)
 	--local sSize = self.signed[self.signedDay]:getGroupBounds().size
 	local sSize = boxOpened:getGroupBounds().size
 
 	-- local home = Director:sharedDirector():getRunningScene()
 	local home = HomeScene:sharedInstance()
 	--local reward = self.markRewards[self.signedDay].rewards
-	reward = rewardIds
 	--local rType = self.markRewards[self.signedDay].type
 	--local pos = self.signed[self.signedDay]:getPosition()
 	local pos = boxOpened:getPosition()
@@ -516,29 +511,20 @@ function InvitedFriendItem:playRewardAnim(rewardIds, boxOpened, ...)
 	--if rType == 2 then
 		local count = 0
 		local width, spare = 60, 30
-		local fullWidth = #reward * (width + spare) - spare
+		local fullWidth = #rewards * (width + spare) - spare
 		local startPosX = pos.x - fullWidth / 2
 		if startPosX < 0 then startPosX = 0
 		elseif startPosX + fullWidth >= vSize.width then
 			startPosX = pos.x - fullWidth
 		end
 		print(startPosX, fullWidth, vSize.width, startPosX + fullWidth)
-		for __, v in ipairs(reward) do
+		for __, v in ipairs(rewards) do
 			count = count + 1
-			local sprite
-			if v == 2 then 
-				sprite = home:createFlyingCoinAnim()
-			else 
-				sprite = home:createFloatingItemAnim(v) 
-			end
-			sprite:setPosition(ccp(startPosX + sSize.width / 2 + (count - 1) * (width + spare),
-				pos.y - sSize.height / 2 - 10))
-			if not self.coinSize then self.coinSize = sprite:getGroupBounds().size end
-			if v == 2 then
-				local lPos = sprite:getPosition()
-				sprite:setPosition(ccp(lPos.x - self.coinSize.width / 2, lPos.y + self.coinSize.height / 2))
-			end
-			sprite:playFlyToAnim(false, false)
+
+			local anim = FlyItemsAnimation:create({v})
+			anim:setWorldPosition(ccp(startPosX + (count - 1) * (width + spare),pos.y - 10))
+			anim:play()
+			
 		end
 	--else
 	--	local coins = home:createFlyingCoinAnim()

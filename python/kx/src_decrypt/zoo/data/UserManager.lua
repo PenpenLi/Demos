@@ -1,11 +1,13 @@
 require "hecore.class"
 require "zoo.data.DataRef"
+require "zoo.data.CDKeyManager"
 
 local debugUserData = false
 
 local instance = nil
 UserManager = class()
 kMaxLevels = 210
+kMaxHiddenLevel = 0
 
 function UserManager:ctor()
 	self:reset()
@@ -30,6 +32,7 @@ function UserManager:reset()
 	self.decos = {}
 	self.scores = {}
 
+	self.jumpedLevelInfos = {}
 	self.oldScores = {}
 
 	self.achis = {}
@@ -66,6 +69,14 @@ function UserManager:reset()
 	self.updateRewards = {}
 	self.timeProps = {}
 
+	self.contact = {}
+	self.actualExchangeCodes = {}
+
+	self.achievement = AchievementRef.new()
+	self.acceptedEnergy = false
+	self.global = {}
+	
+	self.uiHasClickedEasterEggList = {}
 end
 
 function UserManager:checkDateChange()	
@@ -88,10 +99,11 @@ function UserManager:checkDateChange()
 	if 	compareResult == -1
 	then
 		self.lastCheckTime = currentTime
-		UserService:getInstance().lastCheckTime = currentTime
         UserManager:getInstance():getDailyData():resetAll()
+        
+		UserService:getInstance().lastCheckTime = currentTime
+        UserService:getInstance():getDailyData():resetAll()
 		Localhost:flushCurrentUserData()
-	
 	end
 
     if compareResult ~= 0 then -- not equal
@@ -145,6 +157,61 @@ function UserManager:getMaxLevelInOpenedRegion()
 	return areaMaxLevel
 end
 
+-- function UserManager:getMaxHiddenLevelInOpenedRegion()
+-- 	return 
+-- end
+
+-- 用于隐藏关，和主线关的TopLevelId意思一样
+function UserManager:getTopHiddenLevelId()
+	local topMainLevelId = UserManager.getInstance().user:getTopLevelId()
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	print("topMainLevelId",topMainLevelId)
+	return 0
+end
+
+-- 隐藏关是否可玩
+-- canPlay 是否可玩
+-- isFirstFlowerInHiddenBranch 是否为隐藏关分支的第一关
+function UserManager:isHiddenLevelCanPlay(hiddenLevelId)
+	local id = hiddenLevelId
+	if not LevelType:isHideLevel(id) then return false end
+
+	local hiddenLevelScore = UserManager.getInstance():getUserScore(id)
+	local preHiddenLevelScore = UserManager.getInstance():getUserScore(id - 1)
+
+	local hiddenBranchId = MetaModel:sharedInstance():getHiddenBranchIdByHiddenLevelId(id)
+	assert(hiddenBranchId)
+
+	local isFirstFlowerInHiddenBranch = false
+	local hiddenBranchData = MetaModel:sharedInstance():getHiddenBranchDataByHiddenLevelId(id)
+	assert(hiddenBranchData)
+
+	if hiddenBranchData.startHiddenLevel == id then
+		isFirstFlowerInHiddenBranch = true
+	end
+
+	if not MetaModel:sharedInstance():isHiddenBranchCanShow(hiddenBranchId) then
+		return false,isFirstFlowerInHiddenBranch
+	end
+
+	if MetaModel:sharedInstance():isHiddenBranchDesign(hiddenBranchId) then
+		return false,isFirstFlowerInHiddenBranch
+	end
+
+	local canPlay = false
+	if MetaModel:sharedInstance():isHiddenBranchCanOpen(hiddenBranchId) then
+		if hiddenLevelScore and hiddenLevelScore.star > 0 then
+			canPlay = true
+		elseif isFirstFlowerInHiddenBranch or (preHiddenLevelScore and preHiddenLevelScore.star > 0) then				
+			canPlay = true
+		end
+	end
+	return canPlay,isFirstFlowerInHiddenBranch
+end
+
+
 function UserManager:getFullStarInOpenedRegion(...)
 	assert(#{...} == 0)
 
@@ -153,6 +220,17 @@ function UserManager:getFullStarInOpenedRegion(...)
 
 	return fullStar
 end
+
+-- 包含四星关
+function UserManager:getFullStarInOpenedRegionInclude4star(...)
+	assert(#{...} == 0)
+
+	local areaMaxLevel = self:getMaxLevelInOpenedRegion()
+	-- local fullStar = areaMaxLevel * 3
+
+	return  LevelMapManager.getInstance():getTotalStar(areaMaxLevel)
+end
+
 
 local function debugMessage( msg )
 	if debugUserData then print("[UserManager]", ""..msg) end
@@ -234,6 +312,7 @@ function UserManager:clone(dst)
 	dst.funcs = cloneClassTableArray(self.funcs, FuncRef)
 	dst.decos = cloneClassTableArray(self.decos, DecoRef)
 	dst.scores = cloneClassTableArray(self.scores, ScoreRef)
+	dst.jumpedLevelInfos = cloneClassTableArray(self.jumpedLevelInfos, JumpLevelRef)
 	dst.achis = cloneClassTableArray(self.achis, AchiRef)
 	dst.requestInfos = cloneClassTableArray(self.requestInfos, RequestInfoRef)
 	dst.requestNum = self.requestNum
@@ -248,6 +327,13 @@ function UserManager:clone(dst)
 	dst.timeProps = cloneClassTableArray(self.timeProps, TimePropRef)
 	dst.userType = self.userType
 	dst.setting = self.setting
+	dst.achievement = AchievementRef.new()
+	dst.achievement:fromLua(self.achievement)
+
+	dst.ingameLimit = self.ingameLimit
+	dst.acceptedEnergy = self.acceptedEnergy
+	dst.global = self.global
+
 end
 
 
@@ -289,6 +375,8 @@ function UserManager:initFromLua( src )
 
 	self.userExtend = UserExtendRef.new() --用户扩展信息
 	self.userExtend:fromLua(src.userExtend)
+
+	self.qqOpenID = src.qqOpenID
 
 	debugMessage("BagRef")
 
@@ -359,6 +447,17 @@ function UserManager:initFromLua( src )
 			local p = ScoreRef.new()
 			p:fromLua(v)
 			self.scores[i] = p
+		end
+	end
+
+	--用户跳关信息
+	debugMessage("jumpedLevelInfos")
+	self.jumpedLevelInfos = {}
+	if src.jumpedLevelInfos then
+		for i,v in ipairs(src.jumpedLevelInfos) do
+			local p = JumpLevelRef.new()
+			p:fromLua(v)
+			self.jumpedLevelInfos[i] = p
 		end
 	end
 
@@ -445,7 +544,6 @@ function UserManager:initFromLua( src )
 	end
 
 	-- 排除过高的关卡
-
 	if MetaManager:getInstance().level_area then
 		for k, v in pairs(MetaManager:getInstance().level_area) do
 			if v.maxLevel == 9999 then
@@ -453,6 +551,20 @@ function UserManager:initFromLua( src )
 				break
 			end
 		end
+	end
+
+	-- 计算最高隐藏关
+	kMaxHiddenLevel = 0
+	if MetaManager:getInstance().hide_area then
+		for k, v in pairs(MetaManager:getInstance().hide_area) do
+			if (v.hideLevelRange) then 
+				-- print("===>",v.hideLevelRange[1],v.hideLevelRange[#v.hideLevelRange])
+				if ( kMaxHiddenLevel < v.hideLevelRange[#v.hideLevelRange]) then 
+					kMaxHiddenLevel = v.hideLevelRange[#v.hideLevelRange]
+				end
+			end
+		end
+		kMaxHiddenLevel = 10000 + kMaxHiddenLevel
 	end
 
 	-- 更新信息
@@ -495,6 +607,25 @@ function UserManager:initFromLua( src )
 			self.dimeProvince[k] = string.gsub(v, '\"', '')
 		end
 	else self.dimeProvince = {} end
+
+	self.iosSettingUrl = src.iosSettingUrl
+
+	CDKeyManager:getInstance():initData(src.contact, src.actualExchangeCodes)
+	
+	self.achievement = AchievementRef.new()
+	self.achievement:fromLua(src.achievement)
+
+	-- 
+	self.ingameLimit = src.ingameLimit
+
+	self.acceptedEnergy = src.acceptedEnergy
+
+	if src.global and type(src.global) == "table" then
+		self.global = src.global
+	end
+	
+	-- 六一彩蛋已经点击id
+	self.uiHasClickedEasterEggList = src.uiHasClickedEasterEggList or {}
 end
 
 function UserManager:syncUserData( src )
@@ -510,23 +641,6 @@ function UserManager:syncUserData( src )
 	end
 end
 
-function UserManager:correctTopLevelID()
-	local topLevelId = self.user:getTopLevelId()
-	local passedLevels = 0
-	local computedTopLevelID = 0
-	for i,v in ipairs(self.scores) do
-		if v.star > 0 then passedLevels = passedLevels + 1 end
-	end
-
-	print("computed", passedLevels)
-	if self:isNewLevelAreaStart(passedLevels + 1) then computedTopLevelID = passedLevels 
-	else computedTopLevelID = passedLevels + 1 end
-
-	if topLevelId ~= computedTopLevelID then
-		he_log_warning("computed top level id error:"..tostring(computedTopLevelID).."/"..tostring(topLevelId))
-		self.user:setTopLevelId(computedTopLevelID)
-	end
-end
 function UserManager:isNewLevelAreaStart( levelId )
 	return MetaManager.getInstance():isMinLevelAreaId(levelId)  
 end
@@ -544,6 +658,16 @@ function UserManager:updateUserData( src )
 			self.scores[i] = p
 		end
 	end
+
+	self.jumpedLevelInfos = {}
+	if src.jumpedLevelInfos then
+		for i,v in ipairs(src.jumpedLevelInfos) do 
+			local p = JumpLevelRef.new()
+			p:fromLua(v)
+			self.jumpedLevelInfos[i] = p
+		end
+	end
+
 	self.props = {}
 	if src.props then
 		for i,v in ipairs(src.props) do
@@ -623,6 +747,44 @@ function UserManager:removeUserScore(levelId, ...)
 	end
 
 	assert(false)
+end
+
+function UserManager:hasPassedLevel(levelId)
+	local score = self:getUserScore(levelId)
+	return score and score.star > 0
+end
+
+-----------------------------------------------
+--jumpedLevelInfos
+-----------------------------------------------
+function UserManager:getJumpLevelInfo()
+	return self.jumpedLevelInfos
+end
+
+function UserManager:getUserJumpLevelRef(levelId)
+	for i, v in ipairs(self.jumpedLevelInfos) do 
+		if v.levelId == levelId then
+			return v
+		end
+	end
+	return nil
+end
+
+function UserManager:addJumpLevelInfo(jumpLevelRef)
+	if self:getUserJumpLevelRef(jumpLevelRef.levelId) == nil then
+		table.insert(self.jumpedLevelInfos, jumpLevelRef)
+	else
+		assert(false)
+	end
+end
+
+function UserManager:removeJumpLevelRef(levelId)
+	for i, v in ipairs(self.jumpedLevelInfos) do 
+		if v.levelId == levelId then
+			table.remove(self.jumpedLevelInfos, i)
+			return 
+		end
+	end
 end
 
 -----------------------------------
@@ -749,7 +911,28 @@ function UserManager:addUserPropNumber(itemId, deltaNumber, ...)
 	end
 end
 
+
+-- 启动时，给已经过期的道具打点
+function UserManager:sendOfflineExpiredPropDC()
+	if self.expirePropDCSent == true then return end
+	self.expirePropDCSent = true
+	if UserManager:getInstance().uid then
+		local cachedLocalUserData = Localhost.getInstance():readCurrentUserData()
+		if cachedLocalUserData and cachedLocalUserData.user and cachedLocalUserData.user.timeProps then
+			local timeProps = cachedLocalUserData.user.timeProps
+			local curTimeInSec = Localhost:timeInSec()
+			for k, v in pairs(timeProps) do			
+				local expireTime = math.floor(v.expireTime / 1000)
+				if expireTime <= curTimeInSec and v.num > 0 then
+					DcUtil:UserTrack({category = 'item_overdue', sub_category = 'item_overdue', t1 = v.itemId, t2 = v.num, ts = expireTime}, true)
+				end
+			end
+		end
+	end
+end
+
 function UserManager:timePropsFromServer(timeProps)
+	self:sendOfflineExpiredPropDC()
 	self.timeProps = {}
 
 	if not timeProps then  return end
@@ -773,6 +956,8 @@ function UserManager:timePropsFromServer(timeProps)
 	self:sortTimeProps()
 end
 
+
+-- 刷新时，过期的道具打点
 function UserManager:getAndUpdateTimeProps()
 	-- print("getAndUpdateTimeProps:", table.tostring(self.timeProps))
 	local timeProps = {}
@@ -780,8 +965,11 @@ function UserManager:getAndUpdateTimeProps()
 		local curTimeInSec = Localhost:timeInSec()
 		for k,v in pairs(self.timeProps) do
 			-- 转为s计算更准确
-			if math.floor(v.expireTime / 1000) > curTimeInSec and v.num > 0 then
+			local expireTime = math.floor(v.expireTime / 1000)
+			if expireTime > curTimeInSec and v.num > 0 then
 				table.insert(timeProps, v)
+			else
+				DcUtil:UserTrack({category = 'item_overdue', sub_category = 'item_overdue', t1 = v.itemId, t2 = v.num, ts = expireTime}, true)
 			end
 		end
 	end
@@ -922,6 +1110,30 @@ function UserManager:refreshEnergy()
 	end
 
 	return math.floor(notUsedTime / 1000), isRefresh, maxEnergy
+end
+
+function UserManager:isAliNeverSigned()
+	return self.userExtend.aliIngameState == 0
+end
+
+function UserManager:isAliSigned()
+	return self.userExtend.aliIngameState == 1
+end
+
+function UserManager:isAliUnSigned()
+	return self.userExtend.aliIngameState == 2
+end
+
+function UserManager:isWechatNeverSigned()
+	return self.userExtend.wxIngameState == 0
+end
+
+function UserManager:isWechatSigned()
+	return self.userExtend.wxIngameState == 1 
+end
+
+function UserManager:isWechatUnSigned()
+	return self.userExtend.wxIngameState == 2
 end
 
 function UserManager:getDailyBoughtGoodsNumById(goodsId)

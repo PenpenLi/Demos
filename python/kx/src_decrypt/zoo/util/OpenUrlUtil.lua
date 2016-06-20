@@ -2,25 +2,23 @@ OpenUrlUtil = class()
 
 -- schemeNotSupportedCallback: 如果url是一个不认识的Scheme，可以指定回调，在回调里面处理逻辑
 function OpenUrlUtil:openUrl(url, schemeNotSupportedCallback)
-    if string.starts(url, 'http') then
-        if __IOS then
-            if UIApplication:sharedApplication():canOpenURL(NSURL:URLWithString(url)) then
-                UIApplication:sharedApplication():openURL(NSURL:URLWithString(url))
-            else
-                if schemeNotSupportedCallback then
-                    schemeNotSupportedCallback()
-                end
+    if __IOS then
+        if UIApplication:sharedApplication():canOpenURL(NSURL:URLWithString(url)) then
+            UIApplication:sharedApplication():openURL(NSURL:URLWithString(url))
+        else
+            if schemeNotSupportedCallback then
+                schemeNotSupportedCallback()
             end
-        elseif __ANDROID then
-            local success = luajava.bindClass("com.happyelements.android.utils.HttpUtil"):openUri(url)
-            if not success then
-                if schemeNotSupportedCallback then
-                    schemeNotSupportedCallback()
-                end
-            end
-        elseif __WP8 then
-            Wp8Utils:OpenUrl(url)
         end
+    elseif __ANDROID then
+        local success = luajava.bindClass("com.happyelements.android.utils.HttpUtil"):openUri(url)
+        if not success then
+            if schemeNotSupportedCallback then
+                schemeNotSupportedCallback()
+            end
+        end
+    elseif __WP8 then
+        Wp8Utils:OpenUrl(url)
     end
 end
 

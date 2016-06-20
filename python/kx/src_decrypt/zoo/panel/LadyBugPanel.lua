@@ -106,6 +106,8 @@ function LadyBugTaskItemRender:getContentSize(tableView, index, ...)
 	local ladyBugRewardItem = self.builder:buildGroup("ladyBugRewardItem")
 
 	local size = ladyBugRewardItem:getGroupBounds().size
+
+	size = {width = size.width, height = size.height}
 	 --ResourceManager:sharedInstance():getGroupSize("ladyBugRewardItem")
 
 	ladyBugRewardItem:dispose()
@@ -318,11 +320,14 @@ function LadyBugPanel:remove(...)
 
 	self:hideOneTimeTip()
 	self.showHideAnim:playHideAnim(onPanelHideAnimFinishFunc)
+	if self.closeCallback then
+		self.closeCallback()
+	end
 end
 
-function LadyBugPanel:popout(showTip)
+function LadyBugPanel:popout(showTip, panelCloseCallback)
 
-
+	self.closeCallback = panelCloseCallback
 	local function onShowAnimFinished()
 		-- print('popout(showTip)', showTip)
 		self.allowBackKeyTap = true

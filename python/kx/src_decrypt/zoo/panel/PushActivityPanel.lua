@@ -159,8 +159,10 @@ function PushActivityPanelFail:popout(parent, callback)
 		parent.exchangeAnim:setTopPanelHidePos(topPanelInitX, topPanelHeight)
 		parent.exchangeAnim:setRankListPopHidePos(rankListInitX, topPanelInitY - topPanelHeight + rankListHeight + 100)
 		
-		local stencil = parent.rankListPanelClipping:getStencil()
-		stencil:changeHeight(stencil:getContentSize().height + 300)
+		-- local stencil = parent.rankListPanelClipping:getStencil()
+		-- stencil:changeHeight(stencil:getContentSize().height + 300)
+		local size = self.rankListPanelClipping:getContentSize()
+		self.rankListPanelClipping:setContentSize(CCSizeMake(size.width, size.height + 300))
 
  		local chicken2 = ArmatureNode:create("chickenzs2")
  		chicken2:setPositionXY(chicken1:getPositionX(), chicken1:getPositionY())

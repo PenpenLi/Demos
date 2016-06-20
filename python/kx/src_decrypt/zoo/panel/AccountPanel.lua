@@ -1,14 +1,20 @@
 require "zoo.util.IllegalWordFilterUtil"
-require "zoo.panel.CDKeyPanel"
 require "zoo.config.PlatformConfig"
 require "zoo.panel.QRCodePanel"
 require "zoo.net.QzoneSyncLogic"
 require "zoo.panel.RequireNetworkAlert"
+require 'zoo.panel.accountPanel.AccountSettingPanel'
 
-local ChangePhonePromptPanel = class(BasePanel)
-local UnbindAccountPromptPanel = class(BasePanel)
 
 AccountPanel = class(BasePanel)
+
+function AccountPanel:create()
+    local newQuitPanel = AccountPanel.new()
+    newQuitPanel:loadRequiredResource(PanelConfigFiles.panel_game_setting)
+    newQuitPanel:init()
+    return newQuitPanel
+end
+
 function AccountPanel:initAvatar( group )
     if not group then return nil end
     local avatarPlaceholder = group:getChildByName("avatarPlaceholder")
@@ -149,9 +155,6 @@ function AccountPanel:initInput(onBeginCallback)
     self.input = input
     inputSelect:dispose()
 end
-local function startAppBar(sub)
-    ShareManager:openAppBar( sub )
-end
 
 function AccountPanel:isNicknameUnmodifiable()
     if not _G.sns_token then
@@ -192,7 +195,7 @@ function AccountPanel:isAvatarUnmodifiable()
 end
 
 function AccountPanel:init()
-    self.ui = self:buildInterfaceGroup("accountPanel") --ResourceManager:sharedInstance():buildGroup("AccountPanel")
+    self.ui = self:buildInterfaceGroup("accountPanel")
     
     BasePanel.init(self, self.ui)
     local user = UserManager.getInstance().user
@@ -224,46 +227,12 @@ function AccountPanel:init()
     self.bg = self.ui:getChildByName("_newBg")
     self.innerBg = self.ui:getChildByName('_newBg2')
 
-    self.cdkeyBg = self.ui:getChildByName("bg2")
-    self.cdkeyBtn = self.ui:getChildByName("cdkeyBtn")
-    self.cdkeySprite = self.cdkeyBtn
-    self.cdkeyBtnText = self.cdkeyBtn:getChildByName('text')
-
-    self.upArrow = self.ui:getChildByName('upArrow')
-    self.otherAccountsBtn = self.ui:getChildByName('otherAccountsBtn')
-    self.unbindBtn = self.ui:getChildByName('unbindBtn')
-    self.animBg = self.ui:getChildByName('animBg')
-
-    self.upArrow:ad(DisplayEvents.kTouchTap, function () 
-        self:fold(true) 
-
-        DcUtil:UserTrack({ category='setting', sub_category="setting_click_other", action = 2})
-    end)
-    self.otherAccountsBtn:ad(DisplayEvents.kTouchTap, function () 
-        self:extend(true) 
-
-        DcUtil:UserTrack({ category='setting', sub_category="setting_click_other", action = 1})
-    end)
-    self.unbindBtn:ad(DisplayEvents.kTouchTap, function () self:onUnbindAccountBtnTapped() end)
-
-    if self:shouldShowUnbindBtn() then
-        self.unbindBtn:setTouchEnabled(true)
-    else
-        self.unbindBtn:setVisible(false)
-    end
-
-
-    self.codeBtn = self.ui:getChildByName('codeBtn')
-    self.codeBtn:getChildByName('txt'):setString(Localization:getInstance():getText('setting.panel.button.1')..'>')
-    self.codeBtn:setTouchEnabled(true)
-    self.codeBtn:ad(DisplayEvents.kTouchTap, function() self:onCodeBtnTapped() end)
-
     self.moreAvatars:setVisible(false)
 
     self.playerAvatar = self:initAvatar(self.avatar:getChildByName("settingavatarframework"))
     self.playerAvatar:changeImage(profile.ui, profile.headUrl)
 
-    self.panelTitle:setText('我的账号')  -- TEST
+    self.panelTitle:setText('我的账号')
     local size = self.panelTitle:getContentSize()
     local scale = 65 / size.height
     self.panelTitle:setScale(scale)
@@ -274,13 +243,36 @@ function AccountPanel:init()
         if arrow then arrow:setVisible(false) end
     end
 
-    self.cdkeyBtnText:setString(Localization:getInstance():getText("quit.panel.cdkey"))
-
     self.nameLabel:getChildByName("touch"):removeFromParentAndCleanup(true) 
     self.nameLabel:getChildByName("label"):setString(profile:getDisplayName())
     self.nameLabel:getChildByName("inputBegin"):setVisible(false)
     self:initMoreAvatars(self.moreAvatars)
 
+    self.qrCodeBtn = self.ui:getChildByName('qrCodeBtn')
+    self.qrCodeBtn:setTouchEnabled(true)
+    self.qrCodeBtn:ad(DisplayEvents.kTouchTap, function() self:onCodeBtnTapped() end)
+    self.qrCodeBtn:getChildByName('text'):setString(localize('setting.panel.button.1'))
+
+    self.accountBtn = self.ui:getChildByName('accountBtn')
+    self.accountBtn.redDot = self.accountBtn:getChildByName('redDot')
+    self.accountBtn:getChildByName('text'):setString(localize('setting.panel.button.7'))
+
+    if self:shouldShowAccountBtn() then
+        self.accountBtn:setPositionX(129)
+        self.accountBtn:setTouchEnabled(true)
+        self.accountBtn:ad(DisplayEvents.kTouchTap, function () self:onAccountBtnTapped() end)
+        self.qrCodeBtn:setPositionX(361)
+        if self:hasAccountBinded() then
+            self.accountBtn.redDot:setVisible(false)
+        else
+            self.accountBtn.redDot:setVisible(true)
+        end
+    else
+        self.accountBtn:setVisible(false)
+        self.qrCodeBtn:setPositionX(242)
+    end
+
+    
 
     -- 需求：做任何操作都会取消5秒后仅一次的邀请码放大缩小
     local schedule = nil
@@ -352,25 +344,6 @@ function AccountPanel:init()
     self.closeBtn:setTouchEnabled(true, 0, true)
     self.closeBtn:setButtonMode(true)
     self.closeBtn:addEventListener(DisplayEvents.kTouchTap, onCloseBtnTapped)
-  
-    local function onCDKeyButton()
-        DcUtil:UserTrack({ category='setting', sub_category="setting_click_exchange_code"})
-        stopSchedule()
-        local position = self.cdkeyBtn:getPosition()
-        local parent = self.cdkeyBtn:getParent()
-        local wPos = parent:convertToWorldSpace(ccp(position.x, position.y))
-        local panel = CDKeyPanel:create(wPos)
-        if panel then
-            PopoutManager:sharedInstance():remove(self, true)
-            panel:popout()
-        end
-    end
-    if MaintenanceManager:getInstance():isEnabled("CDKeyCode") then
-        self.cdkeyBtn:setTouchEnabled(true, 0, true)
-        self.cdkeyBtn:addEventListener(DisplayEvents.kTouchTap, onCDKeyButton)
-    else
-        self.cdkeyBtn:setVisible(false)
-    end
 
     local function onTimeOut()
         stopSchedule()
@@ -385,45 +358,6 @@ function AccountPanel:init()
         text:runAction(CCSequence:create(arr))
     end
     schedule = Director:sharedDirector():getScheduler():scheduleScriptFunc(onTimeOut, 5, false)
-
-
-    self:initOtherAccounts()
-
-    -- self.animMoveY = 130
-    self.foldedBgHeight = self.bg:getGroupBounds().size.height
-    self.foldedInnerBgHeight = self.innerBg:getGroupBounds().size.height
-    self.foldedAnimBgHeight = self.animBg:getGroupBounds().size.height
-
-    self.extendedBgHeight = self.foldedBgHeight + self.animMoveY
-    self.extendedInnerBgHeight = self.foldedInnerBgHeight + self.animMoveY
-    self.extendedAnimBgHeight = self.foldedAnimBgHeight + self.animMoveY
-
-    -- test
-    self.animBgFoldedSize = self.animBg:getContentSize()
-    self.animBgExtendedSize = CCSizeMake(self.animBgFoldedSize.width, self.animBgFoldedSize.height + self.animMoveY)
-    -- end test
-
-    self.extendedClippingY = self.clipping:getPositionY()
-    self.foldedClippingY = self.extendedClippingY + self.animMoveY
-    self.extendedLayoutY = self.layout:getPositionY() 
-    self.foldedLayoutY = self.extendedLayoutY - self.animMoveY
-
-    self.foldedCdkeyBtnY = self.cdkeyBtn:getPositionY()
-    self.extendedCdkeyBtnY = self.foldedCdkeyBtnY - self.animMoveY
-
-    self.foldedUnbindBtnY = self.unbindBtn:getPositionY()
-    self.extendedUnbindBtnY = self.foldedUnbindBtnY - self.animMoveY
-    self.animDuration = 0.3
-
-    self:fold()
-
-    if not self.otherAccountsBtnEnabled then
-        self.otherAccountsBtn:setVisible(false)
-        self.otherAccountsBtn:setTouchEnabled(false)
-    end
-
-
-    
 end
 
 function AccountPanel:popout()
@@ -460,10 +394,11 @@ function AccountPanel:onEnterAnimationFinished()
         end
     end
     if self.input then self.input:setPosition(ccp(self.input.originalX_, self.input.originalY_)) end
-    if self.bindPhoneBtn then
-        BindPhoneGuideLogic:get():onShowAccountPanel(self.bindPhoneBtn)
+    if self.accountBtn then
+        BindPhoneGuideLogic:get():onShowAccountPanel(self.accountBtn)
     end
 end
+
 function AccountPanel:onEnterHandler(event, ...)
     if event == "enter" then
         self.allowBackKeyTap = true
@@ -561,971 +496,61 @@ function AccountPanel:updateSnsUserProfile( authorizeType,snsName,name,headUrl )
     http:load(name, headUrl,snsPlatform,snsName)
 end
 
-function AccountPanel:create()
-    local newQuitPanel = AccountPanel.new()
-    newQuitPanel:loadRequiredResource(PanelConfigFiles.panel_game_setting)
-    newQuitPanel:init()
-    return newQuitPanel
-end
-    
-function AccountPanel:extend(playAnim)
-    print('extend')
-    if self.isExtended then return end
-    self.isExtended = true
-    local function animFinish()
-        if self.isDisposed then return end
-        self.upArrow:setVisible(true)
-        self.upArrow:setTouchEnabled(true)
-        self.upArrow:setPositionY(self.unbindBtn:getPositionY())-- 保证箭头按钮与解绑定按钮对齐
-    end
-
-    for k, v in pairs(self.otherAccountItems) do
-         --v:setVisible(false)
-         local btn = v:getChildByName('btn')
-         btn:setTouchEnabled(true)
-    end
-
-    if playAnim then
-        -- self.animBg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, (self.extendedAnimBgHeight/self.foldedAnimBgHeight))))
-        self.animBg:runAction(CCEaseSineIn:create(CCSizeTo:create(self.animDuration, self.animBgExtendedSize.width, self.animBgExtendedSize.height)))
-        self.innerBg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, (self.extendedInnerBgHeight/self.foldedInnerBgHeight))))
-        self.bg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, (self.extendedBgHeight/self.foldedBgHeight))))
-        self.otherAccountsBtn:setVisible(false)
-        self.otherAccountsBtn:setTouchEnabled(false)
-        self.unbindBtn:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.unbindBtn:getPositionX(), self.extendedUnbindBtnY))))
-        self.cdkeyBtn:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.cdkeyBtn:getPositionX(), self.extendedCdkeyBtnY))))
-        self.clipping:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.clipping:getPositionX(), self.extendedClippingY))))
-        self.layout:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.layout:getPositionX(), self.extendedLayoutY))))
-        setTimeOut(animFinish, self.animDuration)
-    else
-        self.animBg:setScaleY(self.extendedAnimBgHeight/self.foldedAnimBgHeight)
-        self.innerBg:setScaleY(self.extendedInnerBgHeight/self.foldedInnerBgHeight)
-        self.bg:setScaleY(self.extendedBgHeight/self.foldedBgHeight)
-        self.otherAccountsBtn:setVisible(false)
-        self.otherAccountsBtn:setTouchEnabled(false)
-        self.unbindBtn:setPositionY(self.extendedUnbindBtnY)
-        self.cdkeyBtn:setPositionY(self.extendedCdkeyBtnY)
-        self.clipping:setPositionY(self.extendedClippingY)
-        self.layout:setPositionY(self.extendedLayoutY)
-        self.upArrow:setVisible(true)
-        self.upArrow:setTouchEnabled(true)
-        self.qqLabelNum:setVisible(false)
-        self.qqLabelNum:setVisible(true)
-        self.qqLabelPrefix:setVisible(true)
-        self.weiboLabelNum:setVisible(true)
-        self.weiboLabelPrefix:setVisible(true)
-    end
-end
-
-function AccountPanel:fold(playAnim)
-    print('fold')
-    if self.isExtended == false then return end
-    self.isExtended = false
-
-     -- for k, v in pairs(self.otherAccountItems) do
-     --     --v:setVisible(false)
-     --    local btn = v:getChildByName('btn')
-     --    btn:setTouchEnabled(false)
-     -- end
-    if playAnim then
-        -- self.animBg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, 1)))
-        self.animBg:runAction(CCEaseSineIn:create(CCSizeTo:create(self.animDuration, self.animBgFoldedSize.width, self.animBgFoldedSize.height)))
-        self.innerBg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, 1)))
-        self.bg:runAction(CCEaseSineIn:create(CCScaleTo:create(self.animDuration, 1, 1)))
-        self.upArrow:setVisible(false)
-        self.upArrow:setTouchEnabled(false)
-        self.unbindBtn:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.unbindBtn:getPositionX(), self.foldedUnbindBtnY))))
-        self.cdkeyBtn:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.cdkeyBtn:getPositionX(), self.foldedCdkeyBtnY))))
-        self.clipping:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.clipping:getPositionX(), self.foldedClippingY))))
-        self.layout:runAction(CCEaseSineIn:create(CCMoveTo:create(self.animDuration, ccp(self.layout:getPositionX(), self.foldedLayoutY))))
-        setTimeOut(function () self.otherAccountsBtn:setVisible(true) self.otherAccountsBtn:setTouchEnabled(true) end, self.animDuration)
-    else
-        self.animBg:setScaleY(1)
-        self.innerBg:setScaleY(1)
-        self.bg:setScaleY(1)
-        self.upArrow:setVisible(false)
-        self.upArrow:setTouchEnabled(false)
-        self.otherAccountsBtn:setVisible(true)
-        self.otherAccountsBtn:setTouchEnabled(true)
-        self.unbindBtn:setPositionY(self.foldedUnbindBtnY)
-        self.cdkeyBtn:setPositionY(self.foldedCdkeyBtnY)
-        self.clipping:setPositionY(self.foldedClippingY)
-        self.layout:setPositionY(self.foldedLayoutY)
-    end
-end
-
 function AccountPanel:onCodeBtnTapped()
-    if not RequireNetworkAlert:popout() then return end
-    DcUtil:UserTrack({ category='setting', sub_category="setting_click_qrcode"})
+    if not RequireNetworkAlert:popout() then 
+        --- 玩家未联网首次登入游戏，点击"二维码"提示玩家"请联网后重进游戏，以获取您的消消乐二维码哟~"3秒后tip消失。
+        if not CCUserDefault:sharedUserDefault():getBoolForKey("account.panel.on.qrcode.tapped") then
+            CommonTip:showTip('请联网后重进游戏，以获取您的消消乐二维码哟~', 'positive', nil, 3)
+            CCUserDefault:sharedUserDefault():setBoolForKey("account.panel.on.qrcode.tapped", true)
+        end
+        return 
+    end
+    DcUtil:UserTrack({ category='setting', sub_category="setting_click", action = 'qrcode'})
     self:onCloseBtnTapped()
-    QRCodePostPanel:create():popout()
-end
-
-function AccountPanel:changePhoneBinding()
-
-    local function onReturnCallback()
+    local function onClose()
         AccountPanel:create():popout()
     end
-
-    local function onRebindingError(event)
-        event.target:rma()
-    end
-
-    local function onSuccessCallback(openId, phoneNumber)
-    	print("--------------onSuccessCallback called!!!!!!!!!!!!!!")
-
-        local function onRebindingFinish(event)
-            event.target:rma()
-            UserManager:getInstance().userExtend:setFlagBit(8, true)
-
-            local snsName = phoneNumber
-            UserManager:getInstance().profile:setSnsInfo(PlatformAuthEnum.kPhone, snsName)
-            Localhost:writeCachePhoneListData(phoneNumber)
-
-            --CommonTip:showTip(localize("setting.alert.content.3"), "positive")
-
-            local panel = AccountConfirmPanel:create()
-            panel:initLabel(localize("setting.alert.content.3"), "知道了")
-            panel:popout()
-            panel.allowBackKeyTap = false
-            DcUtil:UserTrack({ category='setting', sub_category="setting_click_switch_success"})
-        end
-
-        local http = RebindingHttp.new()
-        http:addEventListener(Events.kComplete, onRebindingFinish)
-        http:addEventListener(Events.kError, onRebindingError)
-        http:load(phoneNumber, openId)
-    end
-
-    local function doChangePhone()
-        local phoneNumber = self:getAccountAuthName(PlatformAuthEnum.kPhone) or ''
-        self:onCloseBtnTapped()
-        local panel = PasswordValidatePanel:create(onReturnCallback, onSuccessCallback, phoneNumber, kModeChangeBinding, nil)
-        panel:setPlace(2)
-        panel:popout()
-    end
-    local panel = ChangePhonePromptPanel:create(doChangePhone, nil)
-    panel:popout()
+    QRCodePostPanel:create():popout(onClose)
 end
 
-function AccountPanel:bindNewPhone()
-    local function onReturnCallback()
-        AccountPanel:create():popout()
-    end
-
+function AccountPanel:onAccountBtnTapped()
     self:onCloseBtnTapped()
-    local panel = PhoneRegisterPanel:create(onReturnCallback, kModeRegisterInGame, nil)
-    panel:setPhoneLoginCompleteCallback(function( openId,phoneNumber )
-
-        local profile = UserManager.getInstance().profile
-
-        Localhost:writeCachePhoneListData(phoneNumber)
-        local sns_token = {openId=openId,accessToken="",authorType=PlatformAuthEnum.kPhone}
-        local snsInfo = { snsName=phoneNumber }
-        if not _G.sns_token then
-            snsInfo.name = profile.name
-            snsInfo.headUrl = profile.headUrl
-        end
-        self:bindConnect(PlatformAuthEnum.kPhone,snsInfo,sns_token)
-    end)
-    panel:setPlace(2)
+    local panel = AccountSettingPanel:create()
     panel:popout()
-end
-
-function AccountPanel:guestBindConnect( authorizeType,snsInfo,sns_token )
-
-    local snsName = snsInfo.snsName
-    local name = snsInfo.name
-    local headUrl = snsInfo.headUrl
-
-    local function onFinish( mustExit )
-        self:updateSnsUserProfile(authorizeType,snsName,name,headUrl)
-        -- UserManager:getInstance().profile:setSnsInfo(authorizeType,snsName,name,headUrl)
-        -- self:updateUserProfile()
-        if mustExit then            
-            if __ANDROID then luajava.bindClass("com.happyelements.android.ApplicationHelper"):restart()
-            else Director.sharedDirector():exitGame() end        
-        else
-            _G.sns_token = sns_token
-
-            if authorizeType ~= PlatformAuthEnum.kPhone then
-                self:updateOtherAccount(authorizeType)
-                SnsProxy:syncSnsFriend()
-            else
-                AccountPanel:create():popout()
-            end
-
-            HomeScene:sharedInstance().pauseBtn:updateDotTipStatus()
-        end
-        DcUtil:UserTrack({ category='setting', sub_category="setting_click_binding_success", object = authorizeType})
-    end
-
-    local function onCancel( ... )
-        if authorizeType ~= PlatformAuthEnum.kPhone then
-            self:updateOtherAccount(authorizeType)
-        else
-             AccountPanel:create():popout()
-        end
-    end
-
-    local function onError(  )
-        if authorizeType ~= PlatformAuthEnum.kPhone then
-            self:updateOtherAccount(authorizeType)
-        else
-             AccountPanel:create():popout()
-        end
-
-        CommonTip:showTip("绑定账号失败！","negative")
-        -- CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
-
-        print("bindSns:guestBindConnect connect error")
-    end
-
-    local openId = sns_token.openId
-    local accessToken = sns_token.accessToken
-    local snsPlatform = PlatformConfig:getPlatformAuthName(authorizeType)
-    local oldSnsPlatform =  nil
-
-    local function preconnect( onGetPreConnect )
-
-        local function onError( evt )
-            onGetPreConnect(nil)
-        end
-        local function onFinish( evt )  
-            onGetPreConnect(evt.data)
-        end
-
-        local http = PreQQConnectHttp.new(true)
-        http:addEventListener(Events.kComplete, onFinish)
-        http:addEventListener(Events.kError, onError)
-        http:syncLoad(openId,accessToken,false,snsPlatform,HeDisplayUtil:urlEncode(snsName))
-    end
-
-    local function connect( onGetConnect )
-
-        local function onError( evt )
-            onGetConnect(nil)
-        end
-
-        local function onFinish( evt )
-            onGetConnect(evt.data)
-        end
-
-        local http = QQConnectHttp.new(true)
-        http:addEventListener(Events.kComplete, onFinish)
-        http:addEventListener(Events.kError, onError)
-        http:syncLoad(openId,accessToken,snsPlatform,HeDisplayUtil:urlEncode(snsName))
-    end
-
     
-    local function onGetConnect( result )
-        if result and result.uid and result.uuid then
-            local serverNewUid = result.uid
-            local serverNewUDID = result.uuid
-            local localOldUid = UserManager.getInstance().uid
+    DcUtil:UserTrack({ category='setting', sub_category="setting_click_my_account"})
 
-            UdidUtil:saveUdid(serverNewUDID)
-            Localhost.getInstance():setLastLoginUserConfig(serverNewUid, serverNewUDID, _G.kDefaultSocialPlatform)
-            if tostring(serverNewUid) ~= tostring(localOldUid) then
-                Localhost.getInstance():deleteUserDataByUserID(localOldUid)
+    if __WIN32 then return end
+    if self:hasAccountBinded() then return end
 
-                local function onRegisterFinish( ... ) 
-                    SnsProxy:setAuthorizeType(authorizeType)
-                    Localhost:setCurrentUserOpenId(sns_token.openId,nil,authorizeType)
-
-                    onFinish(true)
-                end
-                local function onRegisterError( ... )
-                    UdidUtil:revertUdid()
-                    Localhost.getInstance():setLastLoginUserConfig(0, nil, _G.kDefaultSocialPlatform) 
-
-                    onFinish(true)
-                end
-
-                local scene = Director:sharedDirector():getRunningScene()
-                if scene then 
-                    CountDownAnimation:createNetworkAnimation(scene, onRegisterError) 
-                end
-
-                kDeviceID = serverNewUDID            
-                local logic = PostLoginLogic.new()
-                logic:addEventListener(PostLoginLogicEvents.kComplete, onRegisterFinish)
-                logic:addEventListener(PostLoginLogicEvents.kError, onRegisterError)
-                logic:load()
-            else
-                kDeviceID = serverNewUDID
-                UserManager.getInstance().sessionKey = kDeviceID
-                Localhost.getInstance():flushCurrentUserData()
-
-                ConnectionManager:invalidateSessionKey()
-
-                SnsProxy:setAuthorizeType(authorizeType)
-                Localhost:setCurrentUserOpenId(sns_token.openId,nil,authorizeType)
-
-                onFinish(false)
-            end
-        else
-            onError()
-            return
-        end
-
-    end
-
-    local function onGetPreConnect( result )
-        if not result then 
-            onError()
-            return
-        end
-
-        local errorCode = result.errorCode or 0
-        local alertCode = result.alertCode or 0
-        if errorCode > 0 then
-            onError()
-            return
-        end
-
-        if alertCode > 0 then 
-
-                local function onTouchPositiveButton()
-                    connect(onGetConnect)
-                end
-                local function onTouchNegativeButton()
-                    onCancel()
-                end
-            print("alert code: "..tostring(alertCode))
-            if alertCode == QzoneSyncLogic.AlertCode.MERGE then
-                local platform = PlatformConfig:getPlatformNameLocalization(authorizeType)
-                local formated = QzoneSyncLogic:formatLevelInfoMessage(result.mergeLevelInfo or 1, tonumber(result.mergeUpdateTimeInfo))
-                local accMode = Localization:getInstance():getText("loading.tips.preloading.warnning.mode1")
-
-                local mergePanel = QQSyncPanel:create( 
-                    Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
-                    Localization:getInstance():getText("loading.tips.preloading.warnning.8",{user=formated,platform=platform,mode=accMode}),
-                    onTouchPositiveButton, 
-                    onTouchNegativeButton
-                )
-                mergePanel:popout()
-            elseif alertCode == QzoneSyncLogic.AlertCode.DIFF_PLATFORM then
-                require "zoo.panel.phone.CrossDeviceDescPanel"
-                local function onTouchOK()
-                    connect(onGetConnect)
-                    if __ANDROID then 
-                        DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=2 })
-                    else
-                        DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=1 })
-                    end
-                end
-                local function onTouchCancel()
-                    onCancel()
-                end
-
-                local panel = CrossDeviceDescPanel:create()
-                panel:setOkCallback(onTouchOK)
-                panel:setCancelCallback(onTouchCancel)
-                panel:popout() 
-
-            elseif alertCode == QzoneSyncLogic.AlertCode.NEED_SYNC then 
-                local syncPanel = QQSyncPanel:create( 
-                    Localization:getInstance():getText("loading.tips.start.btn.qq", {platform=platform}),
-                    Localization:getInstance():getText("loading.tips.preloading.warnning.4", {platform=platform}), 
-                    onTouchPositiveButton, 
-                    onTouchNegativeButton
-                )
-                syncPanel:popout()
-            else
-                print("unhandled alert code!!!!!!!!!")
-                onError()
-                return
-            end
-        else
-            onGetConnect(result)
-        end
-    end
-
-    preconnect(onGetPreConnect)
-end
-
-function AccountPanel:snsBindConnect( authorizeType,snsInfo,sns_token )
-    local oldAuthorizeType = SnsProxy:getAuthorizeType()
-
-    local snsName = snsInfo.snsName
-    local name = snsInfo.name
-    local headUrl = snsInfo.headUrl
-
-    local function onConnectFinish( ... )
-        self:updateSnsUserProfile(authorizeType,snsName,name,headUrl)
-        -- UserManager:getInstance().profile:setSnsInfo(authorizeType,snsName,name,headUrl)
-        -- self:updateUserProfile()
-
-        if authorizeType ~= PlatformAuthEnum.kPhone then
-            self:updateOtherAccount(authorizeType)
-
-            if not PlatformConfig:isQQPlatform() then
-                SnsProxy:setAuthorizeType(authorizeType)
-                SnsProxy:syncSnsFriend(sns_token)
-                SnsProxy:setAuthorizeType(oldAuthorizeType)
-            end
-        else
-            AccountPanel:create():popout()
-        end
-
-        print("bindSns:connect success")
-        DcUtil:UserTrack({ category='setting', sub_category="setting_click_binding_success", object = authorizeType})        
-    end
-
-    local function onConnectError ( event )
-        -- if onFailCallback then onFailCallback() end
-
-        if authorizeType ~= PlatformAuthEnum.kPhone then
-            self:updateOtherAccount(authorizeType)
-        else
-             AccountPanel:create():popout()
-        end
-
-        if tonumber(event.data) == 730764 then
-            local tipStr = localize("setting.alert.content.2", 
-                                    {account = PlatformConfig:getPlatformNameLocalization(authorizeType), 
-                                     account1 = PlatformConfig:getPlatformNameLocalization(authorizeType),
-                                     account2 =  PlatformConfig:getPlatformNameLocalization(authorizeType)
-                                    })
-            local panel = AccountConfirmPanel:create()
-            panel:initLabel(tipStr, "知道了")
-            panel:popout()
-            panel.allowBackKeyTap = false
-        else
-            CommonTip:showTip("绑定账号失败！","negative")
-        end
-        -- CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
-
-        print("bindSns:snsBindConnect error")
-    end
-
-    local http = ExtraConnectHttp.new(true)    
-    http:addEventListener(Events.kComplete, onConnectFinish)
-    http:addEventListener(Events.kError, onConnectError)
-    http:load(
-        sns_token.openId,
-        sns_token.accessToken,
-        PlatformConfig:getPlatformAuthName(authorizeType),
-        HeDisplayUtil:urlEncode(snsName)
-    )
-
-    -- print("bindSns:",       
-    --     sns_token.openId,
-    --     sns_token.accessToken,
-    --     PlatformConfig:getPlatformAuthName(authorizeType),
-    --     HeDisplayUtil:urlEncode(snsName)
-    -- )
-
-end
-
-function AccountPanel:bindConnect( authorizeType,snsInfo,sns_token )
-    if not snsInfo then
-        snsInfo = { snsName = Localization:getInstance():getText("game.setting.panel.use.device.name.default") }
-    end
-    if _G.sns_token then 
-        self:snsBindConnect(authorizeType,snsInfo,sns_token)
-    else
-        self:guestBindConnect(authorizeType,snsInfo,sns_token)
-    end
-end
-
-function AccountPanel:bindNewSns( authorizeType )
-
-    local scene = Director:sharedDirector():getRunningScene()
-    if not scene then
-        return
-    end
-    local isCancel = false
-    local animation
-    animation = CountDownAnimation:createBindAnimation(scene, function( ... )
-        isCancel = true
-        animation:removeFromParentAndCleanup(true)
-        self:updateOtherAccount(authorizeType)
-    end)
-    
-    local oldAuthorizeType = SnsProxy:getAuthorizeType()
-    local logoutCallback = {
-        onSuccess = function(result)
-
-            local function onSNSLoginResult( status, result )
-                if status == SnsCallbackEvent.onSuccess then
-                    local sns_token = result
-                    sns_token.authorType = authorizeType
-
-                    print("bindSns:" .. table.tostring(sns_token))
-
-                    local function successCallback( ... )
-                        if not isCancel then
-                            local snsInfo = {
-                                snsName = SnsProxy.profile.nick,
-                                name = SnsProxy.profile.nick,
-                                headUrl = SnsProxy.profile.headUrl,
-                            }
-                            self:bindConnect(authorizeType,snsInfo,sns_token)
-                            animation:removeFromParentAndCleanup(true)
-                        end
-
-                        print("bindSns: successCallback")
-                    end
-                    local function errorCallback( ... )
-                        if not isCancel then
-                            self:bindConnect(authorizeType,nil,sns_token)
-                            animation:removeFromParentAndCleanup(true)
-                        end
-
-                        print("bindSns: errorCallback")
-                    end
-                    local function cancelCallback( ... )
-                       if not isCancel then
-                            self:bindConnect(authorizeType,nil,sns_token)
-                            animation:removeFromParentAndCleanup(true)
-                        end
-
-                        print("bindSns: cancelCallback")
-                    end
-                    SnsProxy:setAuthorizeType(authorizeType)
-                    SnsProxy:getUserProfile(successCallback,errorCallback,cancelCallback)
-                    SnsProxy:setAuthorizeType(oldAuthorizeType)
-                else 
-                    if not isCancel then
-                        CommonTip:showTip("绑定账号失败！","negative")
-                        self:updateOtherAccount(authorizeType)
-                        animation:removeFromParentAndCleanup(true)
-                    end
-
-                    print("bindSns:login error " .. tostring(status))
-                end
-            end
-            SnsProxy:setAuthorizeType(authorizeType)
-            SnsProxy:login(onSNSLoginResult)
-            SnsProxy:setAuthorizeType(oldAuthorizeType)
-        end,
-        onError = function(errCode, msg) 
-            if not isCancel then
-                CommonTip:showTip("绑定账号失败！","negative")
-                self:updateOtherAccount(authorizeType)
-                animation:removeFromParentAndCleanup(true)
-            end
-
-            print("bindSns:",errCode,msg)
-        end,
-        onCancel = function()
-            if not isCancel then
-                CommonTip:showTip("绑定账号失败！","negative")
-                self:updateOtherAccount(authorizeType)
-                animation:removeFromParentAndCleanup(true)
-            end
-
-            print("bindSns: cancel")
-        end
-    }
-
-    SnsProxy:setAuthorizeType(authorizeType)
-    SnsProxy:logout(logoutCallback)
-    SnsProxy:setAuthorizeType(oldAuthorizeType)
-end
-
-
-function AccountPanel:phoneAccountBtnTapped()
-    if self:isPhoneBinded() then
-        if self:isAllowChangePhoneBinding() then
-            self:changePhoneBinding()
-
-            DcUtil:UserTrack({ category='setting', sub_category="setting_click_switch"})
-        end
-    else
-        self:bindNewPhone()
-
-        DcUtil:UserTrack({ category="setting",sub_category="setting_click_binding",object=PlatformAuthEnum.kPhone })
-    end
-end
-
-function AccountPanel:onUnbindAccountBtnTapped()
-    DcUtil:UserTrack({ category='setting', sub_category="setting_click_unbundling"})
-    
-    local function yesCallback()
-        if __ANDROID then luajava.bindClass("com.happyelements.android.ApplicationHelper"):restart()
-        else Director.sharedDirector():exitGame() end
-    end
-
-    local function onSuccessCallback()
-        local uid = UserManager.getInstance().uid
-        Localhost.getInstance():deleteUserDataByUserID(uid) 
-        Localhost.getInstance():deleteLastLoginUserConfig()
-        Localhost.getInstance():deleteGuideRecord()
-        Localhost.getInstance():deleteMarkPriseRecord()
-        Localhost.getInstance():deletePushRecord()
-        Localhost.getInstance():deleteWeeklyMatchData()
-        Localhost.getInstance():deleteLocalExtraData()
-        LocalNotificationManager.getInstance():cancelAllAndroidNotification()
-        CCUserDefault:sharedUserDefault():setStringForKey("game.devicename.userinput", "")
-        CCUserDefault:sharedUserDefault():flush()
-        UdidUtil:revertUdid()
-
-        local panel = CommonTipWithBtn:showTip({ tip = localize('setting.alert.content.7'), yes = localize('button.ok'), no = ''}, 'positive', yesCallback, nil, nil, true)
-        if panel then panel:setAfterScaledCallback(function() panel.allowBackKeyTap = false end) end
-    end
-
-    local function onError(err)
-        CommonTip:showTip("解除绑定失败！", "negative",nil,2)
-    end
-
-    local function onReturnCallback()
-        AccountPanel:create():popout()
-    end
-
-    local function sendDisposeRequest()
-        local http = DisposeBindingHttp.new()
-        http:load({PlatformAuthDetail[PlatformAuthEnum.kPhone].name})
-        http:ad(Events.kComplete, onSuccessCallback)
-        http:ad(Events.kError, onError)
-    end
-
-    local function validateSuccessCallback()
-        local panel = UnbindAccountPromptPanel:create(sendDisposeRequest, nil)
-        panel:popout()
-    end
-
-    local phoneNumber = self:getAccountAuthName(PlatformAuthEnum.kPhone) or ''
-    if UserManager.getInstance().profile:isPhoneBound() then
-        self:onCloseBtnTapped()
-        local panel = PasswordValidatePanel:create(onReturnCallback, validateSuccessCallback, phoneNumber, kModeDisposeBinding, nil)
-        panel:setPlace(2)
-        panel:popout()
-    else
-        validateSuccessCallback()
-    end
-
-end
-
-function AccountPanel:getAccountAuthName(accountKey)
-    return UserManager:getInstance().profile:getSnsUsername(accountKey)
-end
-
-function AccountPanel:isAllowChangePhoneBinding()
-    local val = UserManager:getInstance().userExtend:allowChangePhoneBinding()
-    print("isAllowChangePhoneBinding test: "..tostring(val))
-    
-    return val
-end
-
-function AccountPanel:isPhoneBinded()
-    if UserManager:getInstance().profile:getSnsUsername(PlatformAuthEnum.kPhone) ~= nil then
-        return true
-    end
-    return false
-end
-
-function AccountPanel:isPhoneSupported()
-    local config = PlatformConfig.authConfig
-    if type(config) == 'table' then
-        return table.exist(config, PlatformAuthEnum.kPhone)
-    else
-        return config == PlatformAuthEnum.kPhone
-    end
-end
-
-function AccountPanel:shouldShowUnbindBtn()
-
-    return false
-
-    -- for k, v in pairs(PlatformAuthEnum) do
-    --     if self:getAccountAuthName(v) ~= nil then
-    --         return true
-    --     end
-    -- end
-    -- return false
-    -- return true
-end
-
-local order = {
-    [PlatformAuthEnum.kPhone] = 1,
-    [PlatformAuthEnum.kQQ]    = 2,
-    [PlatformAuthEnum.kWeibo] = 3,
-    [PlatformAuthEnum.kWDJ]   = 4,
-    [PlatformAuthEnum.kMI]    = 5,
-    [PlatformAuthEnum.k360]   = 6,
-}
-
-function AccountPanel:updateOtherAccount( authorizeType )
-    if self.isDisposed then 
-        return
-    end
-    local v = authorizeType
-    local res = self.otherAccountItems[v]
-    if not res then 
-        return
-    end
-
-    print('otherAccounts', v)
-    local prefix, account
-    if v == PlatformAuthEnum.kWeibo then
-        prefix = Localization:getInstance():getText('setting.panel.intro.4')
-        account = self:getAccountAuthName(PlatformAuthEnum.kWeibo)
-    elseif v == PlatformAuthEnum.kQQ then
-        prefix = Localization:getInstance():getText('setting.panel.intro.3')
-        account = self:getAccountAuthName(PlatformAuthEnum.kQQ)
-    elseif v == PlatformAuthEnum.kWDJ then
-        prefix = Localization:getInstance():getText('setting.panel.intro.6')
-        account = self:getAccountAuthName(PlatformAuthEnum.kWDJ)
-    elseif v == PlatformAuthEnum.kMI then
-        prefix = Localization:getInstance():getText('setting.panel.intro.7')
-        account = self:getAccountAuthName(PlatformAuthEnum.kMI)
-    elseif v == PlatformAuthEnum.k360 then
-        prefix = Localization:getInstance():getText('setting.panel.intro.5')
-        account = self:getAccountAuthName(PlatformAuthEnum.k360)
-    end
-    -- local item = ItemInLayout:create()
-    -- local res = self:buildInterfaceGroup('AccountPanel_otherAccountItem')
-    -- self.otherAccountItems[v] = res
-    res:getChildByName('prefix'):setString(prefix)
-
-    local function isToppest(curType)
-        for k,_ in pairs(self.otherAccountItems) do
-            if order[k] < order[curType] then
-                return false
-            end
-        end
-
-        return true
-    end
-
-    local btn = res:getChildByName('btn')
-    btn:removeAllEventListeners()
-    btn:setVisible(true)
-
-    if not account then
-        btn:getChildByName('txt'):setString(Localization:getInstance():getText('setting.panel.button.2')..'>')
-        btn:setTouchEnabled(true)
-        btn:setButtonMode(true)
-        btn:addEventListener(DisplayEvents.kTouchTap,function( ... )
-            print("button touched!!!!!!!!!!!!!!"..tostring(isToppest(authorizeType)))
-            if btn:isVisible() and (self.isExtended or (isToppest(authorizeType)  and not self:isPhoneSupported())) then
-                btn:setVisible(false)
-                self:bindNewSns(v)
-                DcUtil:UserTrack({ category='setting', sub_category="setting_click_binding", object = v})
-            end
-        end)
-        res:getChildByName('account2'):setString('')
-        res:getChildByName('nobinded'):setString(Localization:getInstance():getText('setting.panel.intro.8'))
-    else
-        btn:setTouchEnabled(false)
-        btn:getChildByName('txt'):setString('')
-        res:getChildByName('account2'):setString(account)
-        res:getChildByName('nobinded'):setString('')
-
-        if account == "" and authorizeType == PlatformAuthEnum.kQQ then
-            res:getChildByName('nobinded'):setDimensions(CCSizeMake(0,0))
-            res:getChildByName('nobinded'):setString(Localization:getInstance():getText("setting.panel.intro.9"))
-        end
-    end
-end
-
-
-
-function AccountPanel:initOtherAccounts()
-    local otherAccounts = {}
     local authConfig = PlatformConfig.authConfig
-
-    if type(authConfig) == 'table' then
-        for k, v in pairs(authConfig) do
-            if v ~= PlatformAuthEnum.kPhone and v ~= PlatformAuthEnum.kGuest then
-                table.insert(otherAccounts, v)
-            end
-        end
-    else
-        if authConfig ~= PlatformAuthEnum.kPhone and authConfig ~= PlatformAuthEnum.kGuest then
-            table.insert(otherAccounts, authConfig)
-        end
+    print('xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+    print(table.tostring(authConfig))
+    local singleAuth
+    if type(authConfig) == 'table' and #authConfig == 1 and authConfig[1] ~= PlatformAuthEnum.kGuest
+    then
+        singleAuth = authConfig[1]
+    elseif type(authConfig) ~= 'table' and authConfig ~= PlatformAuthEnum.kGuest then
+        singleAuth = authConfig
     end
-
-    table.sort(otherAccounts,function(a,b) return order[a] < order[b] end)
-
-    -- test
-    -- table.insert(otherAccounts, PlatformAuthEnum.kWeibo)
-    -- table.insert(otherAccounts, PlatformAuthEnum.kQQ)
-    -- table.insert(otherAccounts, PlatformAuthEnum.k360)
-
-    local function secretPhone(phone)
-        return string.sub(phone, 1, 3).."xxxx"..string.sub(phone, -4)
-    end
-
-    local ph = self.ui:getChildByName('otherAccountsPlaceHolder')
-    ph:setVisible(false)
-    local layoutWidth = ph:getContentSize().width * ph:getScaleX()
-    local pos = ph:getPosition()
-
-    local layout = VerticalTileLayout:create(layoutWidth)
-
-    if self:isPhoneSupported() then
-
-        local function phoneAccountBtnTapped()
-            self:phoneAccountBtnTapped()
-        end
-
-        local res = self:buildInterfaceGroup('AccountPanel_phoneAccountItem')
-
-        self.phoneAccountItem = res
-
-        local prefix = Localization:getInstance():getText('setting.panel.intro.2')
-        local phone = self:getAccountAuthName(PlatformAuthEnum.kPhone) or ''
-        if #phone == 11 then
-            phone = secretPhone(phone)
-        end
-        res:getChildByName('prefix'):setString(prefix)
-        local btn = res:getChildByName('btn')
-
-        self.bindPhoneBtn = btn
-
-        if self:isPhoneBinded() then
-            if self:isAllowChangePhoneBinding() then
-                res:getChildByName('account'):setText(phone)
-                res:getChildByName('nobinded'):setVisible(false)
-                btn:getChildByName('txt'):setString(Localization:getInstance():getText('setting.panel.button.3')..'>')
-            else
-                res:getChildByName('account'):setText(phone)
-                res:getChildByName('nobinded'):setVisible(false)
-                btn:getChildByName('txt'):setString('')
-            end
+    if singleAuth then
+        if singleAuth == PlatformAuthEnum.kPhone then
+            panel:bindNewPhone()
         else
-            res:getChildByName('account'):setText('')
-            res:getChildByName('nobinded'):setVisible(true)
-            res:getChildByName('nobinded'):setString(Localization:getInstance():getText('setting.panel.intro.8'))
-            btn:getChildByName('txt'):setString(Localization:getInstance():getText('setting.panel.button.2')..'>')
-        end
-        btn:setTouchEnabled(true)
-        btn:ad(DisplayEvents.kTouchTap, phoneAccountBtnTapped)
-        local item = ItemInLayout:create()
-        item:setContent(res)
-        item:setHeight(50)
-        layout:addItem(item)
-    end
-
-    self.otherAccountItems = {}
-
-    for k, v in pairs(otherAccounts) do
-        local item = ItemInLayout:create()
-        local res = self:buildInterfaceGroup('AccountPanel_phoneAccountItem')
-        self.otherAccountItems[v] = res
-
-        self:updateOtherAccount(v)
-
-        item:setContent(res)
-        item:setHeight(50)
-        layout:addItem(item)
-    end
-    -- layout:setPositionX(pos.x)
-    -- layout:setPositionY(pos.y)
-
-    local layoutHeight = layout:getHeight()
-    local clipping2 = ClippingNode:create({size = {width = layoutWidth, height = layoutHeight}})
-    -- local clipping2 = LayerColor:create()
-    -- clipping2:setContentSize(CCSizeMake(layoutWidth, layoutHeight))
-    clipping2:addChild(layout)
-    layout:setPositionY(layoutHeight)
-    clipping2:setPositionX(pos.x)
-    clipping2:setPositionY(pos.y - layoutHeight)
-    self.ui:addChildAt(clipping2, self.moreAvatars:getZOrder() - 1)
-    self.clipping = clipping2
-    self.layout = layout
-
-    -- self.animMoveY = layoutHeight - 50
-    local itemHeight = 55
-    self.animMoveY = layoutHeight - itemHeight
-    if (#otherAccounts >= 1 and self:isPhoneSupported()) or (#otherAccounts >= 2) then
-        self.otherAccountsBtnEnabled = true
-    else
-        self.otherAccountsBtnEnabled = false
-    end
-end
-
-
-function ChangePhonePromptPanel:create(confirmCallback, cancelCallback)
-    local instance = ChangePhonePromptPanel.new()
-    instance:loadRequiredResource(PanelConfigFiles.panel_game_setting)
-    instance:init(confirmCallback, cancelCallback)
-    return instance
-end
-
-function ChangePhonePromptPanel:popout()
-    PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false)
-    local vs = Director:sharedDirector():getVisibleSize()
-    local vo = Director:sharedDirector():getVisibleOrigin()
-    self:setPositionX(vs.width / 2 - self:getGroupBounds().size.width / 2)
-    self:setPositionY(-(vs.height / 2 - self:getGroupBounds().size.height / 2))
-end
-
-function ChangePhonePromptPanel:init(confirmCallback, cancelCallback)
-    self.confirmCallback = confirmCallback
-    self.cancelCallback = cancelCallback
-    self.ui = self:buildInterfaceGroup('changePhonePromptPanel')
-    BasePanel.init(self, self.ui)
-    self.ui:getChildByName('desLabel'):setString(Localization:getInstance():getText('setting.alert.content.1'))
-    self.cancelBtn = GroupButtonBase:create(self.ui:getChildByName('cancelBtn'))
-    self.cancelBtn:setColorMode(kGroupButtonColorMode.blue)
-    self.cancelBtn:setString(Localization:getInstance():getText('button.cancel'))
-    self.cancelBtn:ad(DisplayEvents.kTouchTap, 
-        function ()  
-            PopoutManager:sharedInstance():remove(self, true)
-            if self.cancelCallback then self.cancelCallback() end
-        end)
-    self.confirmBtn = GroupButtonBase:create(self.ui:getChildByName('confirmBtn'))
-    self.confirmBtn:setColorMode(kGroupButtonColorMode.green)
-    self.confirmBtn:setString(Localization:getInstance():getText('setting.panel.button.6'))
-    self.confirmBtn:ad(DisplayEvents.kTouchTap, 
-        function () 
-            PopoutManager:sharedInstance():remove(self, true)
-            if self.confirmCallback then self.confirmCallback() end
-        end)
-end
-
-function UnbindAccountPromptPanel:create(confirmCallback, cancelCallback)
-    local instance = UnbindAccountPromptPanel.new()
-    instance:loadRequiredResource(PanelConfigFiles.panel_game_setting)
-    instance:init(confirmCallback, cancelCallback)
-    return instance
-end
-
-function UnbindAccountPromptPanel:popout()
-    PopoutManager:sharedInstance():addWithBgFadeIn(self, true, false)
-    local vs = Director:sharedDirector():getVisibleSize()
-    local vo = Director:sharedDirector():getVisibleOrigin()
-    self:setPositionX(vs.width / 2 - self:getGroupBounds().size.width / 2)
-    self:setPositionY(-(vs.height / 2 - self:getGroupBounds().size.height / 2))
-end
-
-function UnbindAccountPromptPanel:init(confirmCallback, cancelCallback)
-    self.confirmCallback = confirmCallback
-    self.cancelCallback = cancelCallback
-    self.ui = self:buildInterfaceGroup('unbingAccountPromtPanel')
-    BasePanel.init(self, self.ui)
-    self.ui:getChildByName('panelTitle'):setString(Localization:getInstance():getText('setting.panel.button.5'))
-    self.ui:getChildByName('desLabel'):setString(
-        Localization:getInstance():getText('setting.alert.content.4') ..'\n\n' .. Localization:getInstance():getText('setting.alert.content.5')
-        )
-    self.cancelBtn = GroupButtonBase:create(self.ui:getChildByName('cancelBtn'))
-    self.cancelBtn:setColorMode(kGroupButtonColorMode.blue)
-    self.cancelBtn:setString(Localization:getInstance():getText('button.cancel'))
-    self.cancelBtn:ad(DisplayEvents.kTouchTap, 
-        function ()  
-            PopoutManager:sharedInstance():remove(self, true)
-            if self.cancelCallback then self.cancelCallback() end
-        end)
-    self.confirmBtn = GroupButtonBase:create(self.ui:getChildByName('confirmBtn'))
-    self.confirmBtn:setColorMode(kGroupButtonColorMode.green)
-    self.confirmBtn:setString(Localization:getInstance():getText('button.ok'))
-    self.confirmBtn:ad(DisplayEvents.kTouchTap, function() self:onConfirmBtnTapped() end)
-end
-
-function UnbindAccountPromptPanel:onConfirmBtnTapped()
-    if not self.confirmedOnce then
-        self.confirmedOnce = true
-        self.ui:getChildByName('secondConfirmMessage'):setString(Localization:getInstance():getText('setting.alert.content.6'))
-    else
-        PopoutManager:sharedInstance():remove(self, true)
-        if self.confirmCallback then
-            self.confirmCallback()
+            panel:bindNewSns(singleAuth)
         end
     end
+end
+
+function AccountPanel:shouldShowAccountBtn()
+    -- if __WIN32 then return true end
+    if PlatformConfig.authConfig == PlatformAuthEnum.kGuest then
+        return false
+    end
+    return true
+end
+
+function AccountPanel:hasAccountBinded()
+    -- if __WIN32 then return true end
+    return UserManager.getInstance().profile:isPhoneBound() or UserManager.getInstance().profile:isSNSBound()
 end

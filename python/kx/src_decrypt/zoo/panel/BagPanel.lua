@@ -13,7 +13,7 @@ local PAGE_SIZE = 20
 local bagPanelInstance = nil
 
 
-function buyUnlockCallback(success, event)
+function buyUnlockCallback(success)
 	if success then 
 		local bagData = BagManager:getInstance():getUserBagData()
 		

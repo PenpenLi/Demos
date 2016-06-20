@@ -23,21 +23,16 @@ local function getColorOfGameItem(r, c, gameItemMap)
 end
 
 local function tryAssignItemWithColor(selectionPool, sourceGameItemMap, destGameItemMap, position, color, isSpecial)
-	print('')
-	print('ASSIGN ON POSITION:', position.r, position.c, 'COLOR:', color)
 	for r, row in pairs(selectionPool.items) do
 		for c, col in pairs(row) do
 			local item = sourceGameItemMap[r][c]
 			if (not isSpecial and color ~= nil and item.ItemColorType == color)
 			or (not isSpecial and color == nil)
-			or (isSpecial == true and item.ItemSpecialType >= AnimalTypeConfig.kLine 
-				and item.ItemSpecialType <= AnimalTypeConfig.kColor)
+			or (isSpecial == true and AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType))
 			then
-				print('USING COLOR: ',item.ItemColorType, 'FROM:', r, c)
 				destGameItemMap[position.r][position.c] = item:copy()
 				selectionPool.items[r][c] = nil
-				selectionPool.colors[item.ItemColorType].count = selectionPool.colors[item.ItemColorType].count - 1
-				print('COLOR REMAIN: ', selectionPool.colors[item.ItemColorType].count)
+				table.getMapValue(selectionPool.colors, item.ItemColorType).count = table.getMapValue(selectionPool.colors, item.ItemColorType).count - 1
 				return true
 			end
 		end
@@ -68,8 +63,6 @@ local function checkMatchQuick(r, c, gameItemMap)
 	local y3 = getColorOfGameItem(r , c + 1, gameItemMap)
 	local y4 = getColorOfGameItem(r , c + 2, gameItemMap)
 
-
-	print('checkMatchQuick', r, c, color, x1, x2, x3, x4, y1, y2, y3, y4)
 	if color ~= 0 then
 		if (color == x2 and x1 == x2)
 			or (color == x2 and color == x3)
@@ -85,14 +78,13 @@ local function checkMatchQuick(r, c, gameItemMap)
 end
 
 local function tryExchangeItemColor(newGameItemMap, needExchangeMap, position, fixedPositions)
-	print('TRY EXCHANGE', position.r, position.c)
 	for r = 1, #newGameItemMap do
 		for c = 1, #newGameItemMap[r] do
 			local item = newGameItemMap[r][c]
 			local color = item.ItemColorType
 			if RefreshItemLogic.isItemRefreshable(item) 
 			and not isItemInFixedPositions(r, c, fixedPositions)
-			and color >= AnimalTypeConfig.kBlue and color <= AnimalTypeConfig.kYellow then
+			and AnimalTypeConfig.isColorTypeValid(color) --[[or color == AnimalTypeConfig.kDrip]] then
 				local banned = false
 				-- 检查颜色是否被ban
 				for k, v in pairs(needExchangeMap[position.r][position.c].banColor) do
@@ -103,15 +95,12 @@ local function tryExchangeItemColor(newGameItemMap, needExchangeMap, position, f
 				end
 				if not banned then
 					-- 检查交换后是否产生匹配
-					print('NOT BANNED', r, c)
 					swapInMatrix(newGameItemMap, r, c, position.r, position.c)
 					if checkMatchQuick(r, c, newGameItemMap) 
 					or checkMatchQuick(position.r, position.c, newGameItemMap) then
 						-- 产生匹配，不能交换，再换回来
-						print('no exchanging', r, c, position.r, position.c)
 						swapInMatrix(newGameItemMap, r, c, position.r, position.c)
 					else
-						print('EXCHANGING ', r, c, ' WITH ', position.r, position.c)
 						return true
 					end
 				end
@@ -138,7 +127,7 @@ local function getNeedExchangeMap(newGameItemMap, fixedPositions)
 			local item3 = newGameItemMap[r][c+2]
 			if item1 and item2 and item3 and item1.isUsed and item2.isUsed and item3.isUsed 
 			and RefreshItemLogic.isItemMatchable(item1) and RefreshItemLogic.isItemMatchable(item2) and RefreshItemLogic.isItemMatchable(item3)
-			and (item1.ItemColorType >= AnimalTypeConfig.kBlue and item1.ItemColorType <= AnimalTypeConfig.kYellow) 
+			and ( AnimalTypeConfig.isColorTypeValid(item1.ItemColorType) --[[or item1.ItemColorType == AnimalTypeConfig.kDrip]] )
 			and (item1.ItemColorType == item2.ItemColorType and item2.ItemColorType == item3.ItemColorType)
 			then
 				-- 标记item需要移走，并记录此处不接受的颜色
@@ -153,7 +142,6 @@ local function getNeedExchangeMap(newGameItemMap, fixedPositions)
 					needExchangeMap[r][c+2].banColor[item3.ItemColorType] = true
 				else
 					-- 出错：三个item都不能被移走，但是又产生了三消，说明本次刷新失败
-					print('check match row fail')
 					return false, needExchangeMap
 				end
 			end
@@ -164,7 +152,7 @@ local function getNeedExchangeMap(newGameItemMap, fixedPositions)
 				local item3 = newGameItemMap[r+2][c]
 				if item1 and item2 and item3 and item1.isUsed and item2.isUsed and item3.isUsed 
 				and RefreshItemLogic.isItemMatchable(item1) and RefreshItemLogic.isItemMatchable(item2) and RefreshItemLogic.isItemMatchable(item3)
-				and (item1.ItemColorType >= AnimalTypeConfig.kBlue and item1.ItemColorType <= AnimalTypeConfig.kYellow) 
+				and ( AnimalTypeConfig.isColorTypeValid(item1.ItemColorType) --[[or item1.ItemColorType == AnimalTypeConfig.kDrip]] )
 				and (item1.ItemColorType == item2.ItemColorType and item2.ItemColorType == item3.ItemColorType)
 				then
 					-- 标记item需要移走，并记录此处不接受的颜色
@@ -178,7 +166,6 @@ local function getNeedExchangeMap(newGameItemMap, fixedPositions)
 						needExchangeMap[r+2][c].item = item3
 						needExchangeMap[r+2][c].banColor[item3.ItemColorType] = true
 					else
-						print('check match line fail')
 						return false, needExchangeMap
 					end
 				end
@@ -192,7 +179,6 @@ local function checkFailure(gameItemMap)
 	for r=1,#gameItemMap do
 		for c=1,#gameItemMap[r] do
 			if gameItemMap[r][c].ItemColorType ~= 0 and checkMatchQuick(r, c, gameItemMap) then
-				print('FAIL ', r, c, gameItemMap[r][c].ItemColorType)
 				return true
 			end
 		end
@@ -296,9 +282,9 @@ function SpecialSwapArea:isValide(mainLogic)
 
 	if itemA and itemB then
 		if (RefreshItemLogic.isItemRefreshable(itemA) and RefreshItemLogic.isItemRefreshable(itemB))
-		or (itemA.ItemSpecialType == AnimalTypeConfig.kColor and (itemB.ItemSpecialType == AnimalTypeConfig.kColor or RefreshItemLogic.isItemMovable(itemB) and RefreshItemLogic.isItemMatchable(itemB)))
-		or (itemB.ItemSpecialType == AnimalTypeConfig.kColor and (itemA.ItemSpecialType == AnimalTypeConfig.kColor or RefreshItemLogic.isItemMovable(itemA) and RefreshItemLogic.isItemMatchable(itemA))) 
-		or (itemA.ItemSpecialType == AnimalTypeConfig.kColor and itemB.ItemSpecialType == AnimalTypeConfig.kColor)
+		or (itemA.ItemSpecialType == AnimalTypeConfig.kColor and RefreshItemLogic.isItemMovable(itemA) and (itemB.ItemSpecialType == AnimalTypeConfig.kColor or RefreshItemLogic.isItemMovable(itemB) and RefreshItemLogic.isItemMatchable(itemB)))
+		or (itemB.ItemSpecialType == AnimalTypeConfig.kColor and RefreshItemLogic.isItemMovable(itemB)  and (itemA.ItemSpecialType == AnimalTypeConfig.kColor or RefreshItemLogic.isItemMovable(itemA) and RefreshItemLogic.isItemMatchable(itemA))) 
+		or (itemA.ItemSpecialType == AnimalTypeConfig.kColor and RefreshItemLogic.isItemMovable(itemA)  and itemB.ItemSpecialType == AnimalTypeConfig.kColor and RefreshItemLogic.isItemMovable(itemB) )
 
 		then
 			local boardA = mainLogic.boardmap[self.posA.r][self.posA.c]
@@ -519,7 +505,7 @@ end
 
 function RefreshItemLogic.isItemRefreshable(item)
 	if item.isUsed and not item:hasLock() and not item:hasFurball()
-		and item.ItemType == GameItemType.kAnimal
+		and (item.ItemType == GameItemType.kAnimal --[[or item.ItemType == GameItemType.kDrip]])
 		and item.ItemSpecialType ~= AnimalTypeConfig.kColor
 		and item:isAvailable()
 		then
@@ -541,6 +527,62 @@ end
 
 function RefreshItemLogic.isItemMovable(item)
 	return item:canBeSwap()
+end
+
+function RefreshItemLogic.isItemSwapAreaValid(mainLogic, r, c)
+	if SwapArea:create({r=r, c=c+1}, 'T', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'T', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'T', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'T', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'T', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'T', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'T', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+1}, 'T', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'T', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'T', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+1}, 'T', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'T', 'D'):isValide(mainLogic) then return true end
+
+	if SwapArea:create({r=r, c=c+1}, 'L', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-2, c=c}, 'L', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'L', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'L', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'L', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+2, c=c}, 'L', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'L', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+1}, 'L', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+2}, 'L', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'L', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'L', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-2}, 'L', 'D'):isValide(mainLogic) then return true end
+
+	if SwapArea:create({r=r, c=c+1}, 'RL', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'RL', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+2, c=c}, 'RL', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'RL', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'RL', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-2, c=c}, 'RL', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'RL', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'RL', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-2}, 'RL', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'RL', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+1}, 'RL', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+2}, 'RL', 'D'):isValide(mainLogic) then return true end
+
+	if SwapArea:create({r=r, c=c+1}, 'I', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'I', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-2}, 'I', 'L'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c-1}, 'I', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+1}, 'I', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r, c=c+2}, 'I', 'R'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'I', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'I', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-2, c=c}, 'I', 'U'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r-1, c=c}, 'I', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+1, c=c}, 'I', 'D'):isValide(mainLogic) then return true end
+	if SwapArea:create({r=r+2, c=c}, 'I', 'D'):isValide(mainLogic) then return true end
+	
+	return false
 end
 
 function RefreshItemLogic.getProcessedGameBoard(mainLogic)
@@ -592,7 +634,7 @@ function RefreshItemLogic.getProcessedGameBoard(mainLogic)
 		end
 	end
 
-	print("TOTAL COUNT", #swap_areas)
+	-- print("TOTAL COUNT", #swap_areas)
 	-- for k, v in pairs(swap_areas) do
 	-- 	print('')
 	-- 	print('TYPE', v.type, 'DIRECTION', v.direction)
@@ -602,7 +644,7 @@ function RefreshItemLogic.getProcessedGameBoard(mainLogic)
 	-- 	print('D pos: ', v.posD.r, v.posD.c)
 	-- end
 
-	print('TOTAL SPECIAL COUNT', #special_swap_areas)
+	-- print('TOTAL SPECIAL COUNT', #special_swap_areas)
 	-- for k, v in pairs(special_swap_areas) do
 	-- 	print('')
 	-- 	print('DIRECTION', v.direction)
@@ -640,6 +682,7 @@ function RefreshItemLogic.getProcessedGameBoard(mainLogic)
 		[AnimalTypeConfig.kPurple] = {count = 0}, 
 		[AnimalTypeConfig.kRed] = {count = 0}, 
 		[AnimalTypeConfig.kYellow] = {count = 0},
+		[AnimalTypeConfig.kDrip] = {count = 0},
 	}
 
 	-- 记录参与刷新的item的位置，并统计所有颜色的数量
@@ -648,8 +691,8 @@ function RefreshItemLogic.getProcessedGameBoard(mainLogic)
 			local item = gameItemMap[r][c]
 			if RefreshItemLogic.isItemRefreshable(item) then
 				refreshableItems.items[r][c] = true
-				if item.ItemColorType >= AnimalTypeConfig.kBlue and item.ItemColorType <= AnimalTypeConfig.kYellow then
-					refreshableItems.colors[item.ItemColorType].count = refreshableItems.colors[item.ItemColorType].count + 1
+				if AnimalTypeConfig.isColorTypeValid(item.ItemColorType) --[[or item.ItemColorType == AnimalTypeConfig.kDrip]] then
+					table.getMapValue(refreshableItems.colors, item.ItemColorType).count = table.getMapValue(refreshableItems.colors, item.ItemColorType).count + 1
 				end
 			end
 		end
@@ -663,27 +706,13 @@ function RefreshItemLogic.getProcessedGameBoard(mainLogic)
 		[AnimalTypeConfig.kPurple] 	= {count = 0}, 
 		[AnimalTypeConfig.kRed] 	= {count = 0}, 
 		[AnimalTypeConfig.kYellow] 	= {count = 0},
+		[AnimalTypeConfig.kDrip] = {count = 0},
 	}
 
-	for i = 1, #refreshableItems.colors do
-		colorStatistics[i].count = refreshableItems.colors[i].count
+	for color, ele in pairs(refreshableItems.colors) do
+		--print("RRR   111111111111111111111111111   ")
+		table.getMapValue(colorStatistics, color).count = ele.count
 	end
-
-	print('COLOR MATRIX :')
-	print('blue: ', 	colorStatistics[1].count)
-	print('green: ', 	colorStatistics[2].count)
-	print('orange: ', 	colorStatistics[3].count)
-	print('pruple: ', 	colorStatistics[4].count)
-	print('red: ', 		colorStatistics[5].count)
-	print('yellow: ', 	colorStatistics[6].count)
-
-
-	-- print('REFRESHABLE ITEMS COUNT: ', #refreshableItems.items)
-	-- for r = 1, #gameItemMap do
-	-- 	for c = 1, #gameItemMap[r] do
-	-- 		print(r, c, refreshableItems.items[r][c])
-	-- 	end
-	-- end
 
 	return swap_areas, colorStatistics, refreshableItems, special_swap_areas
 end
@@ -710,8 +739,8 @@ function RefreshItemLogic.tryRefresh(mainLogic)
 	else
 
 		for k, v in pairs(swap_areas) do
-			print('')
-			print('USING SWAP AREA: ', v.posD.r, v.posD.c, v.type, v.direction)
+			-- print('')
+			-- print('USING SWAP AREA: ', v.posD.r, v.posD.c, v.type, v.direction)
 			local result = RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, v, colorStatistics, refreshableItems)
 			if result then
 				print('REFRESH SUCCESS USING SWAP AREA!!')
@@ -735,7 +764,7 @@ function RefreshItemLogic.tryRefresh(mainLogic)
 	for r = 1, #mainLogic.gameItemMap do
 		for c = 1, #mainLogic.gameItemMap[r] do
 			local item = mainLogic.gameItemMap[r][c]
-			if item.ItemSpecialType and item.ItemSpecialType >= AnimalTypeConfig.kLine and item.ItemSpecialType <= AnimalTypeConfig.kColor then
+			if item.ItemSpecialType and AnimalTypeConfig.isSpecialTypeValid(item.ItemSpecialType) then
 				refreshableSpeicalCount = refreshableSpeicalCount + 1
 			end
 			if item.ItemSpecialType == AnimalTypeConfig.kColor then
@@ -743,14 +772,13 @@ function RefreshItemLogic.tryRefresh(mainLogic)
 			end
 		end
 	end
-	print(refreshableSpeicalCount)
-	-- debug.debug()
+	-- print(refreshableSpeicalCount)
 	if not hasBird and refreshableSpeicalCount < 2 or #special_swap_areas == 0 then
 		successWithSpecialSwapArea = false
 	else
 		for k, v in pairs(special_swap_areas) do
-			print('')
-			print('USING SPECIAL SWAP AREA: ', v.posA.r, v.posA.c, v.direction)
+			-- print('')
+			-- print('USING SPECIAL SWAP AREA: ', v.posA.r, v.posA.c, v.direction)
 			local result = RefreshItemLogic.trySpecialSwapArea(mainLogic, gameItemMapCopy, v, colorStatistics, refreshableItems)
 			if result then
 				print('REFRESH SUCCESS USING SPECIAL SWAP AREA!!')
@@ -807,8 +835,6 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 		return false
 	end
 
-	print('FIXED COLOR: ', fixedColor)
-
 	-- 如果没有限定颜色，那就选择item最多的颜色
 	local mostColor = nil
 	if not fixedColor then		
@@ -831,12 +857,12 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 	
 	if fixedColor then
 		-- 如果BC位有锁定的颜色，那么这个颜色不需要3个，而只需要3-#unrefreshableItems个就行
-		if colorStatistics[fixedColor].count < 3 - #unrefreshableItems then
+		if table.getMapValue(colorStatistics, fixedColor).count < 3 - #unrefreshableItems then
 			return false
 		end
 	elseif mostColor then 
 		-- 如果没有锁定颜色，选用的颜色必须要至少3个
-		if colorStatistics[mostColor].count < 3 then
+		if table.getMapValue(colorStatistics, mostColor).count < 3 then
 			return false
 		end
 	elseif not mostColor then 
@@ -848,8 +874,6 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 	if not fixedColor then
 		fixedColor = mostColor
 	end
-
-	print('MOST COLOR: ', fixedColor)
 
 	local colorStatisticsCopy = table.clone(colorStatistics, true)
 	local selectionPool = table.clone(refreshableItems, true)
@@ -922,14 +946,14 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 		end
 	end
 
-	print('')
-	print('REFRESHED COLOR MAP')
+	-- print('')
+	-- print('REFRESHED COLOR MAP')
 	for r = 1, #newGameItemMap do
 		local s = ''
 		for c = 1, #newGameItemMap[r] do
 			s = s..tostring(newGameItemMap[r][c].ItemColorType)..' '
 		end
-		print(s)
+		-- print(s)
 	end
 
 	-- ABC是不能被交换的位置
@@ -949,19 +973,19 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 
 	
 	-- debug
-	print('')
-	print('NEED EXCHANGE MAP')
-	for r = 1, #newGameItemMap do
-		for c = 1, #newGameItemMap[r] do
-			if needExchangeMap[r][c].item ~= nil then
-				print('item r,c,color ', r, c)
-				for k, v in pairs(needExchangeMap[r][c].banColor) do
-					print(k)
-				end
-				print('')
-			end
-		end
-	end
+	-- print('')
+	-- print('NEED EXCHANGE MAP')
+	-- for r = 1, #newGameItemMap do
+	-- 	for c = 1, #newGameItemMap[r] do
+	-- 		if needExchangeMap[r][c].item ~= nil then
+	-- 			print('item r,c,color ', r, c)
+	-- 			for k, v in pairs(needExchangeMap[r][c].banColor) do
+	-- 				print(k)
+	-- 			end
+	-- 			print('')
+	-- 		end
+	-- 	end
+	-- end
 
 
 	-- 交换已标记的item
@@ -976,30 +1000,30 @@ function RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area,
 		end
 	end
 
-	print('')
-	print('COLOR MAP AFTER EXCHANGE')
-	for r = 1, #newGameItemMap do
-		local s = ''
-		for c = 1, #newGameItemMap[r] do
-			s = s..tostring(newGameItemMap[r][c].ItemColorType)..' '
-		end
-		print(s)
-	end
+	-- print('')
+	-- print('COLOR MAP AFTER EXCHANGE')
+	-- for r = 1, #newGameItemMap do
+	-- 	local s = ''
+	-- 	for c = 1, #newGameItemMap[r] do
+	-- 		s = s..tostring(newGameItemMap[r][c].ItemColorType)..' '
+	-- 	end
+	-- 	print(s)
+	-- end
 
 
 	-- 最后再检查一遍是否有问题
 	if checkFailure(newGameItemMap) then
-		print('checkFailure fail')
+		-- print('checkFailure fail')
 		retry = true
 		table.insert(retryBanColor, fixedColor)
 	end
 
 	if not retry then
-		print('REFRESH SUCCESS USING T_AREA:', swap_area.posD.r, swap_area.posD.c, swap_area.type, swap_area.direction)
+		-- print('REFRESH SUCCESS USING T_AREA:', swap_area.posD.r, swap_area.posD.c, swap_area.type, swap_area.direction)
 		return newGameItemMap
 	else
-		print('REFRESH FAILED USING T_AREA:', swap_area.posD.r, swap_area.posD.c, swap_area.type, swap_area.direction, ' RETRYING......')
-		print('retry ban color', table.tostring(retryBanColor))
+		-- print('REFRESH FAILED USING T_AREA:', swap_area.posD.r, swap_area.posD.c, swap_area.type, swap_area.direction, ' RETRYING......')
+		-- print('retry ban color', table.tostring(retryBanColor))
 		return RefreshItemLogic.tryWithSwapArea(mainLogic, gameItemMapCopy, swap_area, colorStatistics, refreshableItems, retryBanColor)
 	end
 
@@ -1032,29 +1056,23 @@ function RefreshItemLogic.trySpecialSwapArea(mainLogic, gameItemMapCopy, special
 	if itemA.ItemSpecialType == AnimalTypeConfig.kColor and itemB.ItemSpecialType ~= AnimalTypeConfig.kColor then
 		-- 如果A是鸟，那么B可随便指定一个，可以使特效，也可以不是
 		local color = getRandomColor()
-		print('DEBUG COLOR A', color)
 		if not tryAssignItemWithColor(selectionPool, gameItemMap, newGameItemMap, special_swap_area.posB, color, false)
 		then
-			print('ASSIGN SPECIAL ITEM FAILED: A is bird')
 			return false
 		end
 	elseif itemB.ItemSpecialType == AnimalTypeConfig.kColor and itemA.ItemSpecialType ~= AnimalTypeConfig.kColor then
 		local color = getRandomColor()
-		print('DEBUG COLOR B', color)
 		if not tryAssignItemWithColor(selectionPool, gameItemMap, newGameItemMap, special_swap_area.posA, color, false)
 		then
-			print('ASSIGN SPECIAL ITEM ON A FAILED: B is bird')
 			return false
 		end
 	elseif itemA.ItemSpecialType ~= AnimalTypeConfig.kColor and itemB.ItemSpecialType ~= AnimalTypeConfig.kColor then
 		if not tryAssignItemWithColor(selectionPool, gameItemMap, newGameItemMap, special_swap_area.posA, nil, true)
 		then
-			print('ASSIGN SPECIAL ITEM ON A FAILED')
 			return false
 		end
 		if not tryAssignItemWithColor(selectionPool, gameItemMap, newGameItemMap, special_swap_area.posB, nil, true)
 		then
-			print('ASSIGN SPECIAL ITEM ON B FAILED')
 			return false
 		end
 	end
@@ -1117,14 +1135,11 @@ function RefreshItemLogic.trySpecialSwapArea(mainLogic, gameItemMapCopy, special
 		end
 	end
 
-	print('')
-	print('COLOR MAP AFTER EXCHANGE')
 	for r = 1, #newGameItemMap do
 		local s = ''
 		for c = 1, #newGameItemMap[r] do
 			s = s..tostring(newGameItemMap[r][c].ItemColorType)..' '
 		end
-		print(s)
 	end
 
 	return newGameItemMap

@@ -16,7 +16,7 @@ assert(PanelWithRankList)
 
 LevelFailPanel = class(PanelWithRankList)
 
-function LevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetReached, failReason, ...)
+function LevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, ...)
 	assert(type(levelId) 		== "number")
 	assert(type(failScore) 		== "number")
 	assert(type(failStar) 		== "number")
@@ -30,6 +30,11 @@ function LevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetRe
 	self.levelType 	= levelType
 
 	self.hiddenRankList = false
+
+	-- 确认是否使用特殊活动UI，为了搜索方便使用完全相同的变量名
+	local useSpecialActivityUI = WorldSceneShowManager:getInstance():isInAcitivtyTime() 
+		and (levelType == GameLevelType.kMainLevel or levelType == GameLevelType.kHiddenLevel or levelType == GameLevelType.kWukong)
+
 	-- 活动关不显示排行
 	local showRankList = LevelType.isShowRankList(levelType)
 	if not showRankList then
@@ -39,12 +44,12 @@ function LevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetRe
 	--------------------
 	---- Create UI Component
 	------------------------
-	self.levelFailTopPanel	= LevelFailTopPanel:create(self, levelId, levelType, failScore, failStar, isTargetReached, failReason)
+	self.levelFailTopPanel	= LevelFailTopPanel:create(self, levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, useSpecialActivityUI)
 
 	--------------------
 	---- Init Base Class
 	--------------------
-	PanelWithRankList.init(self, levelId, self.levelType, self.levelFailTopPanel)
+	PanelWithRankList.init(self, levelId, self.levelType, self.levelFailTopPanel, "levelFailPanel", useSpecialActivityUI)
 
 	--------------------------------
 	-- Create Show / Hide Animation
@@ -115,7 +120,15 @@ function LevelFailPanel:popout(animFinishCallback, ...)
 		-- end
 
 		-- self.allowBackKeyTap = true		
+		if self.useSpecialActivityUI then
+			local size = self.rankListPanelClipping:getContentSize()
+			self.rankListPanelClipping:setContentSize(CCSizeMake(size.width, size.height + 300))
+		end
 		self:checkPushActivity(animFinishCallback)
+
+		if self.levelFailTopPanel then
+			self.levelFailTopPanel:afterPopout()
+		end
 	end
 
 	self.exchangeAnim:popout(animFinished)
@@ -213,17 +226,18 @@ function LevelFailPanel:hide(animFinishCallbck, ...)
 	self.exchangeAnim:hide(animFinishCallbck)
 end
 
-function LevelFailPanel:create(levelId, levelType, failScore, failStar, isTargetReached, failReason, ...)
+function LevelFailPanel:create(levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime, ...)
 	assert(type(levelId)		== "number")
 	assert(type(levelType)		== "number")
 	assert(type(failScore)		== "number")
 	assert(type(failStar)		== "number")
+	assert(type(stageTime)		== "number")
 	assert(type(isTargetReached)	== "boolean")
 
 	assert(#{...} == 0)
 
 	local newLevelFailPanel = LevelFailPanel.new()
-	newLevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetReached, failReason)
+	newLevelFailPanel:init(levelId, levelType, failScore, failStar, isTargetReached, failReason, stageTime)
 	return newLevelFailPanel
 end
 

@@ -39,7 +39,6 @@ function MagicTileResetState:handleMagicTile()
             local item = boardmap[r][c]
             if item then
                 if item.isMagicTileAnchor then
-                    -- 如果没有初始化
                     if self.mainLogic.isInStep and item.magicTileId ~= nil and item.isHitThisRound == true then
                         -- 如果已经初始化就更新剩余
                         item.remainingHit = item.remainingHit - 1
@@ -87,7 +86,7 @@ function MagicTileResetState:handleMagicTile()
 end
 
 function MagicTileResetState:handleComplete()
-    self.nextState = self.context.needRefreshState
+    self.nextState = self.context.checkHedgehogCrazyState
     if self.hasItemToHandle then
         self.context:onEnter()
     end

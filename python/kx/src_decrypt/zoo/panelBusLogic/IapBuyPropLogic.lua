@@ -1,6 +1,7 @@
 if __IOS then
 	require "zoo.util.IosPayment"
 	require 'zoo.gameGuide.IosPayGuide'
+	require 'zoo.panel.iosSalesPromotion.IosSalesManager'
 end
 
 local function getMetaItems(items)
@@ -53,15 +54,28 @@ function IapBuyPropLogic:rabbitWeeklyPlayCard()
 end
 
 function IapBuyPropLogic:oneYuanShop()
-	local product = {id = 14, cash = 0, discount = 2, extraCash = 0, goodsId = 213,
-		price = 1, productId = "com.happyelements.animal.gold.cn.14"}
-	for k, v in ipairs(MetaManager:getInstance().product) do
-		if v.id == product.id then product = v end
-	end
-	local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
-	local ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
-		productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN"}
+	local guideModel = require("zoo.gameGuide.IosPayGuideModel"):create()
+	local oneYuanShopPID = guideModel:getOneYuanShopProductID()
 
+	-- local product = {id = oneYuanShopPID , cash = 0, discount = 2, extraCash = 0, goodsId = 213,
+	-- 	price = 1, productId = "com.happyelements.animal.gold.cn.14"}
+	local ref
+	local product
+	for k, v in ipairs(MetaManager:getInstance().product) do
+		if v.id == oneYuanShopPID then product = v end
+	end
+	if product then 
+		local meta = MetaManager:getInstance():getGoodMeta(product.goodsId)
+		local pConfig = IosSalesManager:getPromitonConfigById(oneYuanShopPID)
+		if pConfig then 
+			ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+					productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN", discount = product.discount, 
+					oriPrice = pConfig.oriPrice, pLevel = pConfig.pLevel}
+		else
+			ret = {id = product.id, price = product.price, items = getMetaItems(meta.items), goodsId = product.goodsId,
+					productIdentifier = product.productId, iapPrice = product.price, priceLocal = "CN", discount = product.discount}
+		end
+	end
 	return ret
 end
 
@@ -105,7 +119,8 @@ function IapBuyPropLogic:buy(data, successCallback, failCallback, dcDispatcher)
 		local stageInfo = StageInfoLocalLogic:getStageInfo(user.uid)
 		local levelId = 0
 		if stageInfo then levelId = stageInfo.levelId end
-		DcUtil:logBuyCashItem(data.goodsId, data.price, 1, 0, levelId, data.price)
+		--ios用rmb购买 不关心道具类型 所以nil
+		DcUtil:logRmbBuy(data.goodsId, nil, data.price, 1, levelId)
 
 		GlobalEventDispatcher:getInstance():dispatchEvent(
 			Event.new(kGlobalEvents.kConsumeComplete, {

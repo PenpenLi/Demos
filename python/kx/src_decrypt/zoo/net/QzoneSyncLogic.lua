@@ -1,4 +1,5 @@
 require "zoo.panel.QQSyncPanel"
+require "zoo.scenes.component.HomeScene.popoutQueue.HomeScenePopoutQueue"
 
 local kUserConnectMapping = {}
 kUserConnectMapping["0000"] = 1 -- 全新账号
@@ -171,23 +172,16 @@ function QzoneSyncLogic:sync(onFinish,onSyncCancel,onSyncError)
 		if alertCode > 0 then --弹板警告
 			local platform = PlatformConfig:getPlatformNameLocalization()
 			if alertCode == AlertCode.DIFF_PLATFORM then
-				require "zoo.panel.phone.CrossDeviceDescPanel"
 
 				local function onTouchOK()
 					self:connect(onFinish,onSyncError)
-
-					if __ANDROID then 
-						DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=2 })
-					else
-						DcUtil:UserTrack({ category='login', sub_category='login_switch_platform',action=1 })
-					end
 				end
 
 				local function onTouchCancel()
 					if onSyncCancel ~= nil then onSyncCancel() end
 				end
 
-				local panel = CrossDeviceDescPanel:create()
+				local panel = require("zoo.panel.accountPanel.NewCrossDevicePanel"):create(1)
 				panel:setOkCallback(onTouchOK)
 				panel:setCancelCallback(onTouchCancel)
 				panel:popout()
@@ -303,15 +297,22 @@ function QzoneSyncLogic:alertByStatus(successTipCode)
 	-- 	message = Localization:getInstance():getText("loading.tips.login.success.2", {platform=platform}) 
 	-- end
 
-	local function popoutAlert()
-		if message then 
-			local title = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
-			local qqLoginPanel = QQLoginSuccessPanel:create(title, message)
-	   		qqLoginPanel:popout()
-		end
+	-- local function popoutAlert()
+	-- 	if message then 
+	-- 		local title = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
+	-- 		local qqLoginPanel = QQLoginSuccessPanel:create(title, message)
+	--    		qqLoginPanel:popout()
+	-- 	end
+	-- end
+
+	-- setTimeOut(popoutAlert, 5)
+	if message then
+		local title = Localization:getInstance():getText("loading.tips.start.btn.qq", { platform = platform })
+		HomeScenePopoutQueue:insert(LoginSuccessPopoutAction.new(title,message):fixed())
+	else
+		HomeScenePopoutQueue:insert(LoginSuccessPopoutAction.new():placeholder():fixed())
 	end
 
-	setTimeOut(popoutAlert, 5)
 end
 
 function QzoneSyncLogic:onSyncQzone(result, onFinish, onSyncError)
@@ -440,6 +441,8 @@ function QzoneSyncLogic:refreshUserData( onFinish,successTipCode )
 	userbody.lostType = RecallManager.getInstance():getRecallRewardState()
 	-- 
 	userbody.snsPlatform = PlatformConfig:getLastPlatformAuthName()
+	userbody.deviceUdid = MetaInfo:getInstance():getUdid()
+	userbody.loginType = _G.kLoginType
 
 	ConnectionManager:sendRequest( "user", userbody, onUserCallback )
 	ConnectionManager:flush()

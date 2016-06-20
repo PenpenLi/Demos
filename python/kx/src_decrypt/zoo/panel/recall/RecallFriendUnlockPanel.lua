@@ -119,15 +119,15 @@ function RecallFriendUnlockPanel:unlockAreaDirectly()
 			self.cloudCanOpenCallback()
 			print("onRemoveSelfFinish Called !")
 		end
-
+		self.isUnlockSuccess = true
 		self:remove(onRemoveSelfFinish)
 		--解锁成功 重置下推送召回功能的流失状态
 		RecallManager.getInstance():resetRecallRewardState()
 	end
 
-	local function onSendUnlockMsgFailed(event)
+	local function onSendUnlockMsgFailed(errCode)
 		self.btnTappedState = self.BTN_TAPPED_STATE_NONE
-		CommonTip:showTip(Localization:getInstance():getText("error.tip."..event.data), "negative")
+		CommonTip:showTip(Localization:getInstance():getText("error.tip."..errCode), "negative")
 	end
 
 	local function onSendUnlockMsgCanceled(event)

@@ -35,18 +35,18 @@ function SyncBuyEnergyLogic:buy(onSuccessCallback, onFailCallback, onExceptionCa
 		return
 	end
 	local logic = BuyEnergyLogic:create(num)
-	local function onSuccess(evt)
+	local function onSuccess(data)
 		if self.listening then
 			self.listening = false
 			self:removeAnimation()
-			if onSuccessCallback then onSuccessCallback(evt) end
+			if onSuccessCallback then onSuccessCallback(data) end
 		end
 	end
-	local function onFail(evt)
+	local function onFail(errorCode)
 		if self.listening then
 			self.listening = false
 			self:removeAnimation()
-			if onFailCallback then onFailCallback(evt) end
+			if onFailCallback then onFailCallback(errorCode) end
 		end
 	end
 	logic:start(false, onSuccess, onFail)

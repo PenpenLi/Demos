@@ -109,11 +109,11 @@ function GameChoiceScene:initDevTestLevel()
 	local testConf = table.deserialize(testConfStr)
 	local levelType = LevelType:getLevelTypeByLevelId(testConf.totalLevel) or GameLevelType.kMainLevel
 
-	if not testLevelId then 
-		testLevelId = LevelMapManager:getInstance():getMaxLevelId() + 1
-	end
-
-	testConf.totalLevel = testLevelId
+	-- if not testLevelId then 
+	-- 	testLevelId = LevelMapManager:getInstance():getMaxLevelId() + 1
+	-- end
+	-- testConf.totalLevel = testLevelId
+	
 	LevelMapManager:getInstance():addDevMeta(testConf)
 
 	local levelMeta = LevelMapManager.getInstance():getMeta(testConf.totalLevel)
@@ -125,10 +125,15 @@ function GameChoiceScene:initDevTestLevel()
     local loader = FrameLoader.new()
     local function onFrameLoadComplete( evt )
         loader:removeAllEventListeners()
-        local devTestGPS = DevTestGamePlayScene:create(testConf.totalLevel, levelType, {})
-		self.devTestGPS = devTestGPS
-		devTestGPS.fileList = fileList
-		self:addChild(devTestGPS)
+
+        local function pushNewScene()
+	        local devTestGPS = DevTestGamePlayScene:create(testConf.totalLevel, levelType, {})
+			self.devTestGPS = devTestGPS
+			devTestGPS.fileList = fileList
+			self:addChild(devTestGPS)
+        end
+        
+		AsyncLoader:getInstance():waitingForLoadComplete(pushNewScene)
     end 
    
     for i,v in ipairs(fileList) do loader:add(v, kFrameLoaderType.plist) end

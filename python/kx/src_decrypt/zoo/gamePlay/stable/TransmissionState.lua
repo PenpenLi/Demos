@@ -34,7 +34,8 @@ function TransmissionState:handleItemComplete( ... )
 	self.completeItem = self.completeItem + 1 
 	if self.completeItem >= self.totalItem then 
 		
-		self.nextState = self.context.blackCuteBallState
+		self.nextState = self.context.dripCastingStateInSwap
+		--self.nextState = self.context.blackCuteBallState
 		
 		if self.hasItemToHandle then
 			self.mainLogic:setNeedCheckFalling()

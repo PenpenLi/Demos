@@ -88,11 +88,14 @@ function QQStarRewardLogic:playFalseButtonFlyAnime(callback)
 		self.homeScene:addChild(flyButton)
 		local buttonSize = flyButton:getGroupBounds().size
 		--racsh.carsh()
+		if not self.starRewardBtnPosInWorldSpace then
+			self.starRewardBtnPosInWorldSpace = ccp(30 , 500)
+		end
 		flyButton:setPosition(ccp( self.starRewardBtnPosInWorldSpace.x - (buttonSize.width/2) , 
 			self.starRewardBtnPosInWorldSpace.y + (buttonSize.height/2) ))
 
 		local action2Callback = function()
-			self.homeScene.leftRegionLayoutBar:removeItem(self.falseButton)
+			if self.falseButton then self.homeScene.leftRegionLayoutBar:removeItem(self.falseButton) end
 			flyButton:removeFromParentAndCleanup(true)
 			if callback and type(callback) == "function" then
 				callback()
@@ -113,7 +116,7 @@ function QQStarRewardLogic:playFalseButtonFlyAnime(callback)
 		anim:addObject( CCEaseSineOut:create( CCMoveTo:create(1.5, ccp(tarPosition.x,tarPosition.y - 100))  ) )
 		anim:addObject( CCCallFunc:create(action1Callback) )
 
-		self.falseButton:setVisible(false)
+		if self.falseButton then self.falseButton:setVisible(false) end
 
 		flyButton:runAction( CCSequence:create(anim) )
 	else

@@ -37,8 +37,14 @@ function PushActivity:onEnergyNotEnough(callback)
 	self:getActivityListAsync(onGetList)
 end
 
-function PushActivity:onComeToFront(callback)
+function PushActivity:setForeGroundTimeStamp( ... )
+	if type(self.enabled) == "boolean" and not self.enabled then 
+		return 
+	end
 	self.foreGroundTimeStamp = Localhost:time()
+end
+
+function PushActivity:onComeToFront(callback)
 
 	if NewVersionUtil:hasUpdateReward() then 
 		callback()
@@ -54,9 +60,28 @@ function PushActivity:onComeToFront(callback)
 	end
 
 	self:_verifyPushRec()
-	if type(self.enabled) == "boolean" and not self.enabled then return end
-	local function onGetList(list)
-		list = self:_getPushList(list)
+	if type(self.enabled) == "boolean" and not self.enabled then 
+		callback()
+		return 
+	end
+
+
+	local function onGetList(l)
+		
+		-- 优先处理queue = true,每天弹一次的情况
+		local list = self:_getPushList(l)
+		list = self:_filterPopNum(list)
+		list = self:_filterQueue(list)
+		list = self:_filterMinLevel(list)
+		list = self:_sortPushList(list)
+		if #list > 0 then
+			local act = list[1]
+			self:incActivityPopNum(act.actId)
+			if callback then callback({act}) end
+			return
+		end
+
+		local list = self:_getPushList(l)
 		list = self:_filterPopNum(list)
 		self.recList.comeToFrontRecord = self.recList.comeToFrontRecord + 1
 		list = self:_filterPopSeq(list, self.recList.comeToFrontRecord)
@@ -69,9 +94,8 @@ function PushActivity:onComeToFront(callback)
 				if act.popImmediately then 
 					self:_setPopImmediately(act.actId)
 				end
-
-				if callback then callback(act) end
 			end
+			if callback then callback(list) end
 		else
 			self:_writeToFile()
 			if callback then callback() end
@@ -79,7 +103,6 @@ function PushActivity:onComeToFront(callback)
 
 	end
 	self:getActivityListAsync(onGetList)
-	print("123213")
 end
 
 function PushActivity:onEnterHomeScene(callback)
@@ -245,6 +268,7 @@ function PushActivity:getActivityList()
 			item.popImmediately = config.popImmediately
 			item.popEveryTime = config.popEveryTime
 			item.popMinLevel = config.popMinLevel
+			item.queue = config.queue
 			table.insert(ret, item)
 		end
 	end
@@ -276,6 +300,7 @@ function PushActivity:getActivityListAsync(callback)
 				item.popImmediately = config.popImmediately
 				item.popEveryTime = config.popEveryTime
 				item.popMinLevel = config.popMinLevel
+				item.queue = config.queue
 				table.insert(ret, item)
 			end
 		end
@@ -321,7 +346,33 @@ function PushActivity:_getPushList(list)
 		if type(v.popMinLevel) ~= "number" then
 			v.popMinLevel = 0
 		end
+		if type(v.queue) ~= "boolean" then
+			v.queue = false
+		end
+
 		table.insert(ret, v)
+	end
+	return ret
+end
+
+
+function PushActivity:_filterQueue( list )
+	local ret = {}
+
+	local function findPopNum(actId)
+		for k, v in ipairs(self.recList.activityRecord) do
+			if v.actId == actId then return v.num end
+		end
+		return 0
+	end
+
+	for k,v in pairs(list) do
+		if v.queue then
+			local popNum = findPopNum(v.actId)
+			if popNum == 0 then
+				table.insert(ret,v)
+			end
+		end
 	end
 	return ret
 end

@@ -69,7 +69,9 @@ function RemindAskingEnergyPanel:_init(energyPanel, posY)
 	local function onClick()
 		local position = self.button:getPosition()
 		local pos = self.panel:convertToWorldSpace(ccp(position.x, position.y))
-		local panel = AddFriendPanel:create(pos)
+		--local panel = AddFriendPanel:create(pos)
+		local panel = require("zoo.panel.addfriend.NewAddFriendPanel"):create(pos)
+		-- panel:popout()
 		--if panel then panel:popout() end
 	end
 	self.button:setTouchEnabled(true)

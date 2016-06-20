@@ -8,11 +8,11 @@ function RabbitWeeklyButton:ctor( ... )
     self.playTipPriority = 10
 end
 function RabbitWeeklyButton:playHasNotificationAnim(...)
-    IconButtonManager:getInstance():addPlayTipIcon(self)
+    IconButtonManager:getInstance():addPlayTipActivityIcon(self)
 end
 
 function RabbitWeeklyButton:stopHasNotificationAnim(...)
-    IconButtonManager:getInstance():removePlayTipIcon(self)
+    IconButtonManager:getInstance():removePlayTipActivityIcon(self)
 end
 
 

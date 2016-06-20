@@ -24,13 +24,14 @@ assert(not PanelWithRankList)
 assert(BasePanel)
 PanelWithRankList = class(BasePanel)
 
-function PanelWithRankList:init(levelId, levelType, topPanel, panelName, ...)
+function PanelWithRankList:init(levelId, levelType, topPanel, panelName, useSpecialActivityUI, ...)
 	assert(type(levelId) == "number")
 	assert(topPanel)
 	assert(#{...} == 0)
 
 	self.visibleOrigin 	= CCDirector:sharedDirector():getVisibleOrigin()
 	self.visibleSize	= CCDirector:sharedDirector():getVisibleSize()
+	self.useSpecialActivityUI = useSpecialActivityUI
 
 	-------------------
 	--  Init Base Class
@@ -48,21 +49,29 @@ function PanelWithRankList:init(levelId, levelType, topPanel, panelName, ...)
 	-- ----------------------------------------
 	local visibleSize = CCDirector:sharedDirector():getVisibleSize()
 	
-	-- Create Stencil
-	local stencil = LayerColor:create()
-	stencil:changeWidthAndHeight(visibleSize.width*2, visibleSize.height*2)
-	stencil:setPositionXY(0, -visibleSize.height*2 - 300)
-
+	-- -- Create Stencil
+	-- local stencil = LayerColor:create()
+	-- stencil:changeWidthAndHeight()
+	-- stencil:setPositionXY(0, -visibleSize.height*2 - 300)
 
 	-- Create Rank List Panel Clipping Node
-	local rankListPanelClipping = ClippingNode.new(CCClippingNode:create(stencil.refCocosObj))
+	local rankListPanelClipping = SimpleClippingNode:create()
+	rankListPanelClipping:setContentSize(CCSizeMake(visibleSize.width*2, visibleSize.height*2))
+	rankListPanelClipping:setPositionXY(0, -visibleSize.height*2 - 300)
+	rankListPanelClipping:setRecalcPosition(true)
 	--rankListPanelClipping:setInverted(true)
 	self:addChild(rankListPanelClipping)
 	self.rankListPanelClipping = rankListPanelClipping
 
+	local innerLayer = Layer:create()
+	innerLayer:setPositionY(visibleSize.height*2 + 300)
+
+
 	self.rankList = self:buildRankListByLevelType(levelId, levelType)
 	--self:addChild(self.rankList)
-	rankListPanelClipping:addChild(self.rankList)
+	rankListPanelClipping:addChild(innerLayer)
+	rankListPanelClipping.innerLayer = innerLayer
+	innerLayer:addChild(self.rankList)
 
 	if self.hiddenRankList then
 		if self.rankList then self.rankList:setButtonsEnable(false) end
@@ -121,7 +130,7 @@ function PanelWithRankList:init(levelId, levelType, topPanel, panelName, ...)
 	-- Data Control Automatic Open / Close
 	-- ----------------------------------
 	self.automaticOpenCloseSpeed = 1600
-	stencil:dispose()
+	-- stencil:dispose()
 end
 
 function PanelWithRankList:buildRankListByLevelType( levelId, levelType )
@@ -132,7 +141,7 @@ function PanelWithRankList:buildRankListByLevelType( levelId, levelType )
 	elseif levelType == GameLevelType.kRabbitWeekly then
 		-- rankList = RabbitWeeklyRankList:create(levelId, self)
 	else
-		rankList	= RankList:create(levelId, self)
+		rankList	= RankList:create(levelId, self, self.useSpecialActivityUI)
 	end
 	return rankList
 end
@@ -653,14 +662,4 @@ function PanelWithRankList:onEnterHandler(event, ...)
 			runningScene:removeEventListener(DisplayEvents.kTouchBegin, PanelWithRankList.onSceneTouchBegan)
 		end
 	end
-end
-
-function PanelWithRankList:create(levelId, topPanel, ...)
-	assert(type(levelId) == "number")
-	assert(topPanel)
-	assert(#{...} == 0)
-
-	local newPanelWithRankList = PanelWithRankList.new()
-	newPanelWithRankList:init(levelId, topPanel)
-	return newPanelWithRankList
 end

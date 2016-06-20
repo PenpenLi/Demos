@@ -9,6 +9,8 @@ function NormalSwapInteraction:ctor()
     self.firstTouchedState = BaseInteractionState.new('firstTouchedState')
     self.secondWaitingState = BaseInteractionState.new('secondWaitingState')
     self.secondTouchedState = BaseInteractionState.new('secondTouchedState')
+
+    self.effectState = BaseInteractionState.new("effectState")
     self:setCurrentState(self.firstWaitingState) -- init
 end
 
@@ -16,6 +18,16 @@ function NormalSwapInteraction:handleTouchBegin(x, y)
 
     local touchPos = self.boardView:TouchAt(x, y)
     if not touchPos then return end
+
+    GameExtandPlayLogic:onItemTouchBegin( self.boardView.gameBoardLogic , touchPos.x , touchPos.y )
+
+    if (self.currentState == self.firstWaitingState or 
+         self.currentState == self.secondWaitingState ) and 
+        self.boardView.gameBoardLogic:isCanEffectLikeProp(touchPos.x, touchPos.y) then
+        self.item1Pos = touchPos
+        self:setCurrentState(self.effectState)
+        return
+    end
 
     if not self.boardView.gameBoardLogic:isItemInTile(touchPos.x, touchPos.y) then
         return
@@ -33,7 +45,6 @@ function NormalSwapInteraction:handleTouchBegin(x, y)
         if not BaseInteraction.isEqualPos(touchPos, self.item1Pos) then -- 点击不同一个格子
             -- 可以交换
             if 0 < self.boardView.gameBoardLogic:canBeSwaped(self.item1Pos.x, self.item1Pos.y, touchPos.x, touchPos.y) then
-
                 self.item2Pos = touchPos
                 self:setCurrentState(self.secondTouchedState)
                 self:handleComplete()
@@ -63,6 +74,10 @@ function NormalSwapInteraction:handleTouchMove(x, y)
 
     if not self.item1Pos then
         return 
+    end
+
+    if self.currentState == self.effectState then
+        return
     end
 
     -- 不是棋盘上
@@ -96,6 +111,24 @@ function NormalSwapInteraction:handleTouchEnd(x, y)
             print(touchPos.x, touchPos.y)
         end
         self:setCurrentState(self.secondWaitingState)
+    elseif self.currentState == self.effectState then
+        self.item2Pos = touchPos
+        if BaseInteraction.isEqualPos(self.item1Pos, touchPos) then -- 只能在原位置，否则视为取消，重新进入等待状态
+            local gameItemMap = self.boardView.gameBoardLogic.gameItemMap
+            if gameItemMap and gameItemMap[touchPos.y] and gameItemMap[touchPos.y][touchPos.x] then
+                local item = gameItemMap[touchPos.x][touchPos.y]
+                if item.hedgehogLevel > 1 then
+                    self.controller.boardView.gamePropsType = GamePropsType.kHedgehogCrazy
+                elseif item.wukongState == TileWukongState.kReadyToJump then
+                   self.controller.boardView.gamePropsType = GamePropsType.kWukongJump
+                end
+            end
+            self:handleComplete()
+        else
+            self.item1Pos = nil
+            self.item2Pos = nil
+            self:setCurrentState(self.firstWaitingState)
+        end
     end
 end
 

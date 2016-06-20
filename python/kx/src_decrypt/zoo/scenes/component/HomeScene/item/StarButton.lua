@@ -5,16 +5,22 @@
 -- Email:	wanwan.zhang@happyelements.com
 
 require "zoo.scenes.component.HomeScene.item.CloudButton"
+require "zoo.scenes.component.HomeScene.iconButtons.IconButtonBase"
 require "zoo.scenes.component.HomeScene.item.StarButtonTip"
 require "zoo.panel.HiddenBranchIntroductionPanel"
 require "zoo.panel.quickselect.QuickSelectLevelPanel"
+require "zoo.panel.quickselect.StarAchievenmentPanel"
+require "zoo.panel.quickselect.LadybugPromptPanel"
 
 ---------------------------------------------------
 -------------- StarButton
 ---------------------------------------------------
 
-StarButton = class(CloudButton)
+ -- CCApplication:sharedApplication():setAnimationInterval(1/30)
 
+-- StarButton = class(CloudButton)
+StarButton = class(IconButtonBase)
+-- IconButtonBase
 function StarButton:init(...)
 	assert(#{...} == 0)
 
@@ -23,11 +29,13 @@ function StarButton:init(...)
 	-- -------------------
 	--self.ui		= ResourceManager:sharedInstance():buildGroup("itemWithProgressBar")
 	self.ui		= ResourceManager:sharedInstance():buildGroup("newStarButton")
+	self.playTipPriority = 1010
 
 	-- -----------
 	-- Init Base
 	-- ------------
-	CloudButton.init(self, self.ui)
+	-- CloudButton.init(self, self.ui)
+	IconButtonBase.init(self, self.ui)
 
 	-- Data
 	self.normalStar	= 0
@@ -47,6 +55,10 @@ function StarButton:init(...)
 	self.denominatorPlaceholder	= self.ui:getChildByName("denominator")
 
 	self.starIcon			= self.blueBubbleItemRes:getChildByName("placeHolder")
+	self.shineAnim = self:addLayerColorWrapper(self.ui:getChildByName("shine"), ccp(0.5, 0.5))
+	
+	self.ui:getChildByName("wrapper"):setVisible(false)
+	self.shineAnim:setVisible(false)
 
 	assert(self.starIcon)
 
@@ -142,14 +154,14 @@ function StarButton:init(...)
 	self.userRef	= UserManager.getInstance().user
 	self:setNormalStar(self.userRef:getStar())
 	self:setHiddenStar(self.userRef:getHideStar())
-	self:setTotalStar(UserManager:getInstance():getFullStarInOpenedRegion() + MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion())
+	self:setTotalStar(UserManager:getInstance():getFullStarInOpenedRegionInclude4star() + MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion())
 
 	self:updateView()
 
-	self.tip = StarButtonTip:create()
-	self.tip:setPosition(ccp(120, 0))
-	self.tip:setVisible(false)
-	self:addChild(self.tip)
+	self.tipArea = StarButtonTip:create()
+	self.tipArea:setPosition(ccp(120, 0))
+	self.tipArea:setVisible(false)
+	self:addChild(self.tipArea)
 
 	local function onTouchBegin(event)
 		self:onTouchBegin(event)
@@ -170,17 +182,37 @@ function StarButton:init(...)
 	self.ui:addEventListener(DisplayEvents.kTouchTap, onTouchTap)
 end
 
+function StarButton:addLayerColorWrapper(ui,anchorPoint)
+	local size = ui:getGroupBounds().size
+	local pos = ui:getPosition()
+	local layer = LayerColor:create()
+    layer:setColor(ccc3(0,0,0))
+    layer:setOpacity(0)
+    layer:setContentSize(CCSizeMake(size.width, size.height))
+    layer:setAnchorPoint(anchorPoint)
+    layer:setPosition(ccp(pos.x, pos.y-size.height))
+    
+    local uiParent = ui:getParent()
+    local index = uiParent:getChildIndex(ui)
+    ui:removeFromParentAndCleanup(false)
+    ui:setPosition(ccp(0,size.height))
+    layer:addChild(ui)
+    uiParent:addChildAt(layer, index)
+
+    return layer
+end
+
 function StarButton:onTouchBegin(event)
 
 	self.isTipShown = false
 	local function longtimeTouch( ... )
 		-- body
-		local normalTotalStar = UserManager:getInstance():getFullStarInOpenedRegion()
+		local normalTotalStar = UserManager:getInstance():getFullStarInOpenedRegionInclude4star()
 		local hiddenTotalStar = MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion()
 
 		if hiddenTotalStar > 0 then
-			self.tip:setContent(self.normalStar, self.hiddenStar, normalTotalStar, hiddenTotalStar)
-			self.tip:setVisible(true)
+			self.tipArea:setContent(self.normalStar, self.hiddenStar, normalTotalStar, hiddenTotalStar)
+			self.tipArea:setVisible(true)
 			GamePlayMusicPlayer:playEffect(GameMusicType.kClickBubble)
 		end
 
@@ -196,7 +228,7 @@ function StarButton:onTouchBegin(event)
 end
 
 function StarButton:onTouchEnd(event)
-	self.tip:setVisible(false)
+	self.tipArea:setVisible(false)
 	if self.longtimeScheduleScriptFuncID then
 		cancelTimeOut(self.longtimeScheduleScriptFuncID)
 		self.longtimeScheduleScriptFuncID = nil
@@ -206,10 +238,27 @@ end
 function StarButton:onTouchTap( event )
 	-- body
 	if not self.isTipShown then
-		local panel = QuickSelectLevelPanel:create()
-		panel:popout()
+		DcUtil:UserTrack({
+			category = "ui",
+			sub_category = "click_star_button",
+		},true)
+		-- local function popoutPanel()
+		-- 	local panel = QuickSelectLevelPanel:create()
+		-- 	panel:popout()
+		-- end
+		-- AsyncLoader:getInstance():waitingForLoadComplete(popoutPanel)
+
+		-- 2016-03-02 new entry for star achevement and reward
+		local function popoutPanel()
+			local panel = StarAchievenmentPanel:create()
+			panel:popout()
+		end
+		AsyncLoader:getInstance():waitingForLoadComplete(popoutPanel)
+		self:stopHasNotificationAnim()
 	end
 end
+
+
 
 function StarButton:positionLabel(...)
 	assert(#{...} == 0)
@@ -301,10 +350,14 @@ function StarButton:updateView(...)
 
 	self:setNormalStar(UserManager:getInstance().user:getStar())
 	self:setHiddenStar(UserManager:getInstance().user:getHideStar())
-	self:setTotalStar(UserManager:getInstance():getFullStarInOpenedRegion() + MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion())
+	self:setTotalStar(UserManager:getInstance():getFullStarInOpenedRegionInclude4star() + MetaModel.sharedInstance():getFullStarInOpenedHiddenRegion())
 
 	local n = self.normalStar + self.hiddenStar
 	local d = self.totalStar
+
+	if (not PlatformConfig:isQQPlatform()) then 
+		self:updateShine()
+	end
 
 	if self.displayedN == n and
 		self.displayedD == d then
@@ -324,6 +377,70 @@ function StarButton:updateView(...)
 
 	self.progressBar:setCurNumber(n)
 	self.progressBar:setTotalNumber(d)
+end
+
+-- 有可以领取的星星奖励，闪起来！
+function StarButton:updateShine()
+	local show = self:hasStarReward()
+	self.shineAnim:setVisible(show)
+
+	self.shineAnim:stopAllActions()
+	self.shineAnim:setScale(1.10)
+	     
+	IconButtonManager:getInstance():removePlayTipActivityIcon(self)
+
+	if show then 
+		-- self.shineAnim:runAction(CCScaleTo:create(0.2, 1.7))
+		self.shineAnim:runAction(CCRepeatForever:create(CCRotateBy:create(0.1, 9)))
+
+		self.idPre = "StarButton"
+		-- self["tip"..IconTipState.kNormal] = 
+	    local tips = Localization:getInstance():getText("mystar_getbutton_yes")
+	    self.id = self.idPre .. self.tipState
+	    if tips then 
+	        self:setTipPosition(IconButtonBasePos.RIGHT)
+	        self:setTipString(tips)
+	        IconButtonManager:getInstance():addPlayTipActivityIcon(self)
+	        -- self:playHasNotificationAnim()
+	    end
+	end
+end
+
+
+-- 是否有可以领取的奖励
+function StarButton:hasStarReward()
+	self.curTotalStar 	= UserManager:getInstance().user:getTotalStar()
+
+	local nearestStarRewardLevelMeta	= MetaManager.getInstance():starReward_getRewardLevel(self.curTotalStar)
+	local nextRewardLevelMeta		= MetaManager.getInstance():starReward_getNextRewardLevel(self.curTotalStar)
+	local rewardLevelToPushMeta 		= false
+	local needStarNum = 0
+
+	if nearestStarRewardLevelMeta then
+		local rewardLevelToPush = UserManager:getInstance().userExtend:getFirstNotReceivedRewardLevel(nearestStarRewardLevelMeta.id)
+
+		if rewardLevelToPush then
+			-- Has Reward Level
+			rewardLevelToPushMeta = MetaManager.getInstance():starReward_getStarRewardMetaById(rewardLevelToPush)
+			needStarNum = rewardLevelToPushMeta.starNum
+		else
+			-- All Reward Level Has Received
+		end
+	end
+
+	if not rewardLevelToPushMeta then
+		-- If Has Next Reward Level, Show It
+		if nextRewardLevelMeta then
+			rewardLevelToPushMeta = nextRewardLevelMeta
+			needStarNum = rewardLevelToPushMeta.starNum
+		end
+	end
+	-- print("[shine]",rewardLevelToPushMeta,self.curTotalStar,rewardLevelToPushMeta.starNum)
+	if rewardLevelToPushMeta  and self.curTotalStar >= rewardLevelToPushMeta.starNum then
+		return true,self.curTotalStar - needStarNum,rewardLevelToPushMeta
+	end
+
+	return false,self.curTotalStar - needStarNum,rewardLevelToPushMeta
 end
 
 function StarButton:playChangeTotalStarAnim(numChangeStar)
@@ -375,6 +492,58 @@ function StarButton:playHighlightAnim(...)
 	self.bubbleItem:playHighlightAnim(itemRes)
 end
 
+-- 不行啊。。
+function StarButton:playEntireHighlightAnim(...)
+	-- if not self.shineAnim then
+		local bubble = self:getBubbleItemRes():getChildByName("bubble")
+		self.shine = Sprite:createWithSpriteFrameName("bubbleShine0000")
+		self.shine:setAnchorPoint(ccp(0,0))
+		self.shine:setPositionX(-8)
+		self.shine:setPositionY(-8)
+		bubble:addChild(self.shine)
+	-- end
+
+	self.shine:stopAllActions()
+	self.shine:setOpacity(0)
+	self.shine:setVisible(true)
+	local actions = CCArray:create()
+	actions:addObject(CCFadeTo:create(5/24,150/150 * 255))
+	actions:addObject(CCFadeTo:create(5/24,100/150 * 255))
+	actions:addObject(CCFadeTo:create(4/24,0/150 * 255))
+	actions:addObject(CCCallFunc:create(function( ... )
+		self.shine:setVisible(false)
+	end))
+	self.shine:runAction(CCSequence:create(actions))
+
+	local icon = self:getBubbleItemRes():getChildByName("placeHolder")
+	iconBounds = icon:getGroupBounds()
+
+	local animIcon = Sprite:createWithSpriteFrame(icon:getChildAt(0):displayFrame())
+	animIcon:setAnchorPoint(ccp(0.5,0.5))
+	local pos = self:convertToNodeSpace(ccp(iconBounds:getMidX(),iconBounds:getMidY()))
+	animIcon:setPositionX(pos.x)
+	animIcon:setPositionY(pos.y)
+	self:addChild(animIcon)
+
+	local actions = CCArray:create()
+	actions:addObject(CCScaleTo:create(2/24,0.9,0.9))
+	actions:addObject(CCSpawn:createWithTwoActions(
+		CCScaleTo:create(6/24,1.3,1.3),
+		CCFadeTo:create(6/24,0.55)
+	))
+	actions:addObject(CCSpawn:createWithTwoActions(
+		CCScaleTo:create(5/24,1.0,1.0),
+		CCFadeTo:create(5/24,1.0)
+	))
+	actions:addObject(CCCallFunc:create(function( ... )
+		animIcon:removeFromParentAndCleanup(true)
+	end))
+	animIcon:runAction(CCSequence:create(actions))
+
+end
+
+
+
 function StarButton:create(...)
 	assert(#{...} == 0)
 
@@ -387,4 +556,8 @@ function StarButton:onAddToStage( ... )
 	-- body
 	self.ui:setTouchEnabled(true, 0, true)
 	self:onTouchEnd()
+end
+
+function StarButton:getBubbleItemRes( ... )
+	return self.blueBubbleItemRes
 end

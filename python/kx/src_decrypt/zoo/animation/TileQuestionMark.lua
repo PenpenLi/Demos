@@ -4,6 +4,7 @@ TileQuestionMark = class(CocosObject)
 local kCharacterAnimationTime = 1/30
 
 function TileQuestionMark:create(colorType)
+	colorType = AnimalTypeConfig.convertColorTypeToIndex(colorType)
 	local node = TileQuestionMark.new(CCNode:create())
 	node.name = "question_mark"
 
@@ -21,8 +22,6 @@ function TileQuestionMark:create(colorType)
 	-- question_mark:setScaleY(2)
 	node:addChild(question_mark)
 	node.mark = question_mark
-
-
 
 	return node
 end

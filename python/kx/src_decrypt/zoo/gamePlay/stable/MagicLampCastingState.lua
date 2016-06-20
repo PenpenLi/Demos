@@ -61,7 +61,7 @@ function MagicLampCastingState:tryHandleCasting()
     end
 
     local function isNormal(item)
-        if item.ItemType == GameItemType.kAnimal
+        if (item.ItemType == GameItemType.kAnimal or item.ItemType == GameItemType.kCrystal)
         and item.ItemSpecialType == 0 -- not special
         and item:isAvailable()
         and not item:hasLock() 
@@ -74,14 +74,15 @@ function MagicLampCastingState:tryHandleCasting()
 
     local availablePosAllColor = {}
     for k, v in pairs(mainLogic.mapColorList) do
-        availablePosAllColor[v] = {}
+        local colorIndex = AnimalTypeConfig.convertColorTypeToIndex(v)
+        availablePosAllColor[colorIndex] = {}
     end
     -- 对应颜色插入对应的数组
     for r = 1, #gameItemMap do 
         for c = 1, #gameItemMap[r] do
             local item = gameItemMap[r][c]
-            if item ~= nil and isNormal(item) and availablePosAllColor[item.ItemColorType] ~= nil then
-                table.insert(availablePosAllColor[item.ItemColorType], {r = r, c = c})
+            if item ~= nil and isNormal(item) and availablePosAllColor[item:getColorIndex()] ~= nil then
+                table.insert(availablePosAllColor[item:getColorIndex()], {r = r, c = c})
             end
         end
     end
@@ -89,13 +90,13 @@ function MagicLampCastingState:tryHandleCasting()
     for k, v in pairs(lamps) do
         local speicalItemPos = {}
         local genCount = 3
-        local availablePos = availablePosAllColor[v.ItemColorType]
+        local availablePos = availablePosAllColor[v:getColorIndex()]
         if not availablePos then 
             availablePos = {}
         end
         if #availablePos < genCount then
             speicalItemPos = availablePos
-            availablePosAllColor[v.ItemColorType] = {}
+            availablePosAllColor[v:getColorIndex()] = {}
         else
             for i = 1, genCount do
                 local idx = self.mainLogic.randFactory:rand(1, #availablePos)
@@ -158,7 +159,7 @@ function MagicLampCastingStateInSwapFirst:getClassName()
 end
 
 function MagicLampCastingStateInSwapFirst:getNextState()
-    return self.context.furballSplitStateInSwapFirst
+    return self.context.wukongJumpStateInSwapFirst
 end
 
 MagicLampCastingStateInLoop = class(MagicLampCastingState)
@@ -175,5 +176,6 @@ function MagicLampCastingStateInLoop:getClassName()
 end
 
 function MagicLampCastingStateInLoop:getNextState()
-    return self.context.balloonCheckStateInLoop
+    --return self.context.balloonCheckStateInLoop
+    return self.context.wukongGiftInLoop
 end

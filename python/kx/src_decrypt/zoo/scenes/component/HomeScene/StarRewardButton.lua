@@ -20,10 +20,8 @@ function StarRewardButton:ctor( ... )
 	self.playTipPriority = 30
 end
 function StarRewardButton:playHasNotificationAnim(...)
-	IconButtonManager:getInstance():addPlayTipIcon(self)
 end
 function StarRewardButton:stopHasNotificationAnim(...)
-	IconButtonManager:getInstance():removePlayTipIcon(self)
 end
 
 function StarRewardButton:init(...)

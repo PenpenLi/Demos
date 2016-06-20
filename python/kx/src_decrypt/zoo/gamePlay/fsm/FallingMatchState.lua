@@ -46,7 +46,7 @@ function FallingMatchState:afterRefreshStable(isEnterWaiting)
 end
 
 function FallingMatchState:boardStableHandler()
-	self.stableFSM:onEnter(true)
+	self.stableFSM:onEnter()
 end
 
 function FallingMatchState:checkTransition()

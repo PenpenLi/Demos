@@ -32,6 +32,13 @@ function UseEnergyBottleLogic:setSuccessCallback(callback, ...)
 	self.successCallback = callback
 end
 
+function UseEnergyBottleLogic:setFailCallback(callback, ...)
+	assert(type(callback) == "function")
+	assert(#{...} == 0)
+
+	self.failCallback = callback
+end
+
 function UseEnergyBottleLogic:start(popWaitTip, ...)
 	--assert(type(popWaitTip) == "boolean")
 	assert(#{...} == 0)
@@ -70,8 +77,15 @@ function UseEnergyBottleLogic:start(popWaitTip, ...)
 
 	end
 
+	local function failCallback(evt)
+		if self.failCallback then
+			self.failCallback(evt)
+		end
+	end
+
 	local logic = UsePropsLogic:create(UsePropsType.NORMAL, 0, 0, {self.energyType})
 	logic:setSuccessCallback(successCallback)
+	logic:setFailedCallback(failCallback)
 	logic:start(popWaitTip)
 end
 
