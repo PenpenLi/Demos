@@ -1,0 +1,46 @@
+friends_view_node=
+{
+	name="friends_view_node",type=0,typeName="View",time=0,x=0,y=0,width=600,height=120,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignCenter,
+	{
+		name="node_view",type=0,typeName="View",time=97040925,x=0,y=0,width=592,height=119,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignCenter,
+		{
+			name="check_info",type=2,typeName="Button",time=97042116,x=0,y=1,width=590,height=115,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignCenter,file="drawable/blank.png",file2="drawable/blank_press.png",
+			{
+				name="arrow",type=1,typeName="Image",time=97042330,x=22,y=-1,width=14,height=25,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignRight,file="common/icon/arrow_r.png"
+			}
+		},
+		{
+			name="icon_bg",type=1,typeName="Image",time=97041005,x=34,y=15,width=92,height=92,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,file="common/background/head_bg_92.png",
+			{
+				name="icon_mask",type=1,typeName="Image",time=97041074,x=0,y=0,width=86,height=86,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignCenter,file="common/background/head_mask_bg_86.png"
+			},
+			{
+				name="vip_frame",type=1,typeName="Image",time=100627622,x=0,y=0,width=90,height=90,visible=0,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignCenter,file="vip/vip_90.png"
+			}
+		},
+		{
+			name="name",type=4,typeName="Text",time=97041175,x=156,y=25,width=200,height=38,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,fontSize=32,textAlign=kAlignLeft,colorRed=80,colorGreen=80,colorBlue=80,string=[[未知]]
+		},
+		{
+			name="vip_logo",type=1,typeName="Image",time=100627647,x=156,y=22,width=46,height=38,visible=0,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,file="vip/vip_logo.png"
+		},
+		{
+			name="level",type=1,typeName="Image",time=97041248,x=156,y=73,width=52,height=26,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,file="common/icon/level_9.png"
+		},
+		{
+			name="score",type=4,typeName="Text",time=97041323,x=217,y=62,width=200,height=48,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,fontSize=26,textAlign=kAlignLeft,colorRed=125,colorGreen=80,colorBlue=65,string=[[0]]
+		},
+		{
+			name="room_type",type=4,typeName="Text",time=97041567,x=446,y=26,width=155,height=35,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,fontSize=28,textAlign=kAlignLeft,colorRed=125,colorGreen=80,colorBlue=65,string=[[加载中..]]
+		},
+		{
+			name="online_status",type=4,typeName="Text",time=97041756,x=452,y=67,width=155,height=35,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,fontSize=24,textAlign=kAlignLeft,colorRed=245,colorGreen=95,colorBlue=65,string=[[加载中..]]
+		},
+		{
+			name="offline",type=4,typeName="Text",time=97041921,x=459,y=45,width=155,height=35,visible=0,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignTopLeft,fontSize=28,textAlign=kAlignLeft,colorRed=125,colorGreen=80,colorBlue=65,string=[[离线]]
+		},
+		{
+			name="item_line",type=1,typeName="Image",time=97060768,x=0,y=0,width=540,height=1,visible=1,fillParentWidth=0,fillParentHeight=0,nodeAlign=kAlignBottom,file="common/decoration/cutline.png"
+		}
+	}
+}
