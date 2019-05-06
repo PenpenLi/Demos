@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_versionUpdateGift id="1" time="10" diamond="100" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5745,&apos;num&apos;:1},{&apos;pId&apos;:5746,&apos;num&apos;:3},{&apos;pId&apos;:858,&apos;num&apos;:20}]}"/>
+<sta_versionUpdateGift id="2" time="20" diamond="300" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5745,&apos;num&apos;:2},{&apos;pId&apos;:5746,&apos;num&apos;:5},{&apos;pId&apos;:859,&apos;num&apos;:10}]}"/>
+<sta_versionUpdateGift id="3" time="30" diamond="500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5745,&apos;num&apos;:3},{&apos;pId&apos;:930,&apos;num&apos;:1},{&apos;pId&apos;:860,&apos;num&apos;:5}]}"/>
+</root>

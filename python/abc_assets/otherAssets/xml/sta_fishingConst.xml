@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fishingConst id="1" val="8" description="玩家每1秒提升的浮标值（潜水QTE）"/>
+<sta_fishingConst id="2" val="2,4" description="精灵下潜的时间范围"/>
+<sta_fishingConst id="3" val="20" description="鱼饵上钩范围半径（长度：像素）"/>
+<sta_fishingConst id="4" val="5" description="水滴的消除时间"/>
+<sta_fishingConst id="5" val="2" description="基础操作时间"/>
+<sta_fishingConst id="6" val="2" description="表情显示时间"/>
+<sta_fishingConst id="7" val="2" description="气泡的收缩时间"/>
+<sta_fishingConst id="8" val="2" description="气泡出现周期时间"/>
+<sta_fishingConst id="9" val="30,60" description="风的影响范围"/>
+<sta_fishingConst id="10" val="1" description="气泡之间收缩的间隔"/>
+<sta_fishingConst id="11" val="20" description="鱼竿能量上限"/>
+<sta_fishingConst id="12" val="3,7" description="气泡显示数量范围"/>
+<sta_fishingConst id="13" val="3,7" description="水滴显示数量范围"/>
+<sta_fishingConst id="14" val="限时内点击屏幕消除水滴，防止精灵逃脱！！" description="水滴QTE操作文本提示"/>
+<sta_fishingConst id="15" val="精灵出现时按住按钮，潜水时松开！！" description="潜水QTE操作文本提示"/>
+<sta_fishingConst id="16" val="按顺序点击泡沫，圈与泡沫的大小吻合时请点击！！" description="气泡QTE操作文本提示"/>
+<sta_fishingConst id="17" val="10" description="自动收杆时间"/>
+<sta_fishingConst id="18" val="请看准时机点击下方按钮" description="基础操作文本提示"/>
+<sta_fishingConst id="19" val="1.5" description="提示出现X秒后才开始基础操作/QTE"/>
+</root>

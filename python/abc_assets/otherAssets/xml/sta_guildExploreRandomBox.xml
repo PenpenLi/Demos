@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildExploreRandomBox id="1" level="1" type="1" itemId="29" num="8888" weight="200" describe="捡到一个钱包" trapTime="0"/>
+<sta_guildExploreRandomBox id="2" level="1" type="1" itemId="29" num="10000" weight="180" describe="跟其他精灵玩耍，意外获得" trapTime="0"/>
+<sta_guildExploreRandomBox id="3" level="1" type="1" itemId="29" num="12000" weight="180" describe="意外获得其他冒险家留下的钱财" trapTime="0"/>
+<sta_guildExploreRandomBox id="4" level="1" type="1" itemId="29" num="15000" weight="180" describe="跟其他精灵切磋，获得报酬" trapTime="0"/>
+<sta_guildExploreRandomBox id="5" level="50" type="1" itemId="29" num="16000" weight="180" describe="捡到一个装满财宝的宝箱，获得" trapTime="0"/>
+<sta_guildExploreRandomBox id="6" level="50" type="1" itemId="29" num="18000" weight="180" describe="遇到好人，获得馈赠" trapTime="0"/>
+<sta_guildExploreRandomBox id="7" level="50" type="1" itemId="29" num="20000" weight="180" describe="发现宝物，出售后获得" trapTime="0"/>
+<sta_guildExploreRandomBox id="8" level="1" type="2" itemId="1" num="1" weight="100" describe="路上闲逛，捡到了藏宝图" trapTime="0"/>
+<sta_guildExploreRandomBox id="9" level="1" type="2" itemId="2" num="1" weight="100" describe="路上闲逛，捡到了骨头" trapTime="0"/>
+<sta_guildExploreRandomBox id="10" level="1" type="2" itemId="3" num="1" weight="100" describe="路上闲逛，捡到了果实" trapTime="0"/>
+<sta_guildExploreRandomBox id="11" level="1" type="2" itemId="4" num="1" weight="100" describe="路上闲逛，捡到了红宝珠" trapTime="0"/>
+<sta_guildExploreRandomBox id="12" level="1" type="2" itemId="5" num="1" weight="100" describe="路上闲逛，捡到了金宝箱" trapTime="0"/>
+<sta_guildExploreRandomBox id="13" level="1" type="2" itemId="6" num="1" weight="100" describe="路上闲逛，捡到了金钥匙" trapTime="0"/>
+<sta_guildExploreRandomBox id="14" level="1" type="2" itemId="7" num="1" weight="100" describe="路上闲逛，捡到了蓝宝珠" trapTime="0"/>
+<sta_guildExploreRandomBox id="15" level="1" type="2" itemId="8" num="1" weight="100" describe="路上闲逛，捡到了礼盒" trapTime="0"/>
+<sta_guildExploreRandomBox id="16" level="1" type="2" itemId="9" num="1" weight="100" describe="路上闲逛，捡到了蘑菇" trapTime="0"/>
+<sta_guildExploreRandomBox id="17" level="1" type="2" itemId="10" num="1" weight="100" describe="路上闲逛，捡到了铜宝箱" trapTime="0"/>
+<sta_guildExploreRandomBox id="18" level="1" type="2" itemId="11" num="1" weight="100" describe="路上闲逛，捡到了铜钥匙" trapTime="0"/>
+<sta_guildExploreRandomBox id="19" level="1" type="2" itemId="12" num="1" weight="100" describe="路上闲逛，捡到了银宝箱" trapTime="0"/>
+<sta_guildExploreRandomBox id="20" level="1" type="2" itemId="13" num="1" weight="100" describe="路上闲逛，捡到了银钥匙" trapTime="0"/>
+<sta_guildExploreRandomBox id="21" level="1" type="2" itemId="14" num="1" weight="100" describe="路上闲逛，捡到了远古手镯" trapTime="0"/>
+<sta_guildExploreRandomBox id="22" level="1" type="2" itemId="15" num="1" weight="100" describe="路上闲逛，捡到了远古之壶" trapTime="0"/>
+<sta_guildExploreRandomBox id="23" level="1" type="4" itemId="30" num="3" weight="100" describe="路上捡到珍贵的盒子，打开发现" trapTime="0"/>
+<sta_guildExploreRandomBox id="24" level="1" type="4" itemId="30" num="4" weight="100" describe="系统出问题了，意外获得" trapTime="0"/>
+<sta_guildExploreRandomBox id="25" level="1" type="4" itemId="30" num="5" weight="100" describe="意外获得其他冒险家遗落的财宝" trapTime="0"/>
+<sta_guildExploreRandomBox id="26" level="1" type="4" itemId="30" num="6" weight="100" describe="偶然获得公会会长留下的礼物" trapTime="0"/>
+<sta_guildExploreRandomBox id="27" level="1" type="4" itemId="30" num="8" weight="100" describe="发现其他冒险家埋藏的宝藏" trapTime="0"/>
+<sta_guildExploreRandomBox id="28" level="1" type="4" itemId="30" num="10" weight="100" describe="遇见财主慷慨馈赠，获得" trapTime="0"/>
+<sta_guildExploreRandomBox id="29" level="1" type="4" itemId="30" num="12" weight="100" describe="热心帮助他人，获得报酬" trapTime="0"/>
+<sta_guildExploreRandomBox id="30" level="1" type="5" itemId="0" num="1" weight="400" describe="一不小心踩中了猎人的小陷阱" trapTime="15"/>
+<sta_guildExploreRandomBox id="31" level="1" type="5" itemId="0" num="1" weight="400" describe="误入了其他冒险家设计的陷阱" trapTime="20"/>
+<sta_guildExploreRandomBox id="32" level="1" type="5" itemId="0" num="1" weight="400" describe="不小心闯进了火箭队的陷阱当中" trapTime="25"/>
+<sta_guildExploreRandomBox id="33" level="1" type="5" itemId="0" num="1" weight="400" describe="踩中了火箭队设计的陷阱" trapTime="30"/>
+</root>

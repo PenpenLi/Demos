@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pokeMode id="1" mode="平衡模式" zzHP="120" zzWG="125" zzWF="125" zzTG="125" zzTF="125" zzSD="125" zzTotal="745" extendsRV="" megazzTotal="0" slateNum="0"/>
+<sta_pokeMode id="2" mode="攻击模式" zzHP="120" zzWG="150" zzWF="100" zzTG="150" zzTF="100" zzSD="125" zzTotal="745" extendsRV="" megazzTotal="0" slateNum="5"/>
+<sta_pokeMode id="3" mode="防守模式" zzHP="120" zzWG="100" zzWF="150" zzTG="100" zzTF="150" zzSD="125" zzTotal="745" extendsRV="" megazzTotal="0" slateNum="9"/>
+<sta_pokeMode id="4" mode="物理模式" zzHP="120" zzWG="150" zzWF="150" zzTG="100" zzTF="100" zzSD="125" zzTotal="745" extendsRV="" megazzTotal="0" slateNum="12"/>
+<sta_pokeMode id="5" mode="特殊模式" zzHP="120" zzWG="100" zzWF="100" zzTG="150" zzTF="150" zzSD="125" zzTotal="745" extendsRV="" megazzTotal="0" slateNum="12"/>
+<sta_pokeMode id="6" mode="平衡模式" zzHP="120" zzWG="145" zzWF="145" zzTG="145" zzTF="145" zzSD="145" zzTotal="845" extendsRV="120|125|125|125|125|125" megazzTotal="745" slateNum="0"/>
+<sta_pokeMode id="7" mode="攻击模式" zzHP="120" zzWG="180" zzWF="110" zzTG="180" zzTF="110" zzSD="145" zzTotal="845" extendsRV="120|150|100|150|100|125" megazzTotal="745" slateNum="5"/>
+<sta_pokeMode id="8" mode="防守模式" zzHP="120" zzWG="110" zzWF="180" zzTG="110" zzTF="180" zzSD="145" zzTotal="845" extendsRV="120|100|150|100|150|125" megazzTotal="745" slateNum="9"/>
+<sta_pokeMode id="9" mode="物理模式" zzHP="120" zzWG="180" zzWF="180" zzTG="110" zzTF="110" zzSD="145" zzTotal="845" extendsRV="120|150|150|100|100|125" megazzTotal="745" slateNum="12"/>
+<sta_pokeMode id="10" mode="特殊模式" zzHP="120" zzWG="110" zzWF="110" zzTG="180" zzTF="180" zzSD="145" zzTotal="845" extendsRV="120|100|100|150|150|125" megazzTotal="745" slateNum="12"/>
+</root>

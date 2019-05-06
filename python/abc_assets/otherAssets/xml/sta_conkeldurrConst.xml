@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_conkeldurrConst id="1" describe="劈木材每天次数" data="5"/>
+<sta_conkeldurrConst id="2" describe="敲岩石每天次数" data="8"/>
+<sta_conkeldurrConst id="3" describe="快速购买单份木材数量" data="100"/>
+<sta_conkeldurrConst id="4" describe="快速购买单份木材价格" data="250"/>
+<sta_conkeldurrConst id="5" describe="快速购买单份石材数量" data="100"/>
+<sta_conkeldurrConst id="6" describe="快速购买单份石材价格" data="250"/>
+<sta_conkeldurrConst id="7" describe="最佳收益获得的石材数" data="32"/>
+<sta_conkeldurrConst id="8" describe="良好收益获得的石材数" data="23"/>
+<sta_conkeldurrConst id="9" describe="一般收益获得的石材数" data="16"/>
+<sta_conkeldurrConst id="10" describe="没有收益获得的石材数" data="0"/>
+<sta_conkeldurrConst id="11" describe="随机时间数值（单位为秒）" data="2"/>
+<sta_conkeldurrConst id="12" describe="石头出现概率" data="0.2"/>
+<sta_conkeldurrConst id="13" describe="木材出现概率" data="0.8"/>
+<sta_conkeldurrConst id="14" describe="木材水平速度" data="50"/>
+<sta_conkeldurrConst id="15" describe="木材垂直速度" data="100"/>
+<sta_conkeldurrConst id="16" describe="重力加速度" data="20"/>
+<sta_conkeldurrConst id="17" describe="劈一次木材可以获得的木材数量" data="2"/>
+</root>

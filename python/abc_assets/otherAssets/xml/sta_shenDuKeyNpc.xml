@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shenDuKeyNpc id="220001" npcType="22" npcName="遗迹迷" npcMapPic="npc_YJY" successTalk="遗迹发生了一些奇怪的事情，我都不敢进去，你好像挺强大，你去看看吧" failTalk="遗迹发生了一些奇怪的事情，我都不敢进去。里面的感觉很危险，你如果没有选择好阵容的话，还是不要进去了" option="选择精灵阵容|返回" npcPoint="10,11,b" storyProp="5,1"/>
+</root>

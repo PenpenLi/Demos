@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_valentinesDayProgressReward id="1" quantity="60" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:12}]}"/>
+<sta_valentinesDayProgressReward id="2" quantity="120" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:2},{&apos;pId&apos;:1592,&apos;num&apos;:3},{&apos;pId&apos;:234,&apos;num&apos;:12}]}"/>
+<sta_valentinesDayProgressReward id="3" quantity="180" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:764,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:12}]}"/>
+<sta_valentinesDayProgressReward id="4" quantity="240" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:1},{&apos;pId&apos;:107000,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:12}]}"/>
+<sta_valentinesDayProgressReward id="5" quantity="300" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:5328,&apos;num&apos;:1},{&apos;pId&apos;:113000,&apos;num&apos;:5},{&apos;pId&apos;:234,&apos;num&apos;:12}]}"/>
+</root>

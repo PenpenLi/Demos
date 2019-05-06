@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fishingTrick id="1" name="钓鱼新手" level="0" collectCount="0" unlockDescript="初始技巧等级" effectDescript="无" extraAttractRange="0" extraDamage="0"/>
+<sta_fishingTrick id="2" name="钓鱼高手" level="30" collectCount="10" unlockDescript="要求玩家等级30，在钓鱼图鉴里收集10只精灵。" effectDescript="增加吸引鱼的范围，并提高对鱼体力的消耗。" extraAttractRange="8" extraDamage="0.2"/>
+<sta_fishingTrick id="3" name="钓鱼大师" level="60" collectCount="20" unlockDescript="要求玩家等级60，在钓鱼图鉴里收集20只精灵。" effectDescript="进一步增加吸引鱼的范围，并大幅提高对鱼体力的消耗。" extraAttractRange="16" extraDamage="0.4"/>
+</root>

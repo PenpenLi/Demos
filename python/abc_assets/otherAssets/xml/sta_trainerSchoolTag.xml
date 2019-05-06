@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_trainerSchoolTag id="1" type="1" name="良师益友" color="0x5F9EA0"/>
+<sta_trainerSchoolTag id="2" type="2" name="好学生" color="0xADFF2F"/>
+<sta_trainerSchoolTag id="3" type="0" name="女神" color="0xFF7F50"/>
+<sta_trainerSchoolTag id="4" type="0" name="男神" color="0x66CCFF"/>
+<sta_trainerSchoolTag id="5" type="0" name="话唠" color="0x008B8B"/>
+<sta_trainerSchoolTag id="6" type="0" name="PVP达人" color="0xFF0000"/>
+<sta_trainerSchoolTag id="7" type="0" name="夜猫子" color="0xFF9900"/>
+<sta_trainerSchoolTag id="8" type="0" name="PVP菜鸡" color="0x1E90FF"/>
+<sta_trainerSchoolTag id="9" type="0" name="佛系" color="0x99CCCC"/>
+<sta_trainerSchoolTag id="10" type="0" name="逗比" color="0x660000"/>
+<sta_trainerSchoolTag id="11" type="0" name="御姐控" color="0x996600"/>
+<sta_trainerSchoolTag id="12" type="0" name="基佬" color="0x6600CC"/>
+<sta_trainerSchoolTag id="13" type="0" name="任劳任怨" color="0xFF3366"/>
+<sta_trainerSchoolTag id="14" type="0" name="小鲜肉" color="0xBC8F8F"/>
+<sta_trainerSchoolTag id="15" type="0" name="天然呆" color="0x0033FF"/>
+<sta_trainerSchoolTag id="16" type="0" name="完美主义" color="0x33FFFF"/>
+<sta_trainerSchoolTag id="17" type="0" name="萝莉控" color="0xFFB6C1"/>
+</root>

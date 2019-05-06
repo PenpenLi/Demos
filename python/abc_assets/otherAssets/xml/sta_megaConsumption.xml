@@ -1,11 +1,3 @@
-<!-- 
-sta_megaConsumption:
-
-
-id:mega突破数
-pokeLv:要求等级
-gold:所需金币
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 <sta_megaConsumption id="1" pokeLv="1" gold="1000000"/>
@@ -20,5 +12,6 @@ gold:所需金币
 <sta_megaConsumption id="10" pokeLv="64" gold="32600000"/>
 <sta_megaConsumption id="11" pokeLv="71" gold="37700000"/>
 <sta_megaConsumption id="12" pokeLv="78" gold="43100000"/>
-<sta_megaConsumption id="13" pokeLv="85" gold="48700000"/>
+<sta_megaConsumption id="13" pokeLv="83" gold="48700000"/>
+<sta_megaConsumption id="14" pokeLv="85" gold="54300000"/>
 </root>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_ChongYangHeightAward id="1" height="50" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:50},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:5}]}"/>
+<sta_ChongYangHeightAward id="2" height="80" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:2},{&apos;pId&apos;:3560,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:10}]}"/>
+<sta_ChongYangHeightAward id="3" height="100" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:10},{&apos;pId&apos;:114000,&apos;num&apos;:2},{&apos;pId&apos;:1592,&apos;num&apos;:3}]}"/>
+<sta_ChongYangHeightAward id="4" height="130" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1144,&apos;num&apos;:2},{&apos;pId&apos;:1097,&apos;num&apos;:2},{&apos;pId&apos;:764,&apos;num&apos;:2}]}"/>
+<sta_ChongYangHeightAward id="5" height="150" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1},{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:123002,&apos;num&apos;:2},{&apos;pId&apos;:864,&apos;num&apos;:1}]}"/>
+</root>

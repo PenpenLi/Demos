@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_trianerCardStyle id="1" chineseName="默认样式1" picName="playerInfoBg_skin0" propId="" isDefault="1"/>
+<sta_trianerCardStyle id="2" chineseName="默认样式2" picName="playerInfoBg_skin1" propId="" isDefault="1"/>
+<sta_trianerCardStyle id="3" chineseName="皮卡丘主题" picName="playerInfoBg_skin2" propId="5314" isDefault="0"/>
+<sta_trianerCardStyle id="4" chineseName="小锯鳄主题" picName="playerInfoBg_skin3" propId="5316" isDefault="0"/>
+<sta_trianerCardStyle id="5" chineseName="关东御三家主题" picName="playerInfoBg_skin4" propId="5315" isDefault="0"/>
+<sta_trianerCardStyle id="6" chineseName="三周年主题" picName="playerInfoBg_skin5" propId="5599" isDefault="0"/>
+<sta_trianerCardStyle id="7" chineseName="高瞻远瞩主题" picName="playerInfoBg_skin6" propId="5740" isDefault="0"/>
+<sta_trianerCardStyle id="8" chineseName="精彩2019主题" picName="playerInfoBg_skin7" propId="5791" isDefault="0"/>
+<sta_trianerCardStyle id="9" chineseName="绿树蓝天主题" picName="playerInfoBg_skin8" propId="6895" isDefault="0"/>
+<sta_trianerCardStyle id="10" chineseName="春之烂漫主题" picName="playerInfoBg_skin9" propId="6931" isDefault="0"/>
+</root>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildBuff id="1" desc="增加全体精灵物攻5%" type="1" numerical="1.05" rare="1" role="1"/>
+<sta_guildBuff id="2" desc="增加全体精灵特攻5%" type="2" numerical="1.05" rare="1" role="1"/>
+<sta_guildBuff id="3" desc="增加全体精灵速度5%" type="3" numerical="1.05" rare="1" role="1"/>
+<sta_guildBuff id="4" desc="增加全体精灵物攻10%" type="1" numerical="1.1" rare="2" role="1"/>
+<sta_guildBuff id="5" desc="增加全体精灵特攻10%" type="2" numerical="1.1" rare="2" role="1"/>
+<sta_guildBuff id="6" desc="增加全体精灵速度10%" type="3" numerical="1.1" rare="2" role="1"/>
+<sta_guildBuff id="7" desc="减弱守护兽20%的伤害" type="5" numerical="0.8" rare="2" role="2"/>
+<sta_guildBuff id="8" desc="增加全体精灵10%物防和特防" type="6" numerical="1.1" rare="2" role="1"/>
+<sta_guildBuff id="9" desc="增加全体成员输出数据3%" type="4" numerical="1.03" rare="3" role="1"/>
+<sta_guildBuff id="10" desc="增加全体精灵物攻15%" type="1" numerical="1.15" rare="3" role="1"/>
+<sta_guildBuff id="11" desc="增加全体精灵特攻15%" type="2" numerical="1.15" rare="3" role="1"/>
+<sta_guildBuff id="12" desc="增加全体精灵速度15%" type="3" numerical="1.15" rare="3" role="1"/>
+<sta_guildBuff id="13" desc="增加全体成员输出数据10%" type="4" numerical="1.1" rare="4" role="1"/>
+</root>

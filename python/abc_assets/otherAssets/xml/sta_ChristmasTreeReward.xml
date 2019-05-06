@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_ChristmasTreeReward id="1" completionRate="30" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:150},&apos;prop&apos;:[{&apos;pId&apos;:5220,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:5780,&apos;num&apos;:20}]}"/>
+<sta_ChristmasTreeReward id="2" completionRate="60" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200},&apos;prop&apos;:[{&apos;pId&apos;:1204,&apos;num&apos;:1},{&apos;pId&apos;:2521,&apos;num&apos;:2},{&apos;pId&apos;:5780,&apos;num&apos;:30}]}"/>
+<sta_ChristmasTreeReward id="3" completionRate="100" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:5498,&apos;num&apos;:2},{&apos;pId&apos;:5780,&apos;num&apos;:50}]}"/>
+</root>

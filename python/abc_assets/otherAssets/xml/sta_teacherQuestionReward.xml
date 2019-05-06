@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_teacherQuestionReward id="1" floorCorrectQues="1" upperCorrectQues="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:300000},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:1},{&apos;pId&apos;:116000,&apos;num&apos;:1}]}"/>
+<sta_teacherQuestionReward id="2" floorCorrectQues="4" upperCorrectQues="6" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:600000},&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:135004,&apos;num&apos;:3},{&apos;pId&apos;:858,&apos;num&apos;:15}]}"/>
+<sta_teacherQuestionReward id="3" floorCorrectQues="7" upperCorrectQues="10" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:1000000},&apos;prop&apos;:[{&apos;pId&apos;:3562,&apos;num&apos;:1},{&apos;pId&apos;:1097,&apos;num&apos;:1},{&apos;pId&apos;:3059,&apos;num&apos;:30}]}"/>
+<sta_teacherQuestionReward id="4" floorCorrectQues="11" upperCorrectQues="15" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:1500000},&apos;diamond&apos;:{&apos;num&apos;:300},&apos;prop&apos;:[{&apos;pId&apos;:3025,&apos;num&apos;:2},{&apos;pId&apos;:3029,&apos;num&apos;:2},{&apos;pId&apos;:1592,&apos;num&apos;:2}]}"/>
+</root>

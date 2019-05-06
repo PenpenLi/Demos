@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_choiceLandBigNode id="1" name="光暗抉择" openLv="50" nodeListJNS="{&apos;lst&apos;:[{&apos;nodeId&apos;:1,&apos;farNodeId&apos;:&apos;-1&apos;,&apos;nextNodeId&apos;:&apos;2|4&apos;},{&apos;nodeId&apos;:2,&apos;farNodeId&apos;:&apos;1&apos;,&apos;nextNodeId&apos;:&apos;3&apos;},{&apos;nodeId&apos;:3,&apos;farNodeId&apos;:&apos;2&apos;,&apos;nextNodeId&apos;:&apos;-1&apos;},{&apos;nodeId&apos;:4,&apos;farNodeId&apos;:&apos;1&apos;,&apos;nextNodeId&apos;:&apos;-1&apos;}]}" bgImg="choiceLand1"/>
+</root>

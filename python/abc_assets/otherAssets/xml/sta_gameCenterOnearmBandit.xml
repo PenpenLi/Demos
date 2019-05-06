@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gameCenterOnearmBandit id="1" group="6,6,6" score="1000"/>
+<sta_gameCenterOnearmBandit id="2" group="1,1,1" score="500"/>
+<sta_gameCenterOnearmBandit id="3" group="3,3" score="300"/>
+<sta_gameCenterOnearmBandit id="4" group="4,4" score="100"/>
+<sta_gameCenterOnearmBandit id="5" group="5,5" score="80"/>
+<sta_gameCenterOnearmBandit id="6" group="6" score="40"/>
+<sta_gameCenterOnearmBandit id="7" group="2" score="10"/>
+</root>

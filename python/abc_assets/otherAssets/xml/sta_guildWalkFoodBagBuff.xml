@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkFoodBagBuff id="1" npcId="5" describe="闪光之路每次投掷消耗闪光币数量减少1个" data="1" lvLimit="48"/>
+<sta_guildWalkFoodBagBuff id="2" npcId="8" describe="每日第一次联盟试炼100%双倍掉落（非活动道具）" data="100" lvLimit="24"/>
+<sta_guildWalkFoodBagBuff id="3" npcId="8" describe="每日第三次挑战超进化试炼副本时，有50%概率掉落翻倍（非活动道具）" data="50" lvLimit="87"/>
+<sta_guildWalkFoodBagBuff id="4" npcId="2" describe="神都遗迹免费回复时间减少2小时，钻石回复消耗降低20%" data="7200;20" lvLimit="60"/>
+<sta_guildWalkFoodBagBuff id="5" npcId="3" describe="战斗胜利获得积分增加20%，每日最多增加300分" data="20;300" lvLimit="42"/>
+<sta_guildWalkFoodBagBuff id="6" npcId="7" describe="挖矿能量上限提升10点" data="10" lvLimit="26"/>
+<sta_guildWalkFoodBagBuff id="7" npcId="5" describe="普通王者之路可碾压层数+1" data="1" lvLimit="22"/>
+<sta_guildWalkFoodBagBuff id="8" npcId="7" describe="每日前5次普通副本双倍掉落" data="5" lvLimit="1"/>
+<sta_guildWalkFoodBagBuff id="9" npcId="1" describe="购买体力时，体力收益增加20%" data="20" lvLimit="1"/>
+<sta_guildWalkFoodBagBuff id="10" npcId="2" describe="沙狐乐园体力遇怪体力减少2点" data="2" lvLimit="39"/>
+<sta_guildWalkFoodBagBuff id="11" npcId="4" describe="度假屋探索体力消耗下降5点" data="5" lvLimit="27"/>
+<sta_guildWalkFoodBagBuff id="12" npcId="4" describe="每次购买皮卡丘体力额外增加10点" data="10" lvLimit="27"/>
+<sta_guildWalkFoodBagBuff id="13" npcId="4" describe="每次远足体力消耗下降5点" data="5" lvLimit="27"/>
+<sta_guildWalkFoodBagBuff id="14" npcId="3" describe="联盟大赛挑战后，下次挑战时间减少5分钟" data="300" lvLimit="10"/>
+<sta_guildWalkFoodBagBuff id="15" npcId="6" describe="每日精英副本前3次重置免费" data="3" lvLimit="1"/>
+</root>

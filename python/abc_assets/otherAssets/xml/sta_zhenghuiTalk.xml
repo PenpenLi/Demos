@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_zhenghuiTalk id="1" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="哈！我是一只精灵。不对！我才不是！我是正辉，我是一个货真价实的怪兽狂。" afterEvent="2" optionEvent="" rewardJNS=""/>
+<sta_zhenghuiTalk id="2" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="嘿！为什么要摆出一副怀疑的表情？我试验失败了，我变成了一只小精灵了！" afterEvent="3" optionEvent="" rewardJNS=""/>
+<sta_zhenghuiTalk id="3" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="那么你觉得怎么样？你能帮我控制机器帮我还原吗？" afterEvent="0" optionEvent="帮帮他吧,4|放任不管,5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:30,&apos;num&apos;:20},{&apos;pId&apos;:747,&apos;num&apos;:10},{&apos;pId&apos;:15,&apos;num&apos;:3},{&apos;pId&apos;:149,&apos;num&apos;:1}]}"/>
+<sta_zhenghuiTalk id="4" branchId="1" npcName="正辉" npcPic="zheng4hui1" talk="啊呀呀呀！谢了！我欠你的！这是我的谢礼，请你一定要收下！" afterEvent="0" optionEvent="" rewardJNS=""/>
+<sta_zhenghuiTalk id="5" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="不！？你不能这么冷淡！拜托，你一定要帮我这个陷入了大！大麻烦的人！" afterEvent="0" optionEvent="帮帮他,6|继续放任不管,7" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:30,&apos;num&apos;:20},{&apos;pId&apos;:747,&apos;num&apos;:10},{&apos;pId&apos;:15,&apos;num&apos;:3},{&apos;pId&apos;:149,&apos;num&apos;:1}]}"/>
+<sta_zhenghuiTalk id="6" branchId="1" npcName="正辉" npcPic="zheng4hui1" talk="啊呀呀呀！谢了！我欠你的！这是我的谢礼，请你一定要收下！" afterEvent="0" optionEvent="" rewardJNS=""/>
+<sta_zhenghuiTalk id="7" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="朋友，你看我这么无辜可怜的脸蛋你忍心让我这辈子都这样生活下去吗？" afterEvent="0" optionEvent="帮帮他,8|还是放任不管,9" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:30,&apos;num&apos;:20},{&apos;pId&apos;:747,&apos;num&apos;:10},{&apos;pId&apos;:15,&apos;num&apos;:3},{&apos;pId&apos;:149,&apos;num&apos;:1}]}"/>
+<sta_zhenghuiTalk id="8" branchId="1" npcName="正辉" npcPic="zheng4hui1" talk="啊呀呀呀！谢了！我欠你的！这是我的谢礼，请你一定要收下！" afterEvent="0" optionEvent="" rewardJNS=""/>
+<sta_zhenghuiTalk id="9" branchId="1" npcName="？？？" npcPic="img_pi2pi2" talk="呜呜呜（哇的一声哭了出来）！" afterEvent="0" optionEvent="好啦不逗他玩啦，还是帮下他吧,10" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:30,&apos;num&apos;:20},{&apos;pId&apos;:747,&apos;num&apos;:10},{&apos;pId&apos;:15,&apos;num&apos;:3},{&apos;pId&apos;:149,&apos;num&apos;:1}]}"/>
+<sta_zhenghuiTalk id="10" branchId="1" npcName="正辉" npcPic="zheng4hui1" talk="啊呀呀呀！谢了！我欠你的！这是我的谢礼，请你一定要收下！" afterEvent="0" optionEvent="" rewardJNS=""/>
+</root>

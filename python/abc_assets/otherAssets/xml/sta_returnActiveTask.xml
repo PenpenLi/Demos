@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_returnActiveTask id="1" taskDec="登录游戏" type="1" const="0" isRefreshable="0" acticeVal="10"/>
+<sta_returnActiveTask id="2" taskDec="消耗XX点体力" type="2" const="100|150|200" isRefreshable="0" acticeVal="10"/>
+<sta_returnActiveTask id="3" taskDec="消耗XX钻石" type="3" const="50|100|150" isRefreshable="1" acticeVal="20"/>
+<sta_returnActiveTask id="4" taskDec="消耗XX金币" type="4" const="50000|100000|200000" isRefreshable="1" acticeVal="20"/>
+<sta_returnActiveTask id="5" taskDec="在狩猎场抓XX只精灵" type="5" const="1|3|5" isRefreshable="1" acticeVal="20"/>
+<sta_returnActiveTask id="6" taskDec="参与经典PVPXX场" type="6" const="1|3|5" isRefreshable="1" acticeVal="20"/>
+<sta_returnActiveTask id="7" taskDec="经典PVP胜利XX场" type="7" const="1|2|3" isRefreshable="1" acticeVal="20"/>
+<sta_returnActiveTask id="8" taskDec="通关野外副本XX次" type="8" const="5|10|20" isRefreshable="1" acticeVal="20"/>
+</root>

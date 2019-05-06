@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fengyuanItem id="1" type="2" name="居合斩秘传机" descs="使精灵能够学会居合斩" itemImg=""/>
+<sta_fengyuanItem id="2" type="2" name="飞天秘传机" descs="使精灵能够学会飞天" itemImg=""/>
+<sta_fengyuanItem id="3" type="2" name="冲浪秘传机" descs="使精灵能够学会冲浪" itemImg=""/>
+<sta_fengyuanItem id="4" type="2" name="怪力秘传机" descs="使精灵能够学会怪力" itemImg=""/>
+<sta_fengyuanItem id="5" type="2" name="闪光秘传机" descs="使精灵能够学会闪光" itemImg=""/>
+<sta_fengyuanItem id="6" type="2" name="碎岩秘传机" descs="使精灵能够学会碎岩" itemImg=""/>
+<sta_fengyuanItem id="7" type="2" name="攀瀑秘传机" descs="使精灵能够学会攀瀑" itemImg=""/>
+<sta_fengyuanItem id="8" type="2" name="潜水秘传机" descs="使精灵能够学会潜水" itemImg=""/>
+<sta_fengyuanItem id="9" type="3" name="岩石徽章" descs="通过了卡那兹道馆的证明" itemImg="yan2shi2hui1zhang1"/>
+<sta_fengyuanItem id="10" type="3" name="拳击徽章" descs="通过了武斗道馆的证明" itemImg="quan2ji1hui1zhang1"/>
+<sta_fengyuanItem id="11" type="3" name="电力徽章" descs="通过了紫堇道馆的证明" itemImg="dian4li4hui1zhang1"/>
+<sta_fengyuanItem id="12" type="3" name="烈焰徽章" descs="通过了釜炎道馆的证明" itemImg="lie4yan4hui1zhang1"/>
+<sta_fengyuanItem id="13" type="3" name="天枰徽章" descs="通过了橙华道馆的证明" itemImg="tian1ping2hui1zhang1"/>
+<sta_fengyuanItem id="14" type="3" name="白羽徽章" descs="通过了茵郁道馆的证明" itemImg="bai2yu3hui1zhang1"/>
+<sta_fengyuanItem id="15" type="3" name="心灵徽章" descs="通过了绿岭道馆的证明" itemImg="xin1ling2hui1zhang1"/>
+<sta_fengyuanItem id="16" type="3" name="雨滴徽章" descs="通过了琉璃道馆的证明" itemImg="yu3di1hui1zhang1"/>
+<sta_fengyuanItem id="17" type="1" name="信件" descs="得文制造股份有限公司社长交与的重要信件，需要寄送给身在武斗镇的大吾" itemImg=""/>
+<sta_fengyuanItem id="10018" type="1" name="获得根状化石" descs="远古时居住在海里的古代精灵的化石，似乎是根的一部分" itemImg=""/>
+<sta_fengyuanItem id="10019" type="1" name="获得爪子化石" descs="远古时居住在海里的古代精灵的化石，似乎是贝壳的一部分" itemImg=""/>
+<sta_fengyuanItem id="10020" type="1" name="奇怪的宝石" descs="闪闪发光的硬物，不知道有什么用" itemImg=""/>
+<sta_fengyuanItem id="10021" type="1" name="自行车" descs="最新新号的自行车，速度飞快" itemImg=""/>
+<sta_fengyuanItem id="10022" type="1" name="可怜的呆呆兽" descs="一只被火箭队关起来的呆呆兽" itemImg=""/>
+<sta_fengyuanItem id="10023" type="1" name="心之鳞片" descs="心之鳞片是一个非常漂亮的道具" itemImg=""/>
+<sta_fengyuanItem id="24" type="1" name="古辰宝珠" descs="用于开启古辰遗迹石门的宝珠，散发着历史的光辉" itemImg=""/>
+<sta_fengyuanItem id="25" type="1" name="吼鲸王" descs="被困与造船厂下水道的吼鲸王，被我收服了" itemImg=""/>
+<sta_fengyuanItem id="26" type="1" name="古空棘鱼" descs="古辰遗迹发现的古空棘鱼，被我收服了" itemImg=""/>
+<sta_fengyuanItem id="27" type="1" name="席多蓝恩" descs="热焰小径发现的席多蓝恩，被我收服了" itemImg=""/>
+<sta_fengyuanItem id="28" type="1" name="雷吉洛克" descs="沙漠遗迹发现的雷吉洛克，被我收服了" itemImg=""/>
+<sta_fengyuanItem id="29" type="1" name="雷吉艾斯" descs="小岛横穴发现的雷吉艾斯，被我收服了" itemImg=""/>
+<sta_fengyuanItem id="30" type="4" name="雷吉斯奇鲁" descs="古代坟墓发现的雷吉斯奇鲁，被我收服了" itemImg=""/>
+</root>

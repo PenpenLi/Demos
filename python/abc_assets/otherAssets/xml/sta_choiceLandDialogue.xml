@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_choiceLandDialogue id="1" type="3" speaker="" content="在世界某个角落，存在着一只“特殊”的凤王——#抉择凤王#。|传说，万物内心的光暗两面是由#抉择凤王#来统一平衡。|但是，这种平衡不是永久的。|因为，曾经某个被称为“抉择之日”的时间里，#抉择凤王#选择了黑暗。|#抉择凤王#拥有获得新姿态的机会，但是光暗的天枰就此被打破......|部分精灵内心的黑暗面不断膨胀，出现后来被人们命名为“黑化”的异常。" setting="choiceLandDiaBg1" newSetting="choiceLandDiaBg1" rcdId="0" markStr="" picId="" voice=""/>
+<sta_choiceLandDialogue id="2" type="3" speaker="" content="虽然，现在的#抉择凤王#已经拥有新的姿态，但是也非常之疑惑......|对于曾经拥有的光明，对于万物走向黑暗，自己当初的抉择是对的吗？|#抉择凤王#希望重新再有一次“抉择”的机会。|面对#抉择凤王#的请求，以及黑化的不可控现状，|“某精灵组织”一致决定给予#抉择凤王#再一次抉择的机会，|不过，这次“抉择”交由世界各地的训练师，|引导#抉择凤王#再次作出抉择，决定世界最终走向光明，还是黑暗......" setting="choiceLandDiaBg2" newSetting="choiceLandDiaBg2" rcdId="0" markStr="" picId="" voice=""/>
+</root>

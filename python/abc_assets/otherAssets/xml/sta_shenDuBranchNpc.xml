@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shenDuBranchNpc id="230001" npcType="23" npcName="柳伯" npcMapPic="npc_laoTou" map="10301" talk="1001|1002|1003" showNpc="1" branchId="1" npcPoint="6,3,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230002" npcType="23" npcName="柳伯" npcMapPic="npc_laoTou" map="10501" talk="1004|1005|1006|1007|1008|1010" showNpc="0" branchId="1" npcPoint="23,2,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230003" npcType="23" npcName="遗迹迷" npcMapPic="npc_KG" map="10801" talk="1009" showNpc="1" branchId="1" npcPoint="4,6,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230004" npcType="23" npcName="柳伯" npcMapPic="npc_laoTou" map="10801" talk="1011|1012|1013|1014|1015|1016|1017|1018" showNpc="0" branchId="1" npcPoint="8,8,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230005" npcType="23" npcName="辉一" npcMapPic="npc_YNZ" map="10701" talk="2001|2018|2019" showNpc="1" branchId="2" npcPoint="7,12,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230006" npcType="23" npcName="辉二" npcMapPic="npc_DKXZ" map="10301" talk="2002" showNpc="0" branchId="2" npcPoint="2,7,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230007" npcType="23" npcName="辉三" npcMapPic="npc_DKXZ" map="10901" talk="2003" showNpc="0" branchId="2" npcPoint="2,24,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230008" npcType="23" npcName="辉四" npcMapPic="npc_DKXZ" map="10801" talk="2004" showNpc="0" branchId="2" npcPoint="11,30,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230009" npcType="23" npcName="辉五" npcMapPic="npc_DKXZ" map="10301" talk="2005" showNpc="0" branchId="2" npcPoint="2,7,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230010" npcType="23" npcName="辉六" npcMapPic="npc_DKXZ" map="10401" talk="2006" showNpc="0" branchId="2" npcPoint="2,5,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230011" npcType="23" npcName="辉八" npcMapPic="npc_DKXZ" map="11001" talk="2007" showNpc="0" branchId="2" npcPoint="7,9,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230012" npcType="23" npcName="辉九" npcMapPic="npc_DKXZ" map="10601" talk="2008" showNpc="0" branchId="2" npcPoint="28,25,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230013" npcType="23" npcName="辉十" npcMapPic="npc_DKXZ" map="11001" talk="2009" showNpc="0" branchId="2" npcPoint="22,30,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230014" npcType="23" npcName="辉二" npcMapPic="npc_DKXZ" map="10701" talk="2010" showNpc="0" branchId="2" npcPoint="5,12,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230015" npcType="23" npcName="辉三" npcMapPic="npc_DKXZ" map="10701" talk="2011" showNpc="0" branchId="2" npcPoint="5,14,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230016" npcType="23" npcName="辉四" npcMapPic="npc_DKXZ" map="10701" talk="2012" showNpc="0" branchId="2" npcPoint="7,14,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230017" npcType="23" npcName="辉五" npcMapPic="npc_DKXZ" map="10701" talk="2013" showNpc="0" branchId="2" npcPoint="9,14,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230018" npcType="23" npcName="辉六" npcMapPic="npc_DKXZ" map="10701" talk="2014" showNpc="0" branchId="2" npcPoint="9,12,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230019" npcType="23" npcName="辉八" npcMapPic="npc_DKXZ" map="10701" talk="2015" showNpc="0" branchId="2" npcPoint="12,12,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230020" npcType="23" npcName="辉九" npcMapPic="npc_DKXZ" map="10701" talk="2016" showNpc="0" branchId="2" npcPoint="12,14,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230021" npcType="23" npcName="辉十" npcMapPic="npc_DKXZ" map="10701" talk="2017" showNpc="0" branchId="2" npcPoint="6,15,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230022" npcType="23" npcName="罗密欧" npcMapPic="npc_JYXLS" map="10401" talk="3001" showNpc="1" branchId="3" npcPoint="20,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230023" npcType="23" npcName="朱丽叶" npcMapPic="npc_JYXLSnv" map="10801" talk="3007" showNpc="1" branchId="3" npcPoint="24,32,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230024" npcType="23" npcName="罗密欧" npcMapPic="npc_JYXLS" map="10501" talk="3002" showNpc="0" branchId="3" npcPoint="20,27,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230025" npcType="23" npcName="朱丽叶" npcMapPic="npc_JYXLSnv" map="10701" talk="3008" showNpc="0" branchId="3" npcPoint="11,18,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230026" npcType="23" npcName="罗密欧" npcMapPic="npc_JYXLS" map="10301" talk="3003" showNpc="0" branchId="3" npcPoint="3,14,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230027" npcType="23" npcName="朱丽叶" npcMapPic="npc_JYXLSnv" map="10201|10202" talk="3009" showNpc="0" branchId="3" npcPoint="13,12,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230028" npcType="23" npcName="罗密欧" npcMapPic="npc_JYXLS" map="10601" talk="3004" showNpc="0" branchId="3" npcPoint="18,17,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230029" npcType="23" npcName="朱丽叶" npcMapPic="npc_JYXLSnv" map="10901" talk="3010" showNpc="0" branchId="3" npcPoint="18,27,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230030" npcType="23" npcName="罗密欧" npcMapPic="npc_JYXLS" map="11001" talk="3005|3006" showNpc="0" branchId="3" npcPoint="3,8,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230031" npcType="23" npcName="朱丽叶" npcMapPic="npc_JYXLSnv" map="11001" talk="3011|3012|3013" showNpc="0" branchId="3" npcPoint="3,9,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230032" npcType="23" npcName="阿尔宙斯" npcMapPic="npc_AEZS" map="11301" talk="4001|4002|4003|4004|4005|4006|4007|4008|4009|4010|4011|4012|4013|4014|4015|4016" showNpc="1" branchId="4" npcPoint="21,19,b" npcPic="player1" fightBG="alufu"/>
+<sta_shenDuBranchNpc id="230033" npcType="23" npcName="暗影探寻者" npcMapPic="npc_YNZ" map="10401" talk="5001|5002|5003|5005|5006|5007|5009|5010|5011|5013|5014|5015|5016" showNpc="1" branchId="5" npcPoint="19,5,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230034" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="10701" talk="5004" showNpc="0" branchId="5" npcPoint="26,9,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230035" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="10801" talk="5008" showNpc="0" branchId="5" npcPoint="29,19,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230036" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="11201" talk="5012" showNpc="0" branchId="5" npcPoint="20,11,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230037" npcType="23" npcName="穿着奇怪的博士" npcMapPic="npc_MZDS" map="10501" talk="10001|10002|10003|10004|10005|10006|10007|10008" showNpc="1" branchId="10" npcPoint="28,15,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230038" npcType="23" npcName="穿着奇怪的博士" npcMapPic="npc_MZDS" map="80301" talk="10009|10010|10011|10012|10013" showNpc="0" branchId="10" npcPoint="7,14,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230039" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10301" talk="15001" showNpc="1" branchId="15" npcPoint="2,10,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230040" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15003" showNpc="0" branchId="15" npcPoint="6,2,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230041" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15004|15005" showNpc="0" branchId="15" npcPoint="6,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230042" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="10801" talk="15007" showNpc="1" branchId="15" npcPoint="7,2,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230043" npcType="23" npcName="梦的研究者" npcMapPic="npc_xueLa" map="10701" talk="15009|15008" showNpc="1" branchId="15" npcPoint="22,25,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230045" npcType="23" npcName="不再被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15006" showNpc="0" branchId="15" npcPoint="6,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230046" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15010" showNpc="0" branchId="15" npcPoint="6,4,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230047" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15011" showNpc="0" branchId="15" npcPoint="5,3,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230048" npcType="23" npcName="被噩梦缠绕的男子" npcMapPic="npc_hunHun" map="10501" talk="15012" showNpc="0" branchId="15" npcPoint="7,3,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230049" npcType="23" npcName="探索遗迹的男孩" npcMapPic="npc_SMY" map="10601" talk="11001|11002" showNpc="1" branchId="11" npcPoint="14,4,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230050" npcType="23" npcName="探索遗迹的男孩" npcMapPic="npc_SMY" map="90101" talk="11003|11004|11005|11006|11007|11008" showNpc="0" branchId="11" npcPoint="2,19,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230051" npcType="23" npcName="探索遗迹的男孩" npcMapPic="npc_SMY" map="90301" talk="11009|11010|11011|11012" showNpc="0" branchId="11" npcPoint="11,5,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230052" npcType="23" npcName="帅哥" npcMapPic="npc_LKPZ" map="10601" talk="16001" showNpc="1" branchId="16" npcPoint="11,6,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230053" npcType="23" npcName="帅哥" npcMapPic="npc_LKPZ" map="10901" talk="16003|16004|16005|16006|16007|16008" showNpc="0" branchId="16" npcPoint="19,12,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230054" npcType="23" npcName="冥王" npcMapPic="npc_YJY" map="10801" talk="16002" showNpc="0" branchId="16" npcPoint="16,21,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230055" npcType="23" npcName="遗迹守护者" npcMapPic="npc_laoTou" map="10201|10202" talk="6001|6002|6003" showNpc="1" branchId="6" npcPoint="7,12,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230056" npcType="23" npcName="金" npcMapPic="npc_jin" map="10202" talk="17001|17002|17003|17004|17005|17008|17009" showNpc="1" branchId="17" npcPoint="13,13,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230057" npcType="23" npcName="阿尔宙斯研究学者" npcMapPic="npc_xueLa" map="10601" talk="17006|17007|17010" showNpc="0" branchId="17" npcPoint="12,19,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230101" npcType="23" npcName="追星族" npcMapPic="npc_MNQNH" map="40101" talk="20001|20002|20003|20007|20008" showNpc="1" branchId="20" npcPoint="1,2,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230102" npcType="23" npcName="明星小凡" npcMapPic="npc_JYXLS" map="40201" talk="20004|20005|20006" showNpc="1" branchId="20" npcPoint="19,12,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230058" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="10901" talk="18003" showNpc="1" branchId="18" npcPoint="2,9,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230059" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="11101" talk="18006" showNpc="0" branchId="18" npcPoint="30,14,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230060" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="11201" talk="18009" showNpc="1" branchId="18" npcPoint="19,15,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230061" npcType="23" npcName="银河团团员" npcMapPic="npc_ZQBTHH" map="11201" talk="18007|18008" showNpc="1" branchId="18" npcPoint="21,14,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230062" npcType="23" npcName="赤日" npcMapPic="npc_YDSN" map="11001" talk="18001" showNpc="1" branchId="18" npcPoint="11,22,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230063" npcType="23" npcName="赤日" npcMapPic="npc_YDSN" map="11101" talk="18002|18004|18005" showNpc="0" branchId="18" npcPoint="30,14,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230064" npcType="23" npcName="石板专家" npcMapPic="npc_yingTing" map="10101" talk="19001|19002|19003|19004|19005|19006|19007|19008|19009|19010|19011|19012|19013|19014|19015|19016|19017|19018|19019|19020" showNpc="1" branchId="19" npcPoint="12,15,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230103" npcType="23" npcName="调查员" npcMapPic="npc_YJY" map="30201" talk="21001|21002|21003|21004|21005|21006|21007|21008|21009" showNpc="1" branchId="21" npcPoint="14,5,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230104" npcType="23" npcName="捉迷藏小孩" npcMapPic="npc_ZCSN" map="20101|20102" talk="22001|22002" showNpc="1" branchId="22" npcPoint="14,11,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230105" npcType="23" npcName="捉迷藏小孩" npcMapPic="npc_ZCSN" map="20201|20202" talk="22003|22004" showNpc="0" branchId="22" npcPoint="13,8,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230106" npcType="23" npcName="焦急的探险家" npcMapPic="npc_YJY" map="30101" talk="23001|23002|23003|23007|23008" showNpc="1" branchId="23" npcPoint="17,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230107" npcType="23" npcName="迷路的助手" npcMapPic="npc_YCSN" map="30301" talk="23004|23005|23006" showNpc="1" branchId="23" npcPoint="16,12,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230108" npcType="23" npcName="迷路的助手" npcMapPic="npc_YCSN" map="30101" talk="23009" showNpc="0" branchId="23" npcPoint="18,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230109" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="10301" talk="7001|7002|7003" showNpc="1" branchId="7" npcPoint="11,3,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230110" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="10501" talk="7004|7005" showNpc="1" branchId="7" npcPoint="17,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230111" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="10701" talk="7006|7007" showNpc="1" branchId="7" npcPoint="6,6,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230112" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="10901" talk="7008|7009|7010|7011|7012|7013" showNpc="1" branchId="7" npcPoint="15,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230113" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="11001" talk="7014|7015|7016|7017" showNpc="1" branchId="7" npcPoint="13,5,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230114" npcType="23" npcName="神都遗迹族人" npcMapPic="npc_riXiang" map="11201" talk="7018|7019|7020|7021" showNpc="1" branchId="7" npcPoint="13,5,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230115" npcType="23" npcName="有石板的小妹妹" npcMapPic="npc_lu" map="10901" talk="19026" showNpc="1" branchId="19" npcPoint="19,22,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230116" npcType="23" npcName="有石板的怪兽迷" npcMapPic="npc_JYXLS" map="11201" talk="19027" showNpc="1" branchId="19" npcPoint="11,21,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230117" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="30201" talk="19023" showNpc="1" branchId="19" npcPoint="5,11,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230118" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="10701" talk="19024" showNpc="1" branchId="19" npcPoint="13,19,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230119" npcType="23" npcName=" " npcMapPic="npc_twinkle" map="40201" talk="19025" showNpc="1" branchId="19" npcPoint="33,2,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230120" npcType="23" npcName="" npcMapPic="npc_twinkle" map="11201" talk="19037" showNpc="1" branchId="19" npcPoint="11,21,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230121" npcType="23" npcName="" npcMapPic="npc_twinkle" map="20101" talk="19035" showNpc="1" branchId="19" npcPoint="10,2,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230122" npcType="23" npcName="有石板的特摄粉丝" npcMapPic="npc_hunHun" map="20101" talk="19028" showNpc="1" branchId="19" npcPoint="27,8,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230123" npcType="23" npcName="有石板的DJ" npcMapPic="npc_BQMSNN" map="20201" talk="19029" showNpc="1" branchId="19" npcPoint="12,8,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230124" npcType="23" npcName="有石板的假面骑士" npcMapPic="npc_YDSN" map="20301" talk="19030" showNpc="1" branchId="19" npcPoint="20,19,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230125" npcType="23" npcName="有石板的巡警" npcMapPic="npc_SMY" map="20301" talk="19031" showNpc="1" branchId="19" npcPoint="40,5,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230126" npcType="23" npcName="有石板的火箭队队员" npcMapPic="npc_HJD" map="80301" talk="19032" showNpc="1" branchId="19" npcPoint="10,11" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230127" npcType="23" npcName="有石板的游戏迷" npcMapPic="npc_KG" map="90301" talk="19033" showNpc="1" branchId="19" npcPoint="10,4,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230128" npcType="23" npcName="有石板的少女" npcMapPic="npc_YCSN" map="20401" talk="19034" showNpc="1" branchId="19" npcPoint="14,3,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230129" npcType="23" npcName="石头专家" npcMapPic="npc_MZDS" map="40201" talk="19036" showNpc="1" branchId="19" npcPoint="34,11,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230130" npcType="23" npcName="石头女专家" npcMapPic="npc_xueLa" map="70301" talk="19038" showNpc="1" branchId="19" npcPoint="12,12,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230131" npcType="23" npcName="有石板的训练师" npcMapPic="npc_ZQBTHH" map="70101" talk="19039" showNpc="1" branchId="19" npcPoint="17,13,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232501" npcType="23" npcName="灵异爱好者" npcMapPic="npc_SMY" map="20301" talk="25101|25102|25103|25104|25105|25106" showNpc="1" branchId="25" npcPoint="4,2,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232502" npcType="23" npcName="灵异爱好者" npcMapPic="npc_SMY" map="20401" talk="25107" showNpc="0" branchId="25" npcPoint="13,10,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232601" npcType="23" npcName="热情的探险者" npcMapPic="npc_KSDSN" map="20301" talk="26201|26202|26203|26204|26205|26206|26207" showNpc="1" branchId="26" npcPoint="16,13,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232602" npcType="23" npcName="热情的探险者" npcMapPic="npc_KSDSN" map="20301" talk="26208" showNpc="0" branchId="26" npcPoint="39,24,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232603" npcType="23" npcName="热情的探险者" npcMapPic="npc_KSDSN" map="20401" talk="26209" showNpc="0" branchId="26" npcPoint="11,11,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230065" npcType="23" npcName="拥有坚毅目光的男人" npcMapPic="npc_KSDSN" map="10701" talk="14001|14002|14003|14004|14005|14006|14007|14008|14009" showNpc="1" branchId="14" npcPoint="29,30,c" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230066" npcType="23" npcName="拥有坚毅目光的男人" npcMapPic="npc_KSDSN" map="90201" talk="14010|14011|14012|14013|14014" showNpc="0" branchId="14" npcPoint="35,4,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232701" npcType="23" npcName="女祭师" npcMapPic="npc_YCSN" map="20101" talk="27301|27302|27303|27304|27305|27306" showNpc="1" branchId="27" npcPoint="28,6,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232702" npcType="23" npcName="女祭师" npcMapPic="npc_YCSN" map="20201|20202" talk="27307|27308" showNpc="0" branchId="27" npcPoint="50,24,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232801" npcType="23" npcName="赌徒" npcMapPic="npc_ZQBTHH" map="20101" talk="28401|28402|28403|28404|28405" showNpc="1" branchId="28" npcPoint="6,13,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="232802" npcType="23" npcName="赌徒" npcMapPic="npc_ZQBTHH" map="20201|20202" talk="28406|28407|28408" showNpc="0" branchId="28" npcPoint="50,22,b" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230069" npcType="23" npcName="来自湛蓝市的少年" npcMapPic="npc_DKXZ" map="70101" talk="12001|12002|12003|12004" showNpc="1" branchId="12" npcPoint="1,7,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="230070" npcType="23" npcName="来自湛蓝市的少年" npcMapPic="npc_DKXZ" map="80101" talk="12005|12006|12007|12008|12009|12010|12011" showNpc="0" branchId="12" npcPoint="22,1,d" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290001" npcType="23" npcName="" npcMapPic="npc_twinkle" map="11301" talk="29001" showNpc="1" branchId="29" npcPoint="20,10,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290002" npcType="23" npcName="" npcMapPic="npc_twinkle" map="20401" talk="29002" showNpc="1" branchId="29" npcPoint="9,5,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290003" npcType="23" npcName="" npcMapPic="npc_twinkle" map="40201" talk="29003" showNpc="1" branchId="29" npcPoint="42,7,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290004" npcType="23" npcName="" npcMapPic="npc_twinkle" map="70301" talk="29004" showNpc="1" branchId="29" npcPoint="1,8,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290005" npcType="23" npcName="" npcMapPic="npc_twinkle" map="80301" talk="29005" showNpc="1" branchId="29" npcPoint="20,20,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290006" npcType="23" npcName="" npcMapPic="npc_twinkle" map="100501" talk="29006" showNpc="1" branchId="29" npcPoint="2,4,a" npcPic="" fightBG=""/>
+<sta_shenDuBranchNpc id="290007" npcType="23" npcName="" npcMapPic="npc_twinkle" map="90301" talk="29007" showNpc="1" branchId="29" npcPoint="4,7,a" npcPic="" fightBG=""/>
+</root>

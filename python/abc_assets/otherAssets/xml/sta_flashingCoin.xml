@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_flashingCoin id="1" type="5" rewardJNS="" weight="1000"/>
+<sta_flashingCoin id="2" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:241,&apos;num&apos;:2}]}" weight="1000"/>
+<sta_flashingCoin id="3" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:747,&apos;num&apos;:2}]}" weight="1000"/>
+<sta_flashingCoin id="4" type="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100}}" weight="400"/>
+<sta_flashingCoin id="5" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="6" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:236,&apos;num&apos;:5}]}" weight="1000"/>
+<sta_flashingCoin id="7" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:919,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="8" type="4" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:100288,&apos;num&apos;:1},{&apos;pId&apos;:100289,&apos;num&apos;:1},{&apos;pId&apos;:100290,&apos;num&apos;:1},{&apos;pId&apos;:100291,&apos;num&apos;:1}]}" weight="200"/>
+<sta_flashingCoin id="9" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:10}]}" weight="1000"/>
+<sta_flashingCoin id="10" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:1}]}" weight="400"/>
+<sta_flashingCoin id="11" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="12" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:919,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="13" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:3}]}" weight="500"/>
+<sta_flashingCoin id="14" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:241,&apos;num&apos;:2}]}" weight="1000"/>
+<sta_flashingCoin id="15" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="16" type="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100}}" weight="400"/>
+<sta_flashingCoin id="17" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:236,&apos;num&apos;:5}]}" weight="1000"/>
+<sta_flashingCoin id="18" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:747,&apos;num&apos;:2}]}" weight="1000"/>
+<sta_flashingCoin id="19" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:919,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="20" type="4" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:100195,&apos;num&apos;:1},{&apos;pId&apos;:100196,&apos;num&apos;:1},{&apos;pId&apos;:100197,&apos;num&apos;:1},{&apos;pId&apos;:100198,&apos;num&apos;:1}]}" weight="200"/>
+<sta_flashingCoin id="21" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:3}]}" weight="1000"/>
+<sta_flashingCoin id="22" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:2}]}" weight="150"/>
+<sta_flashingCoin id="23" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:10}]}" weight="1000"/>
+<sta_flashingCoin id="24" type="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:2}]}" weight="500"/>
+</root>

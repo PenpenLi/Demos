@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pvpMoneyGameSiteOrWeather id="1" type="1" name="晴天" round="5" beforeWeight="100" features="34|87|94" skills="234|235|236|669|87|542" afterWeight="200"/>
+<sta_pvpMoneyGameSiteOrWeather id="2" type="1" name="下雨" round="5" beforeWeight="100" features="44|87|93|33" skills="234|235|236|669|87|542" afterWeight="200"/>
+<sta_pvpMoneyGameSiteOrWeather id="3" type="1" name="冰雹" round="5" beforeWeight="100" features="115|81" skills="234|235|236|669|59" afterWeight="200"/>
+<sta_pvpMoneyGameSiteOrWeather id="4" type="1" name="沙雹" round="5" beforeWeight="100" features="8|146" skills="234|235|236|669|659" afterWeight="200"/>
+<sta_pvpMoneyGameSiteOrWeather id="5" type="1" name="下大雨" round="-1" beforeWeight="100" features="44|87|93|33" skills="234|235|236|669|87|542" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="6" type="1" name="大晴天" round="-1" beforeWeight="100" features="34|87|94" skills="234|235|236|669|87|542" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="7" type="1" name="乱流" round="-1" beforeWeight="100" features="" skills="" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="8" type="2" name="电气场地" round="5" beforeWeight="100" features="" skills="" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="9" type="2" name="青草场地" round="5" beforeWeight="100" features="" skills="" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="10" type="2" name="薄雾场地" round="5" beforeWeight="100" features="" skills="" afterWeight="100"/>
+<sta_pvpMoneyGameSiteOrWeather id="11" type="2" name="精神场地" round="5" beforeWeight="100" features="" skills="" afterWeight="100"/>
+</root>

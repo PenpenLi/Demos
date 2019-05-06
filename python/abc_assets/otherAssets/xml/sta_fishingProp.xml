@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fishingProp id="1" name="甜蜜蜜" picture="tian2mi4mi4" type="1" effectValue="10" keepTime="30" describe="精灵上钩的判定的概率增加10%，效果持续30秒。" weight="20" r="60" effectTarget="1" benefit="0"/>
+<sta_fishingProp id="2" name="臭臭泥的泥" picture="chou4chou4ni2" type="2" effectValue="10" keepTime="30" describe="对手上钩判定的概率减低10%，效果持续30秒。" weight="20" r="60" effectTarget="2" benefit="0"/>
+<sta_fishingProp id="3" name="墨海马的墨汁" picture="mo4zhi1" type="3" effectValue="0" keepTime="10" describe="降低对手的视野，效果持续10秒。" weight="20" r="60" effectTarget="2" benefit="0"/>
+<sta_fishingProp id="4" name="珍珠贝的珍珠" picture="zhen1zhu1" type="4" effectValue="100" keepTime="0" describe="钓上后直接增加100比赛积分。" weight="20" r="60" effectTarget="1" benefit="0"/>
+<sta_fishingProp id="5" name="巨钳蟹的蟹钳" picture="xie4qian2" type="5" effectValue="0" keepTime="0" describe="直接中断对手目前的等待、QTE操作，重新进入抛竿阶段。" weight="20" r="60" effectTarget="2" benefit="0"/>
+<sta_fishingProp id="6" name="毒刺水母的酸液" picture="suan1ye4" type="6" effectValue="0" keepTime="0" describe="对手进行QTE操作时，精灵的体力消耗减半。（不是进行QTE操作时使用则不生效）。" weight="20" r="60" effectTarget="2" benefit="0"/>
+<sta_fishingProp id="7" name="爱心鱼的鳞片" picture="lin2pian4" type="7" effectValue="0" keepTime="0" describe="自己进行QTE操作时，精灵的体力消耗加倍。（不是进行QTE操作时使用则不生效）。" weight="20" r="60" effectTarget="1" benefit="0"/>
+</root>

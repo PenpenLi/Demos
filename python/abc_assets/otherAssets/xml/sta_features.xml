@@ -1,175 +1,285 @@
-<!-- 
-sta_features:
-
-
-id:id
-name:特性名称
-effect:特效说明
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<sta_features id="1" name="恶臭" effect="降低野生神奇宝贝出现几率。"/>
-<sta_features id="2" name="毛毛雨" effect="神奇宝贝出场时下雨。"/>
-<sta_features id="3" name="加速" effect="神奇宝贝速度在对战中逐渐提升。"/>
-<sta_features id="4" name="甲虫盔甲" effect="免受击中要害的攻击。"/>
-<sta_features id="5" name="结实" effect="不会受到一击必杀类技能攻击。"/>
-<sta_features id="6" name="湿气" effect="阻止发动自爆类型技能。"/>
-<sta_features id="7" name="柔软" effect="不会陷入麻痹状态。"/>
-<sta_features id="8" name="沙里隐身" effect="在沙雹天气中回避率提升。"/>
-<sta_features id="9" name="静电" effect="受到近身攻击时对手可能陷入麻痹状态。"/>
-<sta_features id="10" name="蓄电" effect="受到电系技能攻击时体力恢复。"/>
-<sta_features id="11" name="储水" effect="受到水系技能攻击时体力恢复。"/>
-<sta_features id="12" name="迟钝" effect="不会陷入颓废状态。"/>
-<sta_features id="13" name="乐天" effect="不受天气的影响。"/>
-<sta_features id="14" name="复眼" effect="命中率提升。"/>
-<sta_features id="15" name="失眠" effect="不会陷入睡眠状态。"/>
-<sta_features id="16" name="变色" effect="根据对手技能改变神奇宝贝属性。"/>
-<sta_features id="17" name="免疫" effect="不会陷入中毒状态。"/>
-<sta_features id="18" name="延烧" effect="受到炎系技能攻击时会提升自身炎系技能力量。"/>
-<sta_features id="19" name="鳞粉" effect="不会受到对方技能的追加效果影响。"/>
-<sta_features id="20" name="我行我素" effect="不会陷入混乱状态。"/>
-<sta_features id="21" name="吸盘" effect="不会受到强制交换神奇宝贝技能的影响。"/>
-<sta_features id="22" name="威吓" effect="降低对手攻击。"/>
-<sta_features id="23" name="影子游戏" effect="阻止对手逃走。"/>
-<sta_features id="24" name="蛇皮" effect="受到近身攻击时会伤害对手。"/>
-<sta_features id="25" name="奇异守护" effect="只会受到效果拔群技能的攻击。"/>
-<sta_features id="26" name="漂浮" effect="不会受到地上系技能攻击。"/>
-<sta_features id="27" name="孢子" effect="受到近身攻击可能麻痹、中毒或睡眠。"/>
-<sta_features id="28" name="同步" effect="灼伤、中毒、麻痹时也会影响对手。"/>
-<sta_features id="29" name="透明体" effect="自身能力值不会降低。"/>
-<sta_features id="30" name="自然恢复" effect="在收回后自动解除异常状态。"/>
-<sta_features id="31" name="避雷针" effect="吸收所有电系技能攻击。"/>
-<sta_features id="32" name="天恩" effect="使用技能的追加效果出现率提升。"/>
-<sta_features id="33" name="轻快" effect="下雨时速度提升。"/>
-<sta_features id="34" name="叶绿素" effect="阳光下速度提升。"/>
-<sta_features id="35" name="发光" effect="更容易遇到野生神奇宝贝。"/>
-<sta_features id="36" name="追踪" effect="复制对手的特性。"/>
-<sta_features id="37" name="大力士" effect="攻击提升。"/>
-<sta_features id="38" name="毒刺" effect="受到近身攻击时对手可能中毒。"/>
-<sta_features id="39" name="精神力" effect="不会陷入退缩状态。"/>
-<sta_features id="40" name="岩浆防护" effect="不会陷入冰冻状态。"/>
-<sta_features id="41" name="水幕" effect="不会陷入灼伤状态。"/>
-<sta_features id="42" name="磁力" effect="钢系神奇宝贝无法逃脱。"/>
-<sta_features id="43" name="隔音" effect="不受声音类技能的影响。"/>
-<sta_features id="44" name="雨盘" effect="在下雨天气中恢复体力。"/>
-<sta_features id="45" name="沙流" effect="神奇宝贝出场时产生沙雹天气。"/>
-<sta_features id="46" name="气压" effect="增加对手PP的消耗。"/>
-<sta_features id="47" name="肥脂" effect="减弱冰系或炎系技能的伤害。"/>
-<sta_features id="48" name="早起" effect="睡眠时可以较快苏醒。"/>
-<sta_features id="49" name="火焰体" effect="受到近身攻击时对手可能灼伤。"/>
-<sta_features id="50" name="逃走" effect="在与野生神奇宝贝对战时确定可以逃走。"/>
-<sta_features id="51" name="锐利目光" effect="命中率不会降低。"/>
-<sta_features id="52" name="怪力剪刀" effect="攻击不会下降。"/>
-<sta_features id="53" name="捡拾" effect="对战结束后可能捡拾到道具。"/>
-<sta_features id="54" name="懒惰" effect="不能连续发动技能。"/>
-<sta_features id="55" name="活力" effect="攻击提升，命中率下降。"/>
-<sta_features id="56" name="迷人身躯" effect="受到近身攻击时异性对手可能陷入颓废状态。"/>
-<sta_features id="57" name="阳性" effect="己方同伴有阴性特性时特攻提升。"/>
-<sta_features id="58" name="阴性" effect="己方同伴有阳性特性时特攻提升。"/>
-<sta_features id="59" name="天气预报" effect="受到天气影响改变型态。"/>
-<sta_features id="60" name="黏着" effect="不会被对手夺去携带道具。"/>
-<sta_features id="61" name="脱皮" effect="对战时有一定几率治愈自身异常状态。"/>
-<sta_features id="62" name="毅力" effect="状态异常时攻击提升。"/>
-<sta_features id="63" name="神奇鳞片" effect="状态异常时防御提升。"/>
-<sta_features id="64" name="黏液" effect="受到吸收类技能攻击时会伤害对手。"/>
-<sta_features id="65" name="茂盛" effect="在体力不支时草系技能力量增强。"/>
-<sta_features id="66" name="猛火" effect="在体力不支时炎系技能力量增强。"/>
-<sta_features id="67" name="激流" effect="在体力不支时水系技能力量增强。"/>
-<sta_features id="68" name="预感" effect="在体力不支时虫系技能力量增强。"/>
-<sta_features id="69" name="石头" effect="不会受到反弹伤害。"/>
-<sta_features id="70" name="旱灾" effect="神奇宝贝出场时转为阳光。"/>
-<sta_features id="71" name="狮蚁" effect="使对手无法逃跑。"/>
-<sta_features id="72" name="元气" effect="不会陷入睡眠状态。"/>
-<sta_features id="73" name="白色烟雾" effect="自身能力值不会降低。"/>
-<sta_features id="74" name="瑜珈神力" effect="提升物理攻击技能力量。"/>
-<sta_features id="75" name="贝壳盔甲" effect="受到攻击时不会击中要害。"/>
-<sta_features id="76" name="气闸" effect="不受天气的影响。"/>
-<sta_features id="77" name="蹒跚" effect="混乱状态时逃避率提升。"/>
-<sta_features id="78" name="电气引擎" effect="受到电系技能攻击时速度提升。"/>
-<sta_features id="79" name="斗争心" effect="对手具有相同性别时攻击提升，对手具有相异性别时攻击下降。"/>
-<sta_features id="80" name="不屈之心" effect="在陷入退缩状态时速度提升。"/>
-<sta_features id="81" name="雪里隐身" effect="在冰雹天气中回避率提升。"/>
-<sta_features id="82" name="贪吃鬼" effect="携带的树果会较早被吃掉。"/>
-<sta_features id="83" name="愤怒穴道" effect="击中要害时攻击提升。"/>
-<sta_features id="84" name="杂技" effect="携带道具被使用时速度提升。"/>
-<sta_features id="85" name="耐热" effect="减弱受到的炎系技能威力。"/>
-<sta_features id="86" name="单纯" effect="使用能力变化的技能时效果增强。"/>
-<sta_features id="87" name="干燥皮肤" effect="炎热时体力消耗较快，接触到水时恢复体力。"/>
-<sta_features id="88" name="下载" effect="根据对手较强防御类型提升相应攻击类型的力量。"/>
-<sta_features id="89" name="铁拳" effect="拳击类技能力量提升。"/>
-<sta_features id="90" name="毒疗" effect="中毒状态下恢复体力。"/>
-<sta_features id="91" name="适应力" effect="增强同属性技能的力量。"/>
-<sta_features id="92" name="连续攻击" effect="使用重复发动的技能时次数增多。"/>
-<sta_features id="93" name="湿润身体" effect="下雨时状态异常消除。"/>
-<sta_features id="94" name="太阳能量" effect="阳光天气时特攻提升体力下降。"/>
-<sta_features id="95" name="飞毛腿" effect="状态异常时速度提升。"/>
-<sta_features id="96" name="一般皮肤" effect="自身使用技能均变为一般系。"/>
-<sta_features id="97" name="狙击手" effect="命中对手要害时威力提升。"/>
-<sta_features id="98" name="魔法防御" effect="不会受到任何间接伤害。"/>
-<sta_features id="99" name="无防御" effect="自身与对手攻击都会绝对命中。"/>
-<sta_features id="100" name="慢出" effect="始终慢于对手攻击。"/>
-<sta_features id="101" name="技术员" effect="提升力量较小的技能的威力。"/>
-<sta_features id="102" name="叶片防御" effect="晴天时不会陷入异常状态。"/>
-<sta_features id="103" name="笨拙" effect="不能使用携带道具。"/>
-<sta_features id="104" name="革新" effect="技能发动时不受对手特性影响。"/>
-<sta_features id="105" name="强运" effect="提升击中要害的几率。"/>
-<sta_features id="106" name="引爆" effect="在受到最后一击后给对手造成伤害。"/>
-<sta_features id="107" name="预知危险" effect="预知对手的危险技能。"/>
-<sta_features id="108" name="预知梦" effect="预知对手最强威力技能。"/>
-<sta_features id="109" name="后知后觉" effect="对手不能将其能力改变。"/>
-<sta_features id="110" name="有色眼镜" effect="增强效果一般技能的威力。"/>
-<sta_features id="111" name="过滤" effect="降低效果拔群技能的力量。"/>
-<sta_features id="112" name="错失先机" effect="对战初期攻击和速度减半。"/>
-<sta_features id="113" name="胆量" effect="可以使用任何技能攻击幽灵系神奇宝贝。"/>
-<sta_features id="114" name="引水" effect="吸收所有水系技能攻击。"/>
-<sta_features id="115" name="冰冻身体" effect="在冰雹天气中体力回复。"/>
-<sta_features id="116" name="坚石" effect="降低效果拔群技能的力量。"/>
-<sta_features id="117" name="降雪" effect="神奇宝贝出场时产生冰雹天气。"/>
-<sta_features id="118" name="采蜜" effect="对战结束后可能采到甜蜜。"/>
-<sta_features id="119" name="看穿" effect="看穿对手是否携带道具。"/>
-<sta_features id="120" name="舍身" effect="自身具有反弹伤害的技能力量提升。"/>
-<sta_features id="121" name="多元系" effect="携带相应令牌时改变属性。"/>
-<sta_features id="122" name="花之礼" effect="阳光天气下己方神奇宝贝力量提升。"/>
-<sta_features id="123" name="恶梦" effect="消耗睡眠状态对手的体力。"/>
-<sta_features id="124" name="偷盗恶习" effect="近身接触时偷走对手携带的道具。"/>
-<sta_features id="125" name="全力攻击" effect="技能拥有更高威力，但附加效果无法发动。"/>
-<sta_features id="126" name="性情乖僻" effect="能力的变化逆转过来。"/>
-<sta_features id="127" name="紧张感" effect="对手神奇宝贝无法食用树果。"/>
-<sta_features id="128" name="不服输" effect="能力被降低时攻击提升。"/>
-<sta_features id="129" name="软弱" effect="HP不足一半时能力下降。"/>
-<sta_features id="130" name="诅咒身体" effect="受到攻击时可能禁用对手技能。"/>
-<sta_features id="131" name="治愈之心" effect="治愈队友的异常状态。"/>
-<sta_features id="132" name="队友守护" effect="减轻队友受到的伤害。"/>
-<sta_features id="133" name="碎甲" effect="受到物理攻击降低防御，提升速度。"/>
-<sta_features id="134" name="重合金" effect="体重变为两倍。"/>
-<sta_features id="135" name="轻合金" effect="体重变为一半。"/>
-<sta_features id="136" name="多重鳞片" effect="HP满时受到伤害较少。"/>
-<sta_features id="137" name="毒暴走" effect="中毒时物理威力提升。"/>
-<sta_features id="138" name="热暴走" effect="灼伤时特殊威力提升。"/>
-<sta_features id="139" name="收获" effect="使用的树果有一定几率收回。"/>
-<sta_features id="140" name="超感知" effect="避免受到队友的攻击。"/>
-<sta_features id="141" name="心智不定" effect="降低一种能力1级，提升一种能力2级。"/>
-<sta_features id="142" name="防尘" effect="不会受到天气的伤害。"/>
-<sta_features id="143" name="毒手" effect="近身攻击时一定几率使对手中毒。"/>
-<sta_features id="144" name="再生力" effect="交换上场时回复HP。"/>
-<sta_features id="145" name="鸽胸" effect="自身防御不会下降。"/>
-<sta_features id="146" name="挖沙" effect="沙雹天气下速度提升。"/>
-<sta_features id="147" name="奇迹皮肤" effect="一定几率不会受到变化技能的影响。"/>
-<sta_features id="148" name="分析" effect="自身最后攻击的话，威力会增强。"/>
-<sta_features id="149" name="幻觉" effect="变为队友神奇宝贝的样子。"/>
-<sta_features id="150" name="替代品" effect="整场对战中都会变身。"/>
-<sta_features id="151" name="穿透" effect="不受减半反射和光墙影响。"/>
-<sta_features id="152" name="木乃伊" effect="受到近身攻击时对方特性变为木乃伊。"/>
-<sta_features id="153" name="自信过剩" effect="打败一只神奇宝贝后攻击提升。"/>
-<sta_features id="154" name="正义之心" effect="受到恶系技能攻击时攻击提升。"/>
-<sta_features id="155" name="颤抖" effect="一些情况下速度提升。"/>
-<sta_features id="156" name="魔法反射" effect="受到变化技能攻击时会反弹。"/>
-<sta_features id="157" name="草食" effect="受到草系技能攻击时攻击提升。"/>
-<sta_features id="158" name="恶作剧之心" effect="使用变化技能时总是先出。"/>
-<sta_features id="159" name="砂之力" effect="沙雹天气下技能威力增加。"/>
-<sta_features id="160" name="铁刺荆棘" effect="受到近身攻击时反弹伤害。"/>
-<sta_features id="161" name="不倒翁模式" effect="在危急时转变为不倒翁模式。"/>
-<sta_features id="162" name="胜利之星" effect="己方全体神奇宝贝命中率提升。"/>
-<sta_features id="163" name="涡轮高温" effect="无视阻碍自身技能的特性。"/>
-<sta_features id="164" name="兆级电压" effect="无视阻碍自身技能的特性。"/>
+<sta_features id="1" name="恶臭" effect="降低野生#神奇宝贝#出现几率。" exp="0" stoneId="0" detail=""/>
+<sta_features id="2" name="毛毛雨" effect="当该#神奇宝贝#登场时，天气转为下雨并持续五回合。" exp="10000" stoneId="5014" detail=""/>
+<sta_features id="3" name="加速" effect="持有该特性的#神奇宝贝#每回合结束速度上升1级，但该回合是交换出持有该特性的#神奇宝贝#则不会发动。" exp="0" stoneId="5067" detail=""/>
+<sta_features id="4" name="甲虫盔甲" effect="免受击中要害的攻击。" exp="0" stoneId="5086" detail=""/>
+<sta_features id="5" name="结实" effect="一击必杀类技能对拥有该特性的#神奇宝贝#无效。拥有该特性的#神奇宝贝#在满血量状态下被攻击时，至少会保留1点血量。" exp="10000" stoneId="5002" detail=""/>
+<sta_features id="6" name="湿气" effect="阻止发动自爆类型技能。" exp="0" stoneId="0" detail=""/>
+<sta_features id="7" name="柔软" effect="不会陷入麻痹状态。" exp="0" stoneId="5121" detail=""/>
+<sta_features id="8" name="沙里隐身" effect="在沙雹天气中回避率提升20%并不受沙雹天气损失体力影响。" exp="10000" stoneId="5032" detail=""/>
+<sta_features id="9" name="静电" effect="受到近身攻击时对手有30%陷入麻痹状态。" exp="0" stoneId="5043" detail=""/>
+<sta_features id="10" name="蓄电" effect="被电系技能定为目标时，技能对自身无效，并回复最大血量的25%" exp="0" stoneId="5045" detail=""/>
+<sta_features id="11" name="储水" effect="被水系技能定为目标时，技能对自身无效，并回复最大血量的25%" exp="0" stoneId="5087" detail=""/>
+<sta_features id="12" name="迟钝" effect="拥有该特性的精灵会免疫挑拨状态。" exp="10000" stoneId="5137" detail=""/>
+<sta_features id="13" name="乐天" effect="该#神奇宝贝#在场时任何天气造成的影响无效，天气并不会消失。" exp="0" stoneId="5044" detail=""/>
+<sta_features id="14" name="复眼" effect="命中率提升。自身的命中乘以1.3" exp="10000" stoneId="5038" detail=""/>
+<sta_features id="15" name="失眠" effect="不会陷入睡眠状态。" exp="10000" stoneId="5010" detail=""/>
+<sta_features id="16" name="变色" effect="根据对手技能改变#神奇宝贝#属性。" exp="0" stoneId="0" detail=""/>
+<sta_features id="17" name="免疫" effect="不会陷入中毒状态。" exp="0" stoneId="5090" detail=""/>
+<sta_features id="18" name="延烧" effect="受到炎系技能攻击时无效，同时自身炎系技能的伤害上升为原来的1.5倍。" exp="10000" stoneId="5039" detail=""/>
+<sta_features id="19" name="鳞粉" effect="不会受到对方技能的追加效果影响。" exp="0" stoneId="5083" detail=""/>
+<sta_features id="20" name="我行我素" effect="不会陷入混乱状态。" exp="0" stoneId="5066" detail=""/>
+<sta_features id="21" name="吸盘" effect="不会受到强制交换#神奇宝贝#技能的影响。" exp="0" stoneId="0" detail=""/>
+<sta_features id="22" name="威吓" effect="出场时所有攻击范围内的对手的攻击下降1级。" exp="10000" stoneId="5012" detail=""/>
+<sta_features id="23" name="影子游戏" effect="阻止对手交换#神奇宝贝#。激活该特性后，精灵使用“同命”技能的成功率下降至55%。" exp="0" stoneId="5100" detail=""/>
+<sta_features id="24" name="蛇皮" effect="受到近身攻击时，攻击方会损失最大体力的12.5%。" exp="0" stoneId="5074" detail=""/>
+<sta_features id="25" name="奇异守护" effect="只会受到效果拔群技能的攻击。" exp="0" stoneId="0" detail=""/>
+<sta_features id="26" name="漂浮" effect="不会受到地上系技能攻击。" exp="10000" stoneId="5003" detail=""/>
+<sta_features id="27" name="孢子" effect="受到近身攻击可能麻痹、中毒或睡眠。" exp="0" stoneId="5075" detail=""/>
+<sta_features id="28" name="同步" effect="自身被动获取的灼伤、中毒、麻痹时也会影响对手。" exp="10000" stoneId="5040" detail=""/>
+<sta_features id="29" name="透明体" effect="自身能力值不会被对手的技能或者特性效果降低。" exp="0" stoneId="5139" detail=""/>
+<sta_features id="30" name="自然恢复" effect="在收回后自动解除异常状态。" exp="0" stoneId="5063" detail=""/>
+<sta_features id="31" name="避雷针" effect="被电系技能定为目标时，技能对自身无效，同时自身特攻上升1级" exp="0" stoneId="5058" detail=""/>
+<sta_features id="32" name="天恩" effect="使用技能时追加效果的出现率x2，最多不超过100%。" exp="10000" stoneId="5037" detail=""/>
+<sta_features id="33" name="轻快" effect="下雨或下大雨天气时，速度能力变为原来的2倍。" exp="10000" stoneId="5021" detail=""/>
+<sta_features id="34" name="叶绿素" effect="阳光或日光非常猛烈天气时，速度能力变为原来的2倍。" exp="10000" stoneId="5025" detail=""/>
+<sta_features id="35" name="发光" effect="更容易遇到野生#神奇宝贝#。" exp="0" stoneId="0" detail=""/>
+<sta_features id="36" name="追踪" effect="上场后，会复制对手的特性，自身的特性变为对手的特性。" exp="0" stoneId="5141" detail=""/>
+<sta_features id="37" name="大力士" effect="攻击力提升为原来的2倍。" exp="10000" stoneId="5007" detail=""/>
+<sta_features id="38" name="毒刺" effect="使用近身技能攻击该特性的#神奇宝贝#时会有30%的机率中毒。" exp="10000" stoneId="5041" detail=""/>
+<sta_features id="39" name="精神力" effect="不会陷入退缩状态。" exp="0" stoneId="5049" detail=""/>
+<sta_features id="40" name="岩浆防护" effect="不会陷入冰冻状态。" exp="0" stoneId="5122" detail=""/>
+<sta_features id="41" name="水幕" effect="不会陷入灼伤状态。" exp="0" stoneId="5123" detail=""/>
+<sta_features id="42" name="磁力" effect="钢系#神奇宝贝#无法逃脱。" exp="0" stoneId="5135" detail=""/>
+<sta_features id="43" name="隔音" effect="不受声音类技能的影响。" exp="0" stoneId="5150" detail=""/>
+<sta_features id="44" name="雨盘" effect="在下雨天气时每回合结束回复6.25%体力。" exp="10000" stoneId="5022" detail=""/>
+<sta_features id="45" name="沙流" effect="当该#神奇宝贝#登场时，天气转为沙雹并持续五回合。" exp="10000" stoneId="5017" detail=""/>
+<sta_features id="46" name="气压" effect="技能目标是有该特性的精灵时，无论技能是否命中或生效，都会多损失1点#PP#。" exp="10000" stoneId="5001" detail=""/>
+<sta_features id="47" name="肥脂" effect="该特性的#神奇宝贝#受到冰系和炎系技能攻击时，技能威力减半。" exp="0" stoneId="5050" detail=""/>
+<sta_features id="48" name="早起" effect="睡眠时可以较快苏醒。" exp="0" stoneId="5047" detail=""/>
+<sta_features id="49" name="火焰体" effect="受到近身攻击时对手有30%的几率灼伤。" exp="0" stoneId="5048" detail=""/>
+<sta_features id="50" name="逃走" effect="在与野生#神奇宝贝#对战时确定可以逃走。" exp="0" stoneId="0" detail=""/>
+<sta_features id="51" name="锐利目光" effect="命中能力等级不会被对方以任何方式降低，无视目标回避率能力等级的提升。" exp="0" stoneId="5046" detail=""/>
+<sta_features id="52" name="怪力剪刀" effect="攻击能力等级不会被对方以任何方式降低。" exp="0" stoneId="5059" detail=""/>
+<sta_features id="53" name="捡拾" effect="对战结束后可能捡拾到道具。" exp="0" stoneId="0" detail=""/>
+<sta_features id="54" name="懒惰" effect="不能连续发动技能。" exp="0" stoneId="0" detail=""/>
+<sta_features id="55" name="活力" effect="攻击能力x1.5，物理技能的命中率x0.8。" exp="10000" stoneId="5042" detail=""/>
+<sta_features id="56" name="迷人身躯" effect="受到近身攻击时异性对手可能陷入颓废状态。" exp="0" stoneId="0" detail=""/>
+<sta_features id="57" name="阳性" effect="己方同伴有阴性特性时特攻提升。" exp="0" stoneId="0" detail=""/>
+<sta_features id="58" name="阴性" effect="己方同伴有阳性特性时特攻提升。" exp="0" stoneId="0" detail=""/>
+<sta_features id="59" name="天气预报" effect="受到天气影响改变型态。" exp="0" stoneId="0" detail=""/>
+<sta_features id="60" name="黏着" effect="不会被对手夺去携带道具。" exp="0" stoneId="0" detail=""/>
+<sta_features id="61" name="脱皮" effect="对战时有30%几率治愈自身异常状态。" exp="0" stoneId="5061" detail=""/>
+<sta_features id="62" name="毅力" effect="当被灼伤、麻痹、中毒时攻击提升50%，并无视灼伤的物理攻击减半效果。" exp="10000" stoneId="5004" detail=""/>
+<sta_features id="63" name="神奇鳞片" effect="状态异常时物防提升1.5倍。" exp="0" stoneId="5077" detail=""/>
+<sta_features id="64" name="黏液" effect="受到吸收类技能攻击时会伤害对手。" exp="0" stoneId="0" detail=""/>
+<sta_features id="65" name="茂盛" effect="当血量小于33%时，草系技能的力量增长为1.5倍" exp="10000" stoneId="5033" detail=""/>
+<sta_features id="66" name="猛火" effect="当血量小于33%时，火系技能的威力增长为1.5倍" exp="10000" stoneId="5013" detail=""/>
+<sta_features id="67" name="激流" effect="当血量小于33%时，水系技能的威力增长为1.5倍" exp="10000" stoneId="5034" detail=""/>
+<sta_features id="68" name="预感" effect="当血量小于33%时，虫系技能的威力增长为1.5倍" exp="10000" stoneId="5035" detail=""/>
+<sta_features id="69" name="石头" effect="不会受到技能反弹的伤害。" exp="0" stoneId="5051" detail=""/>
+<sta_features id="70" name="旱灾" effect="当该#神奇宝贝#登场时，天气转为日光猛烈并持续五回合。" exp="10000" stoneId="5015" detail=""/>
+<sta_features id="71" name="狮蚁" effect="使对手无法交换精灵。" exp="0" stoneId="5219" detail=""/>
+<sta_features id="72" name="元气" effect="不会陷入睡眠状态。" exp="0" stoneId="0" detail=""/>
+<sta_features id="73" name="白色烟雾" effect="自身能力值不会降低。" exp="0" stoneId="0" detail=""/>
+<sta_features id="74" name="瑜珈神力" effect="提升物理攻击为原来的2倍。" exp="0" stoneId="0" detail=""/>
+<sta_features id="75" name="贝壳盔甲" effect="不会被击中要害。必定命中要害的技能也会失效。" exp="10000" stoneId="5011" detail=""/>
+<sta_features id="76" name="气闸" effect="不受天气的影响。" exp="0" stoneId="0" detail=""/>
+<sta_features id="77" name="蹒跚" effect="混乱状态下回避率提升20%。" exp="0" stoneId="0" detail=""/>
+<sta_features id="78" name="电气引擎" effect="被电系技能定为目标时，技能对自身无效，同时自身速度提升1级。" exp="0" stoneId="5134" detail=""/>
+<sta_features id="79" name="斗争心" effect="对手具有相同性别时技能威力提升25%，对手具有相异性别时技能威力下降25%" exp="0" stoneId="5060" detail=""/>
+<sta_features id="80" name="不屈之心" effect="陷入退缩状态后速度提升1级。" exp="10000" stoneId="5009" detail=""/>
+<sta_features id="81" name="雪里隐身" effect="在冰雹天气中回避率提升20%并不受冰雹天气损失体力影响。" exp="10000" stoneId="5029" detail=""/>
+<sta_features id="82" name="贪吃鬼" effect="当精灵的体力不多于最大体力一半，而不是通常的25%时，携带的树果就会被吃掉。" exp="0" stoneId="0" detail=""/>
+<sta_features id="83" name="愤怒穴道" effect="当被击中要害时，攻击力提升12级。" exp="0" stoneId="5070" detail=""/>
+<sta_features id="84" name="杂技" effect="当失去携带物品时速度加倍，若没有携带物品或携带物品未失去该特性无效。" exp="0" stoneId="5069" detail=""/>
+<sta_features id="85" name="耐热" effect="火属性招式和灼伤造成的伤害减半。" exp="0" stoneId="5105" detail=""/>
+<sta_features id="86" name="单纯" effect="物攻、物防、特攻、特防、速度的变化等级加倍。若对方使用自我暗示进行复制，会复制加倍后的变化等级。" exp="0" stoneId="5266" detail=""/>
+<sta_features id="87" name="干燥皮肤" effect="在阳光或日光非常猛烈时每回合结束会损失最大体力的12.5%，下雨或下大雨时每回合结束会回复最大体力的12.5%。" exp="10000" stoneId="5023" detail=""/>
+<sta_features id="88" name="下载" effect="精灵出场时，如果对手场上精灵防御小于特防，则提升物攻1级；否则提升特攻1级。" exp="0" stoneId="5117" detail=""/>
+<sta_features id="89" name="铁拳" effect="拳击类技能的威力上升20%。" exp="0" stoneId="5052" detail=""/>
+<sta_features id="90" name="毒疗" effect="中毒和剧毒状态下每回合回复12.5%体力。" exp="0" stoneId="5078" detail=""/>
+<sta_features id="91" name="适应力" effect="属性一致加成的效果从1.5倍提升到2倍。" exp="0" stoneId="5065" detail=""/>
+<sta_features id="92" name="连续攻击" effect="使用攻击次数浮动在2～5次之间的多次攻击类技能时，攻击次数会固定在5次。" exp="0" stoneId="5053" detail=""/>
+<sta_features id="93" name="湿润身体" effect="在下雨时所有异常状态消除，包括自身造成的异常状态。" exp="10000" stoneId="5024" detail=""/>
+<sta_features id="94" name="太阳能量" effect="晴天天气下特攻增至1.5倍，但每回合损失最大体力的12.5%。" exp="10000" stoneId="5027" detail=""/>
+<sta_features id="95" name="飞毛腿" effect="当状态异常时速度提升50%，并无视麻痹的速度降低至25%效果。" exp="0" stoneId="5062" detail=""/>
+<sta_features id="96" name="一般皮肤" effect="自身使用技能均变为一般系，且威力变为1.2倍" exp="0" stoneId="5129" detail=""/>
+<sta_features id="97" name="狙击手" effect="攻击击中要害时伤害为正常击中要害伤害的1.5倍。" exp="0" stoneId="5055" detail=""/>
+<sta_features id="98" name="魔法防御" effect="不会受到任何间接伤害。" exp="0" stoneId="5079" detail=""/>
+<sta_features id="99" name="无防御" effect="自身与对手攻击都会绝对命中,一击必杀类技能除外。" exp="0" stoneId="5080" detail=""/>
+<sta_features id="100" name="慢出" effect="始终慢于对手攻击。" exp="0" stoneId="0" detail=""/>
+<sta_features id="101" name="技术员" effect="使用威力小于等于60的技能，威力提升为1.5倍。" exp="10000" stoneId="5006" detail=""/>
+<sta_features id="102" name="叶片防御" effect="阳光或日光非常猛烈时不会陷入对手造成的异常状态，但自身（如睡觉技能）仍然可以造成异常状态。" exp="10000" stoneId="5026" detail=""/>
+<sta_features id="103" name="笨拙" effect="不能使用携带道具。" exp="0" stoneId="0" detail=""/>
+<sta_features id="104" name="革新" effect="技能发动时不受对手特性影响。" exp="0" stoneId="5054" detail=""/>
+<sta_features id="105" name="强运" effect="击中要害等级提升1级，可以与要害攻击、集气叠加。" exp="0" stoneId="5056" detail=""/>
+<sta_features id="106" name="引爆" effect="在受到最后一击后给对手造成伤害。" exp="0" stoneId="5081" detail=""/>
+<sta_features id="107" name="预知危险" effect="预知对手的危险技能。" exp="0" stoneId="0" detail=""/>
+<sta_features id="108" name="预知梦" effect="预知对手最强威力技能。" exp="0" stoneId="0" detail=""/>
+<sta_features id="109" name="后知后觉" effect="拥有该特性的精灵在使用招式或受到招式攻击时，无视对手除速度以外的其他任意能力变化。" exp="0" stoneId="5145" detail=""/>
+<sta_features id="110" name="有色眼镜" effect="攻击对方时使用属性克制为0.5倍或0.25倍的招式时，招式威力加倍。" exp="0" stoneId="5088" detail=""/>
+<sta_features id="111" name="过滤" effect="效果拔群招式造成的伤害降低0.25。" exp="0" stoneId="5091" detail=""/>
+<sta_features id="112" name="错失先机" effect="对战初期攻击和速度减半。" exp="0" stoneId="0" detail=""/>
+<sta_features id="113" name="胆量" effect="可以使用任何技能攻击幽灵系#神奇宝贝#。" exp="0" stoneId="5095" detail=""/>
+<sta_features id="114" name="引水" effect="被水系技能定为目标时，技能对自身无效，同时自身特攻上升1级" exp="10000" stoneId="5036" detail=""/>
+<sta_features id="115" name="冰冻身体" effect="在冰雹天气中每回合回复最大体力的6.25%" exp="10000" stoneId="5028" detail=""/>
+<sta_features id="116" name="坚石" effect="效果拔群招式造成的伤害降低25%。" exp="0" stoneId="5085" detail=""/>
+<sta_features id="117" name="降雪" effect="当该#神奇宝贝#登场时，天气转为冰雹并持续五回合。" exp="10000" stoneId="5016" detail=""/>
+<sta_features id="118" name="采蜜" effect="对战结束后可能采到甜蜜。" exp="0" stoneId="0" detail=""/>
+<sta_features id="119" name="看穿" effect="看穿对手是否携带道具。" exp="0" stoneId="0" detail=""/>
+<sta_features id="120" name="舍身" effect="使用具有反弹伤害的技能时，技能威力提升20%。" exp="0" stoneId="5073" detail=""/>
+<sta_features id="121" name="多元系" effect="携带相应令牌时改变属性。" exp="0" stoneId="5093" detail=""/>
+<sta_features id="122" name="花之礼" effect="阳光或日光非常猛烈时，己方场上所有精灵的攻击和特防提升50%。" exp="0" stoneId="0" detail=""/>
+<sta_features id="123" name="恶梦" effect="对手#神奇宝贝#处于睡眠状态时，每回合结束时损失12.5%体力。" exp="0" stoneId="5064" detail=""/>
+<sta_features id="124" name="偷盗恶习" effect="近身接触时偷走对手携带的道具。" exp="0" stoneId="0" detail=""/>
+<sta_features id="125" name="全力攻击" effect="附带追加效果的攻击技能威力提升30%，但无法发动追加效果" exp="0" stoneId="5057" detail=""/>
+<sta_features id="126" name="性情乖僻" effect="能力的变化逆转过来。" exp="0" stoneId="5094" detail=""/>
+<sta_features id="127" name="紧张感" effect="对手#神奇宝贝#无法食用树果。" exp="10000" stoneId="5008" detail=""/>
+<sta_features id="128" name="不服输" effect="能力被降低时攻击提升2级。（由于自身和同伴导致的能力降低不触发该特性）" exp="0" stoneId="0" detail=""/>
+<sta_features id="129" name="软弱" effect="血量不足一半时能力下降。" exp="0" stoneId="0" detail=""/>
+<sta_features id="130" name="诅咒身体" effect="受到攻击招式攻击时，有30%几率令对方进入石化状态。攻击无效时不触发。" exp="0" stoneId="5119" detail=""/>
+<sta_features id="131" name="治愈之心" effect="每回合结束有20%的机率治愈一只背包中的精灵的异常状态。" exp="0" stoneId="5267" detail="不会治疗自身异常状态|治疗的精灵只会在拥有异常状态的精灵中随机"/>
+<sta_features id="132" name="队友守护" effect="减轻队友受到的伤害。" exp="0" stoneId="0" detail=""/>
+<sta_features id="133" name="碎甲" effect="受到物理攻击时，防御降低1级，速度提升2级。" exp="0" stoneId="5103" detail=""/>
+<sta_features id="134" name="重合金" effect="体重变为两倍。" exp="0" stoneId="0" detail=""/>
+<sta_features id="135" name="轻合金" effect="体重变为一半。" exp="0" stoneId="0" detail=""/>
+<sta_features id="136" name="多重鳞片" effect="血量满时，受到的伤害减为原来的一半。" exp="0" stoneId="5068" detail=""/>
+<sta_features id="137" name="毒暴走" effect="中毒或剧毒时物攻提升50%。" exp="0" stoneId="5108" detail=""/>
+<sta_features id="138" name="热暴走" effect="灼伤时特攻提升50%。" exp="0" stoneId="5107" detail=""/>
+<sta_features id="139" name="收获" effect="每回合结束有50%机率获得使用过的树果，大晴天或大日照下几率为100%。" exp="0" stoneId="5098" detail=""/>
+<sta_features id="140" name="超感知" effect="避免受到队友的攻击。" exp="0" stoneId="0" detail=""/>
+<sta_features id="141" name="心智不定" effect="回合结束后，随机降低一种能力1级，提升一种能力2级。" exp="0" stoneId="5140" detail=""/>
+<sta_features id="142" name="防尘" effect="不会受到天气的伤害以及粉类技能的影响。" exp="0" stoneId="5084" detail=""/>
+<sta_features id="143" name="毒手" effect="近身攻击时30%几率使对手中毒。" exp="0" stoneId="5089" detail=""/>
+<sta_features id="144" name="再生力" effect="交换下场时，回复自身血量的33%" exp="10000" stoneId="5005" detail=""/>
+<sta_features id="145" name="鸽胸" effect="自身防御不会下降。" exp="0" stoneId="5076" detail=""/>
+<sta_features id="146" name="挖沙" effect="沙雹天气时，速度能力变为原来的2倍。" exp="10000" stoneId="5031" detail=""/>
+<sta_features id="147" name="奇迹皮肤" effect="变化招式对该特性的精灵命中率减半" exp="0" stoneId="5112" detail=""/>
+<sta_features id="148" name="分析" effect="目标在自己之前行动时，伤害提高30%。" exp="0" stoneId="5092" detail=""/>
+<sta_features id="149" name="幻觉" effect="变为队友#神奇宝贝#的样子。" exp="0" stoneId="0" detail=""/>
+<sta_features id="150" name="替代品" effect="整场对战中都会变身。" exp="0" stoneId="0" detail=""/>
+<sta_features id="151" name="穿透" effect="不受减半反射、光墙、神秘守护、替身等影响。" exp="0" stoneId="5113" detail=""/>
+<sta_features id="152" name="木乃伊" effect="受到近身攻击时对方特性变为木乃伊。" exp="0" stoneId="5120" detail=""/>
+<sta_features id="153" name="自信过剩" effect="打败一只#神奇宝贝#后攻击提升1级。" exp="0" stoneId="5111" detail=""/>
+<sta_features id="154" name="正义之心" effect="受到恶属性招式攻击时，自身攻击提升1级。" exp="0" stoneId="5082" detail=""/>
+<sta_features id="155" name="颤抖" effect="受到恶、幽灵、虫属性招式攻击时，速度提升1级。" exp="0" stoneId="5146" detail=""/>
+<sta_features id="156" name="魔法反射" effect="自身在场时持续处于魔法反射状态，将对方以自身为目标的部分变化招式无效化，并反弹给招式的使用者。" exp="0" stoneId="5147" detail=""/>
+<sta_features id="157" name="草食" effect="被草系技能定为目标时，技能对自身无效，并提升1级物攻。" exp="0" stoneId="5118" detail=""/>
+<sta_features id="158" name="恶作剧之心" effect="使用变化类招式时，优先度+1。" exp="10000" stoneId="5115" detail=""/>
+<sta_features id="159" name="砂之力" effect="在沙雹天气下，该特性的#神奇宝贝#不受沙雹伤害，同时使用的岩石系、钢系、地上系技能威力提升30%。" exp="10000" stoneId="5030" detail=""/>
+<sta_features id="160" name="铁刺荆棘" effect="受到近身攻击时，对手损失最大体力的12.5%。" exp="0" stoneId="5106" detail=""/>
+<sta_features id="161" name="不倒翁模式" effect="在危急时转变为不倒翁模式。" exp="0" stoneId="0" detail=""/>
+<sta_features id="162" name="胜利之星" effect="己方全体#神奇宝贝#命中率提升10%。" exp="0" stoneId="0" detail=""/>
+<sta_features id="163" name="涡轮高温" effect="无视阻碍自身技能的特性。" exp="0" stoneId="5101" detail=""/>
+<sta_features id="164" name="兆级电压" effect="无视阻碍自身技能的特性。" exp="0" stoneId="5102" detail=""/>
+<sta_features id="165" name="始源之海" effect="当该#神奇宝贝#登场时，天气转为下大雨持续到该#神奇宝贝#下场。" exp="10000" stoneId="5018" detail=""/>
+<sta_features id="166" name="终结之地" effect="当该#神奇宝贝#登场时，天气转为日光非常猛烈持续到该#神奇宝贝#下场。" exp="10000" stoneId="5019" detail=""/>
+<sta_features id="167" name="德尔塔气流" effect="当该#神奇宝贝#登场时，天气转为空气湍流持续到该#神奇宝贝#下场。" exp="10000" stoneId="5020" detail=""/>
+<sta_features id="168" name="超级发射器" effect="使波导弹、水波动、龙波动、恶波动的威力提升50%" exp="0" stoneId="5072" detail=""/>
+<sta_features id="169" name="坚硬爪子" effect="使近身技能的威力上升30%" exp="0" stoneId="5071" detail=""/>
+<sta_features id="170" name="亲子爱" effect="一个回合使用同一招式攻击两次，第二次伤害为第一次的25%。对连续攻击类招式、超级招式无效。" exp="0" stoneId="5116" detail=""/>
+<sta_features id="171" name="电气制造者" effect="出场时，会释放电气场地，电气场地持续5回合，场地上的精灵不会进入打哈欠与睡眠状态，电系技能威力提升1.5倍。" exp="0" stoneId="5096" detail=""/>
+<sta_features id="172" name="疾风之翼" effect="血量全满时，飞行系技能优先使用" exp="0" stoneId="5097" detail=""/>
+<sta_features id="173" name="精神制造者" effect="出场时，会释放精神场地，精神场地持续5回合，场地上的精灵不会受到先制招式的影响，超能力系技能威力提升1.5倍。" exp="0" stoneId="5151" detail=""/>
+<sta_features id="174" name="变幻自如" effect="变为与自己使出的招式相同的属性。" exp="0" stoneId="5104" detail=""/>
+<sta_features id="175" name="青草制造者" effect="出场时，会释放青草场地，青草场地持续5回合，场地上的精灵每回合回复最大血量的1/16，草系技能威力提升1.5倍。" exp="0" stoneId="5109" detail=""/>
+<sta_features id="176" name="薄雾制造者" effect="出场时，会释放薄雾场地，薄雾场地持续5回合，场地上的精灵不会进入异常状态，龙系技能威力减半。" exp="0" stoneId="5110" detail=""/>
+<sta_features id="177" name="黑化领域" effect="一场战斗一方仅5回合，使在场非黑化精灵随机的两个技能无效，提升1级黑化精灵的能力。" exp="0" stoneId="5114" detail=""/>
+<sta_features id="178" name="芳香幕" effect="己方场上所有的精灵不会受到心灵攻击类招式影响。" exp="0" stoneId="0" detail=""/>
+<sta_features id="179" name="花幕" effect="我方的草属性精灵能力不会被对手降低，且不会陷入异常状态；不能避免自身使用技能造成的能力下降。" exp="0" stoneId="0" detail=""/>
+<sta_features id="180" name="颊囊" effect="无论是哪种树果，食用后，血量都会回复三分之一。" exp="0" stoneId="0" detail=""/>
+<sta_features id="181" name="毛皮大衣" effect="对手给予的物理招式的伤害会减半。（固定伤害类招式无效）" exp="0" stoneId="5142" detail=""/>
+<sta_features id="182" name="魔术师" effect="拥有该特性的精灵上场时，对方场上的精灵携带道具3回合内无效（包括无法被无效的道具），3回合后或精灵下场后解除。" exp="0" stoneId="5143" detail="能无效的道具包括树果及携带道具|被无效的道具可以被落拳影响|被无效的道具可以被啄食、虫咬、烧尽等技能消耗|除了天界之笛、创世之笛，其他携带道具都能被无效"/>
+<sta_features id="183" name="防弹" effect="免疫球和弹类招式。" exp="0" stoneId="5149" detail=""/>
+<sta_features id="184" name="好胜" effect="能力被降低时，特攻提高2级。 由自身或同伴导致的能力降低不会触发该特性。 " exp="0" stoneId="0" detail=""/>
+<sta_features id="185" name="强壮之颚" effect="对战中使啃咬类招式的威力上升50%。 " exp="0" stoneId="5218" detail=""/>
+<sta_features id="186" name="冰冻皮肤" effect="自己使用的一般属性招式变为冰属性招式，且威力变为1.3倍。 " exp="0" stoneId="5130" detail=""/>
+<sta_features id="187" name="甜幕" effect="我方场上精灵含有该特性时，我方场上的精灵不会变为睡眠状态。" exp="0" stoneId="0" detail=""/>
+<sta_features id="188" name="战斗切换" effect="拥有该特性的精灵，在战斗中使用不同类型的技能时，会发生形态转换。" exp="0" stoneId="5138" detail=""/>
+<sta_features id="189" name="草之毛皮" effect="在青草场地时，防御会提高50%。" exp="0" stoneId="0" detail=""/>
+<sta_features id="190" name="共生" effect="在双打对战或三打对战中，如果同伴消耗携带的道具，拥有共生特性的精灵会将自己的道具转移给它。 " exp="0" stoneId="0" detail=""/>
+<sta_features id="191" name="妖精皮肤" effect="自己使用的一般属性招式会变成妖精属性，且威力变为1.3倍。 " exp="0" stoneId="5131" detail=""/>
+<sta_features id="192" name="黏滑" effect="精灵受到接触攻击伤害后，会令攻击方速度降低1级。 " exp="0" stoneId="5144" detail=""/>
+<sta_features id="193" name="飞行皮肤" effect="自己使用的一般属性招式变为飞行属性招式，且威力变为1.3倍。 " exp="0" stoneId="5132" detail=""/>
+<sta_features id="194" name="暗黑气场" effect="拥有该特性的精灵在场时双方场上精灵使用恶属性招式的威力提高三分之一。" exp="0" stoneId="5127" detail=""/>
+<sta_features id="195" name="妖精气场" effect="拥有该特性的精灵在场时双方场上精灵使用妖精属性招式的威力提高三分之一。" exp="0" stoneId="5128" detail=""/>
+<sta_features id="196" name="气场破坏" effect="场上存在气场时，效果从原来的提高三分之一变成降低三分之一。" exp="0" stoneId="5136" detail=""/>
+<sta_features id="197" name="持久力" effect="受到攻击时，物防提高1级。连续招式每次攻击都会触发该特性。由于混乱攻击自身时不触发。" exp="0" stoneId="5833" detail=""/>
+<sta_features id="198" name="跃跃欲逃" effect="血量变为50%时，精灵会回到队伍中。精灵出场时血量已经低于50%时，即使受到伤害也不会触发。" exp="0" stoneId="0" detail=""/>
+<sta_features id="199" name="危险回避" effect="血量变为50%时，精灵会回到队伍中。精灵出场时血量已经低于50%时，即使受到伤害也不会触发。" exp="0" stoneId="5800" detail="1.会触发危险回避的情况:|对手道具、特性等反伤作用扣血，而造成血量少于一半时|使用技能拥有反伤作用扣血，而造成血量少于一半时|2.不会触发危险回避的情况：|因异常状态（中毒、猛毒、灼伤）扣血，而造成血量少于一半时|场地上隐形岩、满地星扣血，而造成血量少于一半时|混乱攻击自己扣血，而造成血量少于一半时|使用替身、挣扎、咒语技能扣血，而造成血量少于一半时|陷入咒语状态扣血，束缚状态扣血，而造成血量少于一半时|3.处于根深蒂固、束缚状态时，依然可以触发危险回避而返回背包|"/>
+<sta_features id="200" name="遇水凝固" effect="受到水属性的招式攻击时，物防提高2级。连续招式每次攻击都会触发该特性。" exp="0" stoneId="0" detail=""/>
+<sta_features id="201" name="不仁不义" effect="攻击中毒状态的对手时，必定会击中要害。对手是甲虫盔甲或贝壳盔甲时不触发。" exp="0" stoneId="5192" detail=""/>
+<sta_features id="202" name="界限盾壳" effect="血量超过50%时，不会陷入异常状态。血量低于50%时，变成核心状态，防御种族值下降，攻击、速度种族值提升。" exp="0" stoneId="0" detail=""/>
+<sta_features id="203" name="蹲守" effect="对于本回合替换出场的精灵给予2倍的招式伤害。 " exp="0" stoneId="5193" detail=""/>
+<sta_features id="204" name="水泡" effect="拥有该特性的精灵受到火属性招式造成的伤害降低50%，不会陷入灼伤状态，并且水属性招式威力翻倍。" exp="0" stoneId="5216" detail=""/>
+<sta_features id="205" name="钢能力者" effect="钢属性的招式威力会提高1.5倍。" exp="0" stoneId="5194" detail=""/>
+<sta_features id="206" name="怒火冲天" effect="血量变为一半时，特攻会提高1级。" exp="0" stoneId="0" detail=""/>
+<sta_features id="207" name="拨雪" effect="冰雹天气时，速度能力变为原来的两倍，且拥有此特性的非冰属性精灵不被冰雹天气扣除血量。" exp="0" stoneId="0" detail=""/>
+<sta_features id="208" name="远隔" effect="使用接触类招式，不会触发和是否接触有关的效果。" exp="0" stoneId="0" detail=""/>
+<sta_features id="209" name="湿润之声" effect="所有的声音的招式都变为水属性。" exp="0" stoneId="0" detail=""/>
+<sta_features id="210" name="先行治疗" effect="在使出能回复血量的招式时，招式优先度+3。 " exp="0" stoneId="0" detail=""/>
+<sta_features id="211" name="电气皮肤" effect="自己使用的一般属性招式会变成电属性，且威力变为1.3倍。 " exp="0" stoneId="5133" detail=""/>
+<sta_features id="212" name="冲浪之尾" effect="当对战场地处于电气场地状态时，速度能力变为原来的2倍。 " exp="0" stoneId="5582" detail=""/>
+<sta_features id="213" name="鱼群" effect="血量多的时候会聚起来变强。血量剩余量变少时，群体会分崩离析。" exp="0" stoneId="0" detail=""/>
+<sta_features id="214" name="画皮" effect="通过画皮覆盖住身体，可以防住１次攻击。" exp="0" stoneId="5217" detail=""/>
+<sta_features id="215" name="牵绊变身" effect="打倒对手时，与训练家的牵绊会增强，变为#小智#版#甲贺忍蛙#。飞水手里剑的招式威力会增强。" exp="0" stoneId="0" detail=""/>
+<sta_features id="216" name="群聚变形" effect="血量变为一半时，细胞们会赶来支援，变为完全体形态。" exp="0" stoneId="0" detail=""/>
+<sta_features id="217" name="腐蚀" effect="对毒和钢属性的对手使用毒系变化技能，能使对手中毒。但使用毒系攻击技能依然无效。" exp="0" stoneId="5261" detail=""/>
+<sta_features id="218" name="绝对睡眠" effect="该特性的精灵始终被视为是睡眠状态。无法使用睡觉，可以使用打鼾、梦话、梦游滚动，会受到食梦攻击，会受到噩梦特性影响。" exp="0" stoneId="5265" detail=""/>
+<sta_features id="219" name="女王的威严" effect="向对手施加威慑力，使其无法对我方使出先制招式。" exp="0" stoneId="0" detail=""/>
+<sta_features id="220" name="飞出的内在物" effect="被对手打倒时，对手会受到拥有特性的精灵被最后一击之前同等血量的伤害。" exp="0" stoneId="0" detail=""/>
+<sta_features id="221" name="舞者" effect="如果场上有精灵使出跳舞招式，拥有该特性的精灵也能接著使出该相同招式，且不消耗回合数。" exp="0" stoneId="0" detail=""/>
+<sta_features id="222" name="蓄电池" effect="我方场上所有精灵使用特殊招式的威力会变为1.3倍。 " exp="0" stoneId="0" detail=""/>
+<sta_features id="223" name="毛茸茸" effect="会将对手所给予的接触类招式的伤害减半，但火属性招式的伤害会变为２倍。" exp="0" stoneId="5835" detail=""/>
+<sta_features id="224" name="鲜艳之躯" effect="让对手吓一跳，使其无法对我方使出先制招式。" exp="0" stoneId="0" detail=""/>
+<sta_features id="225" name="魂心" effect="每当场上有精灵被打倒时，特攻提高1级。 " exp="0" stoneId="5148" detail=""/>
+<sta_features id="226" name="卷发" effect="被接触类招式命中时，对手的速度降低1个等级。" exp="0" stoneId="0" detail=""/>
+<sta_features id="227" name="接球手" effect="双打和三打中，当同伴陷入濒死状态后，此精灵的特性变成与该同伴相同。自身离场时特性还原为接球手。 " exp="0" stoneId="0" detail=""/>
+<sta_features id="228" name="化学之力" effect="双打和三打中，当同伴陷入濒死状态后，此精灵的特性变成与该同伴相同。自身离场时特性还原为化学之力。" exp="0" stoneId="0" detail=""/>
+<sta_features id="229" name="异兽提升" effect="打倒对手的时候，自己属性最高的那项能力会提高1级。相同时，按物攻、物防、特攻、特防、速度的顺序提高。" exp="0" stoneId="5260" detail=""/>
+<sta_features id="230" name="增强现实系统" effect="根据持有的存储碟，自己的属性会改变。" exp="0" stoneId="0" detail=""/>
+<sta_features id="231" name="金属防护" effect="不会因为对手的招式或特性而被降低能力。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5197" detail=""/>
+<sta_features id="232" name="幻影防守" effect="血量全满时，受到的伤害减为原来的一半。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5198" detail=""/>
+<sta_features id="233" name="棱镜装甲" effect="效果绝佳招式造成的伤害降低0.25。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="0" detail=""/>
+<sta_features id="234" name="黑化零度" effect="黑化领域存在时，非黑化精灵在回合结束时有40%的概率陷入冰冻状态。" exp="0" stoneId="5124" detail=""/>
+<sta_features id="235" name="圣光守护" effect="持续3回合，我方精灵出场时恢复1/4血量。黑化领域存在时，我方非黑化精灵性质暂视为黑化精灵。" exp="0" stoneId="5125" detail=""/>
+<sta_features id="236" name="无限深渊" effect="持续5回合，我方黑化精灵每回合结束65%回避率升1级。黑化领域存在时，延长黑化领域3回合。" exp="0" stoneId="5126" detail=""/>
+<sta_features id="10001" name="金属制造者" effect="出场时，会释放金属场地，金属场地持续5回合，场地上的精灵不会进入打哈欠与睡眠状态，钢系技能威力提升1.5倍。" exp="0" stoneId="5152" detail="该特性可以被胃液、烦恼种子、核心惩罚者等招式改变|该特性受木乃伊特性影响|该特性可以被追踪特性，角色扮演特性复制，且复制后会立马发动|该特性引发的金属场地，会覆盖薄雾场地、电气场地、青草场地、精神场地、反之亦可被以上四种场地覆盖|处于睡眠状态中的精灵被交换上场后，不会立刻解除睡眠状态|特性被消除后，金属场地仍会存在|受益的精灵不区分地上或地下的精灵"/>
+<sta_features id="10002" name="羁绊之心" effect="拥有该特性的精灵，不会受到对手的变化招式影响，物攻技能威力提升1.2倍。" exp="0" stoneId="5153" detail="该特性会被革新特性影响|该特性不会被胃液、烦恼种子、核心惩罚者等招式影响|该特性不会被追踪特性、角色扮演技能复制|该特性不会被木乃伊特性影响"/>
+<sta_features id="10003" name="骗术棱镜" effect="出场时，释放骗术空间，速度慢的精灵先行动，持续5回合。" exp="0" stoneId="5199" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，骗术空间效果依然存在|当场上存在骗术空间时，再次触发骗术空间，则骗术空间状态消除"/>
+<sta_features id="10004" name="魔术棱镜" effect="出场时，释放魔术空间，所有场上精灵携带的道具和树果不生效（无法被无效的道具除外），持续5回合。" exp="0" stoneId="5200" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，魔术空间效果依然存在|当场上存在魔术空间时，再次触发魔术空间，则魔术空间状态消除"/>
+<sta_features id="10005" name="奇妙棱镜" effect="出场时，释放奇妙空间，所有场上精灵的防御与特防互换，持续5回合。" exp="0" stoneId="5201" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，奇妙空间效果依然存在|当场上存在奇妙空间时，再次触发奇妙空间，则奇妙空间状态消除"/>
+<sta_features id="10006" name="究极脑核之力" effect="拥有该特性的精灵，使用效果很好的招式时威力提升20%；且无法被对手预测自身的属性。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5202" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|"/>
+<sta_features id="10007" name="究极骗术棱镜" effect="出场时释放骗术空间；受效果很好招式伤害降低1/4；无法被对手预测自身属性。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5203" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，骗术空间效果依然存在|当场上存在骗术空间时，再次触发骗术空间，则骗术空间状态消除"/>
+<sta_features id="10008" name="究极魔术棱镜" effect="出场时释放魔术空间；受效果很好招式伤害降低1/4；无法被对手预测自身属性。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5204" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，魔术空间效果依然存在|当场上存在魔术空间时，再次触发魔术空间，则魔术空间状态消除"/>
+<sta_features id="10009" name="究极奇妙棱镜" effect="出场时释放奇妙空间；受效果很好招式伤害降低1/4；无法被对手预测自身属性。特性革新、涡轮高温、兆级电压和招式流星闪冲、暗影之光效果对此特性无效。" exp="0" stoneId="5205" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响|该特性会被追踪特性、角色扮演技能复制|该特性会被木乃伊特性影响|特性被消除或者该特性的精灵替换下场后，奇妙空间效果依然存在|当场上存在奇妙空间时，再次触发奇妙空间，则奇妙空间状态消除"/>
+<sta_features id="10010" name="能力窃取" effect="使用攻击技能时，窃取对方一项上升的能力一级。" exp="0" stoneId="5262" detail="如使用一回合内多次攻击对方的技能，如连环巴掌，只会触发一次特性效果|若被攻击的精灵拥有性情乖僻特性，则“上升的能力等级下降1级”会变为“上升的能力等级上升1级”|对方当前只存在下降的能力等级时，不会触发效果|属性免疫、没命中、被守住、通过特性而被无效（如避雷针特性）的情况下不会触发此特性效果"/>
+<sta_features id="10011" name="反射装甲" effect="受到对方的特殊类招式攻击后，对手会损失最大体力的1/8。" exp="0" stoneId="5263" detail="连续招式每次伤害都会计算一次|攻击方为魔法防御特性时，此特性无效|拥有此特性的精灵为防守方时，且处于替身状态，则对方用特殊招式攻击该精灵也不会触发特性|攻击方处于替身状态时，也会触发此特性，直接扣除本体血量|当攻击方受到反射装甲的伤害而濒死时，以下招式的特效不会发动：|龙尾、仰投、高速旋转、虫蛀、啄食、苏醒、苏醒拍打、烧尽"/>
+<sta_features id="10012" name="抵抗力" effect="连续受到对方相同技能的攻击时，每承受一次，该技能对精灵的伤害减少25%" exp="0" stoneId="5264" detail="对于连续攻击类技能，减伤效果只计算一次|对方技能没有命中、守住、属性免疫等情况，不会清空减伤的累计效果|对方使用不同的攻击招式命中我方时，减伤效果清空|对方对该特性的精灵使用变化技能或技能作用目标不是该精灵的情况，不会清空减伤的累计效果"/>
+<sta_features id="10013" name="节奏感" effect="拥有该特性的精灵重复使用一个招式，每重复使用一次威力提升20%。" exp="0" stoneId="5268" detail="威力提升效果的上限为100%|威力提升效果能与节拍器效果叠加"/>
+<sta_features id="10014" name="净化之力" effect="使用水系攻击技能时，恢复队伍中陷入中毒、剧毒、灼伤、冰冻、麻痹的精灵的状态。" exp="0" stoneId="5269" detail="只有在技能在命中对手后才会触发特性|技能在被守住、没命中、属性免疫、因引水特性而使技能失效的情况时不触发治疗效果"/>
+<sta_features id="10015" name="双子之力" effect="拥有该特性的精灵使用攻击招式时，可以攻击两次，且第二次攻击的威力是第一次的25%。" exp="0" stoneId="5494" detail="使用的攻击招式不包括超级招式、蓄力招式、连续攻击招式、造成自身濒死的招式、强攻|固定伤害类的招式不会削减第二次的威力|一回合内无法动弹的招式，在第二次攻击完毕后才生效|对方携带了特殊消耗道具且满足发动条件时，会消耗道具且不会发动第二次攻击"/>
+<sta_features id="10016" name="珍珠守护" effect="受到的效果拔群的招式伤害减少25%。" exp="0" stoneId="0" detail=""/>
+<sta_features id="10017" name="流体金属" effect="格斗系与地上系的攻击技能伤害减少50%。" exp="0" stoneId="5496" detail=""/>
+<sta_features id="10018" name="燃烧蒸汽" effect="使用攻击技能时，50%让对手陷入灼伤状态；受到对手的接触类技能时，100%让对手陷入灼伤状态；若对手已陷入中毒、猛毒、麻痹状态，则灼伤状态会覆盖以上状态。" exp="0" stoneId="0" detail="使用带有追加效果的技能，优先判定特性的触发概率，再判定追加效果的触发概率|携带了红牌或逃脱按钮这类导致精灵离场的道具时，优先触发特性的判定效果，再触发道具的效果"/>
+<sta_features id="10019" name="火焰鬃毛" effect="火系攻击技能威力提升1.5倍，受到虫系攻击招式时，免疫此伤害且特攻上升一级" exp="0" stoneId="5564" detail="该特性被连续攻击所触发时，只提升一级特攻"/>
+<sta_features id="10020" name="黑暗领域" effect="拥有该特性的精灵，受到克制恶属性的技能攻击时，该技能造成的伤害减半且命中率降低20%。" exp="0" stoneId="5583" detail="该特性不能被能改变特性的特性或技能效果影响|革新类特性可以无视该特性"/>
+<sta_features id="10021" name="瞬发" effect="该特性的精灵使用蓄力类技能时可以瞬间发动，不额外消耗一个回合。" exp="0" stoneId="5723" detail=""/>
+<sta_features id="10022" name="技巧达人" effect="该特性的精灵使用带有自身能力下降副作用的技能时，能消除副作用的影响。" exp="0" stoneId="5724" detail=""/>
+<sta_features id="10023" name="重磅拳击" effect="使用拳击类技能威力提升50%。" exp="0" stoneId="5725" detail=""/>
+<sta_features id="10024" name="异次元转移" effect="每回合50%几率治愈自身异常状态（睡眠、冰冻、灼伤、中毒、猛毒、麻痹），且若本回合触发解除自身异常效果，则有40%几率将该异常状态附加给对手。获得本特性的精灵使用睡觉技能必定失败。" exp="0" stoneId="5741" detail="对方已经陷入异常状态时，无法将异常状态转移给对方。|双打中，若两个对手都没有陷入异常状态，则异常状态优先转移给对手左边位置的精灵；若无法将异常状态转移给对手左边位置的精灵，则异常状态会转移给右边位置的精灵。|若对手也拥有此特性，则速度快的先触发此特性。|该特性会被胃液、烦恼种子、核心惩罚者等招式影响。|该特性会被追踪特性、角色扮演技能复制。|该特性会被木乃伊特性影响。"/>
+<sta_features id="10025" name="斗志羁绊" effect="草属性技能伤害增加1.3倍。攻击时，目标每有1项能力阶级（物攻、物防、特攻、特防、速度）提升1级，招式威力提升20%（最多提升300%），拥有该特性的精灵在场时，场上精灵不计算速度等级加成。" exp="0" stoneId="5742" detail="该特性会被胃液、烦恼种子、核心惩罚者等招式影响。|该特性会被追踪特性、角色扮演技能复制。|该特性会被木乃伊特性影响。|命中、回避的等级加成不会影响技能威力。|速度等级是负的时候，也不会计算到速度上。|速度等级不会计算到速度上；但速度加成等级会影响招式威力。"/>
+<sta_features id="10026" name="热之领悟" effect="灼伤状态下，每回合灼伤扣1/16血量，不会因为灼伤而降低物攻，且物攻、特攻提升50%。" exp="0" stoneId="5801" detail=""/>
+<sta_features id="10027" name="毒之领悟" effect="猛毒/中毒状态下，每回合猛毒/中毒扣1/16血量，且物攻、特攻提升50%。" exp="0" stoneId="5802" detail=""/>
+<sta_features id="10028" name="威压凝视" effect="此特性精灵出场时，对手的物攻下降1级；此特性精灵在场时，对手出场时，对手物攻下降1级。" exp="0" stoneId="5803" detail="当双方同时首发出场时，对手物攻下降2级。|只对攻击范围内的对手生效。"/>
+<sta_features id="10029" name="雷电掌控" effect="出场时，如果是雨天或下大雨天气，特攻+1级、特防+2级；下雨天或下大雨时，电系招式能击中地上系精灵（属性克制为1倍）。" exp="0" stoneId="5804" detail=""/>
+<sta_features id="10030" name="幻影" effect="每次自身出场时，会变成队伍中最后一只精灵的样子，下场或血量小于四分之一则解除" exp="0" stoneId="5834" detail=""/>
+<sta_features id="10031" name="长颈" effect="每次使用特攻技能时，技能威力提升120%，但成功使用后的下回合不能行动。" exp="0" stoneId="5836" detail=""/>
+<sta_features id="10032" name="创元系" effect="激活创元系后，携带第一石板时，精灵属性变成第一石板属性，制裁石砾变成第一石板属性；携带第二石板时，神之审判变成第二石板属性，使用神之审判能享受属性一致加成。" exp="0" stoneId="6827" detail=""/>
+<sta_features id="10033" name="未来攻击" effect="使用超能力系攻击技能，伤害会延迟到下回合造成伤害，技能伤害*1.5" exp="0" stoneId="6847" detail="适用于所有超能力系攻击类技能，不包含超级招式|造成的伤害属性为超能力系，有属性一致加成以及属性克制效果|技能附带的副作用（令使用者能力变化、令对方能力变化、令对手陷入异常等）会被消除，技能只会造成伤害|延迟的伤害无视替身，对本体造成伤害|【未来攻击】状态未解除，再次使用超能力系攻击技能会使用失败"/>
+<sta_features id="10034" name="神速军团" effect="在目标前行动，伤害提升40%" exp="0" stoneId="6848" detail="如果对方精灵是本回合替换上场的，因为行动在其后面，所以不会发动该特性。"/>
+<sta_features id="10035" name="水蚀" effect="使用水系攻击技能可破坏对方的光墙、减半反射、极光幕，且随机降低对手物攻物防特攻特防速度任意一项属性一级" exp="0" stoneId="6849" detail="适用于所有水系攻击类技能，包含普通招式以及超级招式|技能不受光墙、减半反射、极光幕的伤害降低影响。"/>
+<sta_features id="10036" name="三头龙" effect="在受到伤害时，如果本次伤害造成克制效果（2倍或4倍伤害），则使其变成一倍伤害，该减伤效果每场战斗只能触发两次。伤害提升30%,每触发一次减伤，减少自身15%技能伤害。" exp="0" stoneId="6850" detail="未触发减伤效果的时候，增加30%伤害，每因克制伤害触发一次减伤，增加的伤害减少15%，最低为0%|该特性不受革新、胃液、核心惩罚者、流星闪冲、暗影之光、特性交换、木乃伊、烦恼种子、追踪、角色扮演影响"/>
+<sta_features id="10037" name="炎壁" effect="出场时天气转变为日光猛烈并持续5回合；天气为日光猛烈或日光非常猛烈时，免疫间接伤害" exp="0" stoneId="6851" detail=""/>
+<sta_features id="10038" name="捕食笼" effect="飞行系、火系招式对该特性的精灵伤害减半" exp="0" stoneId="6852" detail=""/>
+<sta_features id="10039" name="污泥浆" effect="精灵受到吸收血量的招式攻击或寄生种子等技能吸收血量时，对手扣除本应回复血量相等的血量。" exp="0" stoneId="6888" detail=""/>
+<sta_features id="10040" name="神奇守护" effect="如果受到的攻击伤害不是效果很好（2倍或4倍），则完全免疫此伤害；使用该特性的精灵血量会变成一血，且持续处于回复阻挡状态" exp="0" stoneId="6889" detail=""/>
+<sta_features id="10041" name="钢铁统领" effect="使用钢系招式造成克制伤害时，克制效果从2倍提升至3倍；钢系抵抗对面攻击伤害时，抵抗效果从减免1/2提升至2/3。" exp="0" stoneId="0" detail="举例：|钢系攻击妖精系是2倍伤害，该特性能令伤害变成2x1.5=3倍，|钢系受到飞行系攻击是0.5倍伤害，该特性能令伤害变成0.5/1.5=0.33倍|钢系的被克制、被抵抗效果不会受到影响"/>
+<sta_features id="10042" name="火焰充能" effect="使用火系攻击技能的同时增加一格蓄能，拥有蓄能增加防御能力；使用非火属性攻击技能时，会消耗全部蓄能加强该技能效果" exp="0" stoneId="6891" detail="1.每有一格蓄能增加一级物防一级特防，蓄能最多拥有两格|2.蓄能会使技能追加火属性（计算属性相性时视作火属性与技能原本属性双属性），该技能享受火属性的一致加成，每有一格蓄能技能威力增加50%"/>
+<sta_features id="10043" name="美丽舞者" effect="用舞蹈技能会给对方施加一层魅惑状态，对方下场后魅惑状态消失" exp="0" stoneId="0" detail="魅惑状态：1、2、3层魅惑会导致状态拥有者的攻击伤害分别减少30%、45%、60%"/>
+<sta_features id="10044" name="宝石反射" effect="每次上场时自身会持续处于魔术外衣状态，被攻击技能打到造成伤害时会令该状态消失。" exp="0" stoneId="6893" detail=""/>
+<sta_features id="10045" name="森林庇护" effect="出场后，释放一个持续五回合的森林场地。" exp="0" stoneId="0" detail="森林场地：|1.处于森林场地时，草系、虫系精灵受到的火系跟冰系伤害减少30%|2.草系、虫系精灵不会进入灼伤状态"/>
+<sta_features id="10046" name="远古巨兵" effect="受到岩石、冰、钢系技能伤害时，伤害减少50%，减免伤害的30%将会反弹给对面" exp="0" stoneId="0" detail=""/>
 </root>

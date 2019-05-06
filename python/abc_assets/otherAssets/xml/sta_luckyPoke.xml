@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_luckyPoke id="1" maxHp="3.5" speed="190" weight="15" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:1},{&apos;pId&apos;:235,&apos;num&apos;:1},{&apos;pId&apos;:186001,&apos;num&apos;:1,&apos;rate&apos;:20},{&apos;pId&apos;:115000,&apos;num&apos;:1,&apos;rate&apos;:20}]}" type="2"/>
+<sta_luckyPoke id="2" maxHp="5" speed="114" weight="10" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:1},{&apos;pId&apos;:236,&apos;num&apos;:1},{&apos;pId&apos;:186002,&apos;num&apos;:1,&apos;rate&apos;:20},{&apos;pId&apos;:114000,&apos;num&apos;:1,&apos;rate&apos;:20}]}" type="1"/>
+<sta_luckyPoke id="3" maxHp="2" speed="230" weight="25" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:246,&apos;num&apos;:1},{&apos;pId&apos;:240,&apos;num&apos;:1}]}" type="3"/>
+<sta_luckyPoke id="4" maxHp="5" speed="114" weight="10" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:1},{&apos;pId&apos;:236,&apos;num&apos;:1},{&apos;pId&apos;:186002,&apos;num&apos;:1,&apos;rate&apos;:20},{&apos;pId&apos;:114000,&apos;num&apos;:1,&apos;rate&apos;:20}]}" type="1"/>
+<sta_luckyPoke id="5" maxHp="3.5" speed="190" weight="15" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:1},{&apos;pId&apos;:235,&apos;num&apos;:1},{&apos;pId&apos;:186001,&apos;num&apos;:1,&apos;rate&apos;:20},{&apos;pId&apos;:115000,&apos;num&apos;:1,&apos;rate&apos;:20}]}" type="2"/>
+<sta_luckyPoke id="6" maxHp="2" speed="230" weight="25" propJNS="{&apos;prop&apos;:[{&apos;pId&apos;:246,&apos;num&apos;:1},{&apos;pId&apos;:240,&apos;num&apos;:1}]}" type="3"/>
+</root>

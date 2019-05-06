@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_skillPotencyFeed id="1" potencyDot="1" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="2" potencyDot="2" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="3" potencyDot="3" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="4" potencyDot="4" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="5" potencyDot="5" curve_1="2,10" curve_2="2,10" curve_3="1,10" curve_4="1,10" curve_5="1,10"/>
+<sta_skillPotencyFeed id="6" potencyDot="6" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="7" potencyDot="7" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="8" potencyDot="8" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="9" potencyDot="9" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="10" potencyDot="10" curve_1="3,15" curve_2="2,15" curve_3="2,15" curve_4="1,15" curve_5="1,15"/>
+<sta_skillPotencyFeed id="11" potencyDot="11" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="12" potencyDot="12" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="13" potencyDot="13" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="14" potencyDot="14" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="15" potencyDot="15" curve_1="3,20" curve_2="3,20" curve_3="2,20" curve_4="2,20" curve_5="1,20"/>
+<sta_skillPotencyFeed id="16" potencyDot="16" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="17" potencyDot="17" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="18" potencyDot="18" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="19" potencyDot="19" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="20" potencyDot="20" curve_1="5,30" curve_2="4,30" curve_3="4,30" curve_4="3,30" curve_5="2,30"/>
+<sta_skillPotencyFeed id="21" potencyDot="21" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="22" potencyDot="22" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="23" potencyDot="23" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="24" potencyDot="24" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="25" potencyDot="25" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="26" potencyDot="26" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="27" potencyDot="27" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="28" potencyDot="28" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="29" potencyDot="29" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+<sta_skillPotencyFeed id="30" potencyDot="30" curve_1="" curve_2="" curve_3="" curve_4="" curve_5=""/>
+</root>

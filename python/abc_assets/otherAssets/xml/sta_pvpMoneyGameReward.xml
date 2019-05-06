@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pvpMoneyGameReward id="1" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:300000},&apos;diamond&apos;:{&apos;num&apos;:30},&apos;pvDot&apos;:{&apos;num&apos;:100}}"/>
+<sta_pvpMoneyGameReward id="2" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000},&apos;diamond&apos;:{&apos;num&apos;:20},&apos;pvDot&apos;:{&apos;num&apos;:60}}"/>
+<sta_pvpMoneyGameReward id="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:150000},&apos;diamond&apos;:{&apos;num&apos;:15},&apos;pvDot&apos;:{&apos;num&apos;:40}}"/>
+</root>

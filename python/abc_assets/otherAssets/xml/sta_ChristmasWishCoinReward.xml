@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_ChristmasWishCoinReward id="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:1}]}" weight="10"/>
+<sta_ChristmasWishCoinReward id="2" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:245,&apos;num&apos;:100}]}" weight="80"/>
+<sta_ChristmasWishCoinReward id="3" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:246,&apos;num&apos;:80}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="4" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:60}]}" weight="60"/>
+<sta_ChristmasWishCoinReward id="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:40}]}" weight="50"/>
+<sta_ChristmasWishCoinReward id="6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:20}]}" weight="40"/>
+<sta_ChristmasWishCoinReward id="7" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:242,&apos;num&apos;:20}]}" weight="80"/>
+<sta_ChristmasWishCoinReward id="8" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:241,&apos;num&apos;:20}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="9" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:239,&apos;num&apos;:20}]}" weight="100"/>
+<sta_ChristmasWishCoinReward id="10" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:20}]}" weight="120"/>
+<sta_ChristmasWishCoinReward id="11" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" weight="10"/>
+<sta_ChristmasWishCoinReward id="12" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:747,&apos;num&apos;:3}]}" weight="30"/>
+<sta_ChristmasWishCoinReward id="13" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:746,&apos;num&apos;:5}]}" weight="60"/>
+<sta_ChristmasWishCoinReward id="14" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:1}]}" weight="20"/>
+<sta_ChristmasWishCoinReward id="15" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:1}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="16" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:1}]}" weight="90"/>
+<sta_ChristmasWishCoinReward id="17" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:764,&apos;num&apos;:1}]}" weight="50"/>
+<sta_ChristmasWishCoinReward id="18" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:151,&apos;num&apos;:1}]}" weight="50"/>
+<sta_ChristmasWishCoinReward id="19" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:1}]}" weight="30"/>
+<sta_ChristmasWishCoinReward id="20" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:2521,&apos;num&apos;:1}]}" weight="50"/>
+<sta_ChristmasWishCoinReward id="21" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:148,&apos;num&apos;:50}]}" weight="60"/>
+<sta_ChristmasWishCoinReward id="22" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:101000,&apos;num&apos;:3}]}" weight="90"/>
+<sta_ChristmasWishCoinReward id="23" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:102000,&apos;num&apos;:1}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="24" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:2}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="25" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:107000,&apos;num&apos;:1}]}" weight="30"/>
+<sta_ChristmasWishCoinReward id="26" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:110000,&apos;num&apos;:3}]}" weight="70"/>
+<sta_ChristmasWishCoinReward id="27" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:111000,&apos;num&apos;:1}]}" weight="30"/>
+<sta_ChristmasWishCoinReward id="28" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:125,&apos;num&apos;:50}]}" weight="60"/>
+<sta_ChristmasWishCoinReward id="29" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:947,&apos;num&apos;:3}]}" weight="60"/>
+</root>

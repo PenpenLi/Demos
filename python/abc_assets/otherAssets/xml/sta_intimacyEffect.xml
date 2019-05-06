@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_intimacyEffect id="1" effectName="闪亮登场" description="战场上的明星前来参战！" effectType="1"/>
+<sta_intimacyEffect id="2" effectName="霸气侧漏" description="无论再怎么收敛，也隐藏不住强大的气场。" effectType="1"/>
+<sta_intimacyEffect id="3" effectName="救世圣光" description="犹如救世主一般，扭转整个战局。" effectType="1"/>
+<sta_intimacyEffect id="4" effectName="烟花绚烂" description="华丽的对战风格就是我的主旋律！" effectType="1"/>
+<sta_intimacyEffect id="5" effectName="致命一击" description="谁能知道被暴击的痛楚是那么的致命？" effectType="2"/>
+<sta_intimacyEffect id="6" effectName="心碎一地" description="能感受到心碎的滋味吗？" effectType="2"/>
+<sta_intimacyEffect id="7" effectName="暴击999" description="据说这是一个致命的数字，要试试吗？" effectType="2"/>
+<sta_intimacyEffect id="8" effectName="正义天罚" description="尝尝正义的雷击吧！" effectType="2"/>
+</root>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pvpBuff id="1" picId="huixue_20" descr="恢复所有精灵血量20%" type="1" val="20" BuffLv="0"/>
+<sta_pvpBuff id="2" picId="huixue_30" descr="恢复所有精灵血量30%" type="1" val="30" BuffLv="0"/>
+<sta_pvpBuff id="3" picId="huixue_50" descr="恢复所有精灵血量50%" type="1" val="50" BuffLv="0"/>
+<sta_pvpBuff id="4" picId="zengfu_50" descr="所有精灵在下一场战斗中除血量外所有属性提升50%" type="2" val="50" BuffLv="0"/>
+<sta_pvpBuff id="5" picId="zengfu_70" descr="所有精灵在下一场战斗中除血量外所有属性提升70%" type="2" val="70" BuffLv="0"/>
+<sta_pvpBuff id="6" picId="zengfu_100" descr="所有精灵在下一场战斗中除血量外所有属性提升100%" type="2" val="100" BuffLv="0"/>
+<sta_pvpBuff id="7" picId="jiasu" descr="移动速度增加100%" type="3" val="100" BuffLv="0"/>
+<sta_pvpBuff id="8" picId="bukoufen" descr="下一场战斗中战败不扣除积分或资源" type="4" val="0" BuffLv="0"/>
+<sta_pvpBuff id="9" picId="fuhuo" descr="战败后，立刻在原地复活，无需倒计时" type="5" val="0" BuffLv="0"/>
+<sta_pvpBuff id="10" picId="bisheng_1" descr="哀兵必胜" type="6" val="0" BuffLv="1"/>
+<sta_pvpBuff id="11" picId="bisheng_2" descr="哀兵必胜" type="6" val="0" BuffLv="2"/>
+<sta_pvpBuff id="12" picId="bisheng_3" descr="哀兵必胜" type="6" val="0" BuffLv="3"/>
+<sta_pvpBuff id="13" picId="bisheng_4" descr="哀兵必胜" type="6" val="0" BuffLv="4"/>
+<sta_pvpBuff id="14" picId="bisheng_5" descr="哀兵必胜" type="6" val="0" BuffLv="5"/>
+</root>

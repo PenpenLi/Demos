@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkNpc id="1" type="33" name="波加曼" npcAnimation="npc_bojiaman" talk="波加加…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="2" type="33" name="波克比" npcAnimation="npc_bokebi" talk="恰可咿...恰可咿...咘咿" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="3" type="33" name="火稚鸡" npcAnimation="npc_huozhiji" talk="恰莫恰莫…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="4" type="33" name="可达鸭" npcAnimation="npc_kedaya" talk="酷吧酷吧…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="5" type="33" name="喵喵" npcAnimation="npc_miaomiao" talk="喵…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="6" type="33" name="皮皮" npcAnimation="npc_pipi" talk="皮咿，皮咿…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="7" type="33" name="小卡比兽" npcAnimation="npc_xiaokabi" talk="咔忙咔忙…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="8" type="33" name="幸福蛋" npcAnimation="npc_xinfudan" talk="happy！" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="9" type="31" name="精灵管理员" npcAnimation="npc_GTMZ" talk="你想带哪只小精灵去散步呢？" talkAfterBattle="" failTalk="" position="8,51,d" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="10" type="32" name="" npcAnimation="npc_washidang" talk="喏呐咝……." talkAfterBattle="赶跑了瓦斯弹，地上好像掉了什么东西？" failTalk="喏呐咝……瓦斯弹又跑去其他地方捣蛋了" position="20,43,b|19,44,b|21,44,b|20,45,b|18,46,b|22,46,b|19,47,b|21,47,b|20,48,b|19,49,b|21,49,b|18,50,b|22,50,b" poke="109" reward="192|193|194|195|196|197" skill="188|53|399|60"/>
+<sta_guildWalkNpc id="11" type="32" name="" npcAnimation="npc_dazhenfong" talk="嘶啤...嘶啤…" talkAfterBattle="赶跑了大针蜂，地上好像掉了什么东西？" failTalk="嘶啤...嘶啤…大针蜂又跑去其他地方捣蛋了" position="52,69,b|53,69,b|54,69,b|51,70,d|51,71,d|51,72,d|52,73,a|53,73,a|54,73,a|55,70,c|55,71,c|55,72,c" poke="15" reward="192|193|194|195|196|197" skill="263|280|404|40"/>
+<sta_guildWalkNpc id="12" type="32" name="" npcAnimation="npc_dalangquan" talk="嗷呜" talkAfterBattle="赶跑了大狼犬，地上好像掉了什么东西？" failTalk="嗷呜，大狼犬又跑去其他地方捣蛋了" position="35,39,d|36,39,d|37,39,d|35,40,d|36,40,d|37,40,d|35,41,d|36,41,d|37,41,d|39,40,d" poke="262" reward="192|193|194|195|196|197" skill="34|249|424|423"/>
+<sta_guildWalkNpc id="13" type="32" name="" npcAnimation="npc_miaomiao" talk="喵…" talkAfterBattle="赶跑了喵喵，地上好像掉了什么东西？" failTalk="喵…喵喵又跑去其他地方捣蛋了" position="66,45,b|67,45,b|66,46,d|68,46,c|66,47,a|67,47,a|68,47,a|66,48,b|67,48,b|66,49,b|66,50,b|68,49,b|68,50,b" poke="52" reward="192|193|194|195|196|197" skill="282|304|421|196"/>
+<sta_guildWalkNpc id="14" type="32" name="" npcAnimation="npc_duduli" talk="哇咿哇咿…" talkAfterBattle="赶跑了嘟嘟利，地上好像掉了什么东西？" failTalk="哇咿哇咿…嘟嘟利又跑去其他地方捣蛋了" position="30,19,b|29,20,b|30,20,b|31,20,b|28,21,b|28,22,b|30,21,b|30,22,b|32,21,b|32,22,b" poke="85" reward="192|193|194|195|196|197" skill="161|211|65|189"/>
+<sta_guildWalkNpc id="15" type="34" name="皮卡丘" npcAnimation="npc_pikaqiu" talk="皮卡...丘" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="16" type="34" name="伊布" npcAnimation="npc_yibubu" talk="咘咿…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="17" type="34" name="喵喵" npcAnimation="npc_miaomiao" talk="喵…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="18" type="34" name="火稚鸡" npcAnimation="npc_huozhiji" talk="恰莫恰莫…" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="19" type="34" name="波克比" npcAnimation="npc_bokebi" talk="恰可咿...恰可咿...咘咿" talkAfterBattle="" failTalk="" position="" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="20" type="0" name="格斗少年" npcAnimation="npc_KSDSN" talk="在修行之余，我经常与精灵过来这里放松身心。" talkAfterBattle="" failTalk="" position="16,62,c" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="21" type="35" name="火稚鸡" npcAnimation="npc_huozhiji" talk="恰莫恰莫…" talkAfterBattle="" failTalk="" position="16,63,c" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="22" type="0" name="中年绅士" npcAnimation="npc_MZDS" talk="我经常带女儿过来这边，她太喜欢这里的精灵了。" talkAfterBattle="" failTalk="" position="34,69,b" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="23" type="0" name="小女孩" npcAnimation="npc_MNQNH" talk="你看，我的皮皮是不是很可爱！" talkAfterBattle="" failTalk="" position="35,69,b" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="24" type="35" name="皮皮" npcAnimation="npc_pipi" talk="皮咿，皮咿…" talkAfterBattle="" failTalk="" position="36,69,b" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="25" type="35" name="波加曼" npcAnimation="npc_bojiaman" talk="波加曼悠闲的在玩耍，似乎很享受这里的环境。" talkAfterBattle="" failTalk="" position="35,60,a" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="26" type="35" name="皮卡丘" npcAnimation="npc_pikaqiu" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="4,47,b" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="27" type="35" name="伊布" npcAnimation="npc_yibubu" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="2,49,d" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="28" type="35" name="喵喵" npcAnimation="npc_miaomiao" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="3,54,d" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="29" type="35" name="火稚鸡" npcAnimation="npc_huozhiji" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="5,56,a" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="30" type="35" name="波克比" npcAnimation="npc_bokebi" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="6,52,d" poke="0" reward="" skill=""/>
+<sta_guildWalkNpc id="31" type="35" name="波克比" npcAnimation="npc_bokebi" talk="小精灵在一起快乐的玩耍着" talkAfterBattle="" failTalk="" position="6,53,d" poke="0" reward="" skill=""/>
+</root>

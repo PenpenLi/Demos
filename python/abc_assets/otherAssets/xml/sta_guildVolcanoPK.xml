@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildVolcanoPK id="1" kill="3" prop="115000,2|117000,2|101000,2" silver="20000" diamond="10"/>
+<sta_guildVolcanoPK id="2" kill="5" prop="105000,2|109000,2" silver="50000" diamond="20"/>
+<sta_guildVolcanoPK id="3" kill="10" prop="106000,2|110000,2" silver="100000" diamond="50"/>
+<sta_guildVolcanoPK id="4" kill="15" prop="107000,2|111000,2" silver="200000" diamond="80"/>
+<sta_guildVolcanoPK id="5" kill="20" prop="106301,3|106302,3" silver="500000" diamond="100"/>
+</root>

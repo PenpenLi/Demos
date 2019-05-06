@@ -10,29 +10,29 @@ bxhkw： 	不喜欢口味
 -->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<node ID="1" xg="努力" rwm="がんばりや" ywm="Hardy" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
-<node ID="2" xg="孤独" rwm="さみしがり" ywm="Lonely" zjnlz="攻击" jdnlz="防御" xhkw="辣" bxhkw="酸"/>
-<node ID="3" xg="勇敢" rwm="ゆうかん" ywm="Brave" zjnlz="攻击" jdnlz="速度" xhkw="辣" bxhkw="甜"/>
-<node ID="4" xg="固执" rwm="いじっぱり" ywm="Adamant" zjnlz="攻击" jdnlz="特攻" xhkw="辣" bxhkw="涩"/>
-<node ID="5" xg="调皮" rwm="やんちゃ" ywm="Naughty" zjnlz="攻击" jdnlz="特防" xhkw="辣" bxhkw="苦"/>
-<node ID="6" xg="大胆" rwm="ずぶとい" ywm="Bold" zjnlz="防御" jdnlz="攻击" xhkw="酸" bxhkw="辣"/>
-<node ID="7" xg="直率" rwm="すなお" ywm="Docile" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
-<node ID="8" xg="悠闲" rwm="のんき" ywm="Relaxed" zjnlz="防御" jdnlz="速度" xhkw="酸" bxhkw="甜"/>
-<node ID="9" xg="淘气" rwm="わんぱく" ywm="Impish" zjnlz="防御" jdnlz="特攻" xhkw="酸" bxhkw="涩"/>
-<node ID="10" xg="乐天" rwm="のうてんき" ywm="Lax" zjnlz="防御" jdnlz="特防" xhkw="酸" bxhkw="苦"/>
-<node ID="11" xg="胆小" rwm="おくびょう" ywm="Timid" zjnlz="速度" jdnlz="攻击" xhkw="甜" bxhkw="辣"/>
-<node ID="12" xg="急躁" rwm="せっかち" ywm="Hasty" zjnlz="速度" jdnlz="防御" xhkw="甜" bxhkw="酸"/>
-<node ID="13" xg="认真" rwm="まじめ" ywm="Serious" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
-<node ID="14" xg="开朗" rwm="ようき" ywm="Jolly" zjnlz="速度" jdnlz="特攻" xhkw="甜" bxhkw="涩"/>
-<node ID="15" xg="天真" rwm="むじゃき" ywm="Naive" zjnlz="速度" jdnlz="特防" xhkw="甜" bxhkw="苦"/>
-<node ID="16" xg="保守" rwm="ひかえめ" ywm="Modest" zjnlz="特攻" jdnlz="攻击" xhkw="涩" bxhkw="辣"/>
-<node ID="17" xg="稳重" rwm="おっとり" ywm="Mild" zjnlz="特攻" jdnlz="防御" xhkw="涩" bxhkw="酸"/>
-<node ID="18" xg="冷静" rwm="れいせい" ywm="Quiet" zjnlz="特攻" jdnlz="速度" xhkw="涩" bxhkw="甜"/>
-<node ID="19" xg="害羞" rwm="てれや" ywm="Bashful" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
-<node ID="20" xg="马虎" rwm="うっかりや" ywm="Rash" zjnlz="特攻" jdnlz="特防" xhkw="涩" bxhkw="苦"/>
-<node ID="21" xg="沉着" rwm="おだやか" ywm="Calm" zjnlz="特防" jdnlz="攻击" xhkw="苦" bxhkw="辣"/>
-<node ID="22" xg="温顺" rwm="おとなしい" ywm="Gentle" zjnlz="特防" jdnlz="防御" xhkw="苦" bxhkw="酸"/>
-<node ID="23" xg="狂妄" rwm="なまいき" ywm="Sassy" zjnlz="特防" jdnlz="速度" xhkw="苦" bxhkw="甜"/>
-<node ID="24" xg="慎重" rwm="しんちょう" ywm="Careful" zjnlz="特防" jdnlz="特攻" xhkw="苦" bxhkw="涩"/>
-<node ID="25" xg="浮躁" rwm="きまぐれ" ywm="Quirky" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
+<node ID="1" priority="25" xg="努力" rwm="がんばりや" ywm="Hardy" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
+<node ID="2" priority="1" xg="孤独" rwm="さみしがり" ywm="Lonely" zjnlz="攻击" jdnlz="防御" xhkw="辣" bxhkw="酸"/>
+<node ID="3" priority="4" xg="勇敢" rwm="ゆうかん" ywm="Brave" zjnlz="攻击" jdnlz="速度" xhkw="辣" bxhkw="甜"/>
+<node ID="4" priority="2" xg="固执" rwm="いじっぱり" ywm="Adamant" zjnlz="攻击" jdnlz="特攻" xhkw="辣" bxhkw="涩"/>
+<node ID="5" priority="3" xg="调皮" rwm="やんちゃ" ywm="Naughty" zjnlz="攻击" jdnlz="特防" xhkw="辣" bxhkw="苦"/>
+<node ID="6" priority="5" xg="大胆" rwm="ずぶとい" ywm="Bold" zjnlz="防御" jdnlz="攻击" xhkw="酸" bxhkw="辣"/>
+<node ID="7" priority="22" xg="直率" rwm="すなお" ywm="Docile" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
+<node ID="8" priority="8" xg="悠闲" rwm="のんき" ywm="Relaxed" zjnlz="防御" jdnlz="速度" xhkw="酸" bxhkw="甜"/>
+<node ID="9" priority="6" xg="淘气" rwm="わんぱく" ywm="Impish" zjnlz="防御" jdnlz="特攻" xhkw="酸" bxhkw="涩"/>
+<node ID="10" priority="7" xg="乐天" rwm="のうてんき" ywm="Lax" zjnlz="防御" jdnlz="特防" xhkw="酸" bxhkw="苦"/>
+<node ID="11" priority="17" xg="胆小" rwm="おくびょう" ywm="Timid" zjnlz="速度" jdnlz="攻击" xhkw="甜" bxhkw="辣"/>
+<node ID="12" priority="18" xg="急躁" rwm="せっかち" ywm="Hasty" zjnlz="速度" jdnlz="防御" xhkw="甜" bxhkw="酸"/>
+<node ID="13" priority="24" xg="认真" rwm="まじめ" ywm="Serious" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
+<node ID="14" priority="19" xg="开朗" rwm="ようき" ywm="Jolly" zjnlz="速度" jdnlz="特攻" xhkw="甜" bxhkw="涩"/>
+<node ID="15" priority="20" xg="天真" rwm="むじゃき" ywm="Naive" zjnlz="速度" jdnlz="特防" xhkw="甜" bxhkw="苦"/>
+<node ID="16" priority="9" xg="保守" rwm="ひかえめ" ywm="Modest" zjnlz="特攻" jdnlz="攻击" xhkw="涩" bxhkw="辣"/>
+<node ID="17" priority="10" xg="稳重" rwm="おっとり" ywm="Mild" zjnlz="特攻" jdnlz="防御" xhkw="涩" bxhkw="酸"/>
+<node ID="18" priority="12" xg="冷静" rwm="れいせい" ywm="Quiet" zjnlz="特攻" jdnlz="速度" xhkw="涩" bxhkw="甜"/>
+<node ID="19" priority="21" xg="害羞" rwm="てれや" ywm="Bashful" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
+<node ID="20" priority="11" xg="马虎" rwm="うっかりや" ywm="Rash" zjnlz="特攻" jdnlz="特防" xhkw="涩" bxhkw="苦"/>
+<node ID="21" priority="13" xg="沉着" rwm="おだやか" ywm="Calm" zjnlz="特防" jdnlz="攻击" xhkw="苦" bxhkw="辣"/>
+<node ID="22" priority="14" xg="温顺" rwm="おとなしい" ywm="Gentle" zjnlz="特防" jdnlz="防御" xhkw="苦" bxhkw="酸"/>
+<node ID="23" priority="16" xg="狂妄" rwm="なまいき" ywm="Sassy" zjnlz="特防" jdnlz="速度" xhkw="苦" bxhkw="甜"/>
+<node ID="24" priority="15" xg="慎重" rwm="しんちょう" ywm="Careful" zjnlz="特防" jdnlz="特攻" xhkw="苦" bxhkw="涩"/>
+<node ID="25" priority="23" xg="浮躁" rwm="きまぐれ" ywm="Quirky" zjnlz="—" jdnlz="—" xhkw="—" bxhkw="—"/>
 </root>

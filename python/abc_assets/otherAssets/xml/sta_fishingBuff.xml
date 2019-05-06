@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fishingBuff id="1" picture="jian4tou2_zi3se4" descr="增加吸引鱼的范围，持续5分钟。" type="1" effectValue="20" keepTime="300" diamond="200"/>
+<sta_fishingBuff id="2" picture="jian4tou2_lu2se4" descr="增加对鱼的体力的消耗，持续3分钟。" type="2" effectValue="0.5" keepTime="180" diamond="300"/>
+</root>

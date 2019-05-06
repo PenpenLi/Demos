@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_badgeValue id="1" quality="1" valueMin="1" valueMax="20" initialNum="1" initialExtraNum="0" extraNumMax="1" replace="6884,2|-1,50000" locke="6885,1" lockReplace="6884,3|-1,80000" upgrade="6886,3|-1,800000"/>
+<sta_badgeValue id="2" quality="2" valueMin="10" valueMax="30" initialNum="1" initialExtraNum="0" extraNumMax="2" replace="6884,2|-1,100000" locke="6885,1" lockReplace="6884,3|-1,120000" upgrade="6886,5|-1,1500000"/>
+<sta_badgeValue id="3" quality="3" valueMin="20" valueMax="50" initialNum="2" initialExtraNum="1" extraNumMax="3" replace="6884,3|-1,150000" locke="6885,1" lockReplace="6884,4|-1,200000" upgrade="6887,5|-1,3000000"/>
+<sta_badgeValue id="4" quality="4" valueMin="30" valueMax="80" initialNum="2" initialExtraNum="1" extraNumMax="3" replace="6884,3|-1,200000" locke="6885,2" lockReplace="6884,4|-1,300000" upgrade="6887,8|-1,5000000"/>
+<sta_badgeValue id="5" quality="5" valueMin="30" valueMax="100" initialNum="2" initialExtraNum="2" extraNumMax="3" replace="6884,3|-1,200000" locke="6885,3" lockReplace="6884,4|-1,300000" upgrade=""/>
+</root>

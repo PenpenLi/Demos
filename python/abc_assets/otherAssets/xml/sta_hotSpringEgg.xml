@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_hotSpringEgg id="1" name="悠闲温泉" type="1" exp="500" tasks4="1001,1" tasks5="1001,0.9|1002,0.1" tasks6="1001,0.8|1002,0.2" tasks7="1001,0.7|1002,0.3" essence="" rewardJNS="" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="2" name="奇异温泉" type="1" exp="1000" tasks4="1001,0.9|1002,0.1" tasks5="1001,0.8|1002,0.1|1003,0.1" tasks6="1001,0.7|1002,0.2|1003,0.1" tasks7="1001,0.5|1002,0.3|1003,0.2" essence="" rewardJNS="" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="3" name="幸运温泉" type="1" exp="2000" tasks4="1001,0.8|1002,0.2" tasks5="1001,0.7|1002,0.2|1003,0.1" tasks6="1001,0.6|1002,0.2|1003,0.2" tasks7="1001,0.5|1002,0.2|1003,0.2|1004,0.1" essence="" rewardJNS="" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="4" name="奇迹温泉" type="1" exp="0" tasks4="1001,0.7|1002,0.3" tasks5="1001,0.6|1002,0.2|1003,0.2" tasks6="1001,0.4|1002,0.3|1003,0.25|1004,0.05" tasks7="1001,0.3|1002,0.3|1003,0.2|1004,0.2" essence="" rewardJNS="" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="1001" name="普通的蛋" type="2" exp="2" tasks4="" tasks5="" tasks6="" tasks7="" essence="100,2" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:10000},&apos;diamond&apos;:{&apos;num&apos;:3}}" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="1002" name="奇异的蛋" type="2" exp="2" tasks4="" tasks5="" tasks6="" tasks7="" essence="200,3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:20000},&apos;diamond&apos;:{&apos;num&apos;:5}}" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="1003" name="满福的蛋" type="2" exp="2" tasks4="" tasks5="" tasks6="" tasks7="" essence="300,3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:30000},&apos;diamond&apos;:{&apos;num&apos;:6}}" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="1004" name="奇迹的蛋" type="2" exp="2" tasks4="" tasks5="" tasks6="" tasks7="" essence="400,4" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:50000},&apos;diamond&apos;:{&apos;num&apos;:8}}" ownEssence="" quality="0" task=""/>
+<sta_hotSpringEgg id="2001" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="0" quality="0" task=""/>
+<sta_hotSpringEgg id="2002" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="1,200" quality="1" task=""/>
+<sta_hotSpringEgg id="2003" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="201,400" quality="2" task=""/>
+<sta_hotSpringEgg id="2004" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="401,600" quality="3" task=""/>
+<sta_hotSpringEgg id="2005" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="601,700" quality="4" task=""/>
+<sta_hotSpringEgg id="2006" name="" type="3" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="700,100000" quality="5" task=""/>
+<sta_hotSpringEgg id="3001" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="参与一次公会冒险"/>
+<sta_hotSpringEgg id="3002" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="参与一次神兽守护"/>
+<sta_hotSpringEgg id="3003" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="参与一次公会研究院捐献"/>
+<sta_hotSpringEgg id="3004" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="参与一次公会训练所加速"/>
+<sta_hotSpringEgg id="3005" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="参与一次公会战"/>
+<sta_hotSpringEgg id="3006" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="完成一个公会探险队任务"/>
+<sta_hotSpringEgg id="3007" name="" type="4" exp="0" tasks4="" tasks5="" tasks6="" tasks7="" essence="" rewardJNS="" ownEssence="" quality="0" task="公会个人活跃度达到800"/>
+</root>

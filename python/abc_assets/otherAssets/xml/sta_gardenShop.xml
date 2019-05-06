@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gardenShop id="1" type="1" pId="6808" num="1" price="5000" diamond="0" weight="45"/>
+<sta_gardenShop id="2" type="1" pId="6809" num="1" price="1500" diamond="0" weight="100"/>
+<sta_gardenShop id="3" type="1" pId="6810" num="1" price="1500" diamond="0" weight="100"/>
+<sta_gardenShop id="4" type="1" pId="6811" num="2" price="2000" diamond="0" weight="150"/>
+<sta_gardenShop id="5" type="1" pId="6811" num="3" price="3000" diamond="0" weight="70"/>
+<sta_gardenShop id="6" type="1" pId="6811" num="4" price="4000" diamond="0" weight="30"/>
+<sta_gardenShop id="7" type="1" pId="6812" num="1" price="1000" diamond="0" weight="100"/>
+<sta_gardenShop id="8" type="1" pId="6813" num="1" price="1000" diamond="0" weight="100"/>
+<sta_gardenShop id="9" type="1" pId="6814" num="2" price="2000" diamond="0" weight="80"/>
+<sta_gardenShop id="10" type="1" pId="6815" num="3" price="4500" diamond="0" weight="80"/>
+<sta_gardenShop id="11" type="1" pId="6816" num="8" price="8000" diamond="0" weight="50"/>
+<sta_gardenShop id="12" type="1" pId="6816" num="5" price="5000" diamond="0" weight="30"/>
+<sta_gardenShop id="13" type="2" pId="6798" num="1" price="5000" diamond="0" weight="0"/>
+<sta_gardenShop id="14" type="2" pId="6799" num="1" price="5000" diamond="0" weight="0"/>
+<sta_gardenShop id="15" type="2" pId="6800" num="1" price="5000" diamond="0" weight="0"/>
+<sta_gardenShop id="16" type="2" pId="6801" num="1" price="5000" diamond="0" weight="0"/>
+<sta_gardenShop id="17" type="2" pId="6802" num="1" price="5000" diamond="0" weight="0"/>
+<sta_gardenShop id="18" type="2" pId="5244" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="19" type="2" pId="5245" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="20" type="2" pId="5246" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="21" type="2" pId="5247" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="22" type="2" pId="5248" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="23" type="2" pId="5249" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="24" type="2" pId="5250" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="25" type="2" pId="5251" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="26" type="2" pId="5270" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="27" type="2" pId="5271" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="28" type="2" pId="5272" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="29" type="2" pId="5273" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="30" type="2" pId="5274" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="31" type="2" pId="5275" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="32" type="2" pId="5276" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="33" type="2" pId="5277" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="34" type="2" pId="5278" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="35" type="2" pId="5279" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="36" type="2" pId="5280" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="37" type="2" pId="5281" num="1" price="20000" diamond="0" weight="0"/>
+<sta_gardenShop id="38" type="2" pId="5282" num="1" price="20000" diamond="0" weight="0"/>
+</root>

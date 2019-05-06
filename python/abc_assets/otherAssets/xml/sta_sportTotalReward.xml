@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sportTotalReward id="1" type="1" startRank="1" endRank="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000},&apos;silver&apos;:{&apos;num&apos;:15000000},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:3},{&apos;pId&apos;:864,&apos;num&apos;:3}]}"/>
+<sta_sportTotalReward id="2" type="1" startRank="2" endRank="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:800},&apos;silver&apos;:{&apos;num&apos;:12000000},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:2},{&apos;pId&apos;:5498,&apos;num&apos;:3}]}"/>
+<sta_sportTotalReward id="3" type="1" startRank="3" endRank="3" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:600},&apos;silver&apos;:{&apos;num&apos;:10000000},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:1592,&apos;num&apos;:5}]}"/>
+<sta_sportTotalReward id="4" type="1" startRank="4" endRank="10" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500},&apos;silver&apos;:{&apos;num&apos;:5000000},&apos;prop&apos;:[{&apos;pId&apos;:764,&apos;num&apos;:2},{&apos;pId&apos;:1097,&apos;num&apos;:3}]}"/>
+<sta_sportTotalReward id="5" type="1" startRank="11" endRank="15" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:400},&apos;silver&apos;:{&apos;num&apos;:3000000},&apos;prop&apos;:[{&apos;pId&apos;:2521,&apos;num&apos;:3},{&apos;pId&apos;:1052,&apos;num&apos;:20}]}"/>
+<sta_sportTotalReward id="6" type="1" startRank="16" endRank="20" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;silver&apos;:{&apos;num&apos;:2000000},&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:5},{&apos;pId&apos;:3059,&apos;num&apos;:10}]}"/>
+<sta_sportTotalReward id="7" type="2" startRank="1" endRank="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:6666},&apos;prop&apos;:[{&apos;pId&apos;:865,&apos;num&apos;:3},{&apos;pId&apos;:930,&apos;num&apos;:5}]}"/>
+<sta_sportTotalReward id="8" type="2" startRank="2" endRank="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:5000},&apos;prop&apos;:[{&apos;pId&apos;:865,&apos;num&apos;:2},{&apos;pId&apos;:930,&apos;num&apos;:3}]}"/>
+<sta_sportTotalReward id="9" type="2" startRank="3" endRank="3" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:4000},&apos;prop&apos;:[{&apos;pId&apos;:865,&apos;num&apos;:1},{&apos;pId&apos;:930,&apos;num&apos;:2}]}"/>
+<sta_sportTotalReward id="10" type="2" startRank="4" endRank="10" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:3000},&apos;prop&apos;:[{&apos;pId&apos;:865,&apos;num&apos;:1},{&apos;pId&apos;:31,&apos;num&apos;:1}]}"/>
+<sta_sportTotalReward id="11" type="2" startRank="11" endRank="50" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:2000},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:3},{&apos;pId&apos;:5621,&apos;num&apos;:5}]}"/>
+<sta_sportTotalReward id="12" type="2" startRank="51" endRank="200" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1500},&apos;prop&apos;:[{&apos;pId&apos;:5745,&apos;num&apos;:3},{&apos;pId&apos;:1053,&apos;num&apos;:3}]}"/>
+<sta_sportTotalReward id="13" type="2" startRank="201" endRank="500" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000},&apos;prop&apos;:[{&apos;pId&apos;:1233,&apos;num&apos;:3},{&apos;pId&apos;:1610,&apos;num&apos;:5}]}"/>
+</root>

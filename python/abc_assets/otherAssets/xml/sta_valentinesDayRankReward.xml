@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_valentinesDayRankReward id="1" startRanking="1" endRanking="10" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:99999999},&apos;diamond&apos;:{&apos;num&apos;:2014}}"/>
+<sta_valentinesDayRankReward id="2" startRanking="11" endRanking="50" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:77777777},&apos;diamond&apos;:{&apos;num&apos;:1888}}"/>
+<sta_valentinesDayRankReward id="3" startRanking="51" endRanking="100" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:55555555},&apos;diamond&apos;:{&apos;num&apos;:888}}"/>
+<sta_valentinesDayRankReward id="4" startRanking="101" endRanking="200" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:22222222},&apos;diamond&apos;:{&apos;num&apos;:500}}"/>
+<sta_valentinesDayRankReward id="5" startRanking="201" endRanking="500" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:11111111},&apos;diamond&apos;:{&apos;num&apos;:300}}"/>
+<sta_valentinesDayRankReward id="6" startRanking="501" endRanking="1000" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:8888888},&apos;diamond&apos;:{&apos;num&apos;:200}}"/>
+</root>

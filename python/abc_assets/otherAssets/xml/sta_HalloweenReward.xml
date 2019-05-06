@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_HalloweenReward id="1" num="15" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:30},{&apos;pId&apos;:238,&apos;num&apos;:20},{&apos;pId&apos;:113000,&apos;num&apos;:2}]}"/>
+<sta_HalloweenReward id="2" num="30" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:2},{&apos;pId&apos;:135004,&apos;num&apos;:5},{&apos;pId&apos;:110000,&apos;num&apos;:5}]}"/>
+<sta_HalloweenReward id="3" num="45" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3032,&apos;num&apos;:3},{&apos;pId&apos;:113000,&apos;num&apos;:3},{&apos;pId&apos;:2733,&apos;num&apos;:3}]}"/>
+<sta_HalloweenReward id="4" num="60" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:116000,&apos;num&apos;:5},{&apos;pId&apos;:860,&apos;num&apos;:3},{&apos;pId&apos;:106000,&apos;num&apos;:2}]}"/>
+<sta_HalloweenReward id="5" num="75" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:1},{&apos;pId&apos;:1053,&apos;num&apos;:1},{&apos;pId&apos;:1592,&apos;num&apos;:2}]}"/>
+<sta_HalloweenReward id="6" num="90" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5757,&apos;num&apos;:1},{&apos;pId&apos;:107000,&apos;num&apos;:2},{&apos;pId&apos;:748,&apos;num&apos;:1}]}"/>
+</root>

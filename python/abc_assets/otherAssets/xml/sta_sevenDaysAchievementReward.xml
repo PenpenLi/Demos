@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sevenDaysAchievementReward id="1" score="100" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:100000},&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:101000,&apos;num&apos;:2}]}" displayAwards="113000"/>
+<sta_sevenDaysAchievementReward id="2" score="250" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000},&apos;prop&apos;:[{&apos;pId&apos;:150,&apos;num&apos;:2},{&apos;pId&apos;:101000,&apos;num&apos;:3}]}" displayAwards="150"/>
+<sta_sevenDaysAchievementReward id="3" score="350" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:800},&apos;prop&apos;:[{&apos;pId&apos;:922,&apos;num&apos;:5},{&apos;pId&apos;:102000,&apos;num&apos;:2}]}" displayAwards="102000"/>
+<sta_sevenDaysAchievementReward id="4" score="450" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:922,&apos;num&apos;:10},{&apos;pId&apos;:102000,&apos;num&apos;:3}]}" displayAwards="748"/>
+</root>

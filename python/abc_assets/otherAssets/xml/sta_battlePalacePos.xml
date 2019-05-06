@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_battlePalacePos id="1" mapType="21" rewardPos="2,21" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,23" portalPos=""/>
+<sta_battlePalacePos id="2" mapType="22" rewardPos="30,5" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,23" portalPos=""/>
+<sta_battlePalacePos id="3" mapType="23" rewardPos="17,21" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,24" portalPos=""/>
+<sta_battlePalacePos id="4" mapType="24" rewardPos="1,6" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,24" portalPos=""/>
+<sta_battlePalacePos id="5" mapType="25" rewardPos="1,10" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,25" portalPos=""/>
+<sta_battlePalacePos id="6" mapType="26" rewardPos="1,22" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,25" portalPos=""/>
+<sta_battlePalacePos id="7" mapType="27" rewardPos="2,6" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,26" portalPos=""/>
+<sta_battlePalacePos id="8" mapType="28" rewardPos="4,7" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,27" portalPos=""/>
+<sta_battlePalacePos id="9" mapType="29" rewardPos="4,9" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="1" reward="1,2,27" portalPos=""/>
+<sta_battlePalacePos id="10" mapType="2" rewardPos="" branchNpcPos="7,5|14,5" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="18,7"/>
+<sta_battlePalacePos id="11" mapType="3" rewardPos="" branchNpcPos="19,15|13,5" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,7"/>
+<sta_battlePalacePos id="12" mapType="4" rewardPos="" branchNpcPos="19,15|13,5" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,7"/>
+<sta_battlePalacePos id="13" mapType="5" rewardPos="" branchNpcPos="5,10|15,10" branchNpcPos2="2,7|18,7" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="5,5"/>
+<sta_battlePalacePos id="14" mapType="6" rewardPos="" branchNpcPos="1,10|19,10" branchNpcPos2="3,5|17,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,5"/>
+<sta_battlePalacePos id="15" mapType="7" rewardPos="" branchNpcPos="19,14|6,13" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="12,7"/>
+<sta_battlePalacePos id="16" mapType="8" rewardPos="" branchNpcPos="2,9|18,9" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="14,5"/>
+<sta_battlePalacePos id="17" mapType="9" rewardPos="" branchNpcPos="5,14|18,14" branchNpcPos2="7,5|13,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,7"/>
+<sta_battlePalacePos id="18" mapType="10" rewardPos="" branchNpcPos="4,11|16,11" branchNpcPos2="3,6|17,6" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="16,8"/>
+<sta_battlePalacePos id="19" mapType="11" rewardPos="" branchNpcPos="5,14|18,15" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,7"/>
+<sta_battlePalacePos id="20" mapType="12" rewardPos="" branchNpcPos="1,8|19,8" branchNpcPos2="6,6|14,6" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="14,8"/>
+<sta_battlePalacePos id="21" mapType="13" rewardPos="" branchNpcPos="5,14|18,14" branchNpcPos2="2,5|18,5" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos="13,14"/>
+<sta_battlePalacePos id="22" mapType="15" rewardPos="4,10|17,27|19,13|1,13" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="2" reward="1,2,20,23,25" portalPos=""/>
+<sta_battlePalacePos id="23" mapType="16" rewardPos="2,9|27,26|16,18|7,26" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="0" rewardPointNum="2" reward="1,2,20,23,25" portalPos=""/>
+<sta_battlePalacePos id="24" mapType="40" rewardPos="5,7|5,10|5,13|5,16|5,19|5,22|5,25|10,7|10,10|10,13|10,16|10,19|10,22|10,25|15,7|15,10|15,13|15,16|15,19|15,22|15,25|20,7|20,10|20,13|20,16|20,19|20,22|20,25|25,7|25,10|25,13|25,16|25,19|25,22|25,25" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="25" mapType="41" rewardPos="1,14|1,15|1,20|1,21|1,26|1,27|8,4|11,4|29,27|29,28|4,10|19,10|28,10|12,17|19,17" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="26" mapType="42" rewardPos="1,8|6,8|10,6|16,8|15,13|16,13|16,18|16,23|17,23|5,23|24,18|26,11|27,11" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="27" mapType="43" rewardPos="9,10|9,11|7,25|8,27|11,28|12,27|13,27|14,28|19,28|20,28|21,28|29,7|30,7|17,11|17,12|18,12" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="28" mapType="44" rewardPos="1,4|2,4|3,4|4,4|5,4|8,4|9,4|21,4|22,4|25,4|26,4|27,4|28,4|29,4|6,11|7,11|10,11|11,11|19,11|20,11|23,11|24,11|6,22|7,22|10,22|11,22|19,22|20,22|23,22|24,22|1,12|1,13|1,20|1,21|29,12|29,13|29,20|29,21" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="29" mapType="45" rewardPos="1,4|2,4|8,4|17,4|19,4|27,4|24,4|25,4|28,4|29,4|5,11|6,11|5,12|6,12|12,11|13,11|12,12|13,12|5,16|6,16|5,17|6,17|12,16|13,16|12,17|13,17|1,28|29,28" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="30" mapType="46" rewardPos="23,23|7,9" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="2" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="31" mapType="47" rewardPos="4,11|6,11|8,11|10,11|12,11|14,11|16,11|18,11|20,11|22,11|24,11|26,11|4,15|6,15|8,15|10,15|12,15|14,15|16,15|18,15|20,15|22,15|24,15|26,15|4,19|6,19|8,19|10,19|12,19|14,19|16,19|18,19|20,19|22,19|24,19|26,19|4,23|6,23|8,23|10,23|12,23|14,23|16,23|18,23|20,23|22,23|24,23|26,23" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="32" mapType="48" rewardPos="15,10|15,11|15,20|15,21" branchNpcPos="" branchNpcPos2="" battleNpcPos="" isHide="1" rewardPointNum="3" reward="3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" portalPos=""/>
+<sta_battlePalacePos id="33" mapType="14" rewardPos="" branchNpcPos="" branchNpcPos2="" battleNpcPos="10,8" isHide="0" rewardPointNum="0" reward="" portalPos=""/>
+</root>

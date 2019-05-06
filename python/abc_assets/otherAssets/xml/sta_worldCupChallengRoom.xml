@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_worldCupChallengRoom id="1" type="1" event="1,100|2,30" maxAppearTimes="2" appearRate="100" desc="不知道为什么，有股熟悉的氛围……"/>
+<sta_worldCupChallengRoom id="2" type="1" event="16,100|3,20" maxAppearTimes="1" appearRate="100" desc="是……训练家吗？ 好像有人在里面……"/>
+<sta_worldCupChallengRoom id="3" type="1" event="4,70|8,30" maxAppearTimes="0" appearRate="100" desc="似乎有精灵在里面的感觉……"/>
+<sta_worldCupChallengRoom id="4" type="1" event="15,100|17,30" maxAppearTimes="1" appearRate="100" desc="好像听得到轻声细语般的声音……"/>
+<sta_worldCupChallengRoom id="5" type="1" event="18,100|2,10" maxAppearTimes="0" appearRate="100" desc="除了训练师，还有别的东西在里面……"/>
+<sta_worldCupChallengRoom id="6" type="1" event="18,100|8,10" maxAppearTimes="0" appearRate="100" desc="感觉有一股不一般的力量在里面……"/>
+<sta_worldCupChallengRoom id="7" type="1" event="9,100|1,20" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="8" type="1" event="10,100|1,20" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="9" type="1" event="11,100|3,10" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="10" type="1" event="12,100|4,10" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="11" type="1" event="13,100|15,20" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="12" type="1" event="14,100|8,10" maxAppearTimes="0" appearRate="40" desc="房间里有一种特别的气息……"/>
+<sta_worldCupChallengRoom id="13" type="1" event="4,50|1,50" maxAppearTimes="0" appearRate="40" desc="房间里好像闻到了青草的味道……"/>
+<sta_worldCupChallengRoom id="14" type="1" event="1,100|2,20" maxAppearTimes="2" appearRate="20" desc="这个房间好像特别安静……"/>
+<sta_worldCupChallengRoom id="15" type="2" event="5,100" maxAppearTimes="0" appearRate="100" desc="这门后面都有一股很可怕的感觉……"/>
+<sta_worldCupChallengRoom id="16" type="2" event="6,100" maxAppearTimes="0" appearRate="100" desc="这门后面都有一股很可怕的感觉……"/>
+<sta_worldCupChallengRoom id="17" type="2" event="7,100" maxAppearTimes="0" appearRate="100" desc="这门后面都有一股很可怕的感觉……"/>
+</root>

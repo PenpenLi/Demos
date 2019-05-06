@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gardenCompound id="1" type="1" material="6811,2|6805,3|6814,1" product="6817,1" price="100" productExtra="858,2,500"/>
+<sta_gardenCompound id="2" type="1" material="6812,2|6805,3|6814,1" product="6818,1" price="100" productExtra="858,2,500"/>
+<sta_gardenCompound id="3" type="1" material="6813,2|6805,3|6814,1" product="6819,1" price="100" productExtra="858,2,500"/>
+<sta_gardenCompound id="4" type="1" material="6810,2|6807,3|6809,2" product="6820,1" price="100" productExtra="858,5,2000"/>
+<sta_gardenCompound id="5" type="1" material="6811,4|6806,5|6807,5" product="6821,1" price="100" productExtra="858,5,2000"/>
+<sta_gardenCompound id="6" type="1" material="6811,6|6806,5|6804,5" product="6822,1" price="100" productExtra="859,2,3000"/>
+<sta_gardenCompound id="7" type="1" material="6815,5|6808,1|6811,2|6806,2" product="6823,1" price="100" productExtra="860,1,3500"/>
+<sta_gardenCompound id="8" type="2" material="6816,10|6815,3" product="5519,1" price="0" productExtra=""/>
+<sta_gardenCompound id="9" type="2" material="6816,10|6815,3" product="5520,1" price="0" productExtra=""/>
+<sta_gardenCompound id="10" type="2" material="6816,8|6815,2" product="5521,1" price="0" productExtra=""/>
+<sta_gardenCompound id="11" type="2" material="6816,20|6809,5|6810,10" product="5522,1" price="0" productExtra=""/>
+<sta_gardenCompound id="12" type="2" material="6816,5|6815,2" product="5523,1" price="0" productExtra=""/>
+<sta_gardenCompound id="13" type="2" material="6804,1" product="5524,1" price="0" productExtra=""/>
+<sta_gardenCompound id="14" type="2" material="6816,1" product="5525,1" price="0" productExtra=""/>
+<sta_gardenCompound id="15" type="2" material="6807,3|6811,1" product="5526,3" price="0" productExtra=""/>
+<sta_gardenCompound id="16" type="2" material="6807,2" product="5527,1" price="0" productExtra=""/>
+<sta_gardenCompound id="17" type="2" material="6807,2" product="5528,1" price="0" productExtra=""/>
+<sta_gardenCompound id="18" type="2" material="6807,2" product="5529,1" price="0" productExtra=""/>
+<sta_gardenCompound id="19" type="2" material="6807,2" product="5530,1" price="0" productExtra=""/>
+<sta_gardenCompound id="20" type="2" material="6816,2" product="5531,1" price="0" productExtra=""/>
+<sta_gardenCompound id="21" type="2" material="6816,2" product="5532,1" price="0" productExtra=""/>
+<sta_gardenCompound id="22" type="2" material="6803,3" product="5533,1" price="0" productExtra=""/>
+<sta_gardenCompound id="23" type="2" material="6803,5" product="5534,1" price="0" productExtra=""/>
+<sta_gardenCompound id="24" type="2" material="6803,2" product="5535,1" price="0" productExtra=""/>
+</root>

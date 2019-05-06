@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkFoodBagCapacity id="1" unlockLv="1" capacity="200" exp="150" buffTime="155520"/>
+<sta_guildWalkFoodBagCapacity id="2" unlockLv="3" capacity="300" exp="210" buffTime="224640"/>
+<sta_guildWalkFoodBagCapacity id="3" unlockLv="7" capacity="400" exp="260" buffTime="285120"/>
+<sta_guildWalkFoodBagCapacity id="4" unlockLv="10" capacity="500" exp="300" buffTime="345600"/>
+</root>

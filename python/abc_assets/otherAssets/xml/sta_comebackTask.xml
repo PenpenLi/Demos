@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_comebackTask id="1" name="签到" description="进行一次签到。" type="1" integral="10" xValue="1"/>
+<sta_comebackTask id="2" name="获取精灵" description="获取一只新精灵。" type="2" integral="10" xValue="1"/>
+<sta_comebackTask id="3" name="完成日常任务" description="完成5个日常任务。" type="3" integral="10" xValue="5"/>
+<sta_comebackTask id="4" name="消耗体力" description="消耗100点体力。" type="4" integral="10" xValue="100"/>
+<sta_comebackTask id="5" name="匹配" description="进行一次在线匹配对战。" type="5" integral="10" xValue="1"/>
+<sta_comebackTask id="6" name="充值" description="充值任意金额。" type="6" integral="50" xValue="0.1"/>
+</root>

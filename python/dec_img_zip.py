@@ -18,9 +18,9 @@ def decrypt(path):
         pass
 
 def main():
-    for root, dirs, files in os.walk('./abc_assets/'):
+    for root, _dirs, files in os.walk('./abc_assets/'):
         for f in files:
-            if f.endswith('.mp3') or f.endswith('.jpg') or f.endswith('.png') or f.endswith('.xml') or f.endswith('.bytes') or f.endswith('.atf'):
+            if f.endswith('.mp3') or f.endswith('.jpg') or f.endswith('.png') or f.endswith('.xml') or f.endswith('.bytes') or f.endswith('.atf') or f.endswith('.mp4'):
                 print "decrypt " + os.path.join(root, f)
                 decrypt(os.path.join(root, f))
 

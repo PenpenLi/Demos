@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_drawingActivityConst id="1" describe="完成3场PVP经典匹配" data="3"/>
+<sta_drawingActivityConst id="2" describe="消费200钻石" data="200"/>
+<sta_drawingActivityConst id="3" describe="参与1次赏金赛" data="1"/>
+<sta_drawingActivityConst id="4" describe="完成活动每日任务奖励道具数量（6号调色板）" data="25"/>
+<sta_drawingActivityConst id="5" describe="调色板道具1钻石价格" data="3"/>
+<sta_drawingActivityConst id="6" describe="调色板道具2钻石价格" data="5"/>
+<sta_drawingActivityConst id="7" describe="调色板道具3钻石价格" data="6"/>
+<sta_drawingActivityConst id="8" describe="调色板道具4钻石价格" data="10"/>
+<sta_drawingActivityConst id="9" describe="调色板道具5钻石价格" data="8"/>
+<sta_drawingActivityConst id="10" describe="调色板道具6钻石价格" data="25"/>
+<sta_drawingActivityConst id="11" describe="调色板对应道具id" data="5505|5506|5507|5508|5509|5510"/>
+</root>

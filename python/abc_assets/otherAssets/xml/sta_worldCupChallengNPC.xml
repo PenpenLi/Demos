@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_worldCupChallengNPC id="1" name="捕虫少年 小明" picName="tong2zi3jun1nan2" elfCamp="377,386,530|384,411,373" diaFront="爸爸说我的实力已经很强了。" diaBackWin="你太弱了，回去练练吧。" diaBackFail="你只是运气好罢了。"/>
+<sta_worldCupChallengNPC id="2" name="捕虫少年 小聪" picName="tong2zi3jun1nan2" elfCamp="594,479,466|250,579,289" diaFront="你敢打扰我抓虫子，我就要教训你！" diaBackWin="哼，手下败将。" diaBackFail="呜啊啊啊啊啊，大人欺负小孩！"/>
+<sta_worldCupChallengNPC id="3" name="熊孩子 小俊" picName="duan3ku4shao4nian2" elfCamp="584,141,196|576,94,565" diaFront="我要在5分钟内将你打败。" diaBackWin="哈哈哈哈，你好弱。" diaBackFail="我只是说说而已。"/>
+<sta_worldCupChallengNPC id="4" name="熊孩子 小雄" picName="duan3ku4shao4nian2" elfCamp="135,289,149|461,244,15" diaFront="教我怎么使用精灵吧。" diaBackWin="你保留实力了吗？" diaBackFail="你果然很厉害啊。"/>
+<sta_worldCupChallengNPC id="5" name="小女孩 栀子" picName="tong2zi3jun1nv3" elfCamp="539,124,31|359,565,249" diaFront="我的精灵最可爱了。" diaBackWin="可爱就是实力。" diaBackFail="你竟然把我的精灵。。。"/>
+<sta_worldCupChallengNPC id="6" name="小女孩 欣" picName="tong2zi3jun1nv3" elfCamp="468,467,378|196,381,558" diaFront="我的男朋友送给我厉害的精灵。" diaBackWin="原来你单身啊，难怪这么弱。" diaBackFail="难道爱的力量不够吗？"/>
+<sta_worldCupChallengNPC id="7" name="小男孩 志" picName="tong2zi3jun1nan2" elfCamp="196,204479,609|558,467,479" diaFront="我已经特训过了！" diaBackWin="我已经变得这么强了。" diaBackFail="回去还要继续加油！"/>
+<sta_worldCupChallengNPC id="8" name="小男孩 刚" picName="tong2zi3jun1nan2" elfCamp="437,91,589|306,604,462" diaFront="哈哈哈哈，你样子好奇怪。" diaBackWin="怪人是打不过我的！" diaBackFail="居然被一个怪人打败了。"/>
+<sta_worldCupChallengNPC id="9" name="摇滚达人 杰" picName="wan2dian4ren2" elfCamp="208,245,380|94,181,442" diaFront="你会弹吉他吗？" diaBackWin="我的战斗里融入了音乐。" diaBackFail="我认可你的实力。"/>
+<sta_worldCupChallengNPC id="10" name="型男 斌" picName="wan2dian4ren2" elfCamp="384,134,289|242,445,477" diaFront="来切磋一下吧。" diaBackWin="果然长得帅的人比较厉害。" diaBackFail="不要弄乱我的头发。"/>
+<sta_worldCupChallengNPC id="11" name="格斗家 小龙" picName="kong1shou3dao4" elfCamp="103,534,244|450,584,435" diaFront="阿达，阿达！" diaBackWin="阿达达，达达!" diaBackFail="。。。。。。（躺在地上不起来了）"/>
+<sta_worldCupChallengNPC id="12" name="格斗家 隆" picName="kong1shou3dao4" elfCamp="386,385,243|65,310,306" diaFront="你能接下我的波动拳吗？" diaBackWin="耗油根！阿不来肾不撸根！" diaBackFail="我还要回去加倍努力！"/>
+<sta_worldCupChallengNPC id="13" name="电工 阿福" picName="dian4gong1" elfCamp="411,620,201479|539,34,68" diaFront="我的手电筒那里去了？" diaBackWin="把我的手电筒还来！" diaBackFail="你偷了我的手电筒还打我。"/>
+<sta_worldCupChallengNPC id="14" name="电工 二狗" picName="dian4gong1" elfCamp="461,384,94|204479,378,359" diaFront="其实电工是指我的副业。" diaBackWin="我的真正身份是高级训练师！" diaBackFail="看来我还是专心做电工吧。"/>
+<sta_worldCupChallengNPC id="15" name="小学生 昊昊" picName="li3ke1nan2" elfCamp="38,553,435|249,442,385" diaFront="老师说过，遇到不懂的就要问。" diaBackWin="又到了上课的时候了。" diaBackFail="你为什么这么熟练啊。"/>
+<sta_worldCupChallengNPC id="16" name="小学生 阿树" picName="li3ke1nan2" elfCamp="204479,34,615|594,229,31" diaFront="啊哈哈，这个问题我知道。" diaBackWin="边想题目边对战还是赢了。" diaBackFail="题目做错了。"/>
+<sta_worldCupChallengNPC id="17" name="游泳健将 比利" picName="yong3ku4nan2" elfCamp="181,334,561|604,479,620" diaFront="我们来比赛游泳吧。" diaBackWin="我就是这么厉害。" diaBackFail="下次我们比摔跤。"/>
+<sta_worldCupChallengNPC id="18" name="游泳健将 木吉" picName="yong3ku4nan2" elfCamp="380,437,359|596,386,614" diaFront="赢了这一场，我就回家。" diaBackWin="终于可以回家了。" diaBackFail="还是赢不了啊。"/>
+<sta_worldCupChallengNPC id="19" name="小偷" picName="qie4zei2" elfCamp="289,203479,542|630,201479,612" diaFront="被发现了吗？" diaBackWin="你身上没有值钱的东西。" diaBackFail="东西我会还回去的。"/>
+<sta_worldCupChallengNPC id="20" name="小偷" picName="qie4zei2" elfCamp="474,10129,560|186,569,181" diaFront="不要挡我的路！" diaBackWin="这下可以吃顿好的了。" diaBackFail="我凭实力偷的东西！"/>
+<sta_worldCupChallengNPC id="21" name="足球公主 竹兰" picName="player25" elfCamp="445,448,350|445,289,386" diaFront="只有强大的训练师才能驾驭传说精灵。" diaBackWin="你还要多加修炼。" diaBackFail="你与精灵的羁绊，超越了传说。"/>
+<sta_worldCupChallengNPC id="22" name="足球王子 大吾" picName="player24" elfCamp="376,306,142|376,411,486" diaFront="化石精灵是神秘而高贵的，它们是历史的呈现。" diaBackWin="结果我第一，又强又厉害。" diaBackFail="恭喜你，你赢得如此的优雅。"/>
+<sta_worldCupChallengNPC id="23" name="足球公主 卡露乃" picName="player26" elfCamp="282,579,488|282,381,380" diaFront="我与精灵的默契，就是我实力的来源。" diaBackWin="你和精灵的交流还不够。" diaBackFail="没想到你的实力这么强悍，你已经通过最后一个房间了。"/>
+<sta_worldCupChallengNPC id="24" name="精英训练师 哲也" picName="yun4dong4shao4nian2" elfCamp="136,6,201479|631,257,500" diaFront="火系的精灵才是最厉害的。" diaBackWin="你心中的火焰还不够旺盛。" diaBackFail="你对火的掌控，已经超越了我。"/>
+<sta_worldCupChallengNPC id="25" name="精英训练师 小胜" picName="yun4dong4shao4nian2" elfCamp="134,160,199|230,350,202479" diaFront="我最喜欢水系的精灵。" diaBackWin="你需要像流水一般灵活。" diaBackFail="你的内心，如湖面一般平静。"/>
+<sta_worldCupChallengNPC id="26" name="精英训练师 辰也" picName="yun4dong4shao4nian2" elfCamp="471,478,584|615,614,203479" diaFront="我生长在世界上最寒冷的地方。" diaBackWin="同样的招式对我是无效的。" diaBackFail="你居然会曙光女神之宽恕？"/>
+<sta_worldCupChallengNPC id="27" name="格斗家 豪鬼" picName="kong1shou3dao4" elfCamp="534,538,539|68,620,448" diaFront="为弱小而羞耻吧。" diaBackWin="吾，已非人身。。。" diaBackFail="干的漂亮。"/>
+<sta_worldCupChallengNPC id="28" name="虫系专家 阿笔" picName="a1bi3" elfCamp="212,596,637|542,15,214" diaFront="我会让你领略到虫系精灵的可爱。" diaBackWin="你看美丽的翅膀，毛茸茸的身体，多可爱啊。" diaBackFail="我的虫系精灵。。。QAQ"/>
+<sta_worldCupChallengNPC id="29" name="工程师 阿力" picName="dian4gong1" elfCamp="135,466,596|244,145,310" diaFront="我从小就会帮妹子修电脑了。" diaBackWin="我还是不敢和女孩子说话。" diaBackFail="可恶，难道是我的技术不行吗？"/>
+<sta_worldCupChallengNPC id="30" name="超能力者 魔男" picName="chao1neng2li4zhe3" elfCamp="378,615,142|205479,134,411" diaFront="打赢我就帮你治疗精灵。" diaBackWin="你的对战水平有待提高。" diaBackFail="我已经帮你把精灵都恢复好了。"/>
+<sta_worldCupChallengNPC id="31" name="超能力者 魔男" picName="chao1neng2li4zhe3" elfCamp="460,631,584|289,560,208" diaFront="打赢我就帮你治疗精灵。" diaBackWin="你的对战水平有待提高。" diaBackFail="我已经帮你把精灵都恢复好了。"/>
+<sta_worldCupChallengNPC id="32" name="超能力者 魔男" picName="chao1neng2li4zhe3" elfCamp="115,542,462|534,452,381" diaFront="打赢我就帮你治疗精灵。" diaBackWin="你的对战水平有待提高。" diaBackFail="我已经帮你把精灵都恢复好了。"/>
+<sta_worldCupChallengNPC id="33" name="超能力者 魔男" picName="chao1neng2li4zhe3" elfCamp="561,243,606|181,196,248" diaFront="打赢我就帮你治疗精灵。" diaBackWin="你的对战水平有待提高。" diaBackFail="我已经帮你把精灵都恢复好了。"/>
+<sta_worldCupChallengNPC id="34" name="超能力者 魔男" picName="chao1neng2li4zhe3" elfCamp="538,145,468|124,553,205479" diaFront="打赢我就帮你治疗精灵。" diaBackWin="你的对战水平有待提高。" diaBackFail="我已经帮你把精灵都恢复好了。"/>
+<sta_worldCupChallengNPC id="35" name="怪兽狂 阿笨" picName="guai4shou4kuang2" elfCamp="" diaFront="我的精灵忘了带了，你直接通过吧。" diaBackWin="" diaBackFail=""/>
+<sta_worldCupChallengNPC id="36" name="偶像 冰冰" picName="hai3tan1shao4nv3" elfCamp="" diaFront="咦？这里不是舞台吗，原来我走错地方了。（匆忙跑掉）" diaBackWin="" diaBackFail=""/>
+<sta_worldCupChallengNPC id="37" name="家里蹲 阿宅" picName="guai4shou4nv3" elfCamp="" diaFront="明明说好了在这里会有盒饭吃的！我心情不好，你赶紧走吧！" diaBackWin="" diaBackFail=""/>
+<sta_worldCupChallengNPC id="38" name="可疑的人" picName="qie4zei2" elfCamp="" diaFront="你别这样看着我啊，我只是个园艺工人，在打理草坪，你别打扰我工作。" diaBackWin="" diaBackFail=""/>
+<sta_worldCupChallengNPC id="39" name="高中生 易凡" picName="da4xiao3jie3" elfCamp="" diaFront="再不快点上学就要迟到了。。。你说学校不在这边？谢谢你的提醒。" diaBackWin="" diaBackFail=""/>
+<sta_worldCupChallengNPC id="40" name="野生精灵" picName="img_feng1su4gou3" elfCamp="59" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="41" name="野生精灵" picName="img_ye1dan4shu4" elfCamp="103" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="42" name="野生精灵" picName="img_duo1ci4ju2shi2shou4" elfCamp="139" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="43" name="野生精灵" picName="img_lian2dao1kui1" elfCamp="141" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="44" name="野生精灵" picName="img_qia3bi3shou4" elfCamp="143" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="45" name="野生精灵" picName="img_lei2gong1" elfCamp="243" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="46" name="野生精灵" picName="img_yan2di4" elfCamp="244" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="47" name="野生精灵" picName="img_shui3jun1" elfCamp="245" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="48" name="野生精灵" picName="img_huang2sheng4gu1" elfCamp="480" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="49" name="野生精灵" picName="img_hong2sheng4gu1" elfCamp="481" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="50" name="野生精灵" picName="img_lan2sheng4gu1" elfCamp="482" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="51" name="野生精灵" picName="img_da4yu3guai4" elfCamp="606" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="52" name="野生精灵" picName="img_chao1li4wang2" elfCamp="297" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+<sta_worldCupChallengNPC id="53" name="野生精灵" picName="img_lei2dian4shou4" elfCamp="310" diaFront="（野生精灵向我们袭来）" diaBackWin="吼吼吼吼吼吼！！（神气的样子）" diaBackFail="（野生精灵跑掉了）"/>
+</root>

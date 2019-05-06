@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_battlePalaceNpc id="1" image="deng1shan1nan2" npcMC="npc_LKPZ" name="胖子" TalkType="4"/>
+<sta_battlePalaceNpc id="2" image="bu3chong2shao3nian2" npcMC="npc_ZCSN" name="捕虫少年" TalkType="1"/>
+<sta_battlePalaceNpc id="3" image="tong2zi3jun1nan2" npcMC="npc_ZCSN" name="童子军" TalkType="1"/>
+<sta_battlePalaceNpc id="4" image="duan3ku4shao4nian2" npcMC="npc_DKXZ" name="短裤少年" TalkType="1"/>
+<sta_battlePalaceNpc id="5" image="li3ke1nan2" npcMC="npc_DKXZ" name="理科男" TalkType="1"/>
+<sta_battlePalaceNpc id="6" image="nan2huo3jian4dui4" npcMC="npc_HJD" name="男火箭队" TalkType="5"/>
+<sta_battlePalaceNpc id="7" image="nv3huo3jian4dui4" npcMC="npc_HJD" name="女火箭队" TalkType="5"/>
+<sta_battlePalaceNpc id="8" image="yan2jiu1yuan2" npcMC="npc_YJY" name="研究员" TalkType="2"/>
+<sta_battlePalaceNpc id="11" image="shen1shi4" npcMC="npc_MZDS" name="老绅士" TalkType="4"/>
+<sta_battlePalaceNpc id="12" image="da4xiao3jie3" npcMC="npc_MNQNH" name="大小姐" TalkType="3"/>
+<sta_battlePalaceNpc id="13" image="mi2ni3qun2" npcMC="npc_BQMSN" name="迷你裙" TalkType="3"/>
+<sta_battlePalaceNpc id="14" image="yun4dong4shao4nv3" npcMC="npc_BQMSN" name="棒球帽妹纸" TalkType="3"/>
+<sta_battlePalaceNpc id="15" image="jing1ying1xun4lian4shi1nv3" npcMC="npc_BQMSN" name="精英训练师女" TalkType="3"/>
+<sta_battlePalaceNpc id="16" image="wan2dian4ren2" npcMC="npc_YNZ" name="玩电男" TalkType="4"/>
+<sta_battlePalaceNpc id="17" image="kong1shou3dao4" npcMC="npc_KSDSN" name="空手道少年" TalkType="2"/>
+<sta_battlePalaceNpc id="18" image="jing1ying1xun4lian4shi1nan2" npcMC="npc_ZQBTHH" name="男青年" TalkType="2"/>
+<sta_battlePalaceNpc id="19" image="gui4gong1zi3" npcMC="npc_ZQBTHH" name="贵公子" TalkType="2"/>
+<sta_battlePalaceNpc id="20" image="gong1fu1shao4nian2" npcMC="npc_YNZ" name="功夫少年" TalkType="2"/>
+<sta_battlePalaceNpc id="21" image="shui3shou3" npcMC="npc_LKPZ" name="水手" TalkType="2"/>
+<sta_battlePalaceNpc id="22" image="yun4dong4shao4nian2" npcMC="npc_KSDSN" name="运动少年" TalkType="2"/>
+<sta_battlePalaceNpc id="23" image="guai4shou4kuang2" npcMC="npc_ZQBTHH" name="怪兽狂男" TalkType="2"/>
+<sta_battlePalaceNpc id="24" image="guai4shou4nv3" npcMC="npc_BQMSN" name="怪兽狂女" TalkType="3"/>
+</root>

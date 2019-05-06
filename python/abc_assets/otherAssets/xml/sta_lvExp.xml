@@ -1,100 +1,92 @@
-<!-- 
-sta_lvExp:
-
-
-id:等级
-exp:升级所需经验
-maxPokeLv:精灵等级上限
-maxActionForce:体力上限
-actionRestore:升级体力恢复
-pokeExp:较快类别--精灵升级经验
-function:开放功能
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<sta_lvExp id="1" exp="12" maxPokeLv="10" maxActionForce="60" actionRestore="20" pokeExp="20" function=""/>
-<sta_lvExp id="2" exp="6" maxPokeLv="11" maxActionForce="62" actionRestore="20" pokeExp="30" function=""/>
-<sta_lvExp id="3" exp="12" maxPokeLv="12" maxActionForce="64" actionRestore="20" pokeExp="40" function=""/>
-<sta_lvExp id="4" exp="12" maxPokeLv="13" maxActionForce="66" actionRestore="20" pokeExp="50" function=""/>
-<sta_lvExp id="5" exp="12" maxPokeLv="14" maxActionForce="68" actionRestore="20" pokeExp="60" function="精灵技能升级"/>
-<sta_lvExp id="6" exp="12" maxPokeLv="15" maxActionForce="70" actionRestore="20" pokeExp="70" function="自动战斗"/>
-<sta_lvExp id="7" exp="12" maxPokeLv="16" maxActionForce="72" actionRestore="20" pokeExp="80" function=""/>
-<sta_lvExp id="8" exp="18" maxPokeLv="17" maxActionForce="74" actionRestore="20" pokeExp="90" function="训练"/>
-<sta_lvExp id="9" exp="18" maxPokeLv="18" maxActionForce="76" actionRestore="20" pokeExp="100" function="精英副本"/>
-<sta_lvExp id="10" exp="24" maxPokeLv="19" maxActionForce="78" actionRestore="20" pokeExp="120" function="扫荡"/>
-<sta_lvExp id="11" exp="36" maxPokeLv="20" maxActionForce="80" actionRestore="30" pokeExp="160" function="开放每日任务"/>
-<sta_lvExp id="12" exp="42" maxPokeLv="20" maxActionForce="82" actionRestore="30" pokeExp="240" function=""/>
-<sta_lvExp id="13" exp="48" maxPokeLv="21" maxActionForce="84" actionRestore="30" pokeExp="360" function=""/>
-<sta_lvExp id="14" exp="60" maxPokeLv="21" maxActionForce="86" actionRestore="30" pokeExp="480" function=""/>
-<sta_lvExp id="15" exp="80" maxPokeLv="22" maxActionForce="88" actionRestore="30" pokeExp="640" function="精灵联盟大赛"/>
-<sta_lvExp id="16" exp="100" maxPokeLv="22" maxActionForce="90" actionRestore="30" pokeExp="800" function=""/>
-<sta_lvExp id="17" exp="120" maxPokeLv="23" maxActionForce="92" actionRestore="30" pokeExp="900" function=""/>
-<sta_lvExp id="18" exp="140" maxPokeLv="23" maxActionForce="94" actionRestore="30" pokeExp="1080" function=""/>
-<sta_lvExp id="19" exp="160" maxPokeLv="24" maxActionForce="96" actionRestore="30" pokeExp="1200" function="金币试炼"/>
-<sta_lvExp id="20" exp="200" maxPokeLv="24" maxActionForce="100" actionRestore="30" pokeExp="1350" function="低级狩猎场"/>
-<sta_lvExp id="21" exp="200" maxPokeLv="25" maxActionForce="101" actionRestore="40" pokeExp="1860" function=""/>
-<sta_lvExp id="22" exp="210" maxPokeLv="25" maxActionForce="102" actionRestore="40" pokeExp="1920" function="王者之路 "/>
-<sta_lvExp id="23" exp="210" maxPokeLv="26" maxActionForce="103" actionRestore="40" pokeExp="1980" function=""/>
-<sta_lvExp id="24" exp="220" maxPokeLv="26" maxActionForce="104" actionRestore="40" pokeExp="2040" function="精灵试炼"/>
-<sta_lvExp id="25" exp="240" maxPokeLv="27" maxActionForce="105" actionRestore="40" pokeExp="2100" function="中级狩猎场"/>
-<sta_lvExp id="26" exp="260" maxPokeLv="27" maxActionForce="106" actionRestore="40" pokeExp="2160" function=""/>
-<sta_lvExp id="27" exp="280" maxPokeLv="28" maxActionForce="107" actionRestore="40" pokeExp="2220" function=""/>
-<sta_lvExp id="28" exp="300" maxPokeLv="28" maxActionForce="108" actionRestore="40" pokeExp="2280" function="开放公会"/>
-<sta_lvExp id="29" exp="350" maxPokeLv="29" maxActionForce="109" actionRestore="40" pokeExp="2340" function=""/>
-<sta_lvExp id="30" exp="400" maxPokeLv="30" maxActionForce="110" actionRestore="40" pokeExp="2400" function="高级狩猎场"/>
-<sta_lvExp id="31" exp="450" maxPokeLv="31" maxActionForce="111" actionRestore="50" pokeExp="5400" function=""/>
-<sta_lvExp id="32" exp="500" maxPokeLv="32" maxActionForce="112" actionRestore="50" pokeExp="7200" function="重置精灵"/>
-<sta_lvExp id="33" exp="600" maxPokeLv="33" maxActionForce="113" actionRestore="50" pokeExp="9000" function=""/>
-<sta_lvExp id="34" exp="700" maxPokeLv="34" maxActionForce="114" actionRestore="50" pokeExp="10800" function=""/>
-<sta_lvExp id="35" exp="800" maxPokeLv="35" maxActionForce="115" actionRestore="50" pokeExp="12600" function="实时对战"/>
-<sta_lvExp id="36" exp="1000" maxPokeLv="36" maxActionForce="116" actionRestore="50" pokeExp="14400" function=""/>
-<sta_lvExp id="37" exp="1200" maxPokeLv="37" maxActionForce="117" actionRestore="50" pokeExp="16200" function=""/>
-<sta_lvExp id="38" exp="1200" maxPokeLv="38" maxActionForce="118" actionRestore="50" pokeExp="18000" function=""/>
-<sta_lvExp id="39" exp="1400" maxPokeLv="39" maxActionForce="119" actionRestore="50" pokeExp="21600" function=""/>
-<sta_lvExp id="40" exp="1400" maxPokeLv="40" maxActionForce="120" actionRestore="50" pokeExp="25200" function=""/>
-<sta_lvExp id="41" exp="1600" maxPokeLv="41" maxActionForce="121" actionRestore="60" pokeExp="28800" function=""/>
-<sta_lvExp id="42" exp="1600" maxPokeLv="42" maxActionForce="122" actionRestore="60" pokeExp="32400" function=""/>
-<sta_lvExp id="43" exp="1600" maxPokeLv="43" maxActionForce="123" actionRestore="60" pokeExp="36000" function=""/>
-<sta_lvExp id="44" exp="1600" maxPokeLv="44" maxActionForce="124" actionRestore="60" pokeExp="40500" function=""/>
-<sta_lvExp id="45" exp="1600" maxPokeLv="45" maxActionForce="125" actionRestore="60" pokeExp="45000" function=""/>
-<sta_lvExp id="46" exp="1600" maxPokeLv="46" maxActionForce="126" actionRestore="60" pokeExp="49500" function=""/>
-<sta_lvExp id="47" exp="1600" maxPokeLv="47" maxActionForce="127" actionRestore="60" pokeExp="54000" function=""/>
-<sta_lvExp id="48" exp="1600" maxPokeLv="48" maxActionForce="128" actionRestore="60" pokeExp="58500" function="奇迹交换"/>
-<sta_lvExp id="49" exp="1600" maxPokeLv="49" maxActionForce="129" actionRestore="60" pokeExp="63000" function=""/>
-<sta_lvExp id="50" exp="1600" maxPokeLv="50" maxActionForce="130" actionRestore="60" pokeExp="67500" function=""/>
-<sta_lvExp id="51" exp="1600" maxPokeLv="51" maxActionForce="131" actionRestore="70" pokeExp="72000" function=""/>
-<sta_lvExp id="52" exp="2000" maxPokeLv="52" maxActionForce="132" actionRestore="70" pokeExp="76500" function=""/>
-<sta_lvExp id="53" exp="2400" maxPokeLv="53" maxActionForce="133" actionRestore="70" pokeExp="81000" function=""/>
-<sta_lvExp id="54" exp="3000" maxPokeLv="54" maxActionForce="134" actionRestore="70" pokeExp="85500" function=""/>
-<sta_lvExp id="55" exp="3000" maxPokeLv="55" maxActionForce="135" actionRestore="70" pokeExp="90000" function=""/>
-<sta_lvExp id="56" exp="3200" maxPokeLv="56" maxActionForce="136" actionRestore="70" pokeExp="99000" function=""/>
-<sta_lvExp id="57" exp="3200" maxPokeLv="57" maxActionForce="137" actionRestore="70" pokeExp="108000" function=""/>
-<sta_lvExp id="58" exp="3400" maxPokeLv="58" maxActionForce="138" actionRestore="70" pokeExp="117000" function=""/>
-<sta_lvExp id="59" exp="3400" maxPokeLv="59" maxActionForce="139" actionRestore="70" pokeExp="126000" function=""/>
-<sta_lvExp id="60" exp="3600" maxPokeLv="60" maxActionForce="140" actionRestore="70" pokeExp="135000" function=""/>
-<sta_lvExp id="61" exp="3600" maxPokeLv="61" maxActionForce="141" actionRestore="80" pokeExp="144000" function=""/>
-<sta_lvExp id="62" exp="3800" maxPokeLv="62" maxActionForce="142" actionRestore="80" pokeExp="153000" function=""/>
-<sta_lvExp id="63" exp="3800" maxPokeLv="63" maxActionForce="143" actionRestore="80" pokeExp="162000" function=""/>
-<sta_lvExp id="64" exp="4000" maxPokeLv="64" maxActionForce="144" actionRestore="80" pokeExp="171000" function=""/>
-<sta_lvExp id="65" exp="4200" maxPokeLv="65" maxActionForce="145" actionRestore="80" pokeExp="180000" function=""/>
-<sta_lvExp id="66" exp="4400" maxPokeLv="66" maxActionForce="146" actionRestore="80" pokeExp="189000" function=""/>
-<sta_lvExp id="67" exp="4600" maxPokeLv="67" maxActionForce="147" actionRestore="80" pokeExp="198000" function=""/>
-<sta_lvExp id="68" exp="4800" maxPokeLv="68" maxActionForce="148" actionRestore="80" pokeExp="207000" function=""/>
-<sta_lvExp id="69" exp="4800" maxPokeLv="69" maxActionForce="149" actionRestore="80" pokeExp="216000" function=""/>
-<sta_lvExp id="70" exp="5000" maxPokeLv="70" maxActionForce="150" actionRestore="80" pokeExp="225000" function=""/>
-<sta_lvExp id="71" exp="5000" maxPokeLv="71" maxActionForce="151" actionRestore="90" pokeExp="234000" function=""/>
-<sta_lvExp id="72" exp="5500" maxPokeLv="72" maxActionForce="152" actionRestore="90" pokeExp="252000" function=""/>
-<sta_lvExp id="73" exp="5500" maxPokeLv="73" maxActionForce="153" actionRestore="90" pokeExp="270000" function=""/>
-<sta_lvExp id="74" exp="6000" maxPokeLv="74" maxActionForce="154" actionRestore="90" pokeExp="288000" function=""/>
-<sta_lvExp id="75" exp="7000" maxPokeLv="75" maxActionForce="155" actionRestore="90" pokeExp="306000" function=""/>
-<sta_lvExp id="76" exp="8000" maxPokeLv="76" maxActionForce="156" actionRestore="90" pokeExp="324000" function=""/>
-<sta_lvExp id="77" exp="10000" maxPokeLv="77" maxActionForce="157" actionRestore="90" pokeExp="333000" function=""/>
-<sta_lvExp id="78" exp="20000" maxPokeLv="78" maxActionForce="158" actionRestore="90" pokeExp="342000" function=""/>
-<sta_lvExp id="79" exp="50000" maxPokeLv="79" maxActionForce="159" actionRestore="90" pokeExp="351000" function=""/>
-<sta_lvExp id="80" exp="100000" maxPokeLv="80" maxActionForce="160" actionRestore="90" pokeExp="360000" function=""/>
-<sta_lvExp id="81" exp="70000" maxPokeLv="81" maxActionForce="162" actionRestore="160" pokeExp="380000" function=""/>
-<sta_lvExp id="82" exp="80000" maxPokeLv="82" maxActionForce="164" actionRestore="160" pokeExp="400000" function=""/>
-<sta_lvExp id="83" exp="90000" maxPokeLv="83" maxActionForce="166" actionRestore="160" pokeExp="420000" function=""/>
-<sta_lvExp id="84" exp="100000" maxPokeLv="84" maxActionForce="168" actionRestore="160" pokeExp="440000" function=""/>
-<sta_lvExp id="85" exp="110000" maxPokeLv="85" maxActionForce="170" actionRestore="160" pokeExp="480000" function=""/>
+<sta_lvExp id="1" exp="12" maxPokeLv="10" maxActionForce="60" actionRestore="20" pokeExp="20" function="" bGuide="" icon=""/>
+<sta_lvExp id="2" exp="6" maxPokeLv="11" maxActionForce="62" actionRestore="20" pokeExp="30" function="" bGuide="" icon=""/>
+<sta_lvExp id="3" exp="12" maxPokeLv="12" maxActionForce="64" actionRestore="20" pokeExp="40" function="" bGuide="" icon=""/>
+<sta_lvExp id="4" exp="12" maxPokeLv="13" maxActionForce="66" actionRestore="20" pokeExp="50" function="" bGuide="" icon=""/>
+<sta_lvExp id="5" exp="12" maxPokeLv="14" maxActionForce="68" actionRestore="20" pokeExp="60" function="加速x1" bGuide="startGiftGuide" icon="jia1su41"/>
+<sta_lvExp id="6" exp="12" maxPokeLv="15" maxActionForce="70" actionRestore="20" pokeExp="70" function="会员自动战斗" bGuide="" icon="hui4yuan2zi4dong4zhan4dou4"/>
+<sta_lvExp id="7" exp="12" maxPokeLv="16" maxActionForce="72" actionRestore="20" pokeExp="80" function="" bGuide="" icon=""/>
+<sta_lvExp id="8" exp="18" maxPokeLv="17" maxActionForce="74" actionRestore="20" pokeExp="90" function="训练,每日任务" bGuide="addTrain" icon="xun4lian4,mei3ri4ren4wu4"/>
+<sta_lvExp id="9" exp="18" maxPokeLv="18" maxActionForce="76" actionRestore="20" pokeExp="100" function="精英副本" bGuide="startDuplicateGuide" icon="jing1ying1fu4ben3"/>
+<sta_lvExp id="10" exp="24" maxPokeLv="19" maxActionForce="78" actionRestore="20" pokeExp="120" function="精灵联盟大赛,扫荡" bGuide="addElfSeries" icon="jing1ling2lian2meng2da4sai4,sao3dang4"/>
+<sta_lvExp id="11" exp="36" maxPokeLv="20" maxActionForce="80" actionRestore="30" pokeExp="160" function="" bGuide="" icon=""/>
+<sta_lvExp id="12" exp="42" maxPokeLv="20" maxActionForce="82" actionRestore="30" pokeExp="240" function="性格引导" bGuide="startElfNatureGuide" icon="xing4ge2yin2dao3"/>
+<sta_lvExp id="13" exp="48" maxPokeLv="21" maxActionForce="84" actionRestore="30" pokeExp="360" function="" bGuide="" icon=""/>
+<sta_lvExp id="14" exp="60" maxPokeLv="21" maxActionForce="86" actionRestore="30" pokeExp="480" function="" bGuide="" icon=""/>
+<sta_lvExp id="15" exp="80" maxPokeLv="22" maxActionForce="88" actionRestore="30" pokeExp="640" function="加速x2" bGuide="" icon="jia1su42"/>
+<sta_lvExp id="16" exp="100" maxPokeLv="22" maxActionForce="90" actionRestore="30" pokeExp="800" function="" bGuide="" icon=""/>
+<sta_lvExp id="17" exp="120" maxPokeLv="23" maxActionForce="92" actionRestore="30" pokeExp="900" function="" bGuide="" icon=""/>
+<sta_lvExp id="18" exp="140" maxPokeLv="23" maxActionForce="94" actionRestore="30" pokeExp="1080" function="" bGuide="" icon=""/>
+<sta_lvExp id="19" exp="160" maxPokeLv="24" maxActionForce="96" actionRestore="30" pokeExp="1200" function="金币试炼" bGuide="addTrial" icon="jin1bi4shi4lian4"/>
+<sta_lvExp id="20" exp="200" maxPokeLv="24" maxActionForce="100" actionRestore="30" pokeExp="1350" function="低级狩猎场,神兽剧情" bGuide="addHunting" icon="di1ji2shou4lie4chang3,shen2shou4ju4qing2"/>
+<sta_lvExp id="21" exp="200" maxPokeLv="25" maxActionForce="101" actionRestore="40" pokeExp="1860" function="" bGuide="" icon=""/>
+<sta_lvExp id="22" exp="210" maxPokeLv="25" maxActionForce="102" actionRestore="40" pokeExp="1920" function="王者之路 " bGuide="addKingKwan" icon="wang2zhe3zhi1lu4"/>
+<sta_lvExp id="23" exp="210" maxPokeLv="26" maxActionForce="103" actionRestore="40" pokeExp="1980" function="" bGuide="" icon=""/>
+<sta_lvExp id="24" exp="220" maxPokeLv="26" maxActionForce="104" actionRestore="40" pokeExp="2040" function="精灵试炼" bGuide="startElfTestGuide" icon="jing1ling2shi4lian4"/>
+<sta_lvExp id="25" exp="240" maxPokeLv="27" maxActionForce="105" actionRestore="40" pokeExp="2100" function="中级狩猎场" bGuide="" icon="zhong1ji2shou4lie4chang3"/>
+<sta_lvExp id="26" exp="260" maxPokeLv="27" maxActionForce="106" actionRestore="40" pokeExp="2160" function="挖矿" bGuide="startMiningGuide" icon="wa1kuang4"/>
+<sta_lvExp id="27" exp="280" maxPokeLv="28" maxActionForce="107" actionRestore="40" pokeExp="2220" function="精灵花园" bGuide="startElfGardenGuide" icon="jing1ling2hua1yuan2"/>
+<sta_lvExp id="28" exp="300" maxPokeLv="28" maxActionForce="108" actionRestore="40" pokeExp="2280" function="公会" bGuide="addUnion" icon="gong1hui4"/>
+<sta_lvExp id="29" exp="350" maxPokeLv="29" maxActionForce="109" actionRestore="40" pokeExp="2340" function="" bGuide="" icon=""/>
+<sta_lvExp id="30" exp="400" maxPokeLv="30" maxActionForce="110" actionRestore="40" pokeExp="2400" function="高级狩猎场,野外探索" bGuide="startExploreGuide" icon="gao1ji2shou4lie4chang3,ye2wai4tan4suo3"/>
+<sta_lvExp id="31" exp="450" maxPokeLv="31" maxActionForce="111" actionRestore="50" pokeExp="5400" function="" bGuide="" icon=""/>
+<sta_lvExp id="32" exp="500" maxPokeLv="32" maxActionForce="112" actionRestore="50" pokeExp="7200" function="重置精灵，精灵契约" bGuide="startElfDeedGuide" icon="chong2zhi4jing1ling2,jing1ling2qi4yue1"/>
+<sta_lvExp id="33" exp="600" maxPokeLv="33" maxActionForce="113" actionRestore="50" pokeExp="9000" function="" bGuide="" icon=""/>
+<sta_lvExp id="34" exp="700" maxPokeLv="34" maxActionForce="114" actionRestore="50" pokeExp="10800" function="固定交换" bGuide="startFixationExchange" icon="gu4ding4jiao1huan4"/>
+<sta_lvExp id="35" exp="800" maxPokeLv="35" maxActionForce="115" actionRestore="50" pokeExp="12600" function="玩家对战中心,非会员自动战斗" bGuide="addPvp" icon="wan2jia1dui4zhan4zhong1xin1,fei1hui4yuan2zi4dong4zhan4dou4"/>
+<sta_lvExp id="36" exp="1000" maxPokeLv="36" maxActionForce="116" actionRestore="50" pokeExp="14400" function="" bGuide="" icon=""/>
+<sta_lvExp id="37" exp="1200" maxPokeLv="37" maxActionForce="117" actionRestore="50" pokeExp="16200" function="训练师学校" bGuide="startTrainerSchool" icon="xun4lian4shi1xue2xiao4"/>
+<sta_lvExp id="38" exp="1200" maxPokeLv="38" maxActionForce="118" actionRestore="50" pokeExp="18000" function="钓鱼馆" bGuide="" icon="diao4yu2guan3"/>
+<sta_lvExp id="39" exp="1400" maxPokeLv="39" maxActionForce="119" actionRestore="50" pokeExp="21600" function="" bGuide="" icon=""/>
+<sta_lvExp id="40" exp="1400" maxPokeLv="40" maxActionForce="120" actionRestore="50" pokeExp="25200" function="" bGuide="" icon=""/>
+<sta_lvExp id="41" exp="1600" maxPokeLv="41" maxActionForce="121" actionRestore="60" pokeExp="28800" function="" bGuide="" icon=""/>
+<sta_lvExp id="42" exp="1600" maxPokeLv="42" maxActionForce="122" actionRestore="60" pokeExp="32400" function="天王争霸赛" bGuide="startHegemonyGuide" icon="tian1wang2zheng1ba1sai4"/>
+<sta_lvExp id="43" exp="1600" maxPokeLv="43" maxActionForce="123" actionRestore="60" pokeExp="36000" function="" bGuide="" icon=""/>
+<sta_lvExp id="44" exp="1600" maxPokeLv="44" maxActionForce="124" actionRestore="60" pokeExp="40500" function="" bGuide="" icon=""/>
+<sta_lvExp id="45" exp="1600" maxPokeLv="45" maxActionForce="125" actionRestore="60" pokeExp="45000" function="闪光试炼，好友援助精灵" bGuide="startFlickerTestGuide" icon="shan3guang1shi4lian4,hao2you3yuan2zhu4jing1ling2"/>
+<sta_lvExp id="46" exp="1600" maxPokeLv="46" maxActionForce="126" actionRestore="60" pokeExp="49500" function="" bGuide="" icon=""/>
+<sta_lvExp id="47" exp="1600" maxPokeLv="47" maxActionForce="127" actionRestore="60" pokeExp="54000" function="" bGuide="" icon=""/>
+<sta_lvExp id="48" exp="1600" maxPokeLv="48" maxActionForce="128" actionRestore="60" pokeExp="58500" function="奇迹交换" bGuide="addMiracle" icon="qi2ji4jiao1huan4"/>
+<sta_lvExp id="49" exp="1600" maxPokeLv="49" maxActionForce="129" actionRestore="60" pokeExp="63000" function="" bGuide="" icon=""/>
+<sta_lvExp id="50" exp="1600" maxPokeLv="50" maxActionForce="130" actionRestore="60" pokeExp="67500" function="" bGuide="" icon=""/>
+<sta_lvExp id="51" exp="1600" maxPokeLv="51" maxActionForce="131" actionRestore="70" pokeExp="72000" function="" bGuide="" icon=""/>
+<sta_lvExp id="52" exp="2000" maxPokeLv="52" maxActionForce="132" actionRestore="70" pokeExp="76500" function="" bGuide="" icon=""/>
+<sta_lvExp id="53" exp="2400" maxPokeLv="53" maxActionForce="133" actionRestore="70" pokeExp="81000" function="" bGuide="" icon=""/>
+<sta_lvExp id="54" exp="3000" maxPokeLv="54" maxActionForce="134" actionRestore="70" pokeExp="85500" function="" bGuide="" icon=""/>
+<sta_lvExp id="55" exp="3000" maxPokeLv="55" maxActionForce="135" actionRestore="70" pokeExp="90000" function="号角试练" bGuide="" icon="hao4jiao3shi4lian4"/>
+<sta_lvExp id="56" exp="3200" maxPokeLv="56" maxActionForce="136" actionRestore="70" pokeExp="99000" function="" bGuide="" icon=""/>
+<sta_lvExp id="57" exp="3200" maxPokeLv="57" maxActionForce="137" actionRestore="70" pokeExp="108000" function="" bGuide="" icon=""/>
+<sta_lvExp id="58" exp="3400" maxPokeLv="58" maxActionForce="138" actionRestore="70" pokeExp="117000" function="丰源地区" bGuide="addHoenn" icon="feng1yuan2di4qu1"/>
+<sta_lvExp id="59" exp="3400" maxPokeLv="59" maxActionForce="139" actionRestore="70" pokeExp="126000" function="" bGuide="" icon=""/>
+<sta_lvExp id="60" exp="3600" maxPokeLv="60" maxActionForce="140" actionRestore="70" pokeExp="135000" function="" bGuide="" icon=""/>
+<sta_lvExp id="61" exp="3600" maxPokeLv="61" maxActionForce="141" actionRestore="80" pokeExp="144000" function="" bGuide="" icon=""/>
+<sta_lvExp id="62" exp="3800" maxPokeLv="62" maxActionForce="142" actionRestore="80" pokeExp="153000" function="" bGuide="" icon=""/>
+<sta_lvExp id="63" exp="3800" maxPokeLv="63" maxActionForce="143" actionRestore="80" pokeExp="162000" function="" bGuide="" icon=""/>
+<sta_lvExp id="64" exp="4000" maxPokeLv="64" maxActionForce="144" actionRestore="80" pokeExp="171000" function="" bGuide="" icon=""/>
+<sta_lvExp id="65" exp="4200" maxPokeLv="65" maxActionForce="145" actionRestore="80" pokeExp="180000" function="" bGuide="" icon=""/>
+<sta_lvExp id="66" exp="4400" maxPokeLv="66" maxActionForce="146" actionRestore="80" pokeExp="189000" function="" bGuide="" icon=""/>
+<sta_lvExp id="67" exp="4600" maxPokeLv="67" maxActionForce="147" actionRestore="80" pokeExp="198000" function="" bGuide="" icon=""/>
+<sta_lvExp id="68" exp="4800" maxPokeLv="68" maxActionForce="148" actionRestore="80" pokeExp="207000" function="" bGuide="" icon=""/>
+<sta_lvExp id="69" exp="4800" maxPokeLv="69" maxActionForce="149" actionRestore="80" pokeExp="216000" function="" bGuide="" icon=""/>
+<sta_lvExp id="70" exp="5000" maxPokeLv="70" maxActionForce="150" actionRestore="80" pokeExp="225000" function="" bGuide="" icon=""/>
+<sta_lvExp id="71" exp="5000" maxPokeLv="71" maxActionForce="151" actionRestore="90" pokeExp="234000" function="" bGuide="" icon=""/>
+<sta_lvExp id="72" exp="5500" maxPokeLv="72" maxActionForce="152" actionRestore="90" pokeExp="252000" function="" bGuide="" icon=""/>
+<sta_lvExp id="73" exp="5500" maxPokeLv="73" maxActionForce="153" actionRestore="90" pokeExp="270000" function="" bGuide="" icon=""/>
+<sta_lvExp id="74" exp="6000" maxPokeLv="74" maxActionForce="154" actionRestore="90" pokeExp="288000" function="" bGuide="" icon=""/>
+<sta_lvExp id="75" exp="7000" maxPokeLv="75" maxActionForce="155" actionRestore="90" pokeExp="306000" function="" bGuide="" icon=""/>
+<sta_lvExp id="76" exp="8000" maxPokeLv="76" maxActionForce="156" actionRestore="90" pokeExp="324000" function="" bGuide="" icon=""/>
+<sta_lvExp id="77" exp="10000" maxPokeLv="77" maxActionForce="157" actionRestore="90" pokeExp="333000" function="" bGuide="" icon=""/>
+<sta_lvExp id="78" exp="20000" maxPokeLv="78" maxActionForce="158" actionRestore="90" pokeExp="342000" function="" bGuide="" icon=""/>
+<sta_lvExp id="79" exp="50000" maxPokeLv="79" maxActionForce="159" actionRestore="90" pokeExp="351000" function="" bGuide="" icon=""/>
+<sta_lvExp id="80" exp="100000" maxPokeLv="80" maxActionForce="160" actionRestore="90" pokeExp="360000" function="" bGuide="" icon=""/>
+<sta_lvExp id="81" exp="70000" maxPokeLv="81" maxActionForce="162" actionRestore="160" pokeExp="380000" function="" bGuide="" icon=""/>
+<sta_lvExp id="82" exp="80000" maxPokeLv="82" maxActionForce="164" actionRestore="160" pokeExp="400000" function="" bGuide="" icon=""/>
+<sta_lvExp id="83" exp="90000" maxPokeLv="83" maxActionForce="166" actionRestore="160" pokeExp="420000" function="" bGuide="" icon=""/>
+<sta_lvExp id="84" exp="100000" maxPokeLv="84" maxActionForce="168" actionRestore="160" pokeExp="440000" function="" bGuide="" icon=""/>
+<sta_lvExp id="85" exp="110000" maxPokeLv="85" maxActionForce="170" actionRestore="160" pokeExp="480000" function="" bGuide="" icon=""/>
+<sta_lvExp id="86" exp="130000" maxPokeLv="86" maxActionForce="170" actionRestore="160" pokeExp="520000" function="" bGuide="" icon=""/>
+<sta_lvExp id="87" exp="150000" maxPokeLv="87" maxActionForce="170" actionRestore="160" pokeExp="560000" function="" bGuide="" icon=""/>
+<sta_lvExp id="88" exp="170000" maxPokeLv="88" maxActionForce="170" actionRestore="160" pokeExp="600000" function="" bGuide="" icon=""/>
+<sta_lvExp id="89" exp="190000" maxPokeLv="89" maxActionForce="170" actionRestore="160" pokeExp="640000" function="" bGuide="" icon=""/>
 </root>

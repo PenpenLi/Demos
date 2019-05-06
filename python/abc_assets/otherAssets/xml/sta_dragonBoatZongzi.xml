@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_dragonBoatZongzi id="1" type="红枣粽子" forward="20" contribution="10" isConposable="1" material="5499,10|5500,10|5503,3" conposeRateRate="0.3"/>
+<sta_dragonBoatZongzi id="2" type="蛋黄粽子" forward="20" contribution="10" isConposable="1" material="5499,10|5500,10|5502,3" conposeRateRate="0.3"/>
+<sta_dragonBoatZongzi id="3" type="咸肉粽子" forward="20" contribution="10" isConposable="1" material="5499,10|5500,10|5504,3" conposeRateRate="0.3"/>
+<sta_dragonBoatZongzi id="4" type="豆沙粽子" forward="20" contribution="10" isConposable="1" material="5499,10|5500,10|5501,3" conposeRateRate="0.3"/>
+<sta_dragonBoatZongzi id="5557" type="金色粽子" forward="50" contribution="30" isConposable="0" material="0" conposeRateRate="0"/>
+</root>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildLegends id="1" lv="1" exp="8000" rise="3"/>
+<sta_guildLegends id="2" lv="2" exp="10000" rise="3.5"/>
+<sta_guildLegends id="3" lv="3" exp="12000" rise="4"/>
+<sta_guildLegends id="4" lv="4" exp="14000" rise="4.5"/>
+<sta_guildLegends id="5" lv="5" exp="16000" rise="5"/>
+<sta_guildLegends id="6" lv="6" exp="18000" rise="6"/>
+<sta_guildLegends id="7" lv="7" exp="20000" rise="7"/>
+<sta_guildLegends id="8" lv="8" exp="22000" rise="8"/>
+<sta_guildLegends id="9" lv="9" exp="24000" rise="9"/>
+<sta_guildLegends id="10" lv="10" exp="26000" rise="10"/>
+</root>

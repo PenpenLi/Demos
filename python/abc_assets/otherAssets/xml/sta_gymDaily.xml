@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gymDaily id="1" type="1" score="1500" level="C" addition="1"/>
+<sta_gymDaily id="2" type="1" score="2500" level="B" addition="2"/>
+<sta_gymDaily id="3" type="1" score="4000" level="A" addition="3"/>
+<sta_gymDaily id="4" type="1" score="4800" level="S" addition="4"/>
+<sta_gymDaily id="5" type="2" score="400" level="C" addition="1"/>
+<sta_gymDaily id="6" type="2" score="600" level="B" addition="2"/>
+<sta_gymDaily id="7" type="2" score="750" level="A" addition="3"/>
+<sta_gymDaily id="8" type="2" score="850" level="S" addition="4"/>
+<sta_gymDaily id="9" type="3" score="800" level="C" addition="1"/>
+<sta_gymDaily id="10" type="3" score="1000" level="B" addition="2"/>
+<sta_gymDaily id="11" type="3" score="1300" level="A" addition="3"/>
+<sta_gymDaily id="12" type="3" score="1600" level="S" addition="4"/>
+<sta_gymDaily id="13" type="4" score="30" level="C" addition="1"/>
+<sta_gymDaily id="14" type="4" score="60" level="B" addition="2"/>
+<sta_gymDaily id="15" type="4" score="100" level="A" addition="3"/>
+<sta_gymDaily id="16" type="4" score="130" level="S" addition="4"/>
+<sta_gymDaily id="17" type="5" score="60" level="C" addition="1"/>
+<sta_gymDaily id="18" type="5" score="80" level="B" addition="2"/>
+<sta_gymDaily id="19" type="5" score="100" level="A" addition="3"/>
+<sta_gymDaily id="20" type="5" score="110" level="S" addition="4"/>
+</root>

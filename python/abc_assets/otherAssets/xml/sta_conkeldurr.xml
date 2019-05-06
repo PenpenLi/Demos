@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_conkeldurr id="1" buildPercent="0.2" woodNumber="100" stoneNumber="100" buildTime="60" buildImg="house1"/>
+<sta_conkeldurr id="2" buildPercent="0.4" woodNumber="200" stoneNumber="200" buildTime="60" buildImg="house2"/>
+<sta_conkeldurr id="3" buildPercent="0.6" woodNumber="300" stoneNumber="300" buildTime="90" buildImg="house2"/>
+<sta_conkeldurr id="4" buildPercent="0.8" woodNumber="500" stoneNumber="500" buildTime="120" buildImg="house3"/>
+<sta_conkeldurr id="5" buildPercent="1" woodNumber="800" stoneNumber="800" buildTime="120" buildImg="house3"/>
+</root>

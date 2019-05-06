@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildExploreConst id="1" describe="精灵形象" data="1,2,3,4"/>
+<sta_guildExploreConst id="2" describe="骰子次数" data="10"/>
+<sta_guildExploreConst id="3" describe="骰子上限" data="10"/>
+<sta_guildExploreConst id="4" describe="中午、晚上回复骰子次数" data="10"/>
+<sta_guildExploreConst id="5" describe="初始出生点" data="10,5"/>
+<sta_guildExploreConst id="6" describe="迷宫初始场景" data="1,16,31,46,61,76,91"/>
+<sta_guildExploreConst id="7" describe="剧情描述" data="看似平静的一天，本打算前往下一个道馆挑战的你，突如其来的大雨使你进入山洞稍作休息。山洞深处一道奇异的光线吸引你靠近，回过神来你发现自己已经身处在另一个地方，你身后的伙伴统统不见了，而且你本该身处的山洞也不在这里，放眼望去只有无尽的平原。你漫无目的地走了很久，终于来到了一棵果树前，你伸出手想抓住一个果实。突然，映入眼帘的是一只奇怪的手臂，你打量自己全身，发现自己居然变成了一只精灵。事到如今，你只能继续前进，找到回去的路，以及取回自己身体的办法。"/>
+<sta_guildExploreConst id="8" describe="挣脱陷阱消耗骰子次数" data="2"/>
+<sta_guildExploreConst id="9" describe="重选形象消耗钻石" data="50"/>
+<sta_guildExploreConst id="10" describe="刷新任务消耗钻石" data="20"/>
+</root>

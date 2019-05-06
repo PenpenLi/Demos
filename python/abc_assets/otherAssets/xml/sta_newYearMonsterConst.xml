@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearMonsterConst id="1" value="10" description="战斗结束后个人的冷却时间，单位是分"/>
+<sta_newYearMonsterConst id="2" value="10" description="体力与花费钻石的关系系数，公式:y(花费钻石)=k(系数)x(剩余冷却时间，单位为分)"/>
+<sta_newYearMonsterConst id="3" value="60" description="年兽被消灭后的总冷却时间，单位是分"/>
+<sta_newYearMonsterConst id="4" value="100000" description="年兽的血量"/>
+</root>

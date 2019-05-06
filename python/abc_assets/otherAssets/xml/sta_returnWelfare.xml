@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_returnWelfare id="1" type="1" notRePlayerActVal="300" RePlayerActVal="100" notRePlayerID="3" RePlayerID="1" walfareDes="开启一次免费重置"/>
+<sta_returnWelfare id="2" type="2" notRePlayerActVal="100" RePlayerActVal="0" notRePlayerID="1" RePlayerID="-1" walfareDes="激活幸运抽奖活动"/>
+<sta_returnWelfare id="3" type="3" notRePlayerActVal="200" RePlayerActVal="200" notRePlayerID="2" RePlayerID="2" walfareDes="获得一次精灵转移机会"/>
+<sta_returnWelfare id="4" type="4" notRePlayerActVal="500" RePlayerActVal="300" notRePlayerID="4" RePlayerID="3" walfareDes="获得一次免费精灵转移机会"/>
+<sta_returnWelfare id="5" type="5" notRePlayerActVal="700" RePlayerActVal="500" notRePlayerID="5" RePlayerID="4" walfareDes="激活性格洗炼活动"/>
+<sta_returnWelfare id="6" type="6" notRePlayerActVal="0" RePlayerActVal="700" notRePlayerID="-1" RePlayerID="5" walfareDes="性格洗炼次数+1"/>
+</root>

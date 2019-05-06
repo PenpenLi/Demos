@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_collectionRoom id="1" name="御三家大师" rewardType="2" rewardJNS="" titleId="85" img="miao4wa1zhong3zi" poke="3|154|254|389|497|652|724|6|157|257|392|500|655|727|9|160|260|395|503|10658|730"/>
+<sta_collectionRoom id="2" name="资深伊布控" rewardType="2" rewardJNS="" titleId="86" img="yi1bu4" poke="133|134|135|136|196|197|470|471|700|20134|20135|20136|20196|20197|20470|20471|30700"/>
+<sta_collectionRoom id="3" name="飞行系大师" rewardType="2" rewardJNS="" titleId="87" img="bi3diao1" poke="18|20018|164|277|398|521|663"/>
+<sta_collectionRoom id="4" name="时空守护者" rewardType="2" rewardJNS="" titleId="88" img="qi2la1di4na4_form1_mega" poke="484|483|487|20484|20483|20487"/>
+<sta_collectionRoom id="5" name="三界霸者" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000}}" titleId="0" img="lie4kong1zuo4_form1_mega" poke="383|382|384|20383|20382|20384"/>
+<sta_collectionRoom id="6" name="可爱就是正义" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" titleId="0" img="di4an1xi1_form1_light_mega" poke="302719|719|30282|282|184|175|35|39|37|251|385|648|549"/>
+<sta_collectionRoom id="7" name="万年反派" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" titleId="0" img="da4zhen1feng1" poke="20015|15|501089|89|20169|42|30073|72|24|110|22"/>
+<sta_collectionRoom id="8" name="帅是一辈子的事" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" titleId="0" img="jie2la1ao4la1" poke="20150|150|20807|807|20059|59|20448|448|20359|359|20475|475"/>
+<sta_collectionRoom id="9" name="我就是发呆" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300}}" titleId="0" img="ke3da2ya1" poke="54|79|20080|80|199|132|90|129|20143|143"/>
+<sta_collectionRoom id="10" name="龙族统领" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" titleId="0" img="kuai4long2" poke="149|20149|373|20373|445|20445|635|706|784"/>
+<sta_collectionRoom id="11" name="我是一条假龙" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300}}" titleId="0" img="bao4li3long2" poke="130|20130|464|20464|131|20131|142|20142|357|409|411"/>
+<sta_collectionRoom id="12" name="马桶爱好者" rewardType="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" titleId="0" img="lei2ji2qi2qia3si1" poke="486|377|378|379|20486|20377|20378|20379"/>
+</root>

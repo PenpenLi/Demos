@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_worldCupTeam id="1" name="俄罗斯" pic="countryIcon1"/>
+<sta_worldCupTeam id="2" name="沙特阿拉伯" pic="countryIcon2"/>
+<sta_worldCupTeam id="3" name="埃及" pic="countryIcon3"/>
+<sta_worldCupTeam id="4" name="乌拉圭" pic="countryIcon4"/>
+<sta_worldCupTeam id="5" name="葡萄牙" pic="countryIcon5"/>
+<sta_worldCupTeam id="6" name="西班牙" pic="countryIcon6"/>
+<sta_worldCupTeam id="7" name="摩洛哥" pic="countryIcon7"/>
+<sta_worldCupTeam id="8" name="伊朗" pic="countryIcon8"/>
+<sta_worldCupTeam id="9" name="法国" pic="countryIcon9"/>
+<sta_worldCupTeam id="10" name="澳大利亚" pic="countryIcon10"/>
+<sta_worldCupTeam id="11" name="秘鲁" pic="countryIcon11"/>
+<sta_worldCupTeam id="12" name="丹麦" pic="countryIcon12"/>
+<sta_worldCupTeam id="13" name="阿根廷" pic="countryIcon13"/>
+<sta_worldCupTeam id="14" name="冰岛" pic="countryIcon14"/>
+<sta_worldCupTeam id="15" name="克罗地亚" pic="countryIcon15"/>
+<sta_worldCupTeam id="16" name="尼日利亚" pic="countryIcon16"/>
+<sta_worldCupTeam id="17" name="巴西" pic="countryIcon17"/>
+<sta_worldCupTeam id="18" name="瑞士" pic="countryIcon18"/>
+<sta_worldCupTeam id="19" name="哥斯达黎加" pic="countryIcon19"/>
+<sta_worldCupTeam id="20" name="塞尔维亚" pic="countryIcon20"/>
+<sta_worldCupTeam id="21" name="德国" pic="countryIcon21"/>
+<sta_worldCupTeam id="22" name="墨西哥" pic="countryIcon22"/>
+<sta_worldCupTeam id="23" name="瑞典" pic="countryIcon23"/>
+<sta_worldCupTeam id="24" name="韩国" pic="countryIcon24"/>
+<sta_worldCupTeam id="25" name="比利时" pic="countryIcon25"/>
+<sta_worldCupTeam id="26" name="巴拿马" pic="countryIcon26"/>
+<sta_worldCupTeam id="27" name="突尼斯" pic="countryIcon27"/>
+<sta_worldCupTeam id="28" name="英格兰" pic="countryIcon28"/>
+<sta_worldCupTeam id="29" name="波兰" pic="countryIcon29"/>
+<sta_worldCupTeam id="30" name="塞内加尔" pic="countryIcon30"/>
+<sta_worldCupTeam id="31" name="哥伦比亚" pic="countryIcon31"/>
+<sta_worldCupTeam id="32" name="日本" pic="countryIcon32"/>
+</root>

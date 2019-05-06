@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shootingBallGameConst id="1" description="游戏持续时间（单位为秒）" value="90"/>
+<sta_shootingBallGameConst id="2" description="屏幕允许出现精灵最大数" value="5"/>
+<sta_shootingBallGameConst id="3" description="电球速度" value="571"/>
+<sta_shootingBallGameConst id="4" description="电球发射间隔（单位为秒）" value="1"/>
+<sta_shootingBallGameConst id="5" description="超级电球速度" value="650"/>
+<sta_shootingBallGameConst id="6" description="超级电球发射间隔（单位为秒）" value="0.6"/>
+<sta_shootingBallGameConst id="7" description="电力十足持续时间（单位为秒）" value="10"/>
+<sta_shootingBallGameConst id="8" description="挑战次数" value="3"/>
+<sta_shootingBallGameConst id="9" description="每日自动回复的次数" value="0"/>
+<sta_shootingBallGameConst id="10" description="球缩小时间" value="2"/>
+<sta_shootingBallGameConst id="11" description="球在运动过程中每秒减少的像素值" value="5"/>
+<sta_shootingBallGameConst id="12" description="刷出精灵的时间间隔（单位为秒）" value="1.5"/>
+</root>

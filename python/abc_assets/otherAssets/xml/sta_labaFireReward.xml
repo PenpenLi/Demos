@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_labaFireReward id="1" fireDuration="30" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:2},{&apos;pId&apos;:116000,&apos;num&apos;:3},{&apos;pId&apos;:1238,&apos;num&apos;:3},{&apos;pId&apos;:113000,&apos;num&apos;:5}]}"/>
+<sta_labaFireReward id="2" fireDuration="60" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:764,&apos;num&apos;:1},{&apos;pId&apos;:5311,&apos;num&apos;:2},{&apos;pId&apos;:135005,&apos;num&apos;:5},{&apos;pId&apos;:1592,&apos;num&apos;:2}]}"/>
+<sta_labaFireReward id="3" fireDuration="100" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:5498,&apos;num&apos;:2},{&apos;pId&apos;:107000,&apos;num&apos;:2},{&apos;pId&apos;:5745,&apos;num&apos;:3}]}"/>
+</root>

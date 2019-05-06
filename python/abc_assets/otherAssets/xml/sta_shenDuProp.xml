@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shenDuProp id="1" type="1" name="阿尔宙斯隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="2" type="1" name="帝牙卢卡隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="3" type="1" name="帕路奇亚隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="4" type="1" name="骑拉帝纳隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="5" type="2" name="天界之笛" desc="拥有天界之笛后，能从神都遗迹的某一处，前往初始之间" pic="" isSave="0"/>
+<sta_shenDuProp id="6" type="2" name="损坏的天界之笛" desc="刻着创世者的形象的笛子，已经受损无法进行吹奏" pic="" isSave="0"/>
+<sta_shenDuProp id="7" type="2" name="探险套装" desc="让第四幅地图的堵路npc get out" pic="" isSave="0"/>
+<sta_shenDuProp id="8" type="1" name="乘龙条件" desc="跟遗迹迷对话后获得的乘龙条件" pic="" isSave="0"/>
+<sta_shenDuProp id="9" type="2" name="白玉魂碎片" desc="散发着紫色气场的石头碎片，不知道有什么用呢" pic="" isSave="0"/>
+<sta_shenDuProp id="10" type="2" name="白金玉魂碎片" desc="散发着黑色气场的石头碎片，不知道有什么用呢" pic="" isSave="0"/>
+<sta_shenDuProp id="11" type="2" name="金刚玉魂碎片" desc="散发着蓝色气场的石头碎片，不知道有什么用呢" pic="" isSave="0"/>
+<sta_shenDuProp id="12" type="2" name="黑色的古老鳞片" desc="一个黑色的古老鳞片，看上去不知道有什么用，先放在身上带着吧。" pic="" isSave="0"/>
+<sta_shenDuProp id="13" type="2" name="黑色的鳞片" desc="一个黑色的鳞片，像是刚掉下来的一样，看上去不知道有什么用，先放在身上带着吧。" pic="" isSave="0"/>
+<sta_shenDuProp id="14" type="2" name="散发着黑气的玉石碎片" desc="发现了一个散发着黑气的玉石碎片，拿在手上，就能感受到了力量的存在，先放在身上带着吧。" pic="" isSave="0"/>
+<sta_shenDuProp id="15" type="1" name="火箭队隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="16" type="1" name="暴走一族隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="17" type="2" name="冥王的研究资料" desc="遗迹中被国际警察通缉的冥王的研究资料。大概写着神都遗迹有传说精灵出没。" pic="" isSave="0"/>
+<sta_shenDuProp id="18" type="2" name="冥王的眼镜" desc="遗迹中被国际警察通缉的冥王的眼镜。很脏。" pic="" isSave="0"/>
+<sta_shenDuProp id="19" type="2" name="冥王" desc="遗迹中被国际警察通缉的冥王。被打晕了。" pic="" isSave="0"/>
+<sta_shenDuProp id="101" type="2" name="签名" desc="明星训练家小凡的签名" pic="" isSave="0"/>
+<sta_shenDuProp id="20" type="2" name="伤药" desc="能够治好伤口的快速外敷药" pic="" isSave="0"/>
+<sta_shenDuProp id="21" type="2" name="火箭队徽章" desc="火箭队的徽章" pic="" isSave="0"/>
+<sta_shenDuProp id="22" type="2" name="拳头石板" desc="格斗属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="23" type="2" name="蓝天石板" desc="飞行属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="24" type="2" name="剧毒石板" desc="毒属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="25" type="2" name="大地石板" desc="地属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="26" type="2" name="岩石石板" desc="岩属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="27" type="2" name="玉虫石板" desc="虫属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="28" type="2" name="妖怪石板" desc="幽灵属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="29" type="2" name="钢铁石板" desc="钢属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="30" type="2" name="火球石板" desc="火属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="31" type="2" name="水滴石板" desc="水属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="32" type="2" name="碧绿石板" desc="草属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="33" type="2" name="雷电石板" desc="电属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="34" type="2" name="神奇石板" desc="超能属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="35" type="2" name="冰柱石板" desc="冰属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="36" type="2" name="龙之石板" desc="龙属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="37" type="2" name="恶颜石板" desc="恶属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="38" type="2" name="妖精石板" desc="妖属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="39" type="2" name="普通石板" desc="一般属性的石板。凑齐所有属性的石板会发生什么..?" pic="" isSave="0"/>
+<sta_shenDuProp id="40" type="1" name="石板数量" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="102" type="2" name="遗迹地图" desc="简单绘制的遗迹路线图，就算是路痴也能看懂。" pic="" isSave="0"/>
+<sta_shenDuProp id="41" type="2" name="漂亮的羽毛" desc="一根漂亮的羽毛，带在身上就感觉到很安心。" pic="" isSave="0"/>
+<sta_shenDuProp id="42" type="1" name="罗密欧隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="43" type="1" name="朱丽叶隐藏值" desc="" pic="" isSave="0"/>
+<sta_shenDuProp id="44" type="2" name="木吉的修炼手册" desc="记载着木吉修炼过程的手册，其中的坚韧不拔的精神值得参考。" pic="" isSave="0"/>
+<sta_shenDuProp id="45" type="2" name="冰晶状的石头" desc="摸起来能使人感到冰凉的石头，外观别具一格。" pic="" isSave="0"/>
+<sta_shenDuProp id="46" type="2" name="奇怪的宝石" desc="来自一位博士赠送的宝石，作为友谊的象征纪念物。" pic="" isSave="0"/>
+<sta_shenDuProp id="47" type="2" name="沙漠里的宝石" desc="在沙漠中挖掘到的一颗石头，外貌奇特" pic="" isSave="0"/>
+</root>

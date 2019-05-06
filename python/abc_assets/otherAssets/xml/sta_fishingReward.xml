@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fishingReward id="1" startRanking="1" endRanking="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:888},&apos;silver&apos;:{&apos;num&apos;:10000000}}"/>
+<sta_fishingReward id="2" startRanking="2" endRanking="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:666},&apos;silver&apos;:{&apos;num&apos;:8000000}}"/>
+<sta_fishingReward id="3" startRanking="3" endRanking="3" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500},&apos;silver&apos;:{&apos;num&apos;:5000000}}"/>
+<sta_fishingReward id="4" startRanking="4" endRanking="10" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;silver&apos;:{&apos;num&apos;:3000000}}"/>
+<sta_fishingReward id="5" startRanking="11" endRanking="50" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200},&apos;silver&apos;:{&apos;num&apos;:2000000}}"/>
+<sta_fishingReward id="6" startRanking="51" endRanking="100" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100},&apos;silver&apos;:{&apos;num&apos;:1500000}}"/>
+<sta_fishingReward id="7" startRanking="101" endRanking="500" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:80},&apos;silver&apos;:{&apos;num&apos;:1000000}}"/>
+<sta_fishingReward id="8" startRanking="501" endRanking="1000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:50},&apos;silver&apos;:{&apos;num&apos;:500000}}"/>
+<sta_fishingReward id="9" startRanking="1001" endRanking="3000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:30},&apos;silver&apos;:{&apos;num&apos;:300000}}"/>
+<sta_fishingReward id="10" startRanking="3001" endRanking="500000" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000}}"/>
+</root>

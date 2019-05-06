@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gameCenterConstant id="1" describe="每日领取老虎机免费代币数量" data="20"/>
+<sta_gameCenterConstant id="2" describe="每日消费钻石可领取代币数量" data="30"/>
+<sta_gameCenterConstant id="3" describe="每日需要消耗的钻石数量" data="300"/>
+<sta_gameCenterConstant id="4" describe="老虎机商店每日刷新次数" data="3"/>
+<sta_gameCenterConstant id="5" describe="老虎机商店刷新分数" data="300"/>
+<sta_gameCenterConstant id="6" describe="老虎机单次下注最大数量" data="5"/>
+</root>

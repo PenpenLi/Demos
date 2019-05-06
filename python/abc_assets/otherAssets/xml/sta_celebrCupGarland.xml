@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_celebrCupGarland id="1" title="累计送出30个幸运花环" score="30" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:3},{&apos;pId&apos;:101000,&apos;num&apos;:3},{&apos;pId&apos;:116000,&apos;num&apos;:3}]}"/>
+<sta_celebrCupGarland id="2" title="累计送出50个幸运花环" score="50" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:112000,&apos;num&apos;:2},{&apos;pId&apos;:764,&apos;num&apos;:2},{&apos;pId&apos;:5745,&apos;num&apos;:3}]}"/>
+<sta_celebrCupGarland id="3" title="累计送出80个幸运花环" score="80" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:1590,&apos;num&apos;:5},{&apos;pId&apos;:1053,&apos;num&apos;:2}]}"/>
+<sta_celebrCupGarland id="4" title="累计送出120个幸运花环" score="120" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:2},{&apos;pId&apos;:5328,&apos;num&apos;:1},{&apos;pId&apos;:135005,&apos;num&apos;:5},{&apos;pId&apos;:5746,&apos;num&apos;:3}]}"/>
+<sta_celebrCupGarland id="5" title="累计送出150个幸运花环" score="150" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:2},{&apos;pId&apos;:5620,&apos;num&apos;:1},{&apos;pId&apos;:1126,&apos;num&apos;:1}],&apos;poke&apos;:[{&apos;pokeId&apos;:498,&apos;num&apos;:1,&apos;lv&apos;:5}]}"/>
+</root>

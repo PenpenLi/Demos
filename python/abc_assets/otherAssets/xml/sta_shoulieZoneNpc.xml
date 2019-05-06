@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shoulieZoneNpc id="1" npcId="1" npcName="狩猎区院长" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" storylineDia="[{&apos;npc&apos;:&apos;欢迎来到狩猎区，我是狩猎区的院长，小子，我看你骨骼惊奇，很有捕抓大师的潜质，要不要在这里磨练一下？&apos;},{ &apos;player&apos;:&apos;。。。。。。&apos;},{&apos;npc&apos;:&apos;这样吧，现在我给你30个狩猎球，你可以在我的狩猎场里面捕抓精灵，每次捕抓精灵会获得评分，评分达到我规定的分数，则算是通过我的考验。&apos;}]" diaAfterTask="{&apos;dialogue&apos;:&apos;做得好！&apos;,&apos;success&apos;:&apos;哈哈，我果然没有看错人。来，请收下这张高级狩猎券，在成为捕抓大师的道路上再接再厉吧！&apos;,&apos;fail&apos;:&apos;真遗憾你没有达到我的规定分数，年轻人，好好磨练一番再来吧！&apos;}" diaBeforeTask="哦？年轻人，你已经完成迈向成为捕抓大师的重要一步了吗？" dailyDialogue="欢迎光临狩猎区，这里的精灵可以随便抓走哦！"/>
+<sta_shoulieZoneNpc id="2" npcId="2" npcName="美少女" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="我和我的男朋友一起来到狩猎区观光，这里的精灵都是我未曾见过的"/>
+<sta_shoulieZoneNpc id="3" npcId="3" npcName="美少男" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="我和我的女朋友朋友一起来到狩猎区观光，这么大个狩猎场真是吓了我们一跳！"/>
+<sta_shoulieZoneNpc id="4" npcId="4" npcName="工人" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="我负责维护狩猎区的设备安全，保证让游客玩得开心！"/>
+<sta_shoulieZoneNpc id="5" npcId="5" npcName="捕虫少年" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="这里遇到了很多我想要的虫系精灵，实在是太兴奋了！"/>
+<sta_shoulieZoneNpc id="6" npcId="6" npcName="乖乖女" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="狩猎区好大啊，我走了半天才走了一半，真的是累死我了。"/>
+<sta_shoulieZoneNpc id="7" npcId="7" npcName="帽子大叔" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="我来到这里不是为了抓精灵的，是来等待和妹子美好的邂逅的，什么？你说我很猥琐？"/>
+<sta_shoulieZoneNpc id="8" npcId="8" npcName="研究员" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="我在这里观察狩猎区的精灵，研究被人类保护起来的精灵和野外的精灵的差别是我的课题。"/>
+<sta_shoulieZoneNpc id="9" npcId="9" npcName="学生" rewardJNS="" storylineDia="" diaAfterTask="" diaBeforeTask="" dailyDialogue="来到狩猎区观光，我学到了很多知识！"/>
+</root>

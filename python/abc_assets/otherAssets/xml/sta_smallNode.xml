@@ -1,12 +1,3 @@
-<!-- 
-sta_smallNode:
-
-
-id:小地图节点id
-name:节点名称
-openCondJNS:开启条件toml
-endNode:城市结束节点 0:不是  1:是
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 <sta_smallNode id="1" name="1号路" openCondJNS="" endNode="0"/>
@@ -16,7 +7,7 @@ endNode:城市结束节点 0:不是  1:是
 <sta_smallNode id="5" name="4号路" openCondJNS="" endNode="0"/>
 <sta_smallNode id="6" name="华蓝市道馆" openCondJNS="" endNode="1"/>
 <sta_smallNode id="7" name="18号路" openCondJNS="" endNode="0"/>
-<sta_smallNode id="8" name="华蓝洞" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:72}" endNode="1"/>
+<sta_smallNode id="8" name="华蓝洞" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:68}" endNode="1"/>
 <sta_smallNode id="9" name="5号路" openCondJNS="" endNode="0"/>
 <sta_smallNode id="10" name="6号路" openCondJNS="" endNode="0"/>
 <sta_smallNode id="11" name="枯叶市道馆" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:20}" endNode="1"/>
@@ -55,5 +46,39 @@ endNode:城市结束节点 0:不是  1:是
 <sta_smallNode id="44" name="29号路2" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:75}" endNode="0"/>
 <sta_smallNode id="45" name="吉野市" openCondJNS="" endNode="0"/>
 <sta_smallNode id="46" name="29号水路" openCondJNS="" endNode="0"/>
-<sta_smallNode id="47" name="30号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="47" name="30号路" openCondJNS="" endNode="1"/>
+<sta_smallNode id="48" name="31号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="49" name="桔梗市道馆" openCondJNS="" endNode="0"/>
+<sta_smallNode id="50" name="32号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="51" name="互连洞" openCondJNS="" endNode="1"/>
+<sta_smallNode id="52" name="33号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="53" name="桧皮镇道馆" openCondJNS="" endNode="0"/>
+<sta_smallNode id="54" name="33号路2" openCondJNS="" endNode="0"/>
+<sta_smallNode id="55" name="34号路" openCondJNS="" endNode="1"/>
+<sta_smallNode id="56" name="桐树林神龛" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:78}" endNode="0"/>
+<sta_smallNode id="57" name="34号路2" openCondJNS="" endNode="0"/>
+<sta_smallNode id="58" name="满金市道馆" openCondJNS="" endNode="1"/>
+<sta_smallNode id="59" name="训练师交流中心" openCondJNS="" endNode="0"/>
+<sta_smallNode id="60" name="35号道路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="61" name="自然公园" openCondJNS="" endNode="0"/>
+<sta_smallNode id="62" name="36号道路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="63" name="阿露福遗迹" openCondJNS="" endNode="1"/>
+<sta_smallNode id="64" name="37号道路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="65" name="圆朱市道馆" openCondJNS="" endNode="1"/>
+<sta_smallNode id="66" name="烧焦塔" openCondJNS="" endNode="0"/>
+<sta_smallNode id="67" name="铃铃塔" openCondJNS="" endNode="0"/>
+<sta_smallNode id="68" name="39号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="69" name="摩摩牧场" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:82}" endNode="0"/>
+<sta_smallNode id="70" name="浅黄市入口" openCondJNS="" endNode="1"/>
+<sta_smallNode id="71" name="浅黄市道馆" openCondJNS="" endNode="0"/>
+<sta_smallNode id="72" name="光辉灯塔" openCondJNS="" endNode="0"/>
+<sta_smallNode id="73" name="浅黄市港口" openCondJNS="" endNode="0"/>
+<sta_smallNode id="74" name="浅黄市对战塔" openCondJNS="" endNode="1"/>
+<sta_smallNode id="75" name="41航道" openCondJNS="{&apos;eventType&apos;:3,&apos;plyLv&apos;:85}" endNode="0"/>
+<sta_smallNode id="76" name="湛蓝市沿岸" openCondJNS="" endNode="0"/>
+<sta_smallNode id="77" name="湛蓝市道馆" openCondJNS="" endNode="1"/>
+<sta_smallNode id="78" name="断崖入口" openCondJNS="" endNode="0"/>
+<sta_smallNode id="79" name="断崖洞穴" openCondJNS="" endNode="0"/>
+<sta_smallNode id="80" name="47号路" openCondJNS="" endNode="0"/>
+<sta_smallNode id="81" name="48号路" openCondJNS="" endNode="0"/>
 </root>

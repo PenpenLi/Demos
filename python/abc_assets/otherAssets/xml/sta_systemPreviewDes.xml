@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_systemPreviewDes id="1" name="联盟大赛" description="联盟竞技、挑战其他玩家，谁能卫冕王者之巅。"/>
+<sta_systemPreviewDes id="2" name="狩猎场" description="经典的抓宠模式，各种神兽等你来抓！"/>
+<sta_systemPreviewDes id="3" name="王者之路" description="王者之路，实力的印证，看谁能走的更远。"/>
+<sta_systemPreviewDes id="4" name="挖矿" description="挂机就可获得大量金币，经验糖、晶石，还可去抢其他 玩家资源。"/>
+<sta_systemPreviewDes id="5" name="精灵游乐场" description="精灵游乐场包含各种休闲有趣的玩法，给你战斗之外的体验。"/>
+<sta_systemPreviewDes id="6" name="公会" description="公会特有玩法：公会争霸、公会争夺战，一起打造第一公会。"/>
+<sta_systemPreviewDes id="7" name="野外探索" description="多种探索模式，不同的关卡体验，更多神秘等你来挖掘。"/>
+<sta_systemPreviewDes id="8" name="PVP" description="实时玩家在线匹配，多元化的对战模式，总有适合你的打法。"/>
+<sta_systemPreviewDes id="9" name="天王争霸赛" description="术业有专攻，看看你哪个系别精灵能够独霸一方！"/>
+<sta_systemPreviewDes id="10" name="组队双打" description="即时组队双打对战，更加考验队友之间的默契配合！"/>
+<sta_systemPreviewDes id="11" name="丰缘地区" description="丰缘地区经典还原，全新冒险玩法等你来挑战！"/>
+<sta_systemPreviewDes id="12" name="精灵花园" description="捕抓精灵的全新模式，赶紧摇动你的手机！"/>
+<sta_systemPreviewDes id="13" name="钓鱼馆" description="拿起你的鱼竿，去邂逅栖息在水中的精灵吧！"/>
+<sta_systemPreviewDes id="14" name="沙湖乐园" description="狩猎场的全新玩法，还原经典的沙狐乐园。"/>
+<sta_systemPreviewDes id="15" name="神秘花园" description="在庭院中自由摆放各种道具，打造只属于自己的独一无二的庭院吧！"/>
+<sta_systemPreviewDes id="16" name="神秘虫洞" description="派遣神兽驻守虫洞，获取更强的次元之力吧！"/>
+<sta_systemPreviewDes id="17" name="精灵小屋" description="培养心爱的精灵，让他们变得更亲密的同时，获取更强大的力量。"/>
+<sta_systemPreviewDes id="18" name="沟通广场" description="和小精灵们在沟通广场中散步和交流，会得到意想不到的收获哦！"/>
+</root>

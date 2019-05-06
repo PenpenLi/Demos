@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_StrongGuidance id="1" type="1" way="精灵等级" instruction="1、精灵积累到一定经验值，等级便会上升。等级上升时，所有能力也会随着上升，并有可能学习到新的招式。|2、经验值初期主要依赖通关冒险关卡获得，之后可以将精灵放置于“训练栏”中培养锻炼，每隔一定时间即可自动获得经验值。训练栏还可以进行升级，等级越高经验获得越快。|3、如果想快速升级，还可以向精灵喂养各种经验糖果，喂养后立刻获得大量经验。" OpenLv="1"/>
+<sta_StrongGuidance id="2" type="1" way="突破" instruction="1、精灵突破是最重要的培养方式之一，突破等级高低直接影响了精灵强弱，如果游戏中遇到了困难，不妨提升下突破等级。|2、突破分为多个等级，需要消耗不同的材料，每只精灵需要的材料和数量也各不相同：|3、突破材料主要从冒险关卡获得，在节日活动或者其他一些玩法中也能获得部分道具，训练师们可自行前往探索。" OpenLv="1"/>
+<sta_StrongGuidance id="3" type="1" way="特训" instruction="1、特训是能够大幅提升精灵的一种培养途径，每提升一级特训，精灵都能获得质的提升，前期务必积极积攒特训沙袋。|2、特训所消耗的沙袋主要从“冒险关卡--精英难度”和“试炼--精灵联盟试炼”获得，每天有一定的次数限制，记得不要忘记刷哦。|" OpenLv="10"/>
+<sta_StrongGuidance id="4" type="1" way="个体值" instruction="1、每只精灵都能通过金币消耗增加个体值，初期根据需要对重点的属性进行加点即可。|2、个体值点满是精灵进行超级进化需要的条件之一，这个时候就需要大量的金币做保证了，每天去打打王者之路能够获得大量的金币哦，具体可以在“金币获取”中查看详细地点。" OpenLv="17"/>
+<sta_StrongGuidance id="5" type="1" way="携带道具" instruction="1、精灵世界中有各种各样丰富的携带道具，给精灵携带后能够提升精灵的作战能力，可以任意搭配适合该精灵的道具。|2、游戏初期能够获得一些比较常见的携带道具，例如给水系精灵携带“神秘水滴”能够加强水系技能威力，给火系精灵携带“木炭”会增加火系技能威力，可以前往“道具图鉴”查看各个道具的获取方式。|3、不同道具给不同精灵携带后收益不一样，例如高输出精灵携带增加技能伤害的道具比辅助精灵优势更大，如何搭配也是一个值得研究的课题呢，如果遇到疑惑时，不妨前往“精灵图鉴”查看“精灵分析”，看看其他训练师是如何搭配精灵的吧！" OpenLv="2"/>
+<sta_StrongGuidance id="6" type="1" way="特性" instruction="1、每只进化为最终形态的精灵都拥有的特殊能力，可以在精灵背包里查询。特性在对战中具有特定的效果，特性有利于精灵在对战中的发挥，灵活地运用精灵的特性可以在对战中获得意想不到的效果。" OpenLv="26"/>
+<sta_StrongGuidance id="7" type="1" way="努力值" instruction="1、每只精灵都可以进行努力值培养，训练师的任务就是合理分配努力值点数在有用的属性上，确定精灵的培养方向。|2、一般来说，最优的加点方向为只培养6个属性中的其中2个，此时能达到最大加成。如果不是很清楚加什么属性点的话，就向其他训练师征求下意见吧" OpenLv="0"/>
+<sta_StrongGuidance id="8" type="2" way="王者之路" instruction="挑战多层关卡，掉落大量金币与道具" OpenLv="22"/>
+<sta_StrongGuidance id="9" type="2" way="联盟大赛" instruction="与其他玩家同台竞争，争夺更高名次" OpenLv="10"/>
+<sta_StrongGuidance id="10" type="2" way="点金手" instruction="使用钻石能够转化成大量金币" OpenLv="1"/>
+<sta_StrongGuidance id="11" type="2" way="试炼" instruction="挑战各种每日副本，掉落金币与培养材料" OpenLv="18"/>
+<sta_StrongGuidance id="12" type="2" way="挖矿" instruction="可开采丰富矿物，获得金币、钻石、晶石、经验糖果" OpenLv="26"/>
+<sta_StrongGuidance id="13" type="3" way="充值" instruction="充值即可立即获得大量钻石" OpenLv="1"/>
+<sta_StrongGuidance id="14" type="3" way="三星通关" instruction="每个城市或野外全部3星通关，可获得额外奖励" OpenLv="1"/>
+<sta_StrongGuidance id="15" type="3" way="联盟大赛" instruction="与其他玩家同台竞争，争夺更高名次" OpenLv="10"/>
+<sta_StrongGuidance id="16" type="3" way="挖矿" instruction="可开采丰富矿物，获得金币、钻石、晶石、经验糖果" OpenLv="26"/>
+<sta_StrongGuidance id="17" type="4" way="狩猎场" instruction="狩猎场能遇到不同精灵，高级场还能捕捉到传说神兽" OpenLv="18"/>
+<sta_StrongGuidance id="18" type="4" way="野外冒险" instruction="前往野外探索点，能随机遇到各种精灵并进行捕捉" OpenLv="1"/>
+<sta_StrongGuidance id="19" type="4" way="精灵花园" instruction="趣味虚拟现实玩法，投掷神秘球捕捉你的专属精灵" OpenLv="28"/>
+<sta_StrongGuidance id="20" type="4" way="神兽试炼" instruction="挑战远古传说召唤副本，掉落传说号角碎片" OpenLv="55"/>
+</root>

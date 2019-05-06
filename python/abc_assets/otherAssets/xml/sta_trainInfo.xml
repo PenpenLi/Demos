@@ -1,31 +1,15 @@
-<!-- 
-sta_trainInfo:
-
-
-id:
-vipNeed:VIP等级限制
-isFree:是否免费
-levelNeed:需要等级
-unlockLevel:解锁等级
-trainType:训练类型
-openCost:开通费用
-green:升级绿色费用
-blue:升级蓝色费用
-purple:升级到紫色费用
-orange:升级到橙色费用
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<sta_trainInfo id="1" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="2" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="3" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="4" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="5" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="6" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="7" vipNeed="4" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="8" vipNeed="6" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="9" vipNeed="8" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="10" vipNeed="10" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="11" vipNeed="12" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
-<sta_trainInfo id="12" vipNeed="14" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988"/>
+<sta_trainInfo id="1" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="2" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="3" vipNeed="0" isFree="1" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="4" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="5" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="6" vipNeed="0" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="7" vipNeed="4" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="8" vipNeed="6" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="9" vipNeed="8" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="10" vipNeed="10" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="11" vipNeed="12" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
+<sta_trainInfo id="12" vipNeed="14" isFree="0" levelNeed="1" unlockLevel="0" trainType="1" openCost="88" green="188" blue="388" purple="688" orange="988" paleRed="1288" red="1588"/>
 </root>

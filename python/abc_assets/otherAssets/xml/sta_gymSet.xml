@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gymSet id="1" lv="1" maxMember="5" maxBuff="3" takeBuff="1" hpUp="0" wgUp="0" wfUp="0" tgUp="0" tfUp="0" sdUp="0"/>
+<sta_gymSet id="2" lv="2" maxMember="10" maxBuff="5" takeBuff="2" hpUp="0" wgUp="0.05" wfUp="0.05" tgUp="0.05" tfUp="0.05" sdUp="0"/>
+<sta_gymSet id="3" lv="3" maxMember="15" maxBuff="8" takeBuff="2" hpUp="0" wgUp="0.1" wfUp="0.1" tgUp="0.1" tfUp="0.1" sdUp="0"/>
+<sta_gymSet id="4" lv="4" maxMember="20" maxBuff="10" takeBuff="3" hpUp="0" wgUp="0.15" wfUp="0.15" tgUp="0.1" tfUp="0.15" sdUp="0"/>
+<sta_gymSet id="5" lv="5" maxMember="25" maxBuff="15" takeBuff="4" hpUp="0" wgUp="0.2" wfUp="0.2" tgUp="0.2" tfUp="0.2" sdUp="0"/>
+</root>

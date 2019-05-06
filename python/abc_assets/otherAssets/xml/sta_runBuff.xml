@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_runBuff id="1" effect="下一次遇到史诗精灵概率增加50%" diamond="100" times="9999999" ratio="50"/>
+<sta_runBuff id="2" effect="下一次遇到稀有精灵概率增加50%" diamond="80" times="9999999" ratio="50"/>
+<sta_runBuff id="3" effect="下一次必定遇到史诗精灵" diamond="500" times="1" ratio="100"/>
+<sta_runBuff id="4" effect="下一次必定遇到稀有精灵" diamond="300" times="3" ratio="100"/>
+<sta_runBuff id="5" effect="下一次不遇到常见精灵" diamond="300" times="3" ratio="100"/>
+</root>

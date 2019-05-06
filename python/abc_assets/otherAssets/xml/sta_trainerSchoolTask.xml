@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_trainerSchoolTask id="1" titleDesc="喵喵矿场" desc="学生挖掘金币矿场2次" taskType="1" taskVal="2" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000}}" buffType="1" addKnowledge="20" needBook="30" openLv="26"/>
+<sta_trainerSchoolTask id="2" titleDesc="糖果屋" desc="学生挖掘糖果屋矿场2次" taskType="2" taskVal="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:20}}" buffType="2" addKnowledge="20" needBook="30" openLv="26"/>
+<sta_trainerSchoolTask id="3" titleDesc="晶石矿场" desc="学生挖掘晶石矿场2次" taskType="3" taskVal="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:20}}" buffType="3" addKnowledge="20" needBook="30" openLv="26"/>
+<sta_trainerSchoolTask id="4" titleDesc="金币试炼" desc="学生完成3次金币试炼" taskType="4" taskVal="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000}}" buffType="4" addKnowledge="20" needBook="40" openLv="19"/>
+<sta_trainerSchoolTask id="5" titleDesc="联盟试炼" desc="学生完成3次联盟试炼" taskType="5" taskVal="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:200000},&apos;prop&apos;:[{&apos;pId&apos;:1144,&apos;num&apos;:1,&apos;ratio&apos;:30}]}" buffType="5" addKnowledge="20" needBook="40" openLv="24"/>
+<sta_trainerSchoolTask id="6" titleDesc="闪光试炼" desc="学生完成3次闪光试炼" taskType="6" taskVal="3" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1052,&apos;num&apos;:5,&apos;ratio&apos;:100}]}" buffType="6" addKnowledge="20" needBook="40" openLv="45"/>
+<sta_trainerSchoolTask id="7" titleDesc="传说试炼" desc="学生完成3次传说试炼" taskType="7" taskVal="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:20000},&apos;prop&apos;:[{&apos;pId&apos;:1143,&apos;num&apos;:1,&apos;ratio&apos;:30}]}" buffType="7" addKnowledge="20" needBook="50" openLv="55"/>
+<sta_trainerSchoolTask id="8" titleDesc="王者之路" desc="学生今日累计通关王者之路5层" taskType="8" taskVal="5" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:1000000},&apos;prop&apos;:[{&apos;pId&apos;:5745,&apos;num&apos;:1,&apos;ratio&apos;:30}]}" buffType="8" addKnowledge="20" needBook="50" openLv="22"/>
+<sta_trainerSchoolTask id="9" titleDesc="竞技达人" desc="学生参与经典PVP三次" taskType="9" taskVal="3" rewardJNS="{&apos;pvDot&apos;:{&apos;num&apos;:70}}" buffType="9" addKnowledge="20" needBook="50" openLv="35"/>
+<sta_trainerSchoolTask id="10" titleDesc="联盟大赛" desc="学生参与2次联盟大赛" taskType="10" taskVal="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:20},&apos;prop&apos;:[{&apos;pId&apos;:1232,&apos;num&apos;:1,&apos;ratio&apos;:30}]}" buffType="10" addKnowledge="20" needBook="40" openLv="10"/>
+<sta_trainerSchoolTask id="11" titleDesc="丰缘地区" desc="学生丰缘地区消耗探索体力20点" taskType="11" taskVal="20" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:135008,&apos;num&apos;:1,&apos;ratio&apos;:100},{&apos;pId&apos;:135006,&apos;num&apos;:1,&apos;ratio&apos;:30}]}" buffType="11" addKnowledge="20" needBook="50" openLv="58"/>
+<sta_trainerSchoolTask id="12" titleDesc="垂钓达人" desc="学生今日钓鱼获得200晶石" taskType="12" taskVal="200" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:100000}}" buffType="12" addKnowledge="20" needBook="40" openLv="38"/>
+</root>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkFoodBagUpgrade id="1" exp="50"/>
+<sta_guildWalkFoodBagUpgrade id="2" exp="80"/>
+<sta_guildWalkFoodBagUpgrade id="3" exp="120"/>
+<sta_guildWalkFoodBagUpgrade id="4" exp="170"/>
+<sta_guildWalkFoodBagUpgrade id="5" exp="230"/>
+<sta_guildWalkFoodBagUpgrade id="6" exp="300"/>
+<sta_guildWalkFoodBagUpgrade id="7" exp="380"/>
+<sta_guildWalkFoodBagUpgrade id="8" exp="480"/>
+<sta_guildWalkFoodBagUpgrade id="9" exp="600"/>
+<sta_guildWalkFoodBagUpgrade id="10" exp="0"/>
+</root>

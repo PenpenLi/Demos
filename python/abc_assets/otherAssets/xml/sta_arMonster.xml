@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_arMonster id="402059" hp="20" leaveScreenRate="30" leaveScreenRange="640,960" moveRate="20" moveRange="40,60" moveMinTime="5" cdTime="3" limitTime="180"/>
+<sta_arMonster id="402229" hp="15" leaveScreenRate="10" leaveScreenRange="640,960" moveRate="15" moveRange="40,60" moveMinTime="5" cdTime="3" limitTime="180"/>
+<sta_arMonster id="401262" hp="20" leaveScreenRate="5" leaveScreenRange="640,960" moveRate="5" moveRange="40,60" moveMinTime="5" cdTime="3" limitTime="180"/>
+<sta_arMonster id="401310" hp="15" leaveScreenRate="15" leaveScreenRange="640,960" moveRate="10" moveRange="40,60" moveMinTime="5" cdTime="3" limitTime="180"/>
+</root>

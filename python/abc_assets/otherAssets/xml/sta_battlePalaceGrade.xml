@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_battlePalaceGrade id="1" Condition="战斗胜利" EachScore="30" MaxScore="30"/>
+<sta_battlePalaceGrade id="2" Condition="每替换一次精灵" EachScore="5" MaxScore="10"/>
+<sta_battlePalaceGrade id="3" Condition="每一次效果拔群" EachScore="10" MaxScore="20"/>
+<sta_battlePalaceGrade id="4" Condition="每无效化对方的一个攻击" EachScore="10" MaxScore="20"/>
+<sta_battlePalaceGrade id="5" Condition="每一次对方攻击我方出现效果不佳" EachScore="10" MaxScore="20"/>
+<sta_battlePalaceGrade id="6" Condition="每被击倒一只精灵" EachScore="-10" MaxScore="-15"/>
+<sta_battlePalaceGrade id="7" Condition="每被对方无效化一个攻击" EachScore="-5" MaxScore="-10"/>
+<sta_battlePalaceGrade id="8" Condition="每一次攻击对方时出现效果不佳" EachScore="-5" MaxScore="-10"/>
+<sta_battlePalaceGrade id="9" Condition="剩余血量" EachScore="0" MaxScore="30"/>
+</root>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_folder id="1" name="向上时间（S）" px="0" py="0" value="1"/>
+<sta_folder id="2" name="机械臂左右移动时间（S）" px="0" py="0" value="3"/>
+<sta_folder id="3" name="随机移动判定时间间隔（S）" px="0" py="0" value="0.5"/>
+<sta_folder id="4" name="向下抓时间（S）" px="0" py="0" value="0.8"/>
+<sta_folder id="5" name="向上回到原位时间（S）" px="0" py="0" value="1.5"/>
+<sta_folder id="6" name="泡泡1位置" px="110" py="270" value="0"/>
+<sta_folder id="7" name="泡泡2位置" px="280" py="310" value="0"/>
+<sta_folder id="8" name="泡泡3位置" px="430" py="290" value="0"/>
+<sta_folder id="9" name="泡泡4位置" px="620" py="300" value="0"/>
+<sta_folder id="10" name="泡泡5位置" px="760" py="330" value="0"/>
+<sta_folder id="11" name="泡泡6位置" px="880" py="270" value="0"/>
+</root>

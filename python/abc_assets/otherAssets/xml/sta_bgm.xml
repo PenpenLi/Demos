@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_bgm id="1" bgmType="1" bgmName="zhen1xin1zhen4" deblockingJNS="{&apos;spIdArr&apos;:[]}" default="1" bgmTitle="真新镇主题曲" description="最经典的真新镇主题曲,带你回到第一次邂逅口袋妖怪的旧时光。"/>
+<sta_bgm id="2" bgmType="1" bgmName="hua2lan2shi4" deblockingJNS="{&apos;spIdArr&apos;:[54,116,118,121]}" default="0" bgmTitle="华蓝市主题曲" description="欢快活泼的华蓝市主题曲,还记得那个野蛮的人鱼公主与神秘的华蓝洞穴吗?"/>
+<sta_bgm id="3" bgmType="1" bgmName="jie2geng3shi4" deblockingJNS="{&apos;spIdArr&apos;:[17,69,163,175]}" default="0" bgmTitle="桔梗市主题曲" description="金银中最经典的主题音乐——桔梗市主题曲。"/>
+<sta_bgm id="4" bgmType="1" bgmName="zhan4lan2shi4" deblockingJNS="{&apos;spIdArr&apos;:[62,181,213]}" default="0" bgmTitle="湛蓝市主题曲" description="安静而温柔的湛蓝市主题曲,闭上眼睛仔细聆听,仿佛大海就在自身身边。"/>
+<sta_bgm id="5" bgmType="1" bgmName="wei4bai2zhen4" deblockingJNS="{&apos;spIdArr&apos;:[252,255,258]}" default="0" bgmTitle="未白镇主题曲" description="未白镇主题曲,简直就是童年回忆的代表。"/>
+<sta_bgm id="6" bgmType="1" bgmName="lv4meng2zhen4" deblockingJNS="{&apos;spIdArr&apos;:[280,281,282]}" default="0" bgmTitle="绿萌镇主题曲" description="啊,你的超级鸟,看起来很幸福呢,真羡慕你!——还记得绿荫镇里,这个鉴定亲密度的小姐姐吗?"/>
+<sta_bgm id="7" bgmType="1" bgmName="zhen1sha1zhen4" deblockingJNS="{&apos;spIdArr&apos;:[387,390,393]}" default="0" bgmTitle="真砂镇主题曲" description="珍珠钻石中正式踏入旅途冒险的真砂镇主题曲,让你一路上领略神奥地区的风采。"/>
+<sta_bgm id="8" bgmType="2" bgmName="chu1dai4guan3zhu3" deblockingJNS="{&apos;spIdArr&apos;:[]}" default="1" bgmTitle="决战馆主-1代" description="还记得当年第一次对战小刚的那份激动?"/>
+<sta_bgm id="9" bgmType="2" bgmName="chu1dai4guan4jun1" deblockingJNS="{&apos;spIdArr&apos;:[18,65,103,112]}" default="0" bgmTitle="决战冠军-1代" description="无论如何都会比你抢先一步的劲敌小茂,他的嚣张,也许只能在这首主题曲之后终结了吧。"/>
+<sta_bgm id="10" bgmType="2" bgmName="er4dai4guan3zhu3" deblockingJNS="{&apos;spIdArr&apos;:[208,221,230,241]}" default="0" bgmTitle="决战馆主-2代" description="与关都馆主风格截然不同的城都馆主,相信小茜的大奶罐绝对是一个童年的噩梦。"/>
+<sta_bgm id="11" bgmType="2" bgmName="er4dai4guan4jun1" deblockingJNS="{&apos;spIdArr&apos;:[6,130,142,149]}" default="0" bgmTitle="决战冠军-2代" description="激情澎湃的战斗主题曲,金银水晶中,训练家对精灵的一切,都灌注在与冠军的一战中!"/>
+<sta_bgm id="12" bgmType="2" bgmName="san1daiguan3zhu3" deblockingJNS="{&apos;spIdArr&apos;:[299,296,310,324]}" default="0" bgmTitle="决战馆主-3代" description="丰原地区的馆主前来挑战!当初爸爸的两只强力请假王,让你感受什么叫做力量!"/>
+<sta_bgm id="13" bgmType="2" bgmName="san1dai4guan4jun1" deblockingJNS="{&apos;spIdArr&apos;:[227,306,376]}" default="0" bgmTitle="决战冠军-3代" description="结果我第一,又强又厉害!——记得这个自恋的大吾冠军吗?这首主题曲能带你重回与他巅峰对决的瞬间。"/>
+<sta_bgm id="14" bgmType="2" bgmName="wu3dai4zhan4dou4" deblockingJNS="{&apos;spIdArr&apos;:[643,644]}" default="0" bgmTitle="英雄对决-5代" description="黑白中两位英雄的巅峰对决!所有的激情都尽在这首主题曲之中。"/>
+</root>

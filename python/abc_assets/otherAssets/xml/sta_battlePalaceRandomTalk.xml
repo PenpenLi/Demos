@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_battlePalaceRandomTalk id="1" type="1" PrewarTalk="你觉得你打得过我么？" WinTalk="连个小孩子都打不过，还说自己是训练师。" FailTalk="就会欺负小孩子，算什么训练师。"/>
+<sta_battlePalaceRandomTalk id="2" type="1" PrewarTalk="我的理想是长大后成为一名知名的训练师。" WinTalk="击败你是我成为知名训练师的第一步。" FailTalk="我会继续奋斗的，迟早会超越你。"/>
+<sta_battlePalaceRandomTalk id="3" type="1" PrewarTalk="像你这种觉得自己很厉害大人，我见多了。" WinTalk="你也是徒有其表，连我都打不过。" FailTalk="你跟其他训练师不一样。"/>
+<sta_battlePalaceRandomTalk id="4" type="1" PrewarTalk="哇，你的精灵好像很厉害的样子。" WinTalk="原来你的精灵只是看上去厉害而已。" FailTalk="你的精灵太厉害了。"/>
+<sta_battlePalaceRandomTalk id="5" type="1" PrewarTalk="最近看到好多大哥哥，大姐姐来挑战宫殿。但是都被我打败了。" WinTalk="你跟其他的训练师差不多。" FailTalk="你比其他的训练师要厉害很多。"/>
+<sta_battlePalaceRandomTalk id="6" type="1" PrewarTalk="他们都说我人小鬼大，是羡慕我的精灵厉害么？" WinTalk="打不过我的都说我人小鬼大。" FailTalk="其实我也是很厉害的，对吗？"/>
+<sta_battlePalaceRandomTalk id="7" type="1" PrewarTalk="你别看我小，我可是有很多年训练师的经验了。" WinTalk="我就说我有很多年训练师经验了。" FailTalk="好吧，其实我也想成为厉害的训练师。"/>
+<sta_battlePalaceRandomTalk id="8" type="1" PrewarTalk="打赢我，我就告诉你怎么直接到100层。" WinTalk="看，我还是很厉害的吧。" FailTalk="一层一层打上去就可以了啊。"/>
+<sta_battlePalaceRandomTalk id="9" type="1" PrewarTalk="你说你能打赢很多训练师是真的么？" WinTalk="我一看就知道你是在说谎。" FailTalk="看来你没有骗我。"/>
+<sta_battlePalaceRandomTalk id="10" type="1" PrewarTalk="打赢我，我就把我的精灵送给你。" WinTalk="我就知道你打不赢我。" FailTalk="欺负小孩子，还要抢他的精灵，你良心过意的去吗？"/>
+<sta_battlePalaceRandomTalk id="11" type="1" PrewarTalk="我觉得你用三只精灵打不过我。" WinTalk="我现在觉得就算你六只精灵也打不过我。" FailTalk="原来你那么厉害的啊，我要向你学习。"/>
+<sta_battlePalaceRandomTalk id="12" type="1" PrewarTalk="我从五岁开始就是训练师了，所以我现在有一，二……额反正很多年训练师经验了。" WinTalk="我就说我经验丰富嘛，你还不信，哼。" FailTalk="你也是五岁就成为训练师了么？"/>
+<sta_battlePalaceRandomTalk id="13" type="1" PrewarTalk="打赢我，我就把我的糖果给你吃。" WinTalk="没点实力就想吃我的糖果，哪有那么简单。" FailTalk="你是个坏人，欺负小孩子，还要抢人家糖果。"/>
+<sta_battlePalaceRandomTalk id="14" type="1" PrewarTalk="你能教我怎么训练精灵吗？" WinTalk="看来你也没有什么可以教我的啊。" FailTalk="你的精灵是怎么训练的啊？那么厉害。"/>
+<sta_battlePalaceRandomTalk id="15" type="1" PrewarTalk="那天我偷听博士跟新的训练师说，要变强就要多战斗。" WinTalk="果然战斗能提升自己的训练水平。" FailTalk="我以后再也不偷听了。"/>
+<sta_battlePalaceRandomTalk id="16" type="1" PrewarTalk="我瞒着家里偷偷溜到宫殿就是为了跟更多的训练师较量。" WinTalk="看来你的实力也一般般嘛。" FailTalk="你别告诉我妈妈，我在宫殿啊。"/>
+<sta_battlePalaceRandomTalk id="17" type="1" PrewarTalk="给我两只精灵，我就能打败你。" WinTalk="我是不是很有训练师天赋，哈哈。" FailTalk="我再也不调皮了。"/>
+<sta_battlePalaceRandomTalk id="18" type="1" PrewarTalk="如果你当我是小孩子，那你就输定了。" WinTalk="别看我是小孩子就以为能打赢我。" FailTalk="你的实力超出了我的想象。"/>
+<sta_battlePalaceRandomTalk id="19" type="1" PrewarTalk="我觉得你连小孩子都不一定打得过。" WinTalk="不是你弱，是我太厉害了么？" FailTalk="我不这样说，你会陪我玩么？"/>
+<sta_battlePalaceRandomTalk id="20" type="1" PrewarTalk="我的精灵都是自己抓的呢，你要来比试一下么？" WinTalk="你不会说我欺负大人吧？" FailTalk="我要是再多抓点精灵，你肯定打不过我。"/>
+<sta_battlePalaceRandomTalk id="21" type="2" PrewarTalk="你认识我吗？" WinTalk="这就是你傲慢的下场。" FailTalk="不，我不认识你！"/>
+<sta_battlePalaceRandomTalk id="22" type="2" PrewarTalk="你知道这五年我是怎么过的吗？" WinTalk="你知道复刻多好玩吗，就算输了我也会继续玩！" FailTalk="天天躲在家里玩复刻，变强了也变秃了。"/>
+<sta_battlePalaceRandomTalk id="23" type="2" PrewarTalk="我的梦想是成为卡洛斯联盟冠军。" WinTalk="又击败一个对手，离梦想又进一步了。" FailTalk="梦想？我没有梦想！就在刚才，梦想没了！"/>
+<sta_battlePalaceRandomTalk id="24" type="2" PrewarTalk="我在这宫殿里面是无敌的。" WinTalk="此路不通。" FailTalk="这就是失败的滋味吗。"/>
+<sta_battlePalaceRandomTalk id="25" type="2" PrewarTalk="现在是第几层了。" WinTalk="是男人就要上100层。" FailTalk="是男人就要上100层。"/>
+<sta_battlePalaceRandomTalk id="26" type="2" PrewarTalk="嘤嘤嘤。" WinTalk="嘤嘤嘤…" FailTalk="嘤嘤嘤。"/>
+<sta_battlePalaceRandomTalk id="27" type="2" PrewarTalk="我就是天生强大。" WinTalk="我不但天生强大，我还是天生要强！。" FailTalk="我这是注定要凉？"/>
+<sta_battlePalaceRandomTalk id="28" type="2" PrewarTalk="扶我起来战一局。" WinTalk="一局不够，再来一局。" FailTalk="扶我起来，我还能战。"/>
+<sta_battlePalaceRandomTalk id="29" type="2" PrewarTalk="此路不通。" WinTalk="始终还是没人能通过。" FailTalk="又被人通过了。"/>
+<sta_battlePalaceRandomTalk id="30" type="2" PrewarTalk="在我的地盘，你就要接受制裁。" WinTalk="我，我，我十宗罪就是要制裁你。" FailTalk="看来是我被制裁了。"/>
+<sta_battlePalaceRandomTalk id="31" type="3" PrewarTalk="我赢了这场战斗的话，你就要和我交往哦。" WinTalk="你怎么这么耿直！" FailTalk="我竟然输了T.T。"/>
+<sta_battlePalaceRandomTalk id="32" type="3" PrewarTalk="你希望谁将来当你的太太呢。" WinTalk="我是不会让步的。" FailTalk="世界上哪有那种人存在。"/>
+<sta_battlePalaceRandomTalk id="33" type="3" PrewarTalk="你别过来。" WinTalk="不听不想不知道。" FailTalk="你别过来。"/>
+<sta_battlePalaceRandomTalk id="34" type="3" PrewarTalk="打完这场我就回老家结婚。" WinTalk="好，我的使命完成了。" FailTalk="为什么我还要在这里。"/>
+<sta_battlePalaceRandomTalk id="35" type="3" PrewarTalk="你快乐吗。" WinTalk="你快走。" FailTalk="我很快乐。"/>
+<sta_battlePalaceRandomTalk id="36" type="4" PrewarTalk="说好的三年，三年又三年，我还是个守关小喽啰。" WinTalk="终于要当上大boss，出任联盟冠军，走上人生巅峰了。" FailTalk="我放弃治疗。"/>
+<sta_battlePalaceRandomTalk id="37" type="4" PrewarTalk="天上掉下个馅饼。" WinTalk="软柿子，使劲捏。" FailTalk="我变成馅饼了。"/>
+<sta_battlePalaceRandomTalk id="38" type="4" PrewarTalk="我对你研究的通通透透。" WinTalk="实践更重要。" FailTalk="做好万全准备。"/>
+<sta_battlePalaceRandomTalk id="39" type="4" PrewarTalk="滴滴答答。" WinTalk="啊？" FailTalk="Oh yeah."/>
+<sta_battlePalaceRandomTalk id="40" type="4" PrewarTalk="我认识你，我们是老乡。" WinTalk="你很强大。" FailTalk="你忘了我们的见面礼仪了？"/>
+<sta_battlePalaceRandomTalk id="41" type="3" PrewarTalk="嗨，以前没见过你呀！你对精灵的策略是什么？" WinTalk="果然还是我的策略更强呀！" FailTalk="真不敢相信我输了！"/>
+<sta_battlePalaceRandomTalk id="42" type="3" PrewarTalk="我正等著你这讨厌鬼呢！" WinTalk="看起来你不只是一个打扰人家约会的讨厌鬼而已……" FailTalk="有朝一日我要出门旅行，和经验丰富的训练家们战斗。"/>
+<sta_battlePalaceRandomTalk id="43" type="3" PrewarTalk="您好吗？真荣幸能再见到您！" WinTalk="我赢了，实在是太感动了。和热爱的精灵一同战斗，获得胜利……这就是训练家的喜悦吧。" FailTalk="唔……你真强……"/>
+<sta_battlePalaceRandomTalk id="44" type="3" PrewarTalk="我的精灵是非常强啊！" WinTalk="我的梦想是出来旅行，与强大的训练家对战……现在已经实现了！" FailTalk="真不敢相信我输了！"/>
+<sta_battlePalaceRandomTalk id="45" type="3" PrewarTalk="您好。天气真好……哎呀……小女子又睡著了。" WinTalk="好像终于是睡着了啊……" FailTalk="哦！小女子承认输了。您真是太强了。"/>
+<sta_battlePalaceRandomTalk id="46" type="3" PrewarTalk="你要使用哪种精灵，如何对战，可以告诉我吗？" WinTalk="刚才的战斗中我利用了学到的知识才赢的。" FailTalk="看来我还有许多东西要学……"/>
+<sta_battlePalaceRandomTalk id="47" type="3" PrewarTalk="三年前我就有预感要和你战斗。" WinTalk="和我看到的未来一样啊……" FailTalk="嗯？你的能力非常强啊。希望能再和你交手。"/>
+<sta_battlePalaceRandomTalk id="48" type="3" PrewarTalk="你来了。那么战斗吧！" WinTalk="赢了……太好了……" FailTalk="你很难缠。毫无疑问，你赢了。"/>
+<sta_battlePalaceRandomTalk id="49" type="3" PrewarTalk="不管什么对手，我都会全力以赴！" WinTalk="等一下！你再努力一下吧！" FailTalk="这次是我输了，但下次我会赢的！"/>
+<sta_battlePalaceRandomTalk id="50" type="3" PrewarTalk="不是自夸，我可是很强的！而且我的精灵也是又可爱又强大！好了，开始吧！" WinTalk="我说吧。我的精灵是很强的！" FailTalk="啊啊啊！！哇！！…………呜呜。…………好过分啊！"/>
+<sta_battlePalaceRandomTalk id="51" type="3" PrewarTalk="让我看看这段时间的训练是不是奏效了！" WinTalk="赢、赢了！磨练的技能奏效了！" FailTalk="唔……肩膀又太过用力了……"/>
+<sta_battlePalaceRandomTalk id="52" type="3" PrewarTalk="好了，见识见识我的精灵那华丽的舞蹈吧！" WinTalk="战斗华丽地结束了！" FailTalk="战斗比我更华丽的人……"/>
+<sta_battlePalaceRandomTalk id="53" type="3" PrewarTalk="还请多多指教，随时可以放马过来！" WinTalk="赢了能学到东西，输了也能学到东西，都是经验，没错" FailTalk="我不知道到底要努力到什么程度才可以……但是和精灵在一起，我就有了努力的动力！"/>
+<sta_battlePalaceRandomTalk id="54" type="3" PrewarTalk="精灵和打扮和恋爱都要全力以赴！" WinTalk="精灵们的气势满满哦！" FailTalk="好厉害！我有点尊敬你了！"/>
+<sta_battlePalaceRandomTalk id="55" type="3" PrewarTalk="挑战的表情，很好啊，很好啊！" WinTalk="嗯，你的眼神告诉我你还会再来" FailTalk="你与你的精灵真是最棒的拍档！"/>
+<sta_battlePalaceRandomTalk id="56" type="3" PrewarTalk="我知道你是个很强的训练家，让我们开始对战吧！" WinTalk="相当精彩的比赛！" FailTalk="我被你的实力吓到了！！"/>
+<sta_battlePalaceRandomTalk id="57" type="3" PrewarTalk="快开始吧，我的精灵们可相当地厉害哦。" WinTalk="我和精灵真正心意相通的时候，往往是我战斗中被逼到绝境的时候。" FailTalk="如果明天晴朗，足以露出笑容。"/>
+<sta_battlePalaceRandomTalk id="58" type="3" PrewarTalk="我和我的精灵能心意相通！" WinTalk="还是我和精灵的配合更胜一筹啊！" FailTalk="我、我和精灵的配合……"/>
+<sta_battlePalaceRandomTalk id="59" type="3" PrewarTalk="嗯！总之对战吧！" WinTalk="太好了！我和我的精灵都是状态大好啊！" FailTalk="明明已经培养得很好了啊……"/>
+<sta_battlePalaceRandomTalk id="60" type="3" PrewarTalk="我要通过对战展示我的成果。" WinTalk="谢谢！和你的战斗让我的研究更加完善了！" FailTalk="啊啊，我的研究还是不够啊！"/>
+<sta_battlePalaceRandomTalk id="61" type="5" PrewarTalk="听说你去过月见山，那就把你在月见山上得到的精灵交出来吧！！" WinTalk="你的精灵我收下了。" FailTalk="可恶，我居然会输给你这个臭小子"/>
+<sta_battlePalaceRandomTalk id="62" type="5" PrewarTalk="为了防止世界被破坏，为了守护世界的和平，贯彻爱与真实的邪恶，可爱又迷人的反派角色" WinTalk="就这实力也敢和我们火箭队作对。" FailTalk="可恶，为什么会这样！！"/>
+<sta_battlePalaceRandomTalk id="63" type="5" PrewarTalk="我要报仇！充满仇恨的我们再次回来了，幽灵的复仇，你看好了！！" WinTalk="我终于战胜主角了。。。咦，主角？" FailTalk="啊，不，我是复仇的幽灵，我不要体验这种感觉真讨厌！！！"/>
+<sta_battlePalaceRandomTalk id="64" type="5" PrewarTalk="不要再向前走了，首领下了命令了你是危险人物！乖乖投降吧！！！" WinTalk="回去吧，这里不是你能来的地方。" FailTalk="恩，这感觉好讨厌，一定是你这家伙用了什么方法令到我输了，臭小子，下次你没那么好运了！我们走着瞧"/>
+<sta_battlePalaceRandomTalk id="65" type="5" PrewarTalk="我们就是这个时代的主角，我们是无敌的！！ " WinTalk="这下你尝到失败的滋味了吧。" FailTalk="不，这里让我想起了失败的惩罚，你害的我要被惩罚，我不会轻易放过你的！！！"/>
+<sta_battlePalaceRandomTalk id="66" type="5" PrewarTalk="勇敢绽放的邪恶之花，坚强又甜蜜的反派角色，这是火箭队的地方" WinTalk="乖乖跟我走吧。" FailTalk="你到底是谁？呼叫总部，呼叫总部，有人强行入侵，应该是通缉榜上的人请求支援！！！"/>
+<sta_battlePalaceRandomTalk id="67" type="5" PrewarTalk="为什么到哪都能看到你！" WinTalk="我们是代表正义的火箭队遵从或者毁灭！！" FailTalk="这种感觉真是讨厌，你给我等着，我会回来的"/>
+<sta_battlePalaceRandomTalk id="68" type="5" PrewarTalk="哈哈， 这次一定能打败你！！只要打败你我们的复仇就成功了！只有你，只有你！！！" WinTalk="终于完成了目标，感觉好空虚啊。" FailTalk="在我们投入新的工作之前，打到你就是我们唯一的目标，别想轻易摆脱我们！！"/>
+<sta_battlePalaceRandomTalk id="69" type="5" PrewarTalk="这不是你该来的地方！" WinTalk="哈哈哈哈，手下败将。" FailTalk="为什么，为什么？？我不服！我一定要打败你！！！"/>
+<sta_battlePalaceRandomTalk id="70" type="5" PrewarTalk="火箭队无处不在！就像风一样，你看不到它，但风依然流转不停，无所不在" WinTalk="这次算你栽在我们手上了。" FailTalk="我们的组织不会轻易消亡的我们要还会回来的！！！"/>
+</root>

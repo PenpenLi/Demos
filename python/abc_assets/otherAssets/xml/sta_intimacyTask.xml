@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_intimacyTask id="1" type="1" val="2" desc="参与2场PVP经典匹配对战"/>
+<sta_intimacyTask id="2" type="2" val="300" desc="获得300点钓鱼晶石点数"/>
+<sta_intimacyTask id="3" type="3" val="1" desc="在沙狐乐园中成功抓到1只精灵"/>
+<sta_intimacyTask id="4" type="4" val="1" desc="在精灵花园成功抓到1只精灵"/>
+<sta_intimacyTask id="5" type="5" val="1" desc="在狩猎场成功抓到1只精灵"/>
+<sta_intimacyTask id="6" type="6" val="1" desc="在公会中获取1个孵蛋"/>
+<sta_intimacyTask id="7" type="7" val="3" desc="在神秘花园播种3次种子"/>
+</root>

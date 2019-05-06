@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_laternRiddles id="1" question="凸（打一精灵）" answer="三地鼠" options="三地鼠傲骨燕冻原熊美丽花迪奥西斯蜥蜴王λ惊角鹿毒鼬大力鳄" tips="地面系精灵|是最终形态的精灵哦"/>
+<sta_laternRiddles id="2" question="精神分裂（打一精灵）" answer="双头龙" options="双头龙六尾月精灵水晶灯火灵麻麻小鱼爆音怪土地云戴鲁比拉鲁" tips="珍贵的精灵|是龙系的精灵哦"/>
+<sta_laternRiddles id="3" question="比利海灵顿（打一精灵）" answer="豪力" options="豪力暴鲤龙麻麻鳗炎武王电蜘蛛三合一磁怪烈雀班吉拉雷精灵阿" tips="常见的精灵|格斗系的精灵"/>
+<sta_laternRiddles id="4" question="皮可西的影子（打一精灵）" answer="耿鬼" options="耿鬼黑鲁加火爆猴妙蛙花大尾立克雷色利亚皮可西阿勃梭鲁沙河" tips="常见的精灵|都市传说"/>
+<sta_laternRiddles id="5" question="身子红彤彤，头上戴皇冠（打一精灵）" answer="鲤鱼王" options="鲤鱼王梦妖魔月精灵巨翅飞鱼铁甲犀牛斗笠菇雪拉比隆隆石阿尔" tips="常见的精灵|很弱的精灵"/>
+<sta_laternRiddles id="6" question="上面长着草，下面长着脚（打一精灵）" answer="走路草" options="走路草钢铁超梦黑鲁加妙蛙花巨藤怪冰霜雷希拉姆圈圈熊猫鼬斩" tips="常见的精灵|经常在草丛里遇到"/>
+<sta_laternRiddles id="7" question="会说谎的植物（打一精灵）" answer="胡说树" options="胡说树傲骨燕小约克席多蓝恩火神虫粉兜蛋坚果哑铃爆香猿小山" tips="不是草系精灵"/>
+<sta_laternRiddles id="8" question="最好看的花（打一精灵）" answer="美丽花" options="美丽花土河马电龙大菊花坚果哑铃蜈蚣王大颚蚁小灰怪毽子草超" tips="常见的精灵"/>
+<sta_laternRiddles id="9" question="一男一女一孩儿，旁边还有一朵花（打一精灵）" answer="妙蛙花" options="妙蛙花热带龙叶精灵月精灵毽子花巴大蝴波士可多拉电灯怪派拉" tips=""/>
+<sta_laternRiddles id="10" question="老实人归西（打一精灵）" answer="耿鬼" options="耿鬼雷电球双弹瓦斯月桂叶梦幻雷电狮卷耳兔线球路卡利欧α化" tips="常见的精灵"/>
+<sta_laternRiddles id="11" question="宝贝计划的主演（打一精灵）" answer="乘龙" options="乘龙笨笨鱼梦梦蚀哥德宝宝长翅鸥洛奇亚梦幻喷火龙X晃晃斑小" tips=""/>
+<sta_laternRiddles id="12" question="2012年国际足联金足奖（打一精灵）" answer="伊布" options="伊布火焰鸡盾壁龙电击兽沙瓦郎迷你冰牙牙盖诺赛克特金铃铛古" tips="特别的精灵"/>
+<sta_laternRiddles id="13" question="网络枪手（打一精灵）" answer="水君" options="水君妙蛙花双头龙猎斑鳗波克基古铁骨土人黑鲁加卷耳兔炽焰咆" tips="罕见的精灵"/>
+<sta_laternRiddles id="14" question="飞上枝头变（打一精灵）" answer="凤王" options="凤王树林龟斗笠菇比雕笨笨鱼臭臭泥嘟嘟利蓝圣菇顽皮弹巨钳螳" tips="罕见的精灵"/>
+<sta_laternRiddles id="15" question="整天各种理由不上班（打一精灵）" answer="请假王" options="请假王火焰鸡触手百合蛋蛋沙奈朵风速狗妙蛙种子美纳斯加热洛" tips="强悍的精灵"/>
+<sta_laternRiddles id="16" question="300斤大胖子（打一精灵）" answer="快龙" options="快龙哈约克鲶鱼王大嘴鸥火焰鸡阿尔宙斯烈咬陆鲨大甲水君狩猎" tips="精灵的特殊外号"/>
+<sta_laternRiddles id="17" question="二师兄（打一精灵）" answer="炎武王" options="炎武王大颚蚁泡沫栗鼠黑化卡咪龟海皇牙流氓鳄沙漠蜻蜓鸭宝宝" tips=""/>
+<sta_laternRiddles id="18" question="咬不动的汤圆（打一精灵）" answer="石丸子" options="石丸子鬼斯巨金怪可达鸭鬼斯喷火龙X保母曼波大颚蚁皮皮卡蒂" tips="想想精灵的名字"/>
+<sta_laternRiddles id="19" question="陈冠希（打一精灵）" answer="头巾混混" options="头巾混混阿尔宙斯雨翅蛾咕妞妞天蝎闪电鸟水箭龟帝王拿波胡地" tips="精灵的外形"/>
+<sta_laternRiddles id="20" question="黑人向老前辈打招呼（打一精灵）" answer="师父鼬" options="师父鼬可达鸭水箭龟黑化卡咪龟气球鬼沙奈朵小鸭嘴龙闪电鸟鬼" tips="说话的特点"/>
+<sta_laternRiddles id="21" question="九个月的大肚子（打一精灵）" answer="差不多娃娃" options="差不多娃娃黑化卡咪龟捕蝇草雷电斑马火焰鸡阿尔宙斯铁哑铃盖" tips=""/>
+<sta_laternRiddles id="22" question="全身肥肉的宝宝（打一精灵）" answer="胖丁" options="胖丁玛瑙水母鬼蝉梦妖魔可可多拉拉提奥斯班吉拉尖牙陆鲨太阳" tips=""/>
+<sta_laternRiddles id="23" question="睡眠不足的爬行类动物（打一精灵）" answer="黑眼鳄" options="黑眼鳄泡沫栗鼠尼多力诺诅咒娃娃滑头小子小拳石迪奥西斯路卡" tips="精灵外形"/>
+<sta_laternRiddles id="24" question="拥有无价的尾巴（打一精灵）" answer="呆呆兽" options="呆呆兽盖诺赛克特直冲熊斗笠菇阿尔宙斯雷精灵毒骷蛙松雪人猫" tips="游戏里面的设定"/>
+<sta_laternRiddles id="25" question="千万个大老板（打一精灵)" answer="波士可多拉" options="波士可多拉负电拍拍沙奈朵搬运小匠迪奥西斯双弹瓦斯双弹瓦斯" tips="联系下英语哦"/>
+<sta_laternRiddles id="26" question="厕所之王（打一精灵）" answer="雷吉奇卡斯" options="雷吉奇卡斯巨藤怪路卡利欧α比雕尼多力诺比比鸟比雕耿鬼泥泥" tips="精灵的别称"/>
+<sta_laternRiddles id="27" question="白色恶魔(打一精灵）" answer="电栗鼠" options="电栗鼠种子铁球牙牙烈空座耿鬼呆河马玛狃拉迪奥西斯穿山王烈" tips="精灵的别称"/>
+<sta_laternRiddles id="28" question="手也短，脚也短，光头上有红鼻子（打一精灵）" answer="朝北鼻" options="朝北鼻帝牙海狮土龙弟弟古拉顿大食花尖牙陆鲨急冻鸟迷你冰呆" tips="精灵外形"/>
+<sta_laternRiddles id="29" question="眯眯眼力气大，最能吃爱睡觉。(打一精灵）" answer="卡比兽" options="卡比兽呆河马大颚蚁雷电云步哨鼠黑鲁加利牙鱼花椰猿哥德宝宝" tips="精灵特点"/>
+<sta_laternRiddles id="30" question="呆呆兽戴了个贝壳（打一精灵）" answer="河马王" options="河马王骑拉帝纳热带龙冰鬼护黑鲁加火焰鸡比雕重甲暴龙利欧路" tips="精灵外形"/>
+<sta_laternRiddles id="31" question="骆驼吃了辣椒（打一精灵）" answer="喷火驼" options="喷火驼铁面忍者吼鲸王妙蛙花大葱鸭炎热喵嘎拉嘎拉河马王阿尔" tips="精灵名称"/>
+<sta_laternRiddles id="32" question="刚才的笑话真好笑（打一精灵）" answer="噗噗猪" options="噗噗猪自爆磁怪美纳斯幽灵气球毕力吉翁萤光鱼咕妞妞阿尔宙斯" tips="精灵名称"/>
+<sta_laternRiddles id="33" question="晚上见到姚明（打一精灵）" answer="夜巨人" options="夜巨人太阳精灵阿柏怪投射鬼阿尔宙斯阿利多斯沼王幕下力士波" tips="精灵名称"/>
+<sta_laternRiddles id="34" question="袋龙着火（打一精灵）" answer="热带龙" options="热带龙蓝圣菇毒刺水母麒麟奇猫老大双刃丸天然鸟皮丘请假王叶" tips="精灵名称"/>
+<sta_laternRiddles id="35" question="小龙女（打一精灵）" answer="咕咕" options="咕咕阿勃梭鲁食梦梦雷精灵甲贺忍蛙大钳蟹大嘴鸥绿毛虫姆克鸟" tips="精灵名称"/>
+<sta_laternRiddles id="36" question="黄道第八宫（打一精灵）" answer="天蝎" options="天蝎战槌龙单首龙勾魂眼袋龙喷火龙Σ哥德小姐猎斑鳗哥德小姐" tips="精灵名称"/>
+<sta_laternRiddles id="37" question="飘着垃圾的浪花（打一精灵）" answer="乌波" options="乌波大岩蛇君主蛇树林龟大嘴鸥热带龙海星星布卢皇铁壳昆急冻" tips="精灵名称"/>
+<sta_laternRiddles id="38" question="孩子嘴巴能吞拳（打一精灵）" answer="大嘴娃" options="大嘴娃鲶鱼王拉鲁拉丝蔓藤怪卡蒂狗迪奥西斯电萤虫美纳斯惊角" tips="精灵名称"/>
+<sta_laternRiddles id="39" question="电蚊拍能干什么(打一精灵）" answer="电电虫" options="电电虫胡说盆栽卡拉卡拉幽灵气球火神虫波克基古吼鲸王虫宝包" tips="精灵名称"/>
+<sta_laternRiddles id="40" question="鲈鱼往锅里跳（打一精灵）" answer="勇士鲈鱼" options="勇士鲈鱼古蜻蜓火暴兽妙蛙花吸盘魔偶帝牙卢卡月精灵优雅猫飞" tips="精灵名字的含义"/>
+<sta_laternRiddles id="41" question="蓝天上的气球（打一精灵）" answer="轻飘飘" options="轻飘飘电电虫小球飞鱼叉字蝠投射鬼超力王青绵鸟雷电兽水箭龟" tips="精灵名字的含义"/>
+<sta_laternRiddles id="42" question="儿童组游泳冠军（打一精灵）" answer="快泳蛙" options="快泳蛙电击魔兽美洛耶塔皮丘妙蛙花太阳珊瑚烈焰猴盔甲鸟双弹" tips="精灵名字的含义"/>
+<sta_laternRiddles id="43" question="聋子吃面条（打一精灵）" answer="赤面龙" options="赤面龙炒炒猪姆克鹰美纳斯玛狃拉佛烈托斯阿尔宙斯太古盔甲海" tips="谐音"/>
+<sta_laternRiddles id="44" question="太湖、鄱阳湖、洪泽湖、洞庭湖乘以二（打一精灵）" answer="巴大蝴" options="巴大蝴化石盔喷火龙菲奥奈叶精灵冰精灵电击魔兽海皇牙盔甲鸟" tips="谐音"/>
+<sta_laternRiddles id="45" question="小飞象的特征（打一精灵）" answer="长耳兔" options="长耳兔豆豆鸽水晶灯火灵古铜钟刺尾虫班吉拉蟾蜍王烈焰马美纳" tips="谐音"/>
+<sta_laternRiddles id="46" question="两百斤的丹尼尔·雷德克里夫（打一精灵）" answer="胖胖哈力" options="胖胖哈力巨钳天蝎迷唇娃土狼犬天然鸟大针蜂戴鲁比巨钳螳螂水" tips="谐音"/>
+<sta_laternRiddles id="47" question="FF浏览器（打一精灵）" answer="火狐狸" options="火狐狸阿尔宙斯大甲大狼犬阿勃梭鲁凯西猫老大负电拍拍鬼蝉暴" tips="精灵名字的含义"/>
+<sta_laternRiddles id="48" question="两个小淘气（打一精灵）" answer="皮皮" options="皮皮铁甲犀牛达克莱伊胡说树冻原熊比雕大食花海豹球夜巨人比" tips="精灵名字的含义"/>
+<sta_laternRiddles id="49" question="妻子让丈夫很无语（打一精灵）" answer="雷公" options="雷公隆隆岩阿尔宙斯龙卷云雷丘利牙鱼三头龙波克比泥泥鳅小火" tips="网络用语"/>
+<sta_laternRiddles id="50" question="毛衣上的小疙瘩（打一精灵）" answer="毛球" options="毛球迷你龙盖盖虫洁咪水箭龟幸福蛋种子铁球阿尔宙斯玛力露丽" tips="精灵名字的含义"/>
+<sta_laternRiddles id="51" question="大象把鹦鹉蒸了（打一精灵）" answer="象征鸟" options="象征鸟玛力露丽阿柏蛇玛力露奇鲁莉安沙奈朵电龙阿尔宙斯混混" tips="谐音"/>
+<sta_laternRiddles id="52" question="天鹅拿了冠军（打一精灵）" answer="首席天鹅" options="首席天鹅毒鼬坚果哑铃夜黑魔人喷火驼盖诺赛克特火焰鸡胡地刺" tips="精灵名字的含义"/>
+<sta_laternRiddles id="53" question="巨龙归西（打一精灵）" answer="袋龙" options="袋龙雷丘喵喵刺尾虫麒麟奇钢铁超梦Y天然雀宝贝龙铁面忍者黑" tips="谐音"/>
+<sta_laternRiddles id="54" question="小孩抓住一只蜻蜓埋在沙子里（打一精灵）" answer="沙漠蜻蜓" options="沙漠蜻蜓毒骷蛙胖丁始祖小鸟阿尔宙斯黑化妙蛙草炎热喵毽子花" tips="谐音"/>
+<sta_laternRiddles id="55" question="土龙哥哥" answer="基格尔德" options="基格尔德3D龙II莲叶童子海星星宝石海星尼多娜始祖大鸟六" tips="精灵梗"/>
+<sta_laternRiddles id="56" question="碟子上装了砒霜（打一精灵）" answer="毒粉蝶" options="毒粉蝶毕力吉翁太阳珊瑚浮鼬王麻麻鳗榛果球迪奥西斯月精灵破" tips="精灵名字的含义"/>
+<sta_laternRiddles id="57" question="小熊参加百米赛跑（打一精灵）" answer="直冲熊" options="直冲熊洛托姆咩利羊美洛耶塔沼跃鱼乌波大嘴蝠盔甲鸟超梦X麻" tips="精灵名字的含义"/>
+<sta_laternRiddles id="58" question="中国上古部落其中一位首领（打一精灵）" answer="炎帝" options="炎帝狩猎凤蝶巨牙鲨勾帕路翁哥德小姐煤炭龟阿尔宙斯金鱼王血" tips="精灵的名字"/>
+<sta_laternRiddles id="59" question="不干活的老头（打一精灵）" answer="懒人翁" options="懒人翁草苗龟波士可多拉烈空座袋龙麒麟奇车轮球单首龙树林龟" tips="精灵名字的含义"/>
+<sta_laternRiddles id="60" question="巨龙死在沙漠里（打一精灵）" answer="热带龙" options="热带龙线球尼多朗冷水猿玛狃拉混混鳄黑鲁加索罗亚克太阳岩暴" tips="谐音"/>
+<sta_laternRiddles id="61" question="Mega绿毛虫（打一精灵）" answer="烈空座" options="烈空座沼王巨钳蟹君主蛇木木枭象牙猪电电虫克雷色利亚毒蝎牙" tips="精灵别称"/>
+<sta_laternRiddles id="62" question="爱之花未开(打一精灵）" answer="玫瑰苞" options="玫瑰苞超梦Y路卡利欧地鼠轰隆雉鸡急冻鸟骑拉帝纳鬼蝉暴露菇" tips="花语"/>
+<sta_laternRiddles id="63" question="最可能让座的飞行系精灵" answer="绅士鸦" options="绅士鸦暴露菇毽子草小果然樱花鳗图图犬雷电狮天蝎双尾猴火焰" tips="精灵名字的含义"/>
+<sta_laternRiddles id="64" question="漩涡鸣人（打一精灵）" answer="九尾" options="九尾阿尔宙斯雷吉奇卡斯吉利蛋雷电云帝牙卢卡雷精灵雷精灵街" tips="精灵的名字"/>
+<sta_laternRiddles id="65" question="手掌大的龙（打一精灵）" answer="迷你龙" options="迷你龙气球鬼玛狃拉蓝鳄闪电鸟雪妖女猫老大冰霜雷希拉姆双头" tips="精灵名字的含义"/>
+<sta_laternRiddles id="66" question="口袋妖怪专用摄影师（打一精灵）" answer="凤王" options="凤王轰隆雉鸡百变怪战槌龙黑化卡咪龟月精灵叉尾浮鼬天蝎毽子" tips="著名口袋妖怪梗"/>
+<sta_laternRiddles id="67" question="不乖的小孩（打一精灵）" answer="不良蛙" options="不良蛙大舌头姆克鸟大钳蟹宝宝丁盔甲鸟雷电斑马七夕青鸟向尾" tips="精灵名字的含义"/>
+<sta_laternRiddles id="68" question="能吃的健身器材（打一精灵）" answer="坚果哑铃" options="坚果哑铃喷火驼卡咪龟果然翁铁甲暴龙盾甲龙怨影娃娃捷克罗姆" tips="精灵名字"/>
+<sta_laternRiddles id="69" question="某品牌洗发水代言花（打一精灵）" answer="霸王花" options="霸王花狩猎凤蝶暴露菇名字阿尔宙斯大针蜂阿柏怪树林龟绵绵帝" tips="精灵名字"/>
+<sta_laternRiddles id="70" question="没有翅膀照样可以飞（打一精灵）" answer="嘟嘟利" options="嘟嘟利念力土偶洛奇亚向尾喵正电拍拍路卡利欧美丽花冲洗洛托" tips="精灵特点"/>
+<sta_laternRiddles id="71" question="养成爱用餐具的好习惯（打一精灵）" answer="胡地" options="胡地暗黑捷克罗姆向日花怪电栗鼠席多蓝恩藤藤蛇大力鳄帝王拿" tips="精灵特点"/>
+<sta_laternRiddles id="72" question="我想活下去（打一精灵）" answer="顽皮蛋" options="顽皮蛋七夕青鸟叶精灵呆呆兽迪奥西斯阿尔宙斯喷火龙阿尔宙斯" tips="某精灵专用梗"/>
+<sta_laternRiddles id="73" question="说说说说说你爱我（打一精灵）" answer="大舌头" options="大舌头盔甲鸟迪奥西斯皮皮铁甲犀牛橡果球阿柏怪蘑蘑菇盔甲鸟" tips="形容人说话的词语"/>
+<sta_laternRiddles id="74" question="似蛋非蛋（打一精灵）" answer="蛋蛋" options="蛋蛋鬼斯毽子花球球海狮气球鬼火暴兽金属怪小鸭嘴龙臭泥巴大" tips="常见精灵"/>
+<sta_laternRiddles id="75" question="藏在贝壳里的鬼斯（打一精灵）" answer="铁甲贝" options="铁甲贝斗笠菇哥德小姐爆香猿小电狮燃烧虫超力王恰雷姆幕下力" tips="常见精灵"/>
+<sta_laternRiddles id="76" question="顾前又顾后（打一精灵）" answer="麒麟奇" options="麒麟奇坚果哑铃毒鼬笨笨鱼地鼠大毒鼬斑斑马火爆猴由基拉巨沼" tips="精灵外形"/>
+<sta_laternRiddles id="77" question="行走的音响（打一精灵）" answer="爆音怪" options="爆音怪石居蟹土地云长舌头皮皮沙瓦郎毒鼬大甲勇士鹰阿尔宙斯" tips="精灵外形"/>
+<sta_laternRiddles id="78" question="蘑菇是本体（打一精灵）" answer="派拉斯特" options="派拉斯特狡猾天狗黑鲁加君主蛇焰白雷希拉姆阿尔宙斯月精灵鬼" tips="精灵外形"/>
+<sta_laternRiddles id="79" question="双拳难敌四手（打一精灵）" answer="怪力" options="怪力车轮球铁甲犀牛小约克酋雷姆斗笠菇修缮老头3D龙Z圆陆" tips="精灵外形"/>
+<sta_laternRiddles id="80" question="背上的压力火山大（打一精灵）" answer="喷火驼" options="喷火驼骑士蜗牛蛇纹熊洁咪雷丘梦妖电光狮闪电鸟负电拍拍盾甲" tips="精灵外形"/>
+<sta_laternRiddles id="81" question="房奴（打一精灵）" answer="岩殿居蟹" options="岩殿居蟹可可多拉电击魔兽小磁怪波士可多拉蓝蟾蜍莲叶童子呆" tips="精灵外形"/>
+<sta_laternRiddles id="82" question="弗利沙（打一精灵）" answer="超梦" options="超梦树林龟哥达鸭猫鼬斩雷吉洛克长舌头雨翅蛾火神虫气球鬼路" tips="精灵外形"/>
+<sta_laternRiddles id="83" question="邪念波（打一精灵）" answer="超梦X" options="超梦X隆隆岩牙牙树林龟冷水猴化石翼龙玛力露勾魂眼阿尔宙斯" tips="精灵外形"/>
+<sta_laternRiddles id="84" question="魔人布欧（打一精灵）" answer="超梦Y" options="超梦Y布卢盖诺赛克特嘟嘟古铜钟结霜洛托姆波加曼耿鬼沙漠蜻" tips="精灵外形"/>
+<sta_laternRiddles id="85" question="游泳健将（打一精灵）" answer="快泳蛙" options="快泳蛙血翼飞龙袋龙大针蜂铁甲暴龙蜥蜴王λ人造细胞卵比克提" tips="常见精灵"/>
+<sta_laternRiddles id="86" question="用身体表达（打一精灵）" answer="未知图腾" options="未知图腾三头龙海星星正电拍拍水精灵车轮球派拉斯特龅牙狸浮" tips="具有28种形态差异的精灵"/>
+<sta_laternRiddles id="87" question="结果我第一，又强又厉害（打一招式名称）" answer="装腔作势" options="装腔作势毕力吉翁贵妇猫嘟嘟破坏光线梦妖魔豆豆鸽水溅跃冲撞" tips="某变化技能"/>
+<sta_laternRiddles id="88" question="比雕的第一属性是？" answer="一般" options="火水虫一般毒电地上格斗草龙岩石恶幽灵冰钢珍珠贝幕下力士秃" tips=""/>
+<sta_laternRiddles id="89" question="皇帝从不上早朝（古人的号）" answer="卧龙" options="皮性中战式况个奇灵卡格种族能不破的有同其可值放单进最卧龙" tips="三国人物"/>
+<sta_laternRiddles id="90" question="写上去（打一字）" answer="与" options="日七八九就久酒旧到点都而是说跑飘怕来类辣累勒乐哈好及看与" tips=""/>
+<sta_laternRiddles id="91" question="离开半月（打一字）" answer="脑" options="入行么击专用等二三四五六日七八九就久酒旧到点都而是说跑脑" tips=""/>
+<sta_laternRiddles id="92" question="子丑(打四字常用语）" answer="属一属二" options="日七八九就久酒旧到点都而是说跑飘怕来类辣累勒乐哈属一属二" tips="生肖"/>
+<sta_laternRiddles id="93" question="爱港更要爱中国(打一成语) " answer="怜香惜玉" options="跟顺独闲果刻对模情在精皮性中战式况个奇灵卡格种族怜香惜玉" tips="女子"/>
+<sta_laternRiddles id="94" question="炎黄子孙(打一歌名) " answer="龙的传人" options="二三四五六日七八九就久酒旧到点都而是说跑飘怕来类龙的传人" tips=""/>
+<sta_laternRiddles id="95" question="木才斗米（打一科技名词）" answer="合成材料" options="三四五六日七八九就久酒旧到点都而是说跑飘怕来类辣合成材料" tips="女兆日月"/>
+<sta_laternRiddles id="96" question="离婚（打一物理名词）" answer="绝缘" options="下家只跟顺独闲果刻对模情在精皮性中战式况个奇灵卡格种绝缘" tips="电阻过大"/>
+<sta_laternRiddles id="97" question="玄德在时无祸灾（打一成语）" answer="有备无患" options="雄雌于他什低强攻招使训携入行么击专用等二三四五六有备无患" tips=""/>
+<sta_laternRiddles id="98" question="女牧童（打一花名）" answer="牵牛花" options="战式况个奇灵卡格种族能不破的有同其可值放单进最需话牵牛花" tips=""/>
+<sta_laternRiddles id="99" question="兄弟几个真和气，天天并肩坐一起，少时喜爱绿衣裳，老来都穿黄色衣（打一水果）" answer="香蕉" options="什低强攻招使训携入行么击专用等二三四五六日七八九就久香蕉" tips="常见水果"/>
+<sta_laternRiddles id="100" question="渐渐安定（打《水浒传》人名）" answer="徐宁" options="只跟顺独闲果刻对模情在精皮性中战式况个奇灵卡格种族能徐宁" tips=""/>
+<sta_laternRiddles id="101" question="久旱逢甘露（打水浒传人物绰号）" answer="及时雨" options="强攻招使训携入行么击专用等二三四五六日七八九就久酒及时雨" tips=""/>
+<sta_laternRiddles id="102" question="一年四季是春天（ 打一城市名 ）" answer="长春" options="攻招使训携入行么击专用等二三四五六日七八九就久酒旧到长春" tips="东北城市"/>
+<sta_laternRiddles id="103" question="有面无口，有脚无手。听人讲话，陪人吃酒（打一日常用品）" answer="桌子" options="八九就久酒旧到点都而是说跑飘怕来类辣累勒乐哈好及看没桌子" tips="家具"/>
+<sta_laternRiddles id="104" question="中秋菊开（打一成语）" answer="花好月圆" options="三四五六日七八九就久酒旧到点都而是说跑飘怕来类辣花好月圆" tips=""/>
+<sta_laternRiddles id="105" question="劳动节、国庆节（打一成语）" answer="一五一十" options="攻招使训携入行么击专用等二三四五六日七八九就久酒一五一十" tips="日期"/>
+<sta_laternRiddles id="106" question="黄昏（打一地名）" answer="洛阳" options="性中战式况个奇灵卡格种族能不破的有同其可值放单进最需洛阳" tips="日"/>
+<sta_laternRiddles id="107" question="齐唱（打一成语）" answer="异口同声" options="于他什低强攻招使训携入行么击专用等二三四五六日七异口同声" tips=""/>
+<sta_laternRiddles id="108" question="十（打一成语）" answer="纵横交错" options="灵卡格种族能不破的有同其可值放单进最需话雄雌于他纵横交错" tips=""/>
+<sta_laternRiddles id="109" question="蜜饯黄连 （打一成语 ）" answer="同甘共苦" options="的有同其可值放单进最需话雄雌于他什低强攻招使训携同甘共苦" tips="甜的苦的"/>
+<sta_laternRiddles id="110" question="快刀斩乱麻 （打一成语）" answer="迎刃而解" options="携入行么击专用等二三四五六日七八九就久酒旧到点都迎刃而解" tips="很快解决"/>
+<sta_laternRiddles id="111" question="节日的焰火 （打一成语）" answer="五彩缤纷" options="跟顺独闲果刻对模情在精皮性中战式况个奇灵卡格种族五彩缤纷" tips="很多颜色"/>
+<sta_laternRiddles id="112" question="兔子请老虎 （打一成语）" answer="寅吃卯粮" options="闲果刻对模情在精皮性中战式况个奇灵卡格种族能不破寅吃卯粮" tips="比喻经济困难"/>
+<sta_laternRiddles id="113" question="暗中下围棋 （打一成语）" answer="皂白不分" options="闲果刻对模情在精皮性中战式况个奇灵卡格种族能不破皂白不分" tips="贬义词"/>
+<sta_laternRiddles id="114" question="鲁达当和尚 （打一成语）" answer="半路出家" options="二三四五六日七八九就久酒旧到点都而是说跑飘怕来类半路出家" tips="不专业"/>
+<sta_laternRiddles id="115" question="一块变九块 （打一成语）" answer="四分五裂" options="模情在精皮性中战式况个奇灵卡格种族能不破的有同其四分五裂" tips="很零散"/>
+<sta_laternRiddles id="116" question="哑巴打手势 （打一成语）" answer="不言而喻" options="种族能不破的有同其可值放单进最需话雄雌于他什低强不言而喻" tips="不用说就可以明白"/>
+<sta_laternRiddles id="117" question="遇事不求人 （打一成语）" answer="自力更生" options="就久酒旧到点都而是说跑飘怕来类辣累勒乐哈好及看没自力更生" tips="靠自己"/>
+<sta_laternRiddles id="118" question="鲁迅逝世一世纪（打一成语）" answer="百年树人" options="况个奇灵卡格种族能不破的有同其可值放单进最需百年树人" tips="一百年，一个人"/>
+<sta_laternRiddles id="119" question="七仙女嫁出去一个（打一成语）" answer="六神无主" options="种族能不破的有同其可值放单进最需话雄雌于他什低强六神无主" tips="多少个神仙"/>
+<sta_laternRiddles id="120" question="拍一个巴掌（打一地名）" answer="五指山" options="值放单进最需话雄雌于他什低强攻招使训携入行么击专用五指山" tips="一个巴掌多少根手指"/>
+<sta_laternRiddles id="121" question="什么动物行也是坐，坐也是坐，睡也是坐？ （打一动物）" answer="青蛙" options="能不破的有同其可值放单进最需话雄雌于他什低强攻招使训青蛙" tips="常见动物"/>
+<sta_laternRiddles id="122" question="一个巴掌拍不响（打一成语）" answer="孤掌难鸣" options="式况个奇灵卡格种族能不破的有同其可值放单进最需话孤掌难鸣" tips="需要合作"/>
+<sta_laternRiddles id="123" question="讲课又是老一套（打一成语）" answer="屡教不改" options="强攻招使训携入行么击专用等二三四五六日七八九就久屡教不改" tips="老不听话"/>
+<sta_laternRiddles id="124" question="齐声唤，同心干（打一成语）" answer="言行一致" options="中战式况个奇灵卡格种族能不破的有同其可值放单进最言行一致" tips="说话跟动作一致"/>
+<sta_laternRiddles id="125" question="生产必须出正品（打一成语）" answer="不可造次" options="五六日七八九就久酒旧到点都而是说跑飘怕来类辣累勒不可造次" tips="要慎重"/>
+<sta_laternRiddles id="126" question="有了阳光便发芽（打一成语）" answer="来日方长" options="闲果刻对模情在精皮性中战式况个奇灵卡格种族能不破来日方长" tips="不用急于做成"/>
+<sta_laternRiddles id="127" question="宣传车上演节目（打一成语）" answer="载歌载舞" options="顺独闲果刻对模情在精皮性中战式况个奇灵卡格种族能载歌载舞" tips="边唱歌，边跳舞"/>
+<sta_laternRiddles id="128" question="桃花潭水深千尺（打一成语）" answer="无与伦比" options="格种族能不破的有同其可值放单进最需话雄雌于他什低无与伦比" tips="没有什么可以相比"/>
+<sta_laternRiddles id="129" question="剪不断，理还乱（打一成语）" answer="千头万绪" options="久酒旧到点都而是说跑飘怕来类辣累勒乐哈好及看没买千头万绪" tips="事情的开端"/>
+<sta_laternRiddles id="130" question="合起来五句话（打一成语）" answer="三言两语" options="刻对模情在精皮性中战式况个奇灵卡格种族能不破的有三言两语" tips="话不多"/>
+<sta_laternRiddles id="131" question="化学性能稳定（打一成语）" answer="难分难解" options="能不破的有同其可值放单进最需话雄雌于他什低强攻招难分难解" tips="很难拆"/>
+<sta_laternRiddles id="132" question="十天跑完长城（打一成语）" answer="一日千里" options="精皮性中战式况个奇灵卡格种族能不破的有同其可值放一日千里" tips="进展很快"/>
+<sta_laternRiddles id="133" question="一百五十分钟（打一成语）" answer="时时刻刻" options="日七八九就久酒旧到点都而是说跑飘怕来类辣累勒乐哈时时刻刻" tips="每时每刻"/>
+<sta_laternRiddles id="134" question="蚂蚁缘槐夸大国（打一成语）" answer="不自量力" options="携入行么击专用等二三四五六日七八九就久酒旧到点都不自量力" tips="过于看重自己的力量"/>
+<sta_laternRiddles id="135" question="长江黄河皆流入海（打一成语）" answer="殊途同归" options="卡格种族能不破的有同其可值放单进最需话雄雌于他什殊途同归" tips="不同起点，目标一样"/>
+<sta_laternRiddles id="136" question="十字路都到居庸关（打一成语）" answer="四通八达" options="日七八九就久酒旧到点都而是说跑飘怕来类辣累勒乐哈四通八达" tips="交通方便"/>
+<sta_laternRiddles id="137" question="丢了西瓜拣芝麻（打一成语）" answer="避重就轻" options="精皮性中战式况个奇灵卡格种族能不破的有同其可值放避重就轻" tips="回避主要的问"/>
+<sta_laternRiddles id="138" question="向预定海域发射火箭（打一成语）" answer="有的放矢" options="灵卡格种族能不破的有同其可值放单进最需话雄雌于他有的放矢" tips="目标明确"/>
+<sta_laternRiddles id="139" question="不准超过十五分钟（打一成语）" answer="刻不容缓" options="五六日七八九就久酒旧到点都而是说跑飘怕来类辣累勒刻不容缓" tips="很紧急"/>
+<sta_laternRiddles id="140" question="黄鼠狼和狐狸结亲（打一成语）" answer="臭味相投" options="专用等二三四五六日七八九就久酒旧到点都而是说跑飘臭味相投" tips="有相同的爱好"/>
+<sta_laternRiddles id="141" question="下笔千言倚马可待（打一成语）" answer="一挥而就" options="六日七八九就久酒旧到点都而是说跑飘怕来类辣累勒乐一挥而就" tips="一下子就完成了"/>
+<sta_laternRiddles id="142" question="千年松树，五月芭蕉（打一成语）" answer="粗枝大叶" options="最需话雄雌于他什低强攻招使训携入行么击专用等二三粗枝大叶" tips="粗心"/>
+<sta_laternRiddles id="143" question="百年大树，风刮不倒（打一成语）" answer="根深蒂固" options="招使训携入行么击专用等二三四五六日七八九就久酒旧根深蒂固" tips="很牢固"/>
+<sta_laternRiddles id="144" question="颗粒归仓，核实产量（打一成语）" answer="精打细算" options="攻招使训携入行么击专用等二三四五六日七八九就久酒精打细算" tips="很会计算"/>
+<sta_laternRiddles id="145" question="江河纵横，峰峦林立（打一成语）" answer="万水千山" options="进最需话雄雌于他什低强攻招使训携入行么击专用等二万水千山" tips="山水很多"/>
+<sta_laternRiddles id="146" question="敌人骑兵队，踩中土地雷（打一成语）" answer="人仰马翻" options="用等二三四五六日七八九就久酒旧到点都而是说跑飘怕人仰马翻" tips="一塌糊涂"/>
+<sta_laternRiddles id="147" question="集体萝卜地，收获归集体（打一成语）" answer="不能自拔" options="强攻招使训携入行么击专用等二三四五六日七八九就久不能自拔" tips="克制不住自己"/>
+<sta_laternRiddles id="148" question="朝辞白帝，暮到江陵（打一成语）" answer="一日千里" options="五六日七八九就久酒旧到点都而是说跑飘怕来类辣累勒一日千里" tips="进展很快"/>
+</root>

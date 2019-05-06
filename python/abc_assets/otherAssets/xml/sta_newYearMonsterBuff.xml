@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearMonsterBuff id="1" buffImg="gongjiyiji" description="我方精灵战斗中增加1级攻击，|换下后重新上场亦有效，效果持续至对战结束" diamond="100" abilityEffect="1|0|0|0|0|0|0" buffTitle="攻击上升1级"/>
+<sta_newYearMonsterBuff id="2" buffImg="fangyuyiji" description="我方精灵战斗中增加1级防御，|换下后重新上场亦有效，效果持续至对战结束" diamond="100" abilityEffect="0|1|0|0|0|0|0" buffTitle="防御上升1级"/>
+<sta_newYearMonsterBuff id="3" buffImg="tegongyiji" description="我方精灵战斗中增加1级特攻，|换下后重新上场亦有效，效果持续至对战结束" diamond="100" abilityEffect="0|0|1|0|0|0|0" buffTitle="特攻上升1级"/>
+<sta_newYearMonsterBuff id="4" buffImg="tefangyiji" description="我方精灵战斗中增加1级特防，|换下后重新上场亦有效，效果持续至对战结束" diamond="100" abilityEffect="0|0|0|1|0|0|0" buffTitle="特防上升1级"/>
+<sta_newYearMonsterBuff id="5" buffImg="siweiyiji" description="我方精灵战斗中全能力增加1级（命中回避除外），|换下后重新上场亦有效，效果持续至对战结束" diamond="300" abilityEffect="1|1|1|1|1|0|0" buffTitle="攻击，防御，特攻，特防,速度上升1级"/>
+</root>

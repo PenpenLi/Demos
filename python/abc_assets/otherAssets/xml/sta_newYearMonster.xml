@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearMonster id="1" pokeId="501310" pokeImg="nian2shou4lei2dian4shou4_mega" pokeLv="50" pokeBkLv="4" pokeStar="0" pokeSkill="86|424|423|422" fatigue="150000" fatigueRise="100000" proportion="0.001" backGround="caodi1" challengeRewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:10}]}" lastShotRewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000}}"/>
+</root>

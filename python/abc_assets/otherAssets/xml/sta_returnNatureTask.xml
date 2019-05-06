@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_returnNatureTask id="1" taskDec="参与10次PVP对战" type="1" const="10"/>
+<sta_returnNatureTask id="2" taskDec="PVP对战中胜利20场" type="2" const="20"/>
+<sta_returnNatureTask id="3" taskDec="PVP对战达成5连胜" type="3" const="5"/>
+<sta_returnNatureTask id="4" taskDec="PVP对战达成10连胜" type="3" const="10"/>
+<sta_returnNatureTask id="5" taskDec="充值任意金额" type="4" const="1"/>
+</root>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_dimension id="1" type="1" name="勇气之力" lv="1" effectType1="1" effectNum1="5" effectType2="2" effectNum2="5" consume="5208,180|5209,120" description="物理技能伤害增加5%，受到物理技能伤害增加5%"/>
+<sta_dimension id="2" type="1" name="勇气之力" lv="2" effectType1="1" effectNum1="6" effectType2="2" effectNum2="5" consume="5208,250|5209,220|5210,70" description="物理技能伤害增加6%，受到物理技能伤害增加5%"/>
+<sta_dimension id="3" type="1" name="勇气之力" lv="3" effectType1="1" effectNum1="7" effectType2="2" effectNum2="5" consume="5208,300|5209,300|5210,110" description="物理技能伤害增加7%，受到物理技能伤害增加5%"/>
+<sta_dimension id="4" type="1" name="勇气之力" lv="4" effectType1="1" effectNum1="8" effectType2="2" effectNum2="5" consume="5208,400|5210,220|5211,120" description="物理技能伤害增加8%，受到物理技能伤害增加5%"/>
+<sta_dimension id="5" type="1" name="勇气之力" lv="5" effectType1="1" effectNum1="10" effectType2="2" effectNum2="5" consume="5209,400|5210,350|5211,300" description="物理技能伤害增加10%，受到物理技能伤害增加5%"/>
+<sta_dimension id="6" type="2" name="波导之力" lv="1" effectType1="1" effectNum1="5" effectType2="4" effectNum2="5" consume="5208,180|5209,120" description="物理技能伤害增加5%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="7" type="2" name="波导之力" lv="2" effectType1="1" effectNum1="6" effectType2="4" effectNum2="5" consume="5208,250|5209,220|5210,70" description="物理技能伤害增加6%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="8" type="2" name="波导之力" lv="3" effectType1="1" effectNum1="7" effectType2="4" effectNum2="5" consume="5208,300|5209,300|5210,110" description="物理技能伤害增加7%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="9" type="2" name="波导之力" lv="4" effectType1="1" effectNum1="8" effectType2="4" effectNum2="5" consume="5208,400|5210,220|5211,120" description="物理技能伤害增加8%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="10" type="2" name="波导之力" lv="5" effectType1="1" effectNum1="10" effectType2="4" effectNum2="5" consume="5209,400|5210,350|5211,300" description="物理技能伤害增加10%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="11" type="3" name="专注之力" lv="1" effectType1="3" effectNum1="5" effectType2="4" effectNum2="5" consume="5208,180|5209,120" description="特攻技能伤害增加5%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="12" type="3" name="专注之力" lv="2" effectType1="3" effectNum1="6" effectType2="4" effectNum2="5" consume="5208,250|5209,220|5210,70" description="特攻技能伤害增加6%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="13" type="3" name="专注之力" lv="3" effectType1="3" effectNum1="7" effectType2="4" effectNum2="5" consume="5208,300|5209,300|5210,110" description="特攻技能伤害增加7%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="14" type="3" name="专注之力" lv="4" effectType1="3" effectNum1="8" effectType2="4" effectNum2="5" consume="5208,400|5210,220|5211,120" description="特攻技能伤害增加8%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="15" type="3" name="专注之力" lv="5" effectType1="3" effectNum1="10" effectType2="4" effectNum2="5" consume="5209,400|5210,350|5211,300" description="特攻技能伤害增加10%，受到特攻技能伤害增加5%"/>
+<sta_dimension id="16" type="4" name="信念之力" lv="1" effectType1="3" effectNum1="5" effectType2="2" effectNum2="5" consume="5208,180|5209,120" description="特攻技能伤害增加5%，受到物理技能伤害增加5%"/>
+<sta_dimension id="17" type="4" name="信念之力" lv="2" effectType1="3" effectNum1="6" effectType2="2" effectNum2="5" consume="5208,250|5209,220|5210,70" description="特攻技能伤害增加6%，受到物理技能伤害增加5%"/>
+<sta_dimension id="18" type="4" name="信念之力" lv="3" effectType1="3" effectNum1="7" effectType2="2" effectNum2="5" consume="5208,300|5209,300|5210,110" description="特攻技能伤害增加7%，受到物理技能伤害增加5%"/>
+<sta_dimension id="19" type="4" name="信念之力" lv="4" effectType1="3" effectNum1="8" effectType2="2" effectNum2="5" consume="5208,400|5210,220|5211,120" description="特攻技能伤害增加8%，受到物理技能伤害增加5%"/>
+<sta_dimension id="20" type="4" name="信念之力" lv="5" effectType1="3" effectNum1="10" effectType2="2" effectNum2="5" consume="5209,400|5210,350|5211,300" description="特攻技能伤害增加10%，受到物理技能伤害增加5%"/>
+</root>

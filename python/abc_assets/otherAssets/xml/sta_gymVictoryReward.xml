@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gymVictoryReward id="1" victoryNum="1" rewardJNS="{&apos;badges&apos;:[{&apos;quality&apos;:1,&apos;num&apos;:1}],&apos;prop&apos;:[{&apos;pId&apos;:6884,&apos;num&apos;:2},{&apos;pId&apos;:6886,&apos;num&apos;:1},{&apos;pId&apos;:6885,&apos;num&apos;:1}]}"/>
+<sta_gymVictoryReward id="2" victoryNum="4" rewardJNS="{&apos;badges&apos;:[{&apos;quality&apos;:2,&apos;num&apos;:1}],&apos;prop&apos;:[{&apos;pId&apos;:6884,&apos;num&apos;:3},{&apos;pId&apos;:6886,&apos;num&apos;:2},{&apos;pId&apos;:6885,&apos;num&apos;:2}]}"/>
+<sta_gymVictoryReward id="3" victoryNum="7" rewardJNS="{&apos;badges&apos;:[{&apos;quality&apos;:3,&apos;num&apos;:1}],&apos;prop&apos;:[{&apos;pId&apos;:6884,&apos;num&apos;:5},{&apos;pId&apos;:6887,&apos;num&apos;:1},{&apos;pId&apos;:6885,&apos;num&apos;:5}]}"/>
+</root>

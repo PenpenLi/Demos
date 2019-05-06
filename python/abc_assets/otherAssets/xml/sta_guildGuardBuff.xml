@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildGuardBuff id="1" buff="全属性提升10%" rise="0.1" diamond="50"/>
+<sta_guildGuardBuff id="2" buff="全属性提升30%" rise="0.3" diamond="100"/>
+<sta_guildGuardBuff id="3" buff="全属性提升50%" rise="0.5" diamond="150"/>
+<sta_guildGuardBuff id="4" buff="全属性提升100%" rise="1" diamond="200"/>
+</root>

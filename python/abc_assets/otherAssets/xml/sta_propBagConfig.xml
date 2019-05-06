@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_propBagConfig id="1" type="1" label="药品和树果" branch="28" propType="" pic="img_yao4pin3" name=""/>
+<sta_propBagConfig id="2" type="1" label="精灵球" branch="29" propType="" pic="img_jing1ling2qiu2" name="elfBall"/>
+<sta_propBagConfig id="3" type="1" label="携带物" branch="11|12" propType="" pic="img_xie2dai4dao4ju4" name=""/>
+<sta_propBagConfig id="4" type="1" label="学习机" branch="13|14" propType="" pic="img_xue2xi2ji1" name=""/>
+<sta_propBagConfig id="5" type="1" label="培养道具" branch="15|16|17|18|19|20|21" propType="" pic="img_pei2yang3dao4ju4" name=""/>
+<sta_propBagConfig id="6" type="1" label="碎片" branch="22|23|24|25|26" propType="" pic="img_sui4pian4" name=""/>
+<sta_propBagConfig id="7" type="1" label="神兽号角" branch="30" propType="" pic="img_shen2shou4hao4jiao3" name=""/>
+<sta_propBagConfig id="8" type="1" label="形态转换" branch="31" propType="" pic="img_xing2tai4zhuan3huan4" name=""/>
+<sta_propBagConfig id="9" type="1" label="消耗品" branch="27|38|41" propType="" pic="img_xiao1yao4pin3" name=""/>
+<sta_propBagConfig id="10" type="1" label="其他" branch="32|39|40|42" propType="" pic="img_qi2ta1" name=""/>
+<sta_propBagConfig id="11" type="2" label="携带道具" branch="" propType="1|42" pic="" name=""/>
+<sta_propBagConfig id="12" type="2" label="一次性道具" branch="" propType="55|57" pic="" name=""/>
+<sta_propBagConfig id="13" type="2" label="单打学习机" branch="" propType="6" pic="" name=""/>
+<sta_propBagConfig id="14" type="2" label="双打学习机" branch="" propType="70|71" pic="" name=""/>
+<sta_propBagConfig id="15" type="2" label="沙袋" branch="" propType="24" pic="" name=""/>
+<sta_propBagConfig id="16" type="2" label="进化石" branch="" propType="4" pic="" name=""/>
+<sta_propBagConfig id="17" type="2" label="玩偶" branch="" propType="18|19" pic="" name=""/>
+<sta_propBagConfig id="18" type="2" label="特性石" branch="" propType="40|41" pic="" name=""/>
+<sta_propBagConfig id="19" type="2" label="超级进化" branch="" propType="36|33|34|35|64|99" pic="" name=""/>
+<sta_propBagConfig id="20" type="2" label="超级招式" branch="" propType="50|51" pic="" name=""/>
+<sta_propBagConfig id="21" type="2" label="特殊" branch="" propType="72|21|15|87|94" pic="" name=""/>
+<sta_propBagConfig id="22" type="2" label="培养道具碎片" branch="" propType="10|22|63|105|106|107" pic="" name=""/>
+<sta_propBagConfig id="23" type="2" label="学习机碎片" branch="" propType="12" pic="" name=""/>
+<sta_propBagConfig id="24" type="2" label="携带道具碎片" branch="" propType="11" pic="" name=""/>
+<sta_propBagConfig id="25" type="2" label="号角碎片" branch="" propType="26" pic="" name=""/>
+<sta_propBagConfig id="26" type="2" label="其他碎片" branch="" propType="13|67|75|78|111" pic="" name=""/>
+<sta_propBagConfig id="27" type="2" label="消耗品" branch="" propType="27|28|37|38|60|61|29|62|56|90|32|39|84|98|102|103" pic="" name=""/>
+<sta_propBagConfig id="28" type="2" label="药品和树果" branch="" propType="2|3|52|53|54|17|16" pic="" name=""/>
+<sta_propBagConfig id="29" type="2" label="精灵球" branch="" propType="5|20|30|58|66" pic="" name=""/>
+<sta_propBagConfig id="30" type="2" label="神兽号角" branch="" propType="25" pic="" name=""/>
+<sta_propBagConfig id="31" type="2" label="形态转换" branch="" propType="45|48|59|69|76|110" pic="" name=""/>
+<sta_propBagConfig id="32" type="2" label="其他" branch="" propType="43|44|46|47|49|77|74|65|68|7|8|9|31|14|23|73|79|80|83|85|86|88|89|91|96|97|93|100" pic="" name=""/>
+<sta_propBagConfig id="33" type="1" label="材料" branch="35|36" propType="" pic="img_pei2yang3dao4ju4" name=""/>
+<sta_propBagConfig id="34" type="1" label="其他" branch="37" propType="" pic="img_qi2ta1" name=""/>
+<sta_propBagConfig id="35" type="2" label="特训材料" branch="" propType="24" pic="" name=""/>
+<sta_propBagConfig id="36" type="2" label="突破材料" branch="" propType="18" pic="" name=""/>
+<sta_propBagConfig id="37" type="2" label="其他" branch="" propType="4" pic="" name=""/>
+<sta_propBagConfig id="38" type="2" label="努力糖果药剂" branch="" propType="81" pic="" name=""/>
+<sta_propBagConfig id="39" type="2" label="锻炼器" branch="" propType="82" pic="" name=""/>
+<sta_propBagConfig id="40" type="2" label="花园道具" branch="" propType="92|95" pic="" name=""/>
+<sta_propBagConfig id="41" type="2" label="亲密度精灵豆" branch="" propType="104" pic="" name=""/>
+<sta_propBagConfig id="42" type="2" label="加工屋" branch="" propType="108|109" pic="" name=""/>
+</root>

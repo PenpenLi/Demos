@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_teamPVPHandbook id="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000},&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:100},{&apos;pId&apos;:859,&apos;num&apos;:25},{&apos;pId&apos;:860,&apos;num&apos;:8}]}" uTitleId="0" collectElfNum="50"/>
+<sta_teamPVPHandbook id="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:2000},&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:200},{&apos;pId&apos;:859,&apos;num&apos;:50},{&apos;pId&apos;:860,&apos;num&apos;:15}]}" uTitleId="0" collectElfNum="120"/>
+<sta_teamPVPHandbook id="3" rewardJNS="" uTitleId="110" collectElfNum="200"/>
+</root>

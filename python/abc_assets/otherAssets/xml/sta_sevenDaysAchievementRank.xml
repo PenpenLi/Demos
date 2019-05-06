@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sevenDaysAchievementRank id="1" startRank="1" endRank="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:3000},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:5},{&apos;pId&apos;:116000,&apos;num&apos;:5},{&apos;pId&apos;:106000,&apos;num&apos;:10},{&apos;pId&apos;:112000,&apos;num&apos;:3}]}"/>
+<sta_sevenDaysAchievementRank id="2" startRank="2" endRank="2" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:2000},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:4},{&apos;pId&apos;:116000,&apos;num&apos;:4},{&apos;pId&apos;:106000,&apos;num&apos;:6},{&apos;pId&apos;:112000,&apos;num&apos;:2}]}"/>
+<sta_sevenDaysAchievementRank id="3" startRank="3" endRank="3" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1500},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:3},{&apos;pId&apos;:116000,&apos;num&apos;:3},{&apos;pId&apos;:106000,&apos;num&apos;:4},{&apos;pId&apos;:112000,&apos;num&apos;:1}]}"/>
+<sta_sevenDaysAchievementRank id="4" startRank="4" endRank="10" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1200},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:2},{&apos;pId&apos;:116000,&apos;num&apos;:2},{&apos;pId&apos;:106000,&apos;num&apos;:3}]}"/>
+<sta_sevenDaysAchievementRank id="5" startRank="11" endRank="15" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000},&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:3},{&apos;pId&apos;:117000,&apos;num&apos;:3},{&apos;pId&apos;:105000,&apos;num&apos;:5}]}"/>
+<sta_sevenDaysAchievementRank id="6" startRank="16" endRank="50" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:800},&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:2},{&apos;pId&apos;:117000,&apos;num&apos;:2},{&apos;pId&apos;:105000,&apos;num&apos;:4}]}"/>
+<sta_sevenDaysAchievementRank id="7" startRank="51" endRank="100" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500},&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:1},{&apos;pId&apos;:117000,&apos;num&apos;:1},{&apos;pId&apos;:105000,&apos;num&apos;:3}]}"/>
+<sta_sevenDaysAchievementRank id="8" startRank="101" endRank="200" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;prop&apos;:[{&apos;pId&apos;:105000,&apos;num&apos;:2}]}"/>
+<sta_sevenDaysAchievementRank id="9" startRank="201" endRank="500" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200},&apos;prop&apos;:[{&apos;pId&apos;:105000,&apos;num&apos;:1}]}"/>
+<sta_sevenDaysAchievementRank id="10" startRank="501" endRank="5000" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100},&apos;prop&apos;:[{&apos;pId&apos;:105000,&apos;num&apos;:1}]}"/>
+</root>

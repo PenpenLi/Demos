@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_cakeProcess id="1" process="300" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:102000,&apos;num&apos;:1},{&apos;pId&apos;:110000,&apos;num&apos;:1},{&apos;pId&apos;:113000,&apos;num&apos;:3}]}"/>
+<sta_cakeProcess id="2" process="600" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3059,&apos;num&apos;:30},{&apos;pId&apos;:764,&apos;num&apos;:2},{&apos;pId&apos;:114000,&apos;num&apos;:1},{&apos;pId&apos;:116000,&apos;num&apos;:1}]}"/>
+<sta_cakeProcess id="3" process="900" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:2},{&apos;pId&apos;:50001,&apos;num&apos;:3},{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:866,&apos;num&apos;:1}]}"/>
+<sta_cakeProcess id="4" process="1200" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:234,&apos;num&apos;:20},{&apos;pId&apos;:107000,&apos;num&apos;:2},{&apos;pId&apos;:112000,&apos;num&apos;:2}]}"/>
+</root>

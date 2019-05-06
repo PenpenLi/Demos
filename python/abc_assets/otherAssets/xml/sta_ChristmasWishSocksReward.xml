@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_ChristmasWishSocksReward id="1" name="小智的祝福袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:745,&apos;num&apos;:1}]}" value="55"/>
+<sta_ChristmasWishSocksReward id="2" name="小茂的幸运袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:930,&apos;num&apos;:1}]}" value="55"/>
+<sta_ChristmasWishSocksReward id="3" name="小刚的巨大袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:5}]}" value="15"/>
+<sta_ChristmasWishSocksReward id="4" name="大吾的崭新袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:50}]}" value="20"/>
+<sta_ChristmasWishSocksReward id="5" name="小光的圣诞袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1804,&apos;num&apos;:1}]}" value="35"/>
+<sta_ChristmasWishSocksReward id="6" name="小瑶的可爱袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:859,&apos;num&apos;:30}]}" value="25"/>
+<sta_ChristmasWishSocksReward id="7" name="小霞的淘气袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:2}]}" value="45"/>
+<sta_ChristmasWishSocksReward id="8" name="竹兰的长筒袜子" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:31,&apos;num&apos;:1}]}" value="50"/>
+</root>

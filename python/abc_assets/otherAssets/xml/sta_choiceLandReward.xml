@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_choiceLandReward id="1" rewardName="第1名" startRanking="1" endRanking="1" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:8}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:8}]}" moreWin="-1"/>
+<sta_choiceLandReward id="2" rewardName="第2名" startRanking="2" endRanking="2" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:7}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:7}]}" moreWin="-1"/>
+<sta_choiceLandReward id="3" rewardName="第3名" startRanking="3" endRanking="3" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:6}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:6}]}" moreWin="-1"/>
+<sta_choiceLandReward id="4" rewardName="第4名到第10名" startRanking="4" endRanking="10" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:5}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:5}]}" moreWin="-1"/>
+<sta_choiceLandReward id="5" rewardName="第11名到第50名" startRanking="11" endRanking="50" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:4}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:4}]}" moreWin="-1"/>
+<sta_choiceLandReward id="6" rewardName="第51名到第200名" startRanking="51" endRanking="200" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:3}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:3}]}" moreWin="-1"/>
+<sta_choiceLandReward id="7" rewardName="第201名到第500名" startRanking="201" endRanking="500" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:2}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:2}]}" moreWin="-1"/>
+<sta_choiceLandReward id="8" rewardName="第501名到第1000名" startRanking="501" endRanking="1000" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2732,&apos;num&apos;:1}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:2731,&apos;num&apos;:1}]}" moreWin="-1"/>
+<sta_choiceLandReward id="9" rewardName="个人每5胜场奖励（总胜场多方）" startRanking="-1" endRanking="-1" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:1611,&apos;num&apos;:3}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:1611,&apos;num&apos;:3}]}" moreWin="1"/>
+<sta_choiceLandReward id="10" rewardName="个人每5胜场奖励（总胜场少方）" startRanking="-1" endRanking="-1" reward0JNS="{&apos;prop&apos;:[{&apos;pId&apos;:1611,&apos;num&apos;:1}]}" reward1JNS="{&apos;prop&apos;:[{&apos;pId&apos;:1611,&apos;num&apos;:1}]}" moreWin="0"/>
+</root>

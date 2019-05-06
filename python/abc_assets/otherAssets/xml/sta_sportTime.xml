@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sportTime id="1" week="1" item="1" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:30:00|19:30:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="2" week="1" item="4" bpBeginTime="12:30:00|19:30:00" bpEndTime="14:00:00|21:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="3" week="2" item="2" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:30:00|19:30:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="4" week="2" item="5" bpBeginTime="12:30:00|19:30:00" bpEndTime="14:00:00|21:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="5" week="3" item="3" bpBeginTime="12:00:00|20:00:00" bpEndTime="13:05:00|21:05:00" beginTime="15:30:00" endTime="17:50:00"/>
+<sta_sportTime id="6" week="3" item="1" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:00:00|20:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="7" week="4" item="4" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:30:00|19:30:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="8" week="4" item="5" bpBeginTime="12:30:00|19:30:00" bpEndTime="14:00:00|21:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="9" week="5" item="2" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:30:00|19:30:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="10" week="5" item="1" bpBeginTime="12:30:00|19:30:00" bpEndTime="14:00:00|21:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="11" week="6" item="3" bpBeginTime="12:00:00|20:00:00" bpEndTime="13:05:00|21:05:00" beginTime="15:30:00" endTime="17:50:00"/>
+<sta_sportTime id="12" week="6" item="5" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:00:00|20:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="13" week="0" item="2" bpBeginTime="13:00:00|20:00:00" bpEndTime="14:00:00|21:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="14" week="0" item="1" bpBeginTime="11:00:00|18:00:00" bpEndTime="12:00:00|19:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+<sta_sportTime id="15" week="0" item="5" bpBeginTime="12:00:00|19:00:00" bpEndTime="13:00:00|20:00:00" beginTime="08:00:00|14:00:00" endTime="11:00:00|18:00:00"/>
+</root>

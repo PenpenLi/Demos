@@ -1,65 +1,53 @@
-<!-- 
-sta_guildLv:
-
-
-id:等级id
-guildLv:公会等级
-scienceLv:大厅科技等级
-expLv:经验加成
-goldLv:金币加成
-attackLv:攻击加成
-defenseLv:防御加成
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-<sta_guildLv id="1" guildLv="5000" scienceLv="120" expLv="60" goldLv="80" attackLv="200" defenseLv="240"/>
-<sta_guildLv id="2" guildLv="8000" scienceLv="160" expLv="60" goldLv="80" attackLv="300" defenseLv="400"/>
-<sta_guildLv id="3" guildLv="15000" scienceLv="200" expLv="60" goldLv="80" attackLv="400" defenseLv="600"/>
-<sta_guildLv id="4" guildLv="20000" scienceLv="300" expLv="60" goldLv="80" attackLv="550" defenseLv="1000"/>
-<sta_guildLv id="5" guildLv="30000" scienceLv="400" expLv="60" goldLv="80" attackLv="1000" defenseLv="1800"/>
-<sta_guildLv id="6" guildLv="42000" scienceLv="800" expLv="60" goldLv="80" attackLv="2000" defenseLv="3000"/>
-<sta_guildLv id="7" guildLv="55000" scienceLv="1600" expLv="60" goldLv="80" attackLv="3500" defenseLv="4500"/>
-<sta_guildLv id="8" guildLv="70000" scienceLv="2800" expLv="60" goldLv="80" attackLv="5500" defenseLv="6500"/>
-<sta_guildLv id="9" guildLv="85000" scienceLv="5000" expLv="60" goldLv="80" attackLv="9000" defenseLv="9000"/>
-<sta_guildLv id="10" guildLv="100000" scienceLv="7500" expLv="60" goldLv="80" attackLv="13000" defenseLv="13000"/>
-<sta_guildLv id="11" guildLv="120000" scienceLv="10000" expLv="100" goldLv="200" attackLv="17000" defenseLv="17000"/>
-<sta_guildLv id="12" guildLv="135000" scienceLv="16000" expLv="150" goldLv="250" attackLv="25000" defenseLv="25000"/>
-<sta_guildLv id="13" guildLv="145000" scienceLv="25000" expLv="200" goldLv="300" attackLv="35000" defenseLv="35000"/>
-<sta_guildLv id="14" guildLv="155000" scienceLv="40000" expLv="250" goldLv="450" attackLv="47000" defenseLv="47000"/>
-<sta_guildLv id="15" guildLv="165000" scienceLv="58000" expLv="300" goldLv="550" attackLv="67000" defenseLv="67000"/>
-<sta_guildLv id="16" guildLv="175000" scienceLv="70000" expLv="400" goldLv="600" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="17" guildLv="185000" scienceLv="100000" expLv="600" goldLv="800" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="18" guildLv="195000" scienceLv="140000" expLv="800" goldLv="1000" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="19" guildLv="210000" scienceLv="180000" expLv="900" goldLv="1100" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="20" guildLv="220000" scienceLv="230000" expLv="1000" goldLv="1200" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="21" guildLv="235000" scienceLv="0" expLv="1500" goldLv="1700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="22" guildLv="245000" scienceLv="0" expLv="2000" goldLv="2200" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="23" guildLv="260000" scienceLv="0" expLv="2500" goldLv="2700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="24" guildLv="280000" scienceLv="0" expLv="3500" goldLv="3700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="25" guildLv="300000" scienceLv="0" expLv="4500" goldLv="4700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="26" guildLv="335000" scienceLv="0" expLv="5500" goldLv="5700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="27" guildLv="370000" scienceLv="0" expLv="6500" goldLv="6700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="28" guildLv="400000" scienceLv="0" expLv="7500" goldLv="7700" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="29" guildLv="425000" scienceLv="0" expLv="9000" goldLv="9200" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="30" guildLv="550000" scienceLv="0" expLv="12000" goldLv="12200" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="31" guildLv="650000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="32" guildLv="750000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="33" guildLv="950000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="34" guildLv="1300000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="35" guildLv="1500000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="36" guildLv="1850000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="37" guildLv="2200000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="38" guildLv="2550000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="39" guildLv="2900000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="40" guildLv="3250000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="41" guildLv="3600000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="42" guildLv="3950000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="43" guildLv="4300000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="44" guildLv="4650000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="45" guildLv="5000000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="46" guildLv="5350000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="47" guildLv="5700000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="48" guildLv="6050000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="49" guildLv="6400000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
-<sta_guildLv id="50" guildLv="6750000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0"/>
+<sta_guildLv id="1" guildLv="5000" scienceLv="120" expLv="60" goldLv="80" attackLv="200" defenseLv="240" guildAttacklv="220" guildDefenselv="220" guildBufflv="220"/>
+<sta_guildLv id="2" guildLv="8000" scienceLv="160" expLv="60" goldLv="80" attackLv="300" defenseLv="400" guildAttacklv="260" guildDefenselv="260" guildBufflv="260"/>
+<sta_guildLv id="3" guildLv="15000" scienceLv="200" expLv="60" goldLv="80" attackLv="400" defenseLv="600" guildAttacklv="300" guildDefenselv="300" guildBufflv="300"/>
+<sta_guildLv id="4" guildLv="20000" scienceLv="300" expLv="60" goldLv="80" attackLv="550" defenseLv="1000" guildAttacklv="400" guildDefenselv="400" guildBufflv="400"/>
+<sta_guildLv id="5" guildLv="30000" scienceLv="400" expLv="60" goldLv="80" attackLv="1000" defenseLv="1800" guildAttacklv="500" guildDefenselv="500" guildBufflv="500"/>
+<sta_guildLv id="6" guildLv="42000" scienceLv="800" expLv="60" goldLv="80" attackLv="2000" defenseLv="3000" guildAttacklv="900" guildDefenselv="900" guildBufflv="900"/>
+<sta_guildLv id="7" guildLv="55000" scienceLv="1600" expLv="60" goldLv="80" attackLv="3500" defenseLv="4500" guildAttacklv="2000" guildDefenselv="2000" guildBufflv="2000"/>
+<sta_guildLv id="8" guildLv="70000" scienceLv="2800" expLv="60" goldLv="80" attackLv="5500" defenseLv="6500" guildAttacklv="3500" guildDefenselv="3500" guildBufflv="3500"/>
+<sta_guildLv id="9" guildLv="85000" scienceLv="5000" expLv="60" goldLv="80" attackLv="9000" defenseLv="9000" guildAttacklv="7000" guildDefenselv="7000" guildBufflv="7000"/>
+<sta_guildLv id="10" guildLv="100000" scienceLv="7500" expLv="60" goldLv="80" attackLv="13000" defenseLv="13000" guildAttacklv="10500" guildDefenselv="10500" guildBufflv="10500"/>
+<sta_guildLv id="11" guildLv="120000" scienceLv="10000" expLv="100" goldLv="200" attackLv="17000" defenseLv="17000" guildAttacklv="12000" guildDefenselv="12000" guildBufflv="12000"/>
+<sta_guildLv id="12" guildLv="135000" scienceLv="16000" expLv="150" goldLv="250" attackLv="25000" defenseLv="25000" guildAttacklv="16000" guildDefenselv="16000" guildBufflv="16000"/>
+<sta_guildLv id="13" guildLv="145000" scienceLv="25000" expLv="200" goldLv="300" attackLv="35000" defenseLv="35000" guildAttacklv="25000" guildDefenselv="25000" guildBufflv="25000"/>
+<sta_guildLv id="14" guildLv="155000" scienceLv="40000" expLv="250" goldLv="450" attackLv="47000" defenseLv="47000" guildAttacklv="40000" guildDefenselv="40000" guildBufflv="40000"/>
+<sta_guildLv id="15" guildLv="165000" scienceLv="58000" expLv="300" goldLv="550" attackLv="67000" defenseLv="67000" guildAttacklv="58000" guildDefenselv="58000" guildBufflv="58000"/>
+<sta_guildLv id="16" guildLv="175000" scienceLv="70000" expLv="400" goldLv="600" attackLv="0" defenseLv="0" guildAttacklv="70000" guildDefenselv="70000" guildBufflv="70000"/>
+<sta_guildLv id="17" guildLv="185000" scienceLv="100000" expLv="600" goldLv="800" attackLv="0" defenseLv="0" guildAttacklv="100000" guildDefenselv="100000" guildBufflv="100000"/>
+<sta_guildLv id="18" guildLv="195000" scienceLv="140000" expLv="800" goldLv="1000" attackLv="0" defenseLv="0" guildAttacklv="140000" guildDefenselv="140000" guildBufflv="140000"/>
+<sta_guildLv id="19" guildLv="210000" scienceLv="180000" expLv="900" goldLv="1100" attackLv="0" defenseLv="0" guildAttacklv="180000" guildDefenselv="180000" guildBufflv="180000"/>
+<sta_guildLv id="20" guildLv="220000" scienceLv="230000" expLv="1000" goldLv="1200" attackLv="0" defenseLv="0" guildAttacklv="230000" guildDefenselv="230000" guildBufflv="230000"/>
+<sta_guildLv id="21" guildLv="235000" scienceLv="0" expLv="1500" goldLv="1700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="22" guildLv="245000" scienceLv="0" expLv="2000" goldLv="2200" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="23" guildLv="260000" scienceLv="0" expLv="2500" goldLv="2700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="24" guildLv="280000" scienceLv="0" expLv="3500" goldLv="3700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="25" guildLv="300000" scienceLv="0" expLv="4500" goldLv="4700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="26" guildLv="335000" scienceLv="0" expLv="5500" goldLv="5700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="27" guildLv="370000" scienceLv="0" expLv="6500" goldLv="6700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="28" guildLv="400000" scienceLv="0" expLv="7500" goldLv="7700" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="29" guildLv="425000" scienceLv="0" expLv="9000" goldLv="9200" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="30" guildLv="550000" scienceLv="0" expLv="12000" goldLv="12200" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="31" guildLv="650000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="32" guildLv="750000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="33" guildLv="950000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="34" guildLv="1300000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="35" guildLv="1500000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="36" guildLv="1850000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="37" guildLv="2200000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="38" guildLv="2550000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="39" guildLv="2900000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="40" guildLv="3250000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="41" guildLv="3600000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="42" guildLv="3950000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="43" guildLv="4300000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="44" guildLv="4650000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="45" guildLv="5000000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="46" guildLv="5350000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="47" guildLv="5700000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="48" guildLv="6050000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="49" guildLv="6400000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
+<sta_guildLv id="50" guildLv="6750000" scienceLv="0" expLv="0" goldLv="0" attackLv="0" defenseLv="0" guildAttacklv="0" guildDefenselv="0" guildBufflv="0"/>
 </root>

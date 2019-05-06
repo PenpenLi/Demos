@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_startDialogue id="1" rcdId="415" type="1" speaker="短裤少年" content="这一带都是我的练习场地！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="2" rcdId="415" type="2" speaker="短裤少年" content="练习还不行的话就特训！因为我的目标是道馆馆主！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="3" rcdId="416" type="1" speaker="绅士" content="这是我刚刚从培育屋里接回来的精灵，正好可以看看它变强了多少。" markStr="" picId="shen1shi4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="4" rcdId="416" type="2" speaker="绅士" content="精灵不知什么时候学会了我不知道的技能，让我不知所措了。" markStr="" picId="shen1shi4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="5" rcdId="417" type="1" speaker="超能力者" content="你已经去过桐树林的小庙了吗？" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="6" rcdId="417" type="2" speaker="超能力者" content="雪拉比穿越时空，守护我们的森林。它一定是草系的精灵吧。" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="7" rcdId="418" type="1" speaker="童子军男" content="你知道吗，森林里有神灵居住着呢。" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="8" rcdId="418" type="2" speaker="童子军男" content="如果做了坏事的话，就会被神灵惩罚的。" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="9" rcdId="419" type="1" speaker="#火箭兵团#" content="我在巡视有没有可疑人物，站住，你看上去很可疑啊！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="10" rcdId="419" type="1" speaker="" content="整片森林里面最可疑的就是你们了好吧！" markStr="" picId="" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="11" rcdId="419" type="2" speaker="#火箭兵团#" content="你说什么？我们……我们#火箭兵团#才不是什么可疑的角色！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="12" rcdId="420" type="1" speaker="#火箭兵团#" content="你妈妈没有教过你，打断别人的工作是很不礼貌的行为吗？我们正在全力的搜查神兽足迹当中，请尊重我们的工作！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="13" rcdId="420" type="1" speaker="" content="那我现在正要离开这个森林，请你尊重一下我的脚丫可好？" markStr="" picId="" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="14" rcdId="420" type="2" speaker="#火箭兵团#" content="不管怎么说，我们也是非常具有知名度的社团啊！配合一下我们的工作就那么难吗？哼，反正大人的计划应该差不多成功了，谅你也翻不起什么风浪来，姑且放你过去好了。" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="15" rcdId="420" type="3" speaker="" content="在桐树林神龛的尽头遇见了正在“认真工作”的#火箭兵团#，虽然只是一些兵团中的低阶成员，但却意外的充满了自豪感与自尊心。他们自称正在神龛附近进行搜查神兽足迹的工作，在被打败后仍然骄傲地声称大人的计划快要成功了。你预感到有什么不好的事情正在发生，决定加速向满金市前进。" markStr="" picId="" voice="" setting="img_cityDiaBg6"/>
+<sta_startDialogue id="16" rcdId="421" type="1" speaker="捕虫少年" content="我在班里面可是最强的精灵训练师！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="17" rcdId="421" type="2" speaker="捕虫少年" content="你要是转到我班上的话，我就要成班里的第2名了……我要在这之前变得更强才行。" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="18" rcdId="422" type="1" speaker="理科男" content="我有培育精灵的自信，来稍微比试一下吧！" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="19" rcdId="422" type="2" speaker="理科男" content="等我们培育好精灵之后再来一场吧！" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="20" rcdId="423" type="1" speaker="怪兽狂" content="我是来找精灵的，你也是吗？那你就是我的竞争对手咯！" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="21" rcdId="423" type="2" speaker="怪兽狂" content="啊啊！我的精灵 ……" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="22" rcdId="424" type="1" speaker="登山男" content="虽然我刚从洞窟出来，不过我还是很有精神！" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="23" rcdId="424" type="2" speaker="登山男" content="看来是你比较精神一点啊！" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="24" rcdId="425" type="1" speaker="#火箭兵团#" content="就是你小子吗，竟然敢公然挑战我们#火箭兵团#，看来不给你一点教训不行啊！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="25" rcdId="425" type="1" speaker="" content="明明一直就是你们在自说自话的挡住我的路好吗……" markStr="" picId="" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="26" rcdId="425" type="2" speaker="#火箭兵团#" content="可恶！为什么这家伙这么强！增援！呼叫增援！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="27" rcdId="426" type="1" speaker="#火箭兵团#" content="看起来果然是有些实力的样子，怪不得敢挑衅我们#火箭兵团#。但是！我已早有觉悟，来和我一战吧！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="28" rcdId="426" type="1" speaker="" content="你们这是一副要搞个大新闻的样子啊。" markStr="" picId="" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="29" rcdId="426" type="2" speaker="#火箭兵团#" content="咳咳！果然没有办法拦下来吗……不过，就算身为小卒子也有小卒子的价值！能争取到这段时间就已经足够了，“彩虹之翼”是我们#火箭兵团#的了！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="30" rcdId="426" type="3" speaker="" content="在通往满金市的34号道路上，再次遭到了#火箭兵团#阻击，虽然顺利的击退了对手，但兵团成员逃走前的话仍然让你产生了隐隐的担心，“彩虹之翼”是什么，#火箭兵团#为什么处心积虑的想要得到它呢？" markStr="" picId="" voice="" setting="img_cityDiaBg1"/>
+<sta_startDialogue id="31" rcdId="427" type="1" speaker="研究员" content="年轻的训练师，看上去是为了挑战道馆赢得徽章而来啊，不过可惜的是现在我们馆长暂时外出了，没在道馆里面呢。" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="32" rcdId="427" type="1" speaker="" content="虽然挑战道馆也是我的目标之一……不过现在比较重要的是，#火箭兵团#正在满金市活动，他们的目标是“彩虹之翼”！" markStr="" picId="" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="33" rcdId="427" type="1" speaker="研究员" content="“彩虹之翼”吗……我记得今天交流大赛的奖品就是它！#火箭兵团#打算破坏比赛吗？不行，得马上阻止他们！馆长正在现场观看比赛，请你马上赶到训练师交流中心通知馆长，和馆长一起保护比赛吧！" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="34" rcdId="427" type="1" speaker="" content="我现在就去！" markStr="" picId="" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="35" rcdId="434" type="1" speaker="少女" content="哇哦~今年的交流大赛一如既往的精彩呢！参加比赛的选手们都很有实力啊！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="36" rcdId="434" type="1" speaker="" content="呼……呼……小姐姐，你知道满金市的道馆馆长在哪儿吗？" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="37" rcdId="434" type="1" speaker="少女" content="嗯哼？人家就是满金市道馆馆长呢！你可以叫我小茜哦~" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="38" rcdId="434" type="1" speaker="" content="太好了！小茜馆长，我在前来满金市的路上遇到了#火箭兵团#，偶然间知道了他们计划要在满金市夺取“彩虹之翼”，我们必须得阻止他们！" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="39" rcdId="434" type="1" speaker="小茜" content="什么？！“彩虹之翼”可是非常珍稀的道具，据说在特殊的条件下能召唤出传说中的精灵——#凤王#！因此才被设置成本届比赛的奖品，从而吸引了众多的训练师参加比赛，#火箭兵团#难道是想借此接近捕捉#凤王#吗？" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="40" rcdId="434" type="1" speaker="" content="“彩虹之翼”……原来是这样，怪不得#火箭兵团#部署了这么多人手在满金市前后。" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="41" rcdId="434" type="1" speaker="小茜" content="感谢你带来了这么重要的情报，请你和我一起巡查比赛会场吧，一定要阻止#火箭兵团#的阴谋！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="42" rcdId="434" type="3" speaker="" content="两人紧张的对整个会场进行巡视，然而直到比赛最后决出冠军并登台领奖的时候都没有发生什么奇怪的事情，也没有发现#火箭兵团#的成员……" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="43" rcdId="434" type="1" speaker="" content="不应该这么风平浪静的啊，明明……" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="44" rcdId="434" type="1" speaker="小茜" content="应该是看到本小姐在场，知难而退了吧哈哈哈~" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="45" rcdId="434" type="1" speaker="交流大赛冠军" content="知难而退？你在说什么呢，笨~蛋~" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="46" rcdId="434" type="1" speaker="小茜" content="！！" markStr="" picId="xiao3qian4" voice="" setting=""/>
+<sta_startDialogue id="47" rcdId="434" type="1" speaker="#火箭兵团#" content="哼哈哈哈，愚蠢的人，没想到吧！我们并没有袭击会场进行抢夺，而是利用庞大的基数人员，将其他参赛者阻击在决赛圈外，从而顺利的让我们自己人拿下冠军。" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="48" rcdId="434" type="1" speaker="#火箭兵团#" content="这才是#火箭兵团#完整的夺宝计划！“彩虹之翼”，我们就不客气的收下了哦！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="49" rcdId="434" type="1" speaker="小茜" content="呀！你们竟敢……竟敢戏弄本小姐！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="50" rcdId="434" type="1" speaker="" content="别想跑！把“彩虹之翼”交出来！" markStr="" picId="" voice="" setting="img_cityDiaBg2"/>
+<sta_startDialogue id="51" rcdId="434" type="1" speaker="#火箭兵团#" content="只可惜我并不是像你们一样的笨蛋呢~#火箭兵团#全体都有！拦下他们！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="52" rcdId="434" type="1" speaker="#火箭兵团#" content="站住，只要有我在，就不会让你越过去一步的！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="53" rcdId="434" type="2" speaker="#火箭兵团#" content="啊啊……台词吹得太过了反而有种抬不起头的感觉" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="54" rcdId="435" type="1" speaker="#火箭兵团#" content="让你见识见识我为了这次计划而锻炼许久的精灵的厉害吧！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="55" rcdId="435" type="2" speaker="#火箭兵团#" content="为什么会这样……明明我都这么努力了……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="56" rcdId="436" type="1" speaker="#火箭兵团#" content="人多力量大！你以为能闯过我们这么多人的阻挡吗？" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="57" rcdId="436" type="2" speaker="#火箭兵团#" content="原来……谚语也是会骗人的……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="58" rcdId="437" type="1" speaker="#火箭兵团#" content="这不科学！连续这么多场战斗，你就不会感到疲累的吗？" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="59" rcdId="437" type="2" speaker="#火箭兵团#" content="这就是超级真新人的实力吗……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="60" rcdId="438" type="1" speaker="#火箭兵团#" content="我知道你很厉害，但是，#火箭兵团#从不后退！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="61" rcdId="438" type="2" speaker="#火箭兵团#" content="虽败犹荣！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="62" rcdId="439" type="1" speaker="#火箭兵团#" content="就算只剩下一个人，我也要让你见识到#火箭兵团#的意志！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="63" rcdId="439" type="2" speaker="#火箭兵团#" content="哈哈哈！就算是杂兵，也能拖住大将的脚步！这场比拼，是我们#火箭兵团#赢了！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="64" rcdId="439" type="2" speaker="" content="没想到，这样都让他们跑掉了……#火箭兵团#，真是不能小看他们啊。" markStr="" picId="" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="65" rcdId="439" type="2" speaker="小茜" content="啊啊啊！气死我啦！哼，#火箭兵团#，给本小姐记着！交流中心也乱七八糟了，收拾起来要麻烦死了！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="66" rcdId="439" type="2" speaker="" content="（哇，生气的女生好可怕……）那个，小茜馆长……" markStr="" picId="" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="67" rcdId="439" type="2" speaker="小茜" content="啊，虽然让#火箭兵团#跑掉了，不过还是谢谢你的情报和支援。看你的装扮，应该是在游历中的训练师吧。欢迎来我的道馆进行挑战，不过我是不会放水的哦~" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="68" rcdId="439" type="2" speaker="" content="（这个有点脱线的少女馆长怎么看怎么不靠谱啊……不管了，总之先去道馆吧）" markStr="" picId="" voice="" setting="img_cityDiaBg3"/>
+<sta_startDialogue id="69" rcdId="427" type="4" speaker="研究员" content="我就知道你会来进行挑战的，让你见识一下，研究精灵属性相克多年的我，是多么的强大吧" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="70" rcdId="427" type="5" speaker="研究员" content="我的研究之路，似乎还十分的漫长啊……" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="71" rcdId="428" type="1" speaker="怪兽狂" content="你好像带着个很少见的精灵呢，给我看看吧。" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="72" rcdId="428" type="2" speaker="怪兽狂" content="呜！不甘心啊，竟然这样输了" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="73" rcdId="429" type="1" speaker="大姐姐" content="哎呀，好可爱的训练师啊！姐姐我喜欢！不过我也不会手下留情的！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="74" rcdId="429" type="2" speaker="大姐姐" content="啊，就这样结束了吗？" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="75" rcdId="430" type="1" speaker="赌徒" content="你要不认真点的话，可就要被抬去医院了!" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="76" rcdId="430" type="2" speaker="赌徒" content="对不起，该去医院的应该是我……" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="77" rcdId="431" type="1" speaker="迷你裙" content="不要因为我是女生就大意了哦！" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="78" rcdId="431" type="2" speaker="迷你裙" content="啊，是我太大意了！" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="79" rcdId="432" type="1" speaker="怪兽狂女" content="比起强大的精灵，我还是喜欢可爱的精灵~！不过我的精灵是又强又可爱！" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="80" rcdId="432" type="2" speaker="怪兽狂女" content="我为了战胜小茜下了不少功夫，可还是不行吗？好失落……才~怪~失败了再努力就好啦！" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="81" rcdId="433" type="1" speaker="小茜" content="你终于来啦~先跟你说哦，我可是超厉害的哦！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="82" rcdId="433" type="2" speaker="小茜" content="哇！哇！趁人家走神的时候……好过分啊！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg5"/>
+<sta_startDialogue id="83" rcdId="433" type="2" speaker="小茜" content="呼！哭出来就畅快多啦！输了也就输了吧~你为什么这么熟练？一定是平时也有在努力训练精灵吧！好吧，这个正式徽章就给你啦！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="84" rcdId="433" type="2" speaker="" content="耶！又一个徽章到手！" markStr="" picId="" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="85" rcdId="433" type="2" speaker="小茜" content="对了，#火箭兵团#拿到了“彩虹之翼”，一定会去圆朱市召唤#凤王#。继续前进的话，一定会再次遇到他们的，到时候一定要阻止他们哦！" markStr="" picId="xiao3qian4" voice="" setting="img_cityDiaBg4"/>
+<sta_startDialogue id="86" rcdId="440" type="1" speaker="短裤少年" content="想要培养一只优秀的精灵，你必须每天加强训练，并且和各路训练师战斗。现在，派出你最得意的精灵吧！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="87" rcdId="440" type="2" speaker="短裤少年" content="战斗的意义不仅仅是眼前的输赢，还有变强的远方！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="88" rcdId="441" type="1" speaker="大姐姐" content="从看到你的第一眼起，我就知道，你我之间有一场命中注定的决战！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="89" rcdId="441" type="2" speaker="大姐姐" content="这次赢了我，我并不害怕！因为胜利不会一直伴随着你！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="90" rcdId="442" type="1" speaker="女学生" content="训练精灵是很有用的，它们已经替我赢下了很多战斗！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="91" rcdId="442" type="2" speaker="女学生" content="你一定也是很用心的训练精灵了呢，从它们的强大之处可以看得出来。" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="92" rcdId="443" type="1" speaker="灵异爱好者" content="每只精灵肯定都有一些特殊的能力，比其他的精灵更厉害！" markStr="" picId="ling2yi4kuang2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="93" rcdId="443" type="2" speaker="灵异爱好者" content="即使输了，我也会继续相信并深爱着我的精灵，它们是不可替代的！" markStr="" picId="ling2yi4kuang2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="94" rcdId="444" type="1" speaker="菁英训练师女" content="不要使用神奇糖果来锻炼你的精灵。他们可能不会得到锻炼，或者会被你宠坏。" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="95" rcdId="444" type="2" speaker="菁英训练师女" content="好吧，看起来你的精灵都十分的厉害。" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="96" rcdId="445" type="1" speaker="窃贼 " content="自然公园是要给非常适合训练精灵的地方，你也要去么？" markStr="" picId="qie4zei2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="97" rcdId="445" type="2" speaker="窃贼 " content="能遇到像你这样强大的训练师，证明我这次是来对了呀！" markStr="" picId="qie4zei2" voice="" setting="img_cityDiaBg12"/>
+<sta_startDialogue id="98" rcdId="446" type="1" speaker="理科男 " content="我和我女朋友喜欢在这美丽的公园里面散步。" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="99" rcdId="446" type="2" speaker="理科男 " content="你有看到我女朋友么？" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="100" rcdId="447" type="1" speaker="迷你裙 " content="我和我男朋友喜欢在这美丽的公园里面散步。" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="101" rcdId="447" type="2" speaker="迷你裙 " content="你有看到我男朋友么？" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="102" rcdId="448" type="1" speaker="空手道家" content="虫系精灵和草系精灵，你更喜欢哪一种精灵呢？" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="103" rcdId="448" type="2" speaker="空手道家" content="在自然公园有捕捉虫系和捕捉草系精灵两种比赛，你要参加么？" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="104" rcdId="449" type="1" speaker="泳裤男" content="欢迎来到自然公园参加捕虫大赛！" markStr="" picId="yong3ku4nan2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="105" rcdId="449" type="2" speaker="泳裤男" content="不幸的是，已经错过了比赛的时间呢。" markStr="" picId="yong3ku4nan2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="106" rcdId="450" type="1" speaker="功夫少年" content="在上一次的捕虫大赛中，我可是排到了第三名哦！" markStr="" picId="gong1fu1shao4nian2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="107" rcdId="450" type="2" speaker="功夫少年" content="可恶，要是比拼捕捉技术的话我一定不会输给你的！" markStr="" picId="gong1fu1shao4nian2" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="108" rcdId="451" type="1" speaker="" content="咦？好像看到了几个熟悉的背影？" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="109" rcdId="451" type="1" speaker="#火箭队#" content="很高兴你提出一个相当好的问题，所以我们很乐意回答你。为了防止世界遭受破坏，为了维护世界的和平，所以我们把爱和罪恶合而为一！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="110" rcdId="451" type="1" speaker="#火箭队#" content="我们是可爱以及有魅力的反派角色：#武藏#，#小次郎#。我们便是奔向银河的#火箭兵团#二人组，我们的未来像太空白洞般雪白无暇。" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="111" rcdId="451" type="1" speaker="" content="唔……撒西不理？" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="112" rcdId="451" type="1" speaker="#火箭队#" content="哼哼，这次我们可是肩负着重要的社团任务，劝你还是乖乖认输比较好哦。" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="113" rcdId="451" type="1" speaker="" content="#火箭兵团#……果然还是有着什么秘密行动吗？！" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="114" rcdId="451" type="2" speaker="#火箭队#" content="这不可能！漫画里明明说了特训之后就能变强，就能轻松打败对手的啊！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="115" rcdId="451" type="2" speaker="" content="老实交待，#火箭兵团#这次又想做些什么？" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="116" rcdId="451" type="2" speaker="#火箭队#" content="诶？火箭……兵团？组织这一期的活动已经开始了吗？" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="117" rcdId="451" type="2" speaker="" content="我的天……所以你们究竟是干嘛来了？" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="118" rcdId="451" type="2" speaker="#火箭队#" content="当然是捕虫大赛！虽然这次遗憾的错过了，但是我们还会回来的——！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="119" rcdId="451" type="3" speaker="" content="紧追着#火箭兵团#的尾巴而来，却意外的未能在此地发现兵团主力军的踪影，只有3个逗比在这里逗留，从他们口中也没有得到任何有用的信息，只好抱着疑惑继续追查下去。" markStr="" picId="" voice="" setting="img_cityDiaBg7"/>
+<sta_startDialogue id="120" rcdId="452" type="1" speaker="怪兽少女" content="我在这条路上已经锻炼有一阵子了，而且我每天都在变强！" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="121" rcdId="452" type="2" speaker="怪兽少女" content="不可能！你明明就是一个路人，为什么会这么厉害？" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="122" rcdId="453" type="1" speaker="电工 " content="身为一个训练师，就需要天然地享受每一场对战！" markStr="" picId="dian4gong1" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="123" rcdId="453" type="2" speaker="电工 " content="训练师的生命是非常令人兴奋的，在他们的道路上总会展现出新的冒险！" markStr="" picId="dian4gong1" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="124" rcdId="454" type="1" speaker="捕虫少年" content="策略可是精灵对战中重要的一环，让我见识一下你有怎样的策略吧！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="125" rcdId="454" type="2" speaker="捕虫少年" content="当精灵强到一定程度后，连策略也失去了意义啊……" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="126" rcdId="455" type="1" speaker="赌徒" content="听说这里附近有一只特殊的胡说树，能学会飞翔和冲浪呢！" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="127" rcdId="455" type="2" speaker="赌徒" content="如果你有看到它的话记得告诉我一声哦！" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="128" rcdId="456" type="1" speaker="菁英训练师女" content="终于！来了个能战斗的训练家！" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="129" rcdId="456" type="2" speaker="菁英训练师女" content="你还真不是一般的强啊……" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="130" rcdId="457" type="1" speaker="童子军女 " content="我随时迎接任何精灵的挑战。这就是我接受命运的第一步。" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="131" rcdId="457" type="2" speaker="童子军女 " content="没想到接受命运的第二步竟然是迎接失败……" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg13"/>
+<sta_startDialogue id="132" rcdId="458" type="1" speaker="登山男" content="据说这里是可以找到古代智慧的地方。" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="133" rcdId="458" type="2" speaker="登山男" content="不提古代智慧，你的战斗智慧已经十分高超了……" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="134" rcdId="459" type="1" speaker="童子军男 " content="表面上看来，我只是一个慕名而来的游客，但我的真实身份是一名精灵训练师！" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="135" rcdId="459" type="2" speaker="童子军男 " content="早知道你这么厉害，我就不暴露身份了……" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="136" rcdId="460" type="1" speaker="暴走族" content="遗迹解谜哪里比得上精灵对决有意思！" markStr="" picId="bao4zou3zu2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="137" rcdId="460" type="2" speaker="暴走族" content="呜呜，我还是回去解谜好了……" markStr="" picId="bao4zou3zu2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="138" rcdId="461" type="1" speaker="迷你裙 " content="呐，送我一只未知图腾好不好？" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="139" rcdId="461" type="2" speaker="迷你裙 " content="哎，我还是在遗迹中自己找找看吧。" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="140" rcdId="462" type="1" speaker="研究员" content="如果你能够打败我的话，我就告诉你我的研究结果！" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="141" rcdId="462" type="2" speaker="研究员" content="听着，如果在遗迹附近打开电台的话，在13.5频道就会听到疑似凤王的鸣叫，还有天界之笛的旋律。" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="142" rcdId="463" type="1" speaker="" content="怎么又是你们……" markStr="" picId="" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="143" rcdId="463" type="1" speaker="#火箭队#" content="太天真了！坚持到底可是我们#火箭队#的座右铭！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="144" rcdId="463" type="1" speaker="" content="只是你们三个的座右铭吧……" markStr="" picId="" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="145" rcdId="463" type="1" speaker="#火箭队#" content="才不是！别想着蒙混过关，我们可是尾随你好久了，快把遗迹的珍贵情报交出来！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="146" rcdId="463" type="2" speaker="#火箭队#" content="啊啊，怎么又是这样……" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="147" rcdId="463" type="2" speaker="" content="你们还是死心吧，无论再来多少次，结果都是不会改变的了。" markStr="" picId="" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="148" rcdId="463" type="2" speaker="#火箭队#" content="等着！总有一天会让你知道我们的厉害！" markStr="" picId="huo3jian4dui4" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="149" rcdId="463" type="2" speaker="" content="这几个傻瓜……看来这里是真的没有#火箭兵团#的踪迹了，莫非坂木是把全部人手都放在了圆朱市吗？" markStr="" picId="" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="150" rcdId="463" type="3" speaker="" content="阿露福遗迹至今仍然留有许多未能解开的谜题，据说如果带着创世神来到这里，或许可以抵达神都遗迹，在那里可以遇见#帝牙卢卡#、#帕路奇亚#和#骑拉帝纳#，甚至能够获取他们的专属道具。" markStr="" picId="" voice="" setting="img_cityDiaBg8"/>
+<sta_startDialogue id="151" rcdId="464" type="1" speaker="超能力者 " content="你需要战胜的是#精灵#的战斗意志！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="152" rcdId="464" type="2" speaker="超能力者 " content="暂时的失败是成功的垫脚石！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="153" rcdId="465" type="1" speaker="窃贼 " content="我的#精灵#都训练的很好，我在战斗中很相信它们！" markStr="" picId="qie4zei2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="154" rcdId="465" type="2" speaker="窃贼 " content="失败对我来说不算什么，不过你要记住，迟早你要还的。" markStr="" picId="qie4zei2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="155" rcdId="466" type="1" speaker="捕虫少年" content="我已经很久都没有战斗了，但是现在有机会了！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="156" rcdId="466" type="2" speaker="捕虫少年" content="只有在战胜别人才能被成为真正的赢家。" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="157" rcdId="467" type="1" speaker="垂钓者" content="训练师！让我用战斗来测试你的技术吧。就在这里，开始吧！" markStr="" picId="chui2diao4zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="158" rcdId="467" type="2" speaker="垂钓者" content="你的前景不错，继续努力啊！" markStr="" picId="chui2diao4zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="159" rcdId="468" type="1" speaker="饲鸟使者" content="在我的整个生命中，我必须训练，然后打败其他的训练师。" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="160" rcdId="468" type="2" speaker="饲鸟使者" content="你比我做得更好，因为你爱你的精灵。" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="161" rcdId="469" type="1" speaker="迷你裙 " content="你经历过绝望吗？" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="162" rcdId="469" type="2" speaker="迷你裙 " content="也对，像你这么强大的人怎么可能会沦落到绝望的境地呢……" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg14"/>
+<sta_startDialogue id="163" rcdId="470" type="1" speaker="" content="咦，道馆门怎么是关闭着的？" markStr="" picId="" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="164" rcdId="470" type="1" speaker="菁英训练师男" content="失礼了，道馆长正好出门去了呢" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="165" rcdId="470" type="1" speaker="" content="怎么每一个道馆长都不喜欢在自己道馆里面待着的样子，总要跑东跑西的？" markStr="" picId="" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="166" rcdId="470" type="1" speaker="菁英训练师男" content="少年你在嘟囔些什么呢？" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="167" rcdId="470" type="1" speaker="" content="啊……啊哈哈，没什么没什么" markStr="" picId="" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="168" rcdId="470" type="1" speaker="菁英训练师男" content="如果你想要进行道馆挑战的话，先去烧焦塔把他喊回来吧，道馆长十有八九就在那里呢。馆长他的造型十分别致，你肯定一眼就能认出来的。" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="169" rcdId="470" type="1" speaker="" content="嘛，道馆挑战是一方面，#火箭兵团#也让人耿耿于怀，还是先找到道馆长再说吧。" markStr="" picId="" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="170" rcdId="477" type="3" speaker="" content="传说在150年前，一道闪电击中了西侧的塔，那座塔瞬间变成火海，大火燃烧了三天三夜，最后一场大雨扑灭了火焰，然而此时那座塔已经所剩无几。有三只不知名的#神奇宝贝#在大火中被烧死，#凤王#从天而降并使他们复活。" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="171" rcdId="477" type="1" speaker="小松" content="每次来到烧焦塔，都可以感受到浴火重生的悲壮，只是不能再见到那几只精灵实在太可惜了。" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="172" rcdId="477" type="1" speaker="" content="那个……莫非你就是圆朱道馆的道馆长么？" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="173" rcdId="477" type="1" speaker="小松" content="正是如此，看你年纪不大，没想到眼光却意外的不错嘛" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="174" rcdId="477" type="1" speaker="" content="呃，先不提这个，我之前从满金市追踪#火箭兵团#的行踪一直过来，发现他们准备在圆朱市搞个大新闻，不知道道馆长有没有发现什么可疑的人员呢？" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="175" rcdId="477" type="1" speaker="小松" content="#火箭兵团#吗？刚才倒是有看到几个鬼祟的家伙到烧焦塔的上面去了，说不定就是他们。" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="176" rcdId="477" type="1" speaker="" content="果然！我们赶紧上去看看吧！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="177" rcdId="477" type="1" speaker="菁英训练师女" content="看着这里就能想象到当年那一场大火的惨烈，你不觉得吗？" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="178" rcdId="477" type="2" speaker="菁英训练师女" content="你真是不解风情！" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="179" rcdId="478" type="1" speaker="捕虫少年" content="这塔上面开了个顶，倒是挺凉快的啊~" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="180" rcdId="478" type="2" speaker="捕虫少年" content="休息够了我也要继续捕虫去喽~" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="181" rcdId="479" type="1" speaker="童子军男 " content="你也是来参观烧焦塔的嘛？" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="182" rcdId="479" type="2" speaker="童子军男 " content="如果当年有像你这么强的训练师，烧焦塔是不是就能避开烧毁的命运了呢？" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="183" rcdId="480" type="1" speaker="空手道家" content="墙壁上还残留着当年的壁画，你知道里面藏着什么秘密吗？" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="184" rcdId="480" type="2" speaker="空手道家" content="原来你也不知道啊。" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="185" rcdId="481" type="1" speaker="" content="终于逮住你们了！赶紧把彩虹之翼交出来！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="186" rcdId="481" type="1" speaker="#火箭兵团#" content="你在说些什么啊，我什么都不知道哎，我只是一个普通的游客而已呢~" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="187" rcdId="481" type="1" speaker="" content="跟反派讲道理真是分分钟要被气死，不教训你们一下估计是不会说真话的了！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="188" rcdId="481" type="2" speaker="#火箭兵团#" content="一言不合就开打，要不要这么暴力？！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="189" rcdId="481" type="2" speaker="" content="你们这是欠揍，老老实实的交待吧" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="190" rcdId="481" type="2" speaker="#火箭兵团#" content="开玩笑，我们#火箭兵团#是不会有这种软骨头的！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="191" rcdId="482" type="1" speaker="#火箭兵团#" content="你……你别过来，我真的什么都不知道！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="192" rcdId="482" type="1" speaker="" content="咦？这个家伙好像比较胆小，有机会！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="193" rcdId="482" type="2" speaker="" content="说吧，你们在这里做什么？反正也只有你们两个，跑不掉的了！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="194" rcdId="482" type="2" speaker="#火箭兵团#" content="我真的不知道啊……只是接到上头命令，要来这里站桩，吸引一下注意力而已……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="195" rcdId="482" type="2" speaker="" content="吸引……注意力？不好，这里只是一个幌子！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="196" rcdId="482" type="2" speaker="小松" content="说起来，烧焦塔已经荒废很久，如果#火箭兵团#想要搞事的话，我想他们应该会选择铃铃塔。" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="197" rcdId="482" type="2" speaker="" content="你知道的话干嘛不早说……" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="198" rcdId="482" type="2" speaker="小松" content="毕竟没有十足的把握，不如我们兵分两路，你前去铃铃塔一探究竟，我回道馆看看有无异常状况。" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="199" rcdId="482" type="2" speaker="" content="好！事不宜迟，我们马上行动吧！" markStr="" picId="" voice="" setting="img_cityDiaBg10"/>
+<sta_startDialogue id="200" rcdId="483" type="1" speaker="#火箭兵团#" content="不好意思，今天铃铃塔暂时关闭进行日常维护，请改天再来吧~" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="201" rcdId="483" type="1" speaker="" content="果然是你们，穿着#火箭兵团#的制服来冒充工作人员也太不专业了吧？" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="202" rcdId="483" type="1" speaker="#火箭兵团#" content="切！这都被你看穿了吗，没办法，看来只好在这里把你打趴了。" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="203" rcdId="483" type="2" speaker="#火箭兵团#" content="咦，发生了什么？我就这样输了么……" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="204" rcdId="483" type="2" speaker="" content="真的有这么神经大条的人啊，你不会是在#火箭兵团#里面负责搞笑的吧" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="205" rcdId="484" type="1" speaker="#火箭兵团#" content="中埋伏了吧！看招！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="206" rcdId="484" type="2" speaker="#火箭兵团#" content="为什么，明明是我先动手的……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="207" rcdId="485" type="1" speaker="#火箭兵团#" content="站住！我劝你还是乖乖回头比较好！等下喊疼的话我也不会停手的哦！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="208" rcdId="485" type="2" speaker="#火箭兵团#" content="疼……" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="209" rcdId="486" type="1" speaker="#火箭兵团#" content="别以为能越过我！" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="210" rcdId="486" type="2" speaker="#火箭兵团#" content="不行……不能让你就这样过去……" markStr="" picId="nv3huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="211" rcdId="487" type="1" speaker="#火箭兵团#" content="彩虹之翼准备就绪！再坚持一会儿就可以了！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="212" rcdId="487" type="1" speaker="#火箭兵团#" content="交给我吧！不要想着可以从我的面前过去！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="213" rcdId="487" type="2" speaker="#火箭兵团#" content="可恶……差一点就能拦下的了……" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="214" rcdId="487" type="2" speaker="" content="口胡，明明差远了好不好" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="215" rcdId="488" type="1" speaker="#火箭兵团#" content="#凤王#！！是#凤王#！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="216" rcdId="488" type="1" speaker="凤王" content="哑——" markStr="" picId="img_feng4wang2" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="217" rcdId="488" type="1" speaker="#火箭兵团#" content="#凤王#就在面前了，怎么容许你在这个时候破坏！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="218" rcdId="488" type="1" speaker="" content="你们#火箭兵团#才不配拥有#凤王#这样自由而高贵的精灵！" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="219" rcdId="488" type="2" speaker="#火箭兵团#" content="怎么会这样……好不容易能见到传说中的精灵#凤王#了……真是太不甘心了！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="220" rcdId="488" type="2" speaker="" content="你们死心吧，像#凤王#这样美好的精灵存在于传说之中才是最合适的！" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="221" rcdId="488" type="2" speaker="#火箭兵团#" content="下一次……下一次绝对不会再让你得逞的！" markStr="" picId="nan2huo3jian4dui4" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="222" rcdId="488" type="2" speaker="" content="这语气，怎么说得我才是反派一样……你们到底有没有身为反派的自觉啊" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="223" rcdId="488" type="2" speaker="小松" content="干得漂亮！道馆那边平安无事我就立刻过来了，没想到还能看到#凤王#！少年你真的不错啊！" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="224" rcdId="488" type="2" speaker="" content="嘻嘻，接下来我可是要去挑战你家的道馆了哦~" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="225" rcdId="488" type="2" speaker="小松" content="尽管放马过来，提前跟你说一句，我这关可不是那么容易就能过的。" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="226" rcdId="488" type="3" speaker="" content="挫败了#火箭兵团#夺取传说精灵#凤王#的阴谋后，#火箭兵团#虽然败退但却扬言会在之后找回场子。虽然不知道他们的具体计划，但目前也只能够见步行步，挑战道馆继续自己的路途。" markStr="" picId="" voice="" setting="img_cityDiaBg11"/>
+<sta_startDialogue id="227" rcdId="470" type="4" speaker="菁英训练师男" content="你每天都有认真的训练精灵吗？" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="228" rcdId="470" type="5" speaker="菁英训练师男" content="嗯，从你的精灵身上彷佛能看到你专注而认真的训练！" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="229" rcdId="471" type="1" speaker="童子军女 " content="我会用我最好的精灵打败你！" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="230" rcdId="471" type="2" speaker="童子军女 " content="生活不是只有胜利！是不断的学习和提高！但是还是好不甘心……" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="231" rcdId="472" type="1" speaker="空手道家" content="空手道，强无敌！" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="232" rcdId="472" type="2" speaker="空手道家" content="我承认现在是你比较厉害！" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="233" rcdId="473" type="1" speaker="超能力者 " content="超能力无所不能！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="234" rcdId="473" type="2" speaker="超能力者 " content="看来并不是这样……" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="235" rcdId="474" type="1" speaker="水手" content="大海才是男人的浪漫！" markStr="" picId="shui3shou3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="236" rcdId="474" type="2" speaker="水手" content="不过地上的安稳也还是不错的！" markStr="" picId="shui3shou3" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="237" rcdId="475" type="1" speaker="女学生" content="我正准备挑战馆长呢，你得排在我后面！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="238" rcdId="475" type="2" speaker="女学生" content="哼！姑且让你先过去好了。" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="239" rcdId="476" type="1" speaker="小松" content="你终于来了，那就让你见识一下我身为圆朱道馆主的实力吧！" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="240" rcdId="476" type="2" speaker="小松" content="能打败#火箭兵团#的人，果然不能小看啊。很好，这个魅影徽章是赠予你的最佳礼物了！" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="241" rcdId="476" type="2" speaker="" content="哟西！徽章+1！" markStr="" picId="" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="242" rcdId="476" type="2" speaker="小松" content="不过兵团成员撤退前说的话让我有点在意，你在旅行的路上还是需要注意一下，不能让他们太过嚣张！我感觉他们的目标或许会是洛奇亚也不一定！" markStr="" picId="xiao3song1" voice="" setting="img_cityDiaBg9"/>
+<sta_startDialogue id="243" rcdId="489" type="1" speaker="童子军男 " content="母亲说过如果有人搭讪的话就向其挑战吧" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="244" rcdId="489" type="2" speaker="童子军男 " content="母亲大人说过，输的时候更要有礼貌！" markStr="" picId="tong2zi3jun1nan2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="245" rcdId="490" type="1" speaker="迷你裙 " content="精灵的技能，不断使用的话就会记住！" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="246" rcdId="490" type="2" speaker="迷你裙 " content="诶！刚才技能威力还挺大的嘛。" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="247" rcdId="491" type="1" speaker="怪兽少女" content="我和精灵正在学习，不一起吗？" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="248" rcdId="491" type="2" speaker="怪兽少女" content="单凭在学校的学习是无法获胜的！" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="249" rcdId="492" type="1" speaker="女学生" content="我永远也无法拒绝对战！那么，意下如何啊？要来对战吗？" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="250" rcdId="492" type="2" speaker="女学生" content="太神奇了，你比道馆馆主还要强！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="251" rcdId="493" type="1" speaker="捕虫少年" content="无论是精灵还是其他，速度是第一要义！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="252" rcdId="493" type="2" speaker="捕虫少年" content="在我达到最高速度前，对战结束了！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="253" rcdId="494" type="1" speaker="暴走族" content="少年，你能跟上我的速度吗？！" markStr="" picId="bao4zou3zu2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="254" rcdId="494" type="2" speaker="暴走族" content="难道是锻炼得还不够努力的原因吗？" markStr="" picId="bao4zou3zu2" voice="" setting="img_cityDiaBg15"/>
+<sta_startDialogue id="255" rcdId="495" type="3" speaker="" content="摩摩牧场是39号道路上的一个小牧场。这个牧场里放养着许多#大奶罐#，并出产哞哞鲜奶。在精灵图鉴上可以看到大奶罐性情温和，不喜欢与人争斗。但是有一个流传多年的都市传说却指出，某道馆馆主的#大奶罐#曾经给一代人的心里留下不可磨灭的创伤，滚动、迷惑、饮奶的灵活搭配令一众少年训练师束手无策。" markStr="" picId="" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="256" rcdId="495" type="1" speaker="运动少年" content="对战就像玩儿一样！我的道路就是不断胜利！！" markStr="" picId="yun4dong4shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="257" rcdId="495" type="2" speaker="运动少年" content="你的精灵很厉害啊！就好像给它穿上了竞争背心一样！" markStr="" picId="yun4dong4shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="258" rcdId="496" type="1" speaker="空手道家" content="我会输？不存在的！" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="259" rcdId="496" type="2" speaker="空手道家" content="你对力量一无所知！" markStr="" picId="kong1shou3dao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="260" rcdId="497" type="1" speaker="灵异爱好者" content="我的身体之中，藏着名为“可能性”的怪兽！" markStr="" picId="ling2yi4kuang2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="261" rcdId="497" type="2" speaker="灵异爱好者" content="你的“可能性”……说不定比我的更高！" markStr="" picId="ling2yi4kuang2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="262" rcdId="498" type="1" speaker="怪兽狂" content="全力攻击是我的信条，精灵对战就是不留遗憾给自己！" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="263" rcdId="498" type="2" speaker="怪兽狂" content="唯一遗憾的事情——我还是输掉了……" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="264" rcdId="499" type="1" speaker="童子军女" content="在进入草丛的时候，我就决定穿短裤了！" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="265" rcdId="499" type="2" speaker="童子军女" content="可以明显感受到使双腿发痒的草的触感！" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="266" rcdId="500" type="1" speaker="菁英训练师男" content="事先说明，我可是很厉害的哦！" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="267" rcdId="500" type="2" speaker="菁英训练师男" content="我大概已经弄清楚了，你，说不定比冠军都还要厉害呢。" markStr="" picId="jing1ying1xun4lian4shi1nan2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="268" rcdId="501" type="1" speaker="超能力者" content="今天我训练了很多精灵，准备看看结果！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="269" rcdId="501" type="2" speaker="超能力者" content="我想我的训练还不够，你对我来说还是太强大了！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="270" rcdId="502" type="1" speaker="大姐姐" content="我懂的，我懂的，没有人能够拒绝得了可爱的小精灵！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="271" rcdId="502" type="2" speaker="大姐姐" content="通过对战我确定啦，你非常喜欢精灵呐，是吧？" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="272" rcdId="503" type="1" speaker="魔术师" content="你有着旅行老手的氛围……好像可以来场愉快的对战呢！" markStr="" picId="mo2shu4shi1" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="273" rcdId="503" type="2" speaker="魔术师" content="跟预想的一样呢……" markStr="" picId="mo2shu4shi1" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="274" rcdId="504" type="1" speaker="运动少年" content="今天我的精灵终于进化了，我确信可以拿下这场对战的胜利！" markStr="" picId="yun4dong4shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="275" rcdId="504" type="2" speaker="运动少年" content="现在是你比较强，但你下次不会这么幸运的了！" markStr="" picId="yun4dong4shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="276" rcdId="505" type="1" speaker="功夫少年" content="突如其来的战斗始终是令人兴奋的！" markStr="" picId="gong1fu1shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="277" rcdId="505" type="2" speaker="功夫少年" content="我输了……但我还是不能接受这样的结果。" markStr="" picId="gong1fu1shao4nian2" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="278" rcdId="506" type="1" speaker="饲鸟使者" content="优秀的训练师每一天都在训练着他们的精灵！" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="279" rcdId="506" type="2" speaker="饲鸟使者" content="你太强了，感觉是无法超越的那一种。" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="280" rcdId="507" type="1" speaker="小茂" content="在各自修行的路上我们都走了很远，现在的你看上去又变强了不少。不过单说努力的话我也不会输给你！" markStr="" picId="xiao3mao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="281" rcdId="507" type="2" speaker="小茂" content="怎么可能会这样子……" markStr="" picId="xiao3mao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="282" rcdId="507" type="2" speaker="小茂" content="一时的胜负说明不了什么！修行的道路还没到尽头，我们之间的战斗也不会停止！" markStr="" picId="xiao3mao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="283" rcdId="507" type="2" speaker="" content="(没完没了啊你……)" markStr="" picId="" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="284" rcdId="507" type="2" speaker="小茂" content="既然这次输了，我也无话好说，这个秘传药就当作彩头给你吧。" markStr="" picId="xiao3mao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="285" rcdId="507" type="2" speaker="" content="秘传药？有什么用啊？" markStr="" picId="" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="286" rcdId="507" type="2" speaker="小茂" content="我也不太清楚，好像是可以治愈伤病的良药。不和你说了，修行时间有限，我必须要继续旅程了！" markStr="" picId="xiao3mao4" voice="" setting="img_cityDiaBg16"/>
+<sta_startDialogue id="287" rcdId="508" type="1" speaker="短裤少年" content="虽然我很想和你来一场激烈的精灵对战，但遗憾的是，因为道馆长不在，所以道馆目前是暂停开放的状态呢。" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="288" rcdId="508" type="1" speaker="" content="道馆长怎么了？" markStr="" picId="" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="289" rcdId="508" type="1" speaker="短裤少年" content="道馆长心爱的#电龙#一直以来镇守在光辉灯塔，照亮海上船只的航行，不过最近#电龙#酱生病了，所以道馆长就过去照顾它了，只是#电龙#酱的状态还是不对的样子。" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="290" rcdId="508" type="1" speaker="" content="生病了？我刚好得到了一份秘传药，说不定能够帮上忙呢！" markStr="" picId="" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="291" rcdId="508" type="1" speaker="短裤少年" content="那你赶紧过去吧！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="292" rcdId="515" type="1" speaker="大叔" content="相信和我的战斗能够让你学到很多！" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="293" rcdId="515" type="2" speaker="大叔" content="哇，你还能做的更好一点吗！" markStr="" picId="du3tu2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="294" rcdId="516" type="1" speaker="捕虫少年" content="开打吧！我会向你展示我的气概！" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="295" rcdId="516" type="2" speaker="捕虫少年" content="这个世界假如没有精灵对战的话，也就没有意义了。" markStr="" picId="bu3chong2shao3nian2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="296" rcdId="517" type="1" speaker="大小姐" content="天气正好，很适合精灵对战呀！" markStr="" picId="da4xiao3jie3" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="297" rcdId="517" type="2" speaker="大小姐" content="学会如何锻炼精灵将会是一种很好的经验，在这其中你也就能明白何为人生。" markStr="" picId="da4xiao3jie3" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="298" rcdId="518" type="1" speaker="登山男" content="如果一边登山一边进行精灵对战的话，会不会有更精彩的比赛出现？" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="299" rcdId="518" type="2" speaker="登山男" content="啊，单比登山的话，你肯定是要输的！" markStr="" picId="deng1shan1nan2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="300" rcdId="519" type="1" speaker="怪兽少女" content="说到旅行的话，那肯定是想留下很多很多美好的回忆！" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="301" rcdId="519" type="2" speaker="怪兽少女" content="嗯！精彩的对战，这也是美好回忆的一部分呢。" markStr="" picId="guai4shou4nv3" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="302" rcdId="520" type="1" speaker="怪兽少年" content="你破坏到我们旅行的兴致啦！" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="303" rcdId="520" type="2" speaker="怪兽少年" content="唔，就不能给我留点面子吗……" markStr="" picId="guai4shou4kuang2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="304" rcdId="520" type="2" speaker="阿蜜" content="#电龙#酱，你到底怎么了……" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="305" rcdId="520" type="2" speaker="#电龙#" content="……" markStr="" picId="img_dian4long2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="306" rcdId="520" type="2" speaker="" content="这位小姐姐，你就是浅黄市道馆的道馆长么？" markStr="" picId="" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="307" rcdId="520" type="2" speaker="阿蜜" content="是的呀，你是……？" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="308" rcdId="520" type="2" speaker="" content="我是正在游历中修行的训练家，听说看守灯塔的电龙生病就过来看一下，这里有一份秘传药，或许能够治好它呢。" markStr="" picId="" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="309" rcdId="520" type="2" speaker="阿蜜" content="太好了！秘传药正好有用！电龙酱这下又能元气满满的给灯塔供电啦！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="310" rcdId="520" type="2" speaker="#电龙#" content="兹拉兹拉！" markStr="" picId="img_dian4long2" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="311" rcdId="520" type="2" speaker="阿蜜" content="我也能放心的回道馆了，少年，放马过来吧！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg19"/>
+<sta_startDialogue id="312" rcdId="508" type="4" speaker="短裤少年" content="欢迎光临挑战者！让我看下你的精灵！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="313" rcdId="508" type="5" speaker="短裤少年" content="在道馆可以与许多精灵相遇，很开心的哦！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="314" rcdId="509" type="1" speaker="研究员" content="最近总是睡不好，我不知道我能不能好好对战啊！" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="315" rcdId="509" type="2" speaker="研究员" content="果然啊，因为没睡好啊……" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="316" rcdId="510" type="1" speaker="大姐姐" content="和精灵在一起，我就能和各种各样的人们对战！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="317" rcdId="510" type="2" speaker="大姐姐" content="能够在这里相遇对战，就是我们之间的缘分，交个朋友吧！" markStr="" picId="da4jie3jie3" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="318" rcdId="511" type="1" speaker="比基尼姐姐 " content="最优秀的训练家……会是我吗？" markStr="" picId="bi3ji1ni2jie3jie3" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="319" rcdId="511" type="2" speaker="比基尼姐姐 " content="果然呐……如果是跳舞的话，那么我还可以考虑考虑。" markStr="" picId="bi3ji1ni2jie3jie3" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="320" rcdId="512" type="1" speaker="理科男" content="在这里的话，你总能找到一场不错的战斗！" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="321" rcdId="512" type="2" speaker="理科男" content="你的技术是值得称赞的。" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="322" rcdId="513" type="1" speaker="女学生" content="真心喜爱精灵的话，进化也会快一些的呢！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="323" rcdId="513" type="2" speaker="女学生" content="现在，你作为训练家也进化了！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="324" rcdId="514" type="1" speaker="阿蜜" content="那坚定的表情……你眼里闪烁的光芒告诉我你已经准备好迎接挑战了……很好！真的很好！无论是败阵的后悔还是胜利的喜悦，都是最棒的瞬间！那么来吧，看谁能够把握住胜利！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="325" rcdId="514" type="2" speaker="阿蜜" content="你……不，不止是你。你和你的精灵时最棒的搭档！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="326" rcdId="514" type="2" speaker="阿蜜" content="这一枚钢铁徽章是你应得的荣誉！在旅行的路上如果感到无聊的话，也可以回来找我玩儿哦。" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg17"/>
+<sta_startDialogue id="327" rcdId="521" type="1" speaker="海滩少女" content="有些东西你只有在照相机的取景器里才能看见。" markStr="" picId="hai3tan1shao4nv3" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="328" rcdId="521" type="2" speaker="海滩少女" content="还有些东西只能在和精灵一起的时候才能看见。" markStr="" picId="hai3tan1shao4nv3" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="329" rcdId="522" type="1" speaker="研究员" content="虽然和精灵还无法做到技能同步……但我要挑战你们！" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="330" rcdId="522" type="2" speaker="研究员" content="练习果然还是必不可少的啊……" markStr="" picId="yan2jiu1yuan2" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="331" rcdId="523" type="1" speaker="女学生" content="你也是来港口旅行的嘛？" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="332" rcdId="523" type="2" speaker="女学生" content="在旅途中，你会遇见一些只属于你的宝贵的东西……嗯，那的确很棒！真的很棒！" markStr="" picId="nv3xue2sheng1" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="333" rcdId="524" type="1" speaker="迷你裙 " content="因为我不怎么懂，所以我全交给精灵啦！" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="334" rcdId="524" type="2" speaker="迷你裙 " content="诶，输了吗？" markStr="" picId="mi2ni3qun2" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="335" rcdId="525" type="1" speaker="运动少女" content="在港口迎着海风跑步，再来上一场对战就最好不过了！" markStr="" picId="yun4dong4shao4nv3" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="336" rcdId="525" type="2" speaker="运动少女" content="爽快的战斗，爽快的你！" markStr="" picId="yun4dong4shao4nv3" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="337" rcdId="526" type="1" speaker="魔术师" content="魔术能够无中生有，我能变出各种各样的精灵！" markStr="" picId="mo2shu4shi1" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="338" rcdId="526" type="2" speaker="魔术师" content="我明明有了这么多精灵，却还是赢不了……" markStr="" picId="mo2shu4shi1" voice="" setting="img_cityDiaBg20"/>
+<sta_startDialogue id="339" rcdId="527" type="1" speaker="童子军女" content="训练师必须要知道，所有的精灵都可以在战斗中变强！" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="340" rcdId="527" type="2" speaker="童子军女" content="哇，了不起的战斗，太棒了！" markStr="" picId="tong2zi3jun1nv3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="341" rcdId="528" type="1" speaker="理科男" content="对战塔里面的战斗从无止歇！" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="342" rcdId="528" type="2" speaker="理科男" content="你的状态保持得很不错啊……" markStr="" picId="li3ke1nan2" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="343" rcdId="529" type="1" speaker="菁英训练师女" content="越往上走的对手可就是越强的哦！" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="344" rcdId="529" type="2" speaker="菁英训练师女" content="难道你能战胜对战塔里的全部训练师？！" markStr="" picId="jing1ying1xun4lian4shi1nv3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="345" rcdId="530" type="1" speaker="饲鸟使者" content="当飞行系精灵被巧妙的训练的话会很强的。" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="346" rcdId="530" type="2" speaker="饲鸟使者" content="但训练飞行系精灵需要极大的决心和忍耐力……" markStr="" picId="si4niao3shi3zhe3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="347" rcdId="531" type="1" speaker="超能力者 " content="我随时准备战斗！" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="348" rcdId="531" type="2" speaker="超能力者 " content="我的精灵是时候好好休息一下了，它们看上去很疲惫的样子。" markStr="" picId="chao1neng2li4zhe3" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="349" rcdId="532" type="1" speaker="短裤少年" content="精灵训练师的规则很简单，对战然后胜利！有什么想说的话，通过战斗来表达吧！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="350" rcdId="532" type="2" speaker="短裤少年" content="两个人要相互了解的话，那肯定要花费很长的时间。但训练师之间的友谊，通过战斗就能建立！" markStr="" picId="duan3ku4shao4nian2" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="351" rcdId="532" type="2" speaker="阿蜜" content="突然想起来一件事情，我想有必要告诉你一下！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="352" rcdId="532" type="2" speaker="阿蜜" content="之前我在光辉灯塔上面照看#电龙#酱的时候有看到大量的#火箭队#成员在往海上的方向集结，不知道他们在计划着什么事情。" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg18"/>
+<sta_startDialogue id="353" rcdId="532" type="2" speaker="阿蜜" content="我希望你能够替我去调查一下，如果是什么不得了的阴谋的话，请尽全力阻止他们吧！" markStr="" picId="a1mi4" voice="" setting="img_cityDiaBg18"/>
+</root>

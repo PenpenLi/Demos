@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildExploreEvent id="1" name="传说中的藏宝图" talkBefore="从各个地区收集六张藏宝图就能发现一个惊天秘密，你能帮我收集六张藏宝图吗？" talkAfter="记得帮我保密" talk="这里曾经来过很多人，后来……" task="1,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:10}]}"/>
+<sta_guildExploreEvent id="2" name="收集骨头" talkBefore="我最喜欢骨头了，如果你收集到六个骨头的话，就拿来给我吧。" talkAfter="真实太感谢你了，把这个给你吧。" talk="谁都有自己的爱好，你的呢？" task="2,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:237,&apos;num&apos;:30}]}"/>
+<sta_guildExploreEvent id="3" name="好吃的果实" talkBefore="这里的果实很好吃，而且吃六个就能很饱了，你能帮我找六个果实吗？" talkAfter="你是个好人！" talk="你喜欢吃果实吗？" task="3,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:241,&apos;num&apos;:8}]}"/>
+<sta_guildExploreEvent id="4" name="珍贵的宝珠" talkBefore="运气好的人能捡到一些珍贵的红宝珠，如果你有的话，可以拿六个给我看一下吗？" talkAfter="很感谢你的帮助。" talk="我喜欢收集红宝珠。" task="4,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:242,&apos;num&apos;:6}]}"/>
+<sta_guildExploreEvent id="5" name="神秘的金宝箱" talkBefore="金宝箱，金钥匙，里面究竟藏了些什么？可以帮我找六个金宝箱吗？" talkAfter="别告诉别人金钥匙能打开金宝箱。" talk="神秘的金宝箱藏着很多神秘的东西。" task="5,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:2}]}"/>
+<sta_guildExploreEvent id="6" name="神秘的金钥匙" talkBefore="金宝箱，金钥匙，里面究竟藏了些什么？可以帮我找六个金钥匙吗？" talkAfter="别告诉别人金钥匙能打开金宝箱。" talk="什么样的钥匙就能开什么样的宝箱，金宝箱只能用金钥匙才能开启" task="6,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:116000,&apos;num&apos;:2}]}"/>
+<sta_guildExploreEvent id="7" name="泛蓝的宝珠" talkBefore="蓝色宝珠里蕴含着神秘的力量，可以让精灵变得更加强大，你能帮我找到六个蓝宝珠吗？" talkAfter="我要努力让自己变得更加强大" talk="我怎样才能变得更加强大？" task="7,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:241,&apos;num&apos;:3},{&apos;pId&apos;:242,&apos;num&apos;:3}]}"/>
+<sta_guildExploreEvent id="8" name="藏有礼物的礼盒" talkBefore="听说不同的礼盒收藏着不同的礼物，你能帮我找六个礼盒吗？我会给你报酬的。" talkAfter="你猜我拿到了什么？" talk="你好，我想收到礼物，你有吗？" task="8,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:1},{&apos;pId&apos;:115000,&apos;num&apos;:1}]}"/>
+<sta_guildExploreEvent id="9" name="精灵爱吃的蘑菇" talkBefore="嗯，蘑菇很好吃！帮我找六个蘑菇，我就给你一些东西作为回报。" talkAfter="你想吃蘑菇吗？" talk="蘑菇的味道好极了。" task="9,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:3},{&apos;pId&apos;:239,&apos;num&apos;:5}]}"/>
+<sta_guildExploreEvent id="10" name="很稀有的铜宝箱" talkBefore="散落的铜宝箱里收藏着一些珍贵的东西，你能帮我找六个铜宝箱来，我就给你一些东西。" talkAfter="你不想知道里面藏着什么吗？" talk="宝箱开多了，总会有惊喜的。" task="10,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:115000,&apos;num&apos;:2}]}"/>
+<sta_guildExploreEvent id="11" name="很稀有的铜钥匙" talkBefore="铜宝箱只有铜钥匙能打开，你能帮我找六个铜钥匙吗？" talkAfter="你运气真好，那么快就找到了。" talk="下一把钥匙我肯定能开到好东西。" task="11,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:117000,&apos;num&apos;:2}]}"/>
+<sta_guildExploreEvent id="12" name="闪闪发光的银宝箱" talkBefore="银钥匙好像能开启银宝箱，钥匙我有了，你可以帮我找六个银宝箱来吗？" talkAfter="要我分你一个钥匙开宝箱？除非你把我给你的东西还我。" talk="这里总藏着很多不为人知的东西" task="12,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1054,&apos;num&apos;:1}]}"/>
+<sta_guildExploreEvent id="13" name="闪闪发光的银钥匙" talkBefore="银钥匙好像能用来开启银宝箱，但是我没有钥匙，你能帮我找六个吗？" talkAfter="那么珍贵的东西你是怎么找到的？" talk="其实银钥匙除了开宝箱外，还有其他的用处……" task="13,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1054,&apos;num&apos;:1}]}"/>
+<sta_guildExploreEvent id="14" name="远古手镯" talkBefore="远古手镯价值不菲，此外还藏有关于精灵的一些秘密。你能帮我找六个远古手镯吗？" talkAfter="我从来没见过这个。" talk="听书这里能找到一些远古留下的传说" task="14,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:3},{&apos;pId&apos;:242,&apos;num&apos;:5}]}"/>
+<sta_guildExploreEvent id="15" name="远古之壶" talkBefore="远古之壶是精灵世界的历史遗产，你能帮我收集六个吗？" talkAfter="我要把这些都收集起来。" talk="有很多的历史产物对于精灵有着不可磨灭的记忆。" task="15,6" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:5},{&apos;pId&apos;:241,&apos;num&apos;:5}]}"/>
+</root>

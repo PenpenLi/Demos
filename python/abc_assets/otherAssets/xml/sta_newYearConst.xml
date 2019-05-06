@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearConst id="1" describe="分支路线1入口点" data="3"/>
+<sta_newYearConst id="2" describe="分支路线1出口点" data="12"/>
+<sta_newYearConst id="3" describe="分支路线1起始点" data="101"/>
+<sta_newYearConst id="4" describe="分支路线2入口点" data="32"/>
+<sta_newYearConst id="5" describe="分支路线2出口点" data="35"/>
+<sta_newYearConst id="6" describe="分支路线2起始点" data="201"/>
+<sta_newYearConst id="7" describe="每天骰子可用次数" data="12"/>
+<sta_newYearConst id="8" describe="万能骰子需要消耗分数" data="50"/>
+<sta_newYearConst id="9" describe="万能骰子每日使用次数" data="2"/>
+<sta_newYearConst id="10" describe="喵喵接元宝喵喵移速" data="250"/>
+<sta_newYearConst id="11" describe="喵喵接元宝被炸后硬直秒数" data="2"/>
+<sta_newYearConst id="12" describe="喵喵接元宝金币、元宝、鞭炮权重" data="100,30,15"/>
+<sta_newYearConst id="13" describe="喵喵接元宝金币、元宝、鞭炮掉落速度" data="200,250,260"/>
+<sta_newYearConst id="14" describe="喵喵接元宝掉落物生成间隔（秒）" data="1"/>
+<sta_newYearConst id="15" describe="喵喵接元宝掉落物单次生成掉落物数量" data="1,3"/>
+<sta_newYearConst id="16" describe="喵喵接元宝必杀槽数值" data="150"/>
+<sta_newYearConst id="17" describe="喵喵接元宝金币、元宝积攒必杀槽数值" data="5,10"/>
+<sta_newYearConst id="18" describe="AR集福可交换道具ID" data="6794,6795,6796,6797"/>
+</root>

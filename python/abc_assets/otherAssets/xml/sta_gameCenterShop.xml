@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gameCenterShop id="1" type="1" score="1500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:10}]}" weight="100"/>
+<sta_gameCenterShop id="2" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="3" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:764,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="4" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1233,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="5" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="6" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:1}]}" weight="50"/>
+<sta_gameCenterShop id="7" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1053,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="8" type="1" score="1500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:116000,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="9" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:866,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="10" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:859,&apos;num&apos;:2}]}" weight="100"/>
+<sta_gameCenterShop id="11" type="1" score="1500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:5}]}" weight="100"/>
+<sta_gameCenterShop id="12" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:1}]}" weight="80"/>
+<sta_gameCenterShop id="13" type="1" score="9000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5498,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="14" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1052,&apos;num&apos;:5}]}" weight="100"/>
+<sta_gameCenterShop id="15" type="1" score="3000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1592,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="16" type="1" score="4000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:112000,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="17" type="1" score="5000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:10}]}" weight="100"/>
+<sta_gameCenterShop id="18" type="1" score="1000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:101000,&apos;num&apos;:2}]}" weight="100"/>
+<sta_gameCenterShop id="19" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3022,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="20" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3024,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="21" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3026,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="22" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3028,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="23" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3030,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="24" type="1" score="2500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3032,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="25" type="1" score="1000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:117000,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="26" type="1" score="6000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:867,&apos;num&apos;:1}]}" weight="50"/>
+<sta_gameCenterShop id="27" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:111000,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="28" type="1" score="500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:921,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="29" type="1" score="1000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:922,&apos;num&apos;:2}]}" weight="100"/>
+<sta_gameCenterShop id="30" type="1" score="400" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5533,&apos;num&apos;:2}]}" weight="100"/>
+<sta_gameCenterShop id="31" type="1" score="600" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5534,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="32" type="1" score="300" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5535,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="33" type="1" score="1500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5523,&apos;num&apos;:1}]}" weight="100"/>
+<sta_gameCenterShop id="34" type="1" score="1000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:857,&apos;num&apos;:5}]}" weight="100"/>
+<sta_gameCenterShop id="35" type="1" score="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1611,&apos;num&apos;:2}]}" weight="50"/>
+<sta_gameCenterShop id="36" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:361,&apos;num&apos;:1}]}" weight="30"/>
+<sta_gameCenterShop id="37" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:366,&apos;num&apos;:1}]}" weight="30"/>
+<sta_gameCenterShop id="38" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:371,&apos;num&apos;:1}]}" weight="30"/>
+<sta_gameCenterShop id="39" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:376,&apos;num&apos;:1}]}" weight="30"/>
+<sta_gameCenterShop id="40" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:381,&apos;num&apos;:1}]}" weight="30"/>
+<sta_gameCenterShop id="41" type="1" score="4500" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:386,&apos;num&apos;:1}]}" weight="30"/>
+</root>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_trainer id="100001" name="#小智#" sex="1" trainerSuit="1"/>
+<sta_trainer id="100002" name="#小茂#" sex="1" trainerSuit="3"/>
+<sta_trainer id="100003" name="#小刚#" sex="1" trainerSuit=""/>
+<sta_trainer id="100004" name="#小霞#" sex="0" trainerSuit="2"/>
+<sta_trainer id="100005" name="#小瑶#" sex="0" trainerSuit="9"/>
+<sta_trainer id="100006" name="#小光#" sex="0" trainerSuit="7"/>
+<sta_trainer id="100007" name="#小金#" sex="1" trainerSuit=""/>
+<sta_trainer id="100008" name="#路比#" sex="1" trainerSuit="8"/>
+<sta_trainer id="100009" name="#小次郎#" sex="1" trainerSuit="5"/>
+<sta_trainer id="100010" name="#武藏#" sex="0" trainerSuit="6"/>
+<sta_trainer id="100011" name="#芽衣#" sex="0" trainerSuit=""/>
+<sta_trainer id="100012" name="#瑟蕾娜#" sex="0" trainerSuit="4"/>
+<sta_trainer id="100013" name="冠军小赤" sex="1" trainerSuit=""/>
+<sta_trainer id="100014" name="冠军小绿" sex="1" trainerSuit=""/>
+<sta_trainer id="100015" name="华丽小瑶" sex="0" trainerSuit=""/>
+<sta_trainer id="100016" name="华丽小光" sex="0" trainerSuit=""/>
+<sta_trainer id="100017" name="贺岁杯版#小智#" sex="1" trainerSuit=""/>
+<sta_trainer id="100018" name="贺岁杯版智子" sex="0" trainerSuit=""/>
+<sta_trainer id="100019" name="艾岚" sex="1" trainerSuit=""/>
+<sta_trainer id="100020" name="馆主小松" sex="1" trainerSuit=""/>
+<sta_trainer id="100021" name="祐树" sex="1" trainerSuit=""/>
+<sta_trainer id="100022" name="馆主小茜" sex="0" trainerSuit=""/>
+<sta_trainer id="100023" name="馆主阿蜜" sex="0" trainerSuit=""/>
+<sta_trainer id="100024" name="世界杯大吾" sex="1" trainerSuit=""/>
+<sta_trainer id="100025" name="世界杯竹兰" sex="0" trainerSuit=""/>
+<sta_trainer id="100026" name="世界杯卡露乃" sex="0" trainerSuit=""/>
+<sta_trainer id="100027" name="七夕#小刚#" sex="1" trainerSuit=""/>
+<sta_trainer id="100028" name="七夕#乔伊#" sex="0" trainerSuit=""/>
+<sta_trainer id="100029" name="黑莲" sex="1" trainerSuit=""/>
+<sta_trainer id="100030" name="白露" sex="0" trainerSuit=""/>
+<sta_trainer id="100031" name="克罗斯" sex="1" trainerSuit=""/>
+<sta_trainer id="100032" name="馆主杜鹃" sex="0" trainerSuit=""/>
+<sta_trainer id="100033" name="馆主米可利" sex="1" trainerSuit=""/>
+<sta_trainer id="100034" name="金猪杯冠军小智" sex="1" trainerSuit=""/>
+<sta_trainer id="100035" name="金猪杯冠军莉莉艾" sex="0" trainerSuit=""/>
+</root>

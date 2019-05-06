@@ -1,13 +1,3 @@
-<!-- 
-sta_guildTitle:
-
-
-id:
-name:称号名称
-titleExp:所需经验
-rewardJNS:奖励
-pic:图片
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 <sta_guildTitle id="1" name="新手训练师" titleExp="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:15},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:5}]}" pic=""/>

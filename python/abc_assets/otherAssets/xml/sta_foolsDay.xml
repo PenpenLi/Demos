@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_foolsDay id="1" type="1" dia="恭喜你，系统管理员手抖赠送了你XXX钻石" nextId="2" ramdom="50000,999999"/>
+<sta_foolsDay id="2" type="0" dia="我们最终阻止了错误的发生，并开除了那个管理员，愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="3" type="1" dia="亲爱的玩家，你的抽奖号码是XXX，请不要丢失，抽奖结果将在明晚7点公布。" nextId="4" ramdom="100000,999999"/>
+<sta_foolsDay id="4" type="0" dia="记录下来了吗？并没有抽奖啦，愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="5" type="1" dia="系统检测你的账号存在异常，请按照下列提示进行操作：" nextId="6" ramdom=""/>
+<sta_foolsDay id="6" type="0" dia="把手机180度反转过来，然后点击确认按钮" nextId="7" ramdom=""/>
+<sta_foolsDay id="7" type="0" dia="好的，异常已消除，愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="8" type="1" dia="恭喜您成为本日幸运儿，你将获得XXX钻石" nextId="9" ramdom="50000,999999"/>
+<sta_foolsDay id="9" type="0" dia="钻石将于2018年4月32日发放，愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="10" type="1" dia="你有一条未读消息，是否马上查看？" nextId="11" ramdom=""/>
+<sta_foolsDay id="11" type="0" dia="愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="12" type="1" dia="请注视屏幕10秒，10秒后会有不可思议的事情发生" nextId="13" ramdom=""/>
+<sta_foolsDay id="13" type="0" dia="愚人节快乐！" nextId="0" ramdom=""/>
+<sta_foolsDay id="14" type="1" dia="对着麦克风说“0401”，即能开启调试模式" nextId="15" ramdom=""/>
+<sta_foolsDay id="15" type="0" dia="你不会真的说了吧，愚人节快乐！" nextId="0" ramdom=""/>
+</root>

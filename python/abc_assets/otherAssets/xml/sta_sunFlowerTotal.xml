@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sunFlowerTotal id="1" totalDays="3" type="4" pId="0" quantity="300"/>
+<sta_sunFlowerTotal id="2" totalDays="8" type="4" pId="0" quantity="500"/>
+<sta_sunFlowerTotal id="3" totalDays="15" type="4" pId="0" quantity="700"/>
+<sta_sunFlowerTotal id="4" totalDays="22" type="4" pId="0" quantity="1000"/>
+</root>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_choiceLandSmallNode id="1" choiceId="1" name="起源之地" special="0" defendPokeJNS="" catchPokeJNS="" dialogueId="1|2" fightMode="0"/>
+<sta_choiceLandSmallNode id="2" choiceId="1" name="湖前" special="1" defendPokeJNS="{&apos;pokes&apos;:[{&apos;spId&apos;:701005,&apos;lv&apos;:50,&apos;bkLv&apos;:9,&apos;star&apos;:0,&apos;fetureId&apos;:177,&apos;skillId&apos;:&apos;53|406|104|261&apos;},{&apos;spId&apos;:701131,&apos;lv&apos;:50,&apos;bkLv&apos;:9,&apos;star&apos;:0,&apos;fetureId&apos;:234,&apos;skillId&apos;:&apos;58|56|85|182&apos;}]}" catchPokeJNS="" dialogueId="" fightMode="2"/>
+<sta_choiceLandSmallNode id="3" choiceId="1" name="霜冰之湖" special="2" defendPokeJNS="" catchPokeJNS="{&apos;pokes&apos;:[{&apos;spId&apos;:601131,&apos;lv&apos;:70,&apos;bkLv&apos;:13,&apos;star&apos;:5,&apos;fetureId&apos;:0,&apos;skillId&apos;:&apos;&apos;}]}" dialogueId="" fightMode="1"/>
+<sta_choiceLandSmallNode id="4" choiceId="1" name="抉择之塔" special="2" defendPokeJNS="" catchPokeJNS="{&apos;pokes&apos;:[{&apos;spId&apos;:601250,&apos;lv&apos;:70,&apos;bkLv&apos;:13,&apos;star&apos;:5,&apos;fetureId&apos;:0,&apos;skillId&apos;:&apos;&apos;}]}" dialogueId="" fightMode="1"/>
+</root>

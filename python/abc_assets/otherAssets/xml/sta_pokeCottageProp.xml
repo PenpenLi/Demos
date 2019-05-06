@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pokeCottageProp id="2833" type="3" propId="2833" addPower="0" addFull="50" addHeart="0" weight="600" searchNum="1"/>
+<sta_pokeCottageProp id="2834" type="3" propId="2834" addPower="0" addFull="100" addHeart="3" weight="200" searchNum="1"/>
+<sta_pokeCottageProp id="2835" type="3" propId="2835" addPower="20" addFull="0" addHeart="0" weight="200" searchNum="1"/>
+<sta_pokeCottageProp id="2836" type="3" propId="2836" addPower="0" addFull="0" addHeart="0" weight="20" searchNum="1"/>
+<sta_pokeCottageProp id="2837" type="3" propId="2837" addPower="0" addFull="0" addHeart="0" weight="40" searchNum="1"/>
+<sta_pokeCottageProp id="2838" type="3" propId="2838" addPower="0" addFull="0" addHeart="0" weight="40" searchNum="1"/>
+<sta_pokeCottageProp id="2839" type="3" propId="2839" addPower="0" addFull="0" addHeart="0" weight="40" searchNum="1"/>
+<sta_pokeCottageProp id="2840" type="3" propId="2840" addPower="0" addFull="0" addHeart="0" weight="30" searchNum="1"/>
+<sta_pokeCottageProp id="114000" type="3" propId="114000" addPower="0" addFull="0" addHeart="0" weight="50" searchNum="1"/>
+<sta_pokeCottageProp id="999999" type="2" propId="0" addPower="0" addFull="0" addHeart="0" weight="50" searchNum="30"/>
+<sta_pokeCottageProp id="28" type="3" propId="28" addPower="0" addFull="0" addHeart="0" weight="380" searchNum="1"/>
+<sta_pokeCottageProp id="2769" type="3" propId="2769" addPower="0" addFull="0" addHeart="0" weight="300" searchNum="1"/>
+</root>

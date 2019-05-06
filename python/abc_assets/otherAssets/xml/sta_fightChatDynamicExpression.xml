@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_fightChatDynamicExpression id="1" name="耿鬼嚣张" group="1" isExculive="0"/>
+<sta_fightChatDynamicExpression id="2" name="耿鬼大哭" group="1" isExculive="0"/>
+<sta_fightChatDynamicExpression id="3" name="耿鬼挑逗" group="1" isExculive="0"/>
+<sta_fightChatDynamicExpression id="4" name="耿鬼大惊" group="1" isExculive="0"/>
+<sta_fightChatDynamicExpression id="5" name="耿鬼无奈" group="1" isExculive="0"/>
+<sta_fightChatDynamicExpression id="6" name="皮卡丘疑惑" group="2" isExculive="0"/>
+<sta_fightChatDynamicExpression id="7" name="皮卡丘伤心" group="2" isExculive="0"/>
+<sta_fightChatDynamicExpression id="8" name="皮卡丘挑逗" group="2" isExculive="0"/>
+<sta_fightChatDynamicExpression id="9" name="皮卡丘被打" group="2" isExculive="0"/>
+<sta_fightChatDynamicExpression id="10" name="皮卡丘惊愕" group="2" isExculive="0"/>
+<sta_fightChatDynamicExpression id="11" name="可达鸭慌张" group="3" isExculive="0"/>
+<sta_fightChatDynamicExpression id="12" name="可达鸭偷笑" group="3" isExculive="0"/>
+<sta_fightChatDynamicExpression id="13" name="可达鸭大爱" group="3" isExculive="0"/>
+<sta_fightChatDynamicExpression id="14" name="可达鸭大懵" group="3" isExculive="0"/>
+<sta_fightChatDynamicExpression id="15" name="可达鸭生气" group="3" isExculive="0"/>
+</root>

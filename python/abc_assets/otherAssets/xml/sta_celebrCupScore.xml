@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_celebrCupScore id="1" title="累计达到1060积分奖励" score="1060" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200},&apos;prop&apos;:[{&apos;pId&apos;:5863,&apos;num&apos;:1},{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:866,&apos;num&apos;:1}]}"/>
+<sta_celebrCupScore id="2" title="累计达到1120积分奖励" score="1120" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:3561,&apos;num&apos;:1},{&apos;pId&apos;:3059,&apos;num&apos;:100}]}"/>
+<sta_celebrCupScore id="3" title="累计达到1180积分奖励" score="1180" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500},&apos;prop&apos;:[{&apos;pId&apos;:5864,&apos;num&apos;:1},{&apos;pId&apos;:3565,&apos;num&apos;:1},{&apos;pId&apos;:3569,&apos;num&apos;:1}]}"/>
+<sta_celebrCupScore id="4" title="累计达到1240积分奖励" score="1240" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:700},&apos;prop&apos;:[{&apos;pId&apos;:1204,&apos;num&apos;:2},{&apos;pId&apos;:5866,&apos;num&apos;:1},{&apos;pId&apos;:864,&apos;num&apos;:2}]}"/>
+<sta_celebrCupScore id="5" title="累计达到1330积分奖励" score="1330" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:1000},&apos;prop&apos;:[{&apos;pId&apos;:5866,&apos;num&apos;:1},{&apos;pId&apos;:930,&apos;num&apos;:1}],&apos;poke&apos;:[{&apos;pokeId&apos;:401494,&apos;num&apos;:1,&apos;lv&apos;:5}]}"/>
+</root>

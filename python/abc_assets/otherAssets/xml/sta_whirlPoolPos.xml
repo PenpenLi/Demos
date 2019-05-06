@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_whirlPoolPos id="1" mapId="6" type="1" whirlPoolPos="17,11|16,11|15,11|14,12|14,13|8,39|13,39|9,40|10,40|11,40|12,40"/>
+<sta_whirlPoolPos id="2" mapId="6" type="2" whirlPoolPos="16,14|16,17|16,20|16,23|16,26|16,29|16,32|16,35"/>
+<sta_whirlPoolPos id="3" mapId="6" type="3" whirlPoolPos="16,37"/>
+<sta_whirlPoolPos id="4" mapId="7" type="2" whirlPoolPos="6,0|8,0|10,0|12,0|6,3|8,3|10,3|12,3|6,6|8,6|10,6|12,6"/>
+<sta_whirlPoolPos id="5" mapId="7" type="3" whirlPoolPos="6,8|8,8|10,8|12,8"/>
+</root>

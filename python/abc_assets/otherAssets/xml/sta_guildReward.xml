@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildReward id="1" startRanking="1" endRanking="1" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:200000},&apos;silver&apos;:{&apos;num&apos;:100000},&apos;diamond&apos;:{&apos;num&apos;:450}}"/>
+<sta_guildReward id="2" startRanking="2" endRanking="2" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:140000},&apos;silver&apos;:{&apos;num&apos;:90000},&apos;diamond&apos;:{&apos;num&apos;:350}}"/>
+<sta_guildReward id="3" startRanking="3" endRanking="3" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:130000},&apos;silver&apos;:{&apos;num&apos;:80000},&apos;diamond&apos;:{&apos;num&apos;:250}}"/>
+<sta_guildReward id="4" startRanking="4" endRanking="4" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:95000},&apos;silver&apos;:{&apos;num&apos;:70000},&apos;diamond&apos;:{&apos;num&apos;:220}}"/>
+<sta_guildReward id="5" startRanking="5" endRanking="5" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:80000},&apos;silver&apos;:{&apos;num&apos;:60000},&apos;diamond&apos;:{&apos;num&apos;:200}}"/>
+<sta_guildReward id="6" startRanking="6" endRanking="10" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:60000},&apos;silver&apos;:{&apos;num&apos;:50000},&apos;diamond&apos;:{&apos;num&apos;:150}}"/>
+<sta_guildReward id="7" startRanking="11" endRanking="15" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:45000},&apos;silver&apos;:{&apos;num&apos;:40000},&apos;diamond&apos;:{&apos;num&apos;:120}}"/>
+<sta_guildReward id="8" startRanking="16" endRanking="500" rewardJNS="{&apos;ghDot&apos;:{&apos;num&apos;:30000},&apos;silver&apos;:{&apos;num&apos;:20000},&apos;diamond&apos;:{&apos;num&apos;:50}}"/>
+</root>

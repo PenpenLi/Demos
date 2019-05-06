@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_luckyConst id="1" value="5" description="区域内允许显示的最大精灵数数量"/>
+<sta_luckyConst id="2" value="40" description="精灵移动速度，单位为像素/秒"/>
+<sta_luckyConst id="3" value="1" description="火球发射间隔，单位为秒"/>
+<sta_luckyConst id="4" value="368" description="火球发射速度，单位为像素/秒"/>
+<sta_luckyConst id="5" value="1" description="火球威力"/>
+<sta_luckyConst id="6" value="0.8" description="加强版火球攻击时间间隔，单位为秒"/>
+<sta_luckyConst id="7" value="1.5" description="加强版火柱威力"/>
+<sta_luckyConst id="8" value="0.05" description="火球击中精灵非要害部分时，蓄力条增加的百分比"/>
+<sta_luckyConst id="9" value="0.08" description="火球击中精灵要害部分时，蓄力条增加的百分比"/>
+<sta_luckyConst id="10" value="10" description="暴怒模式持续时间，单位为秒"/>
+<sta_luckyConst id="11" value="441" description="加强版火球发射速度，单位为像素/秒"/>
+</root>

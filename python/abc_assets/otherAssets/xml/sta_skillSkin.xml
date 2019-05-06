@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_skillSkin id="1" skinName="黄金手里剑" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="2" skinName="果然翁替身" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="3" skinName="魔法镜" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="4" skinName="减半反射-圣盾" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="5" skinName="满地图钉" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="6" skinName="吼吼鲸划水" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="7" skinName="集中火力" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="8" skinName="百万伏特" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="9" skinName="光击阵" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="10" skinName="世界波" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="11" skinName="超级大喇叭" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="12" skinName="次元斩" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="13" skinName="五环圣火连环破" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="14" skinName="五指山降临" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="15" skinName="钻石星辰拳" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="16" skinName="真空波动拳" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="17" skinName="万剑归宗" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="18" skinName="陨石天降" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="19" skinName="天诛" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="20" skinName="茁壮成长" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="21" skinName="银河漩涡" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="22" skinName="无敌风火轮" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="23" skinName="爆裂盖锤" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+<sta_skillSkin id="24" skinName="忍术-烟雾爆遁" itemId="5328" ppNum="3" description="穿戴后，该技能的PP值上限增加3点"/>
+</root>

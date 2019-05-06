@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_comebackExperiencePoke id="40150" pokename="钢铁超梦X" skillA="427" skillB="409" skillC="339" skillD="309" carryBerry="1102" carryProp="125" feature="91"/>
+<sta_comebackExperiencePoke id="50150" pokename="钢铁超梦Y" skillA="94" skillB="53" skillC="347" skillD="430" carryBerry="1102" carryProp="125" feature="85"/>
+<sta_comebackExperiencePoke id="10150" pokename="钢铁超梦" skillA="94" skillB="53" skillC="105" skillD="396" carryBerry="1102" carryProp="125" feature="46"/>
+<sta_comebackExperiencePoke id="20643" pokename="雷希拉姆" skillA="558" skillB="406" skillC="355" skillD="414" carryBerry="2737" carryProp="125" feature="176"/>
+<sta_comebackExperiencePoke id="330643" pokename="焰白雷希拉姆" skillA="558" skillB="406" skillC="355" skillD="414" carryBerry="2737" carryProp="125" feature="176"/>
+<sta_comebackExperiencePoke id="30658" pokename="甲贺忍蛙" skillA="594" skillB="399" skillC="369" skillD="58" carryBerry="935" carryProp="125" feature="174"/>
+<sta_comebackExperiencePoke id="501006" pokename="小智喷火龙" skillA="89" skillB="525" skillC="7" skillD="9" carryBerry="935" carryProp="125" feature="10002"/>
+<sta_comebackExperiencePoke id="330644" pokename="暗黑捷克罗姆" skillA="337" skillB="559" skillC="242" skillD="89" carryBerry="2738" carryProp="125" feature="171"/>
+</root>

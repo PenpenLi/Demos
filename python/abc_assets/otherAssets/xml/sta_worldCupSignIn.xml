@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_worldCupSignIn id="1" type="1" val="0" weight="14" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:100000}}" notice=""/>
+<sta_worldCupSignIn id="2" type="1" val="0" weight="7" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:500000}}" notice=""/>
+<sta_worldCupSignIn id="3" type="1" val="0" weight="4" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:38}}" notice="XXX元气满满地进行加油助威，幸运获得38钻"/>
+<sta_worldCupSignIn id="4" type="1" val="0" weight="3" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:68}}" notice="XXX元气满满地进行加油助威，幸运获得68钻"/>
+<sta_worldCupSignIn id="5" type="1" val="0" weight="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:188}}" notice="XXX火力全开，用洪荒之力引爆世界杯，幸运获得188钻"/>
+<sta_worldCupSignIn id="6" type="1" val="0" weight="1" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:288}}" notice="XXX火力全开，用洪荒之力引爆世界杯，幸运获得288钻"/>
+<sta_worldCupSignIn id="7" type="2" val="80000" weight="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:50},&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:20},{&apos;pId&apos;:238,&apos;num&apos;:20},{&apos;pId&apos;:106000,&apos;num&apos;:2}]}" notice=""/>
+<sta_worldCupSignIn id="8" type="2" val="160000" weight="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:80},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:2},{&apos;pId&apos;:118000,&apos;num&apos;:1},{&apos;pId&apos;:107000,&apos;num&apos;:2}]}" notice=""/>
+<sta_worldCupSignIn id="9" type="2" val="320000" weight="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:120},&apos;prop&apos;:[{&apos;pId&apos;:870,&apos;num&apos;:1},{&apos;pId&apos;:113000,&apos;num&apos;:4},{&apos;pId&apos;:1053,&apos;num&apos;:2}]}" notice=""/>
+<sta_worldCupSignIn id="10" type="2" val="640000" weight="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200},&apos;prop&apos;:[{&apos;pId&apos;:764,&apos;num&apos;:2},{&apos;pId&apos;:866,&apos;num&apos;:2},{&apos;pId&apos;:1233,&apos;num&apos;:2}]}" notice=""/>
+<sta_worldCupSignIn id="11" type="2" val="720000" weight="0" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:300},&apos;prop&apos;:[{&apos;pId&apos;:1204,&apos;num&apos;:1},{&apos;pId&apos;:2521,&apos;num&apos;:2},{&apos;pId&apos;:50001,&apos;num&apos;:5}]}" notice=""/>
+<sta_worldCupSignIn id="12" type="3" val="1" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第1名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="13" type="3" val="388" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第388名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="14" type="3" val="688" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第688名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="15" type="3" val="888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="16" type="3" val="1000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第1000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="17" type="3" val="1888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第1888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="18" type="3" val="2888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第2888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="19" type="3" val="3888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第3888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="20" type="3" val="6888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第6888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="21" type="3" val="9999" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第9999名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="22" type="3" val="10000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第10000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="23" type="3" val="15000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第15000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="24" type="3" val="20000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第20000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="25" type="3" val="25000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第25000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="26" type="3" val="30000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第30000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="27" type="3" val="35000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第35000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="28" type="3" val="40000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第40000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="29" type="3" val="45000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第45000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="30" type="3" val="50000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第50000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="31" type="3" val="55000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第55000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="32" type="3" val="60000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第60000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="33" type="3" val="65000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第65000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="34" type="3" val="70000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第70000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="35" type="3" val="75000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第75000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="36" type="3" val="80000" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第80000名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="37" type="3" val="88888" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1}]}" notice="恭喜XXX成为今天第88888名点燃世界杯的玩家，获得了YYY"/>
+<sta_worldCupSignIn id="38" type="4" val="5" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:2}]}" notice=""/>
+<sta_worldCupSignIn id="39" type="4" val="10" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:3561,&apos;num&apos;:1}]}" notice=""/>
+<sta_worldCupSignIn id="40" type="4" val="20" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1205,&apos;num&apos;:1}]}" notice=""/>
+<sta_worldCupSignIn id="41" type="4" val="27" weight="0" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5549,&apos;num&apos;:1}]}" notice=""/>
+</root>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_teamPVPConstant id="1" desc="捕捉能量上限" value="10"/>
+<sta_teamPVPConstant id="2" desc="每多少分钟恢复一点捕捉能量" value="30"/>
+<sta_teamPVPConstant id="3" desc="每天购买捕捉能量次数上限" value="5"/>
+<sta_teamPVPConstant id="4" desc="购买捕捉能量消耗钻石" value="100|130|160|200|250"/>
+<sta_teamPVPConstant id="5" desc="单次购买捕捉能量恢复点数" value="8"/>
+<sta_teamPVPConstant id="6" desc="皮卡丘技能十万伏特增加捕捉概率" value="0.2"/>
+<sta_teamPVPConstant id="7" desc="伊布技能撒娇防止多少回合内精灵逃跑" value="5"/>
+<sta_teamPVPConstant id="8" desc="捕捉时丢中内圈增加累计值" value="100"/>
+<sta_teamPVPConstant id="9" desc="捕捉时丢中外圈增加累计值" value="60"/>
+<sta_teamPVPConstant id="10" desc="替换特性需要重塑点" value="40"/>
+<sta_teamPVPConstant id="11" desc="替换技能需要重塑点" value="15"/>
+<sta_teamPVPConstant id="12" desc="替换树果需要重塑点" value="30"/>
+<sta_teamPVPConstant id="13" desc="替换携带道具需要重塑点" value="30"/>
+<sta_teamPVPConstant id="14" desc="洗性格需要重塑点" value="10"/>
+<sta_teamPVPConstant id="15" desc="每天交换精灵个数上限" value="3"/>
+<sta_teamPVPConstant id="16" desc="点击冒险抓精灵消耗能量" value="1"/>
+<sta_teamPVPConstant id="17" desc="精灵背包数量上限" value="500"/>
+<sta_teamPVPConstant id="18" desc="每天对战获得最多商店积分" value="2000"/>
+<sta_teamPVPConstant id="19" desc="普通节点对战胜利获得的对战积分" value="100"/>
+<sta_teamPVPConstant id="20" desc="普通节点对战失败获得的对战积分" value="50"/>
+<sta_teamPVPConstant id="21" desc="普通节点对战胜利获得的商店积分" value="100"/>
+<sta_teamPVPConstant id="22" desc="普通节点对战失败获得的商店积分" value="50"/>
+</root>

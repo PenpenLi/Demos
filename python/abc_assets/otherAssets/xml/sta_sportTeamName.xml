@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sportTeamName id="1" name="皮卡丘联队" icon="pi2ka3qiu1"/>
+<sta_sportTeamName id="2" name="伊布联队" icon="yi1bu4"/>
+<sta_sportTeamName id="3" name="妙蛙种子联队" icon="miao4wa1zhong3zi1"/>
+<sta_sportTeamName id="4" name="小火龙联队" icon="xiao3huo3long2"/>
+<sta_sportTeamName id="5" name="杰尼龟联队" icon="jie2ni2gui1"/>
+<sta_sportTeamName id="6" name="菊叶草联队" icon="ju2cao3ye4"/>
+<sta_sportTeamName id="7" name="火球鼠联队" icon="huo3qiu2shu3"/>
+<sta_sportTeamName id="8" name="小锯鳄联队" icon="xiao3ju4e4"/>
+<sta_sportTeamName id="9" name="木守宫联队" icon="mu4shou3gong1"/>
+<sta_sportTeamName id="10" name="火稚鸡联队" icon="huo3zhi4ji1"/>
+<sta_sportTeamName id="11" name="水跃鱼联队" icon="shui3yue4yu2"/>
+<sta_sportTeamName id="12" name="草苗龟联队" icon="cao3miao2gui1"/>
+<sta_sportTeamName id="13" name="小火焰猴联队" icon="huo3yan4hou2"/>
+<sta_sportTeamName id="14" name="波加曼联队" icon="bo1jia1man4"/>
+<sta_sportTeamName id="15" name="藤藤蛇联队" icon="teng2teng2she2"/>
+<sta_sportTeamName id="16" name="暖暖猪联队" icon="nuan3nuan3zhu1"/>
+<sta_sportTeamName id="17" name="水水獭联队" icon="shui3shui3ta3"/>
+<sta_sportTeamName id="18" name="哈力栗联队" icon="ha1li4li4"/>
+<sta_sportTeamName id="19" name="火狐狸联队" icon="huo3hu2li3"/>
+<sta_sportTeamName id="20" name="呱呱泡蛙联队" icon="gua1gua1pao4wa1"/>
+</root>

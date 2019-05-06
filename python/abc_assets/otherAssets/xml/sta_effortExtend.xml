@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_effortExtend id="1" silver="0" singleLimit="25" totalLimit="50"/>
+<sta_effortExtend id="2" silver="2000000" singleLimit="50" totalLimit="100"/>
+<sta_effortExtend id="3" silver="3000000" singleLimit="75" totalLimit="150"/>
+<sta_effortExtend id="4" silver="5000000" singleLimit="100" totalLimit="200"/>
+<sta_effortExtend id="5" silver="7000000" singleLimit="125" totalLimit="250"/>
+<sta_effortExtend id="6" silver="9000000" singleLimit="150" totalLimit="300"/>
+<sta_effortExtend id="7" silver="12000000" singleLimit="175" totalLimit="350"/>
+<sta_effortExtend id="8" silver="14000000" singleLimit="200" totalLimit="400"/>
+<sta_effortExtend id="9" silver="16000000" singleLimit="225" totalLimit="450"/>
+<sta_effortExtend id="10" silver="18000000" singleLimit="255" totalLimit="510"/>
+</root>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_laternRiddlesReward id="1" floorCorrectQues="1" upperCorrectQues="3" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:500000},&apos;prop&apos;:[{&apos;pId&apos;:114000,&apos;num&apos;:1},{&apos;pId&apos;:116000,&apos;num&apos;:1},{&apos;pId&apos;:101000,&apos;num&apos;:2}]}"/>
+<sta_laternRiddlesReward id="2" floorCorrectQues="4" upperCorrectQues="6" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100},&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:1},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:866,&apos;num&apos;:2}]}"/>
+<sta_laternRiddlesReward id="3" floorCorrectQues="7" upperCorrectQues="10" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:1000000},&apos;prop&apos;:[{&apos;pId&apos;:3562,&apos;num&apos;:1},{&apos;pId&apos;:5745,&apos;num&apos;:3},{&apos;pId&apos;:1233,&apos;num&apos;:1}]}"/>
+<sta_laternRiddlesReward id="4" floorCorrectQues="11" upperCorrectQues="15" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:350},&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:3566,&apos;num&apos;:1},{&apos;pId&apos;:5746,&apos;num&apos;:3},{&apos;pId&apos;:5498,&apos;num&apos;:1}]}"/>
+</root>

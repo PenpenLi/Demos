@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_comebackBuff id="1" type="1" description="玩家在野外冒险获得的经验值增加20%。" xValue="20" keepTime="24" title="玩家经验值加成"/>
+<sta_comebackBuff id="2" type="2" description="所有精灵在野外冒险获得的经验值增加200%。" xValue="200" keepTime="24" title="精灵经验值加成"/>
+<sta_comebackBuff id="3" type="3" description="在野外冒险掉落的物品会有5%的概率额外获得一个。" xValue="5" keepTime="24" title="掉落物数量加成"/>
+</root>

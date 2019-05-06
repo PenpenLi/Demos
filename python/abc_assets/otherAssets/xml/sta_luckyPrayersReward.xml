@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_luckyPrayersReward id="1" rewardJNS="{&apos;poke&apos;:[{&apos;pokeId&apos;:644,&apos;num&apos;:1,&apos;lv&apos;:5}]}" weight="200" group="1,1,1,1" limitTime="20000" level="70" talk="欧皇附体！恭喜抽中捷克罗姆"/>
+<sta_luckyPrayersReward id="2" rewardJNS="{&apos;poke&apos;:[{&apos;pokeId&apos;:643,&apos;num&apos;:1,&apos;lv&apos;:5}]}" weight="200" group="2,2,2,2" limitTime="20000" level="70" talk="欧皇附体！恭喜抽中雷希拉姆"/>
+<sta_luckyPrayersReward id="3" rewardJNS="{&apos;poke&apos;:[{&apos;pokeId&apos;:10448,&apos;num&apos;:1,&apos;lv&apos;:5}]}" weight="300" group="3,3,3" limitTime="10000" level="60" talk="运气爆表，抽中了闪光路卡利欧"/>
+<sta_luckyPrayersReward id="4" rewardJNS="{&apos;poke&apos;:[{&apos;pokeId&apos;:401089,&apos;num&apos;:1,&apos;lv&apos;:5}]}" weight="500" group="4,4,4" limitTime="6000" level="55" talk="运气爆表，抽中了阿罗拉臭臭泥"/>
+<sta_luckyPrayersReward id="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5328,&apos;num&apos;:1}]}" weight="500" group="5,5" limitTime="500" level="40" talk="祈愿成功，获得了技能皮肤学习机"/>
+<sta_luckyPrayersReward id="6" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:500}}" weight="1000" group="6,6,6" limitTime="0" level="1" talk="祈愿成功，获得了500钻石"/>
+<sta_luckyPrayersReward id="7" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1}]}" weight="500" group="7,7" limitTime="0" level="1" talk="祈愿成功，获得了高级狩猎券"/>
+<sta_luckyPrayersReward id="8" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:350}}" weight="1200" group="6,6" limitTime="0" level="1" talk="祈愿成功，获得了350钻石"/>
+<sta_luckyPrayersReward id="9" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:3}]}" weight="500" group="7" limitTime="0" level="1" talk="祈愿成功，获得了精灵石雕"/>
+<sta_luckyPrayersReward id="10" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:107000,&apos;num&apos;:2}]}" weight="500" group="8,8" limitTime="0" level="1" talk="祈愿成功，获得了传说玩偶礼包"/>
+<sta_luckyPrayersReward id="11" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:250}}" weight="1500" group="6" limitTime="0" level="1" talk="祈愿成功，获得了250钻石"/>
+<sta_luckyPrayersReward id="12" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:2}]}" weight="800" group="8" limitTime="0" level="1" talk="祈愿成功，获得了史诗玩偶礼包"/>
+<sta_luckyPrayersReward id="13" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:1097,&apos;num&apos;:2}]}" weight="800" group="9,9" limitTime="0" level="1" talk="祈愿成功，获得了彗星碎片"/>
+<sta_luckyPrayersReward id="14" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:112000,&apos;num&apos;:1}]}" weight="1000" group="9" limitTime="0" level="1" talk="祈愿成功，获得了神兽号角碎片礼包"/>
+<sta_luckyPrayersReward id="99" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100}}" weight="500" group="" limitTime="0" level="1" talk="祈愿成功，获得了100钻石"/>
+</root>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearBeastExchange id="1" needIntegral="150" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:110000,&apos;num&apos;:3},{&apos;pId&apos;:1052,&apos;num&apos;:3}]}" exchangeNum="10"/>
+<sta_newYearBeastExchange id="2" needIntegral="300" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:30},{&apos;pId&apos;:860,&apos;num&apos;:1}]}" exchangeNum="5"/>
+<sta_newYearBeastExchange id="3" needIntegral="600" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:866,&apos;num&apos;:1}]}" exchangeNum="2"/>
+<sta_newYearBeastExchange id="4" needIntegral="600" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:748,&apos;num&apos;:1},{&apos;pId&apos;:1097,&apos;num&apos;:2}]}" exchangeNum="2"/>
+<sta_newYearBeastExchange id="5" needIntegral="2000" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5811,&apos;num&apos;:1}]}" exchangeNum="1"/>
+</root>

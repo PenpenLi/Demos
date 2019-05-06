@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkFoodBag id="1" unlockLv="1" position="8,71"/>
+<sta_guildWalkFoodBag id="2" unlockLv="6" position="12,71"/>
+<sta_guildWalkFoodBag id="3" unlockLv="19" position="8,75"/>
+<sta_guildWalkFoodBag id="4" unlockLv="29" position="12,75"/>
+</root>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_KongmingStageReward id="1" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:10},{&apos;pId&apos;:113000,&apos;num&apos;:3},{&apos;pId&apos;:1097,&apos;num&apos;:2},{&apos;pId&apos;:866,&apos;num&apos;:2}]}" show="234" needNum="10"/>
+<sta_KongmingStageReward id="2" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:20},{&apos;pId&apos;:6883,&apos;num&apos;:5},{&apos;pId&apos;:5220,&apos;num&apos;:2},{&apos;pId&apos;:870,&apos;num&apos;:1}]}" show="6883" needNum="20"/>
+<sta_KongmingStageReward id="3" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:30},{&apos;pId&apos;:864,&apos;num&apos;:1},{&apos;pId&apos;:5328,&apos;num&apos;:1},{&apos;pId&apos;:1591,&apos;num&apos;:5}]}" show="5328" needNum="30"/>
+</root>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_newYearActivity id="1" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:245,&apos;num&apos;:20}]}" weight="1150"/>
+<sta_newYearActivity id="2" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:246,&apos;num&apos;:10}]}" weight="200"/>
+<sta_newYearActivity id="3" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:247,&apos;num&apos;:8}]}" weight="300"/>
+<sta_newYearActivity id="4" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:248,&apos;num&apos;:5}]}" weight="500"/>
+<sta_newYearActivity id="5" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:238,&apos;num&apos;:3}]}" weight="200"/>
+<sta_newYearActivity id="6" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:244,&apos;num&apos;:3}]}" weight="200"/>
+<sta_newYearActivity id="7" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:240,&apos;num&apos;:5}]}" weight="100"/>
+<sta_newYearActivity id="8" type="2" desc="激活称号需要抽取次数" data="20" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="9" type="2" desc="激活称号id" data="111" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="10" type="2" desc="每天匹配次数上限" data="5" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="11" type="2" desc="胜利挑选的道具id" data="5787|5788|5789|5790" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="12" type="2" desc="胜利挑选的道具每种数量" data="6" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="13" type="2" desc="猜数字游戏数字上限值max" data="2019" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="14" type="2" desc="抽奖消耗道具id" data="5785|5786|5787|5788|5789|5790" rewardJNS="" weight="0"/>
+<sta_newYearActivity id="15" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:858,&apos;num&apos;:5}]}" weight="450"/>
+<sta_newYearActivity id="16" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:859,&apos;num&apos;:2}]}" weight="450"/>
+<sta_newYearActivity id="17" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:860,&apos;num&apos;:1}]}" weight="450"/>
+<sta_newYearActivity id="18" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:105000,&apos;num&apos;:2}]}" weight="300"/>
+<sta_newYearActivity id="19" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:106000,&apos;num&apos;:1}]}" weight="800"/>
+<sta_newYearActivity id="20" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:107000,&apos;num&apos;:1}]}" weight="300"/>
+<sta_newYearActivity id="21" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:1}]}" weight="800"/>
+<sta_newYearActivity id="22" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:113000,&apos;num&apos;:2}]}" weight="100"/>
+<sta_newYearActivity id="23" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:234,&apos;num&apos;:2}]}" weight="1000"/>
+<sta_newYearActivity id="24" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:746,&apos;num&apos;:2}]}" weight="100"/>
+<sta_newYearActivity id="25" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:747,&apos;num&apos;:1}]}" weight="200"/>
+<sta_newYearActivity id="26" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:919,&apos;num&apos;:4}]}" weight="400"/>
+<sta_newYearActivity id="27" type="1" desc="" data="" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:920,&apos;num&apos;:2}]}" weight="400"/>
+<sta_newYearActivity id="28" type="1" desc="" data="" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:50}}" weight="800"/>
+<sta_newYearActivity id="29" type="1" desc="" data="" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:100}}" weight="500"/>
+<sta_newYearActivity id="30" type="1" desc="" data="" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:200}}" weight="300"/>
+</root>

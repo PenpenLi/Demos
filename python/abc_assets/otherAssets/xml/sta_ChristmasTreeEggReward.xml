@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_ChristmasTreeEggReward id="1" weight="200" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:10}}"/>
+<sta_ChristmasTreeEggReward id="2" weight="200" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:100000}}"/>
+<sta_ChristmasTreeEggReward id="3" weight="200" rewardJNS="{&apos;silver&apos;:{&apos;num&apos;:300000}}"/>
+<sta_ChristmasTreeEggReward id="4" weight="200" rewardJNS="{&apos;diamond&apos;:{&apos;num&apos;:5}}"/>
+<sta_ChristmasTreeEggReward id="5" weight="200" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5780,&apos;num&apos;:2}]}"/>
+<sta_ChristmasTreeEggReward id="6" weight="200" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:5780,&apos;num&apos;:1}]}"/>
+</root>

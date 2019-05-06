@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_shenDuConst id="1" describe="精灵等级要求" data="30"/>
+<sta_shenDuConst id="2" describe="免费恢复需要分钟数" data="360"/>
+<sta_shenDuConst id="3" describe="钻石恢复初始值" data="100"/>
+<sta_shenDuConst id="4" describe="钻石恢复每次增加数量" data="50"/>
+<sta_shenDuConst id="5" describe="钻石恢复最大钻石数" data="300"/>
+<sta_shenDuConst id="6" describe="每周刷新出支线数量" data="9"/>
+<sta_shenDuConst id="7" describe="每次刷新出的彩蛋数量" data="5"/>
+<sta_shenDuConst id="8" describe="每周必定刷出的支线" data="4|6|7|29"/>
+</root>

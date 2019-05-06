@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gymBuff id="1" type="1" desc="使用XXX属性招式伤害加成YYY" val="0.01,0.2" weather="" conditions="" weight="10" attrTag="1"/>
+<sta_gymBuff id="2" type="2" desc="对XXX属性精灵伤害加成YYY" val="0.01,0.2" weather="" conditions="" weight="10" attrTag="1"/>
+<sta_gymBuff id="3" type="3" desc="受到XXX属性攻击伤害减免YYY" val="0.01,0.2" weather="" conditions="" weight="10" attrTag="1"/>
+<sta_gymBuff id="4" type="4" desc="回避XXX属性的招式加成YYY" val="0.01,0.2" weather="" conditions="" weight="10" attrTag="1"/>
+<sta_gymBuff id="5" type="5" desc="对XXX属性精灵命中加成YYY" val="0.01,0.2" weather="" conditions="" weight="10" attrTag="1"/>
+<sta_gymBuff id="6" type="6" desc="出场自带永久YYY天气" val="" weather="晴天|下雨|冰雹|沙雹" conditions="" weight="10" attrTag="0"/>
+<sta_gymBuff id="7" type="7" desc="免疫YYY异常状态" val="" weather="" conditions="麻痹|中毒|灼伤|冰冻|睡眠|猛毒" weight="10" attrTag="0"/>
+</root>

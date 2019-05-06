@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_sendGift id="1" giftName="百变便便" addCharm="288" costDiamond="288" giftTxt="送你一坨便便" effect="mc_bb" icon="img_emotion_1"/>
+<sta_sendGift id="2" giftName="来单挑" addCharm="588" costDiamond="588" giftTxt="不服，就来单挑吧" effect="mc_laidantiao" icon="img_emotion_2"/>
+<sta_sendGift id="3" giftName="火箭队的火箭" addCharm="888" costDiamond="888" giftTxt="刷个火箭带我飞" effect="mc_huojian" icon="img_emotion_3"/>
+<sta_sendGift id="4" giftName="嚣张的喵喵" addCharm="1488" costDiamond="1288" giftTxt="这只喵喵真像你" effect="mc_sbf" icon="img_emotion_4"/>
+<sta_sendGift id="5" giftName="一条咸鱼" addCharm="1888" costDiamond="1588" giftTxt="要做条有梦想的咸鱼" effect="mc_xianyu" icon="img_emotion_5"/>
+<sta_sendGift id="6" giftName="爱心满满" addCharm="3488" costDiamond="2888" giftTxt="请收下我的爱" effect="mc_qiuai" icon="img_emotion_6"/>
+</root>

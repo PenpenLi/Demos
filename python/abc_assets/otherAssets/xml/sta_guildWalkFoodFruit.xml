@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildWalkFoodFruit id="1" pId="117" addValue="5" randBuff="1,40|2,10|3,1|4,1|5,1|6,1|7,1|8,1|9,1|10,1|11,1|12,1|13,1|14,1|15,1" taste="强烈苦味" describe="拥有强烈苦味的果实，容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="2" pId="118" addValue="10" randBuff="1,2|2,80|3,20|4,2|5,2|6,2|7,2|8,2|9,2|10,2|11,2|12,2|13,2|14,2|15,2" taste="强烈苦味" describe="拥有强烈苦味的果实，容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="3" pId="119" addValue="10" randBuff="1,3|2,3|3,120|4,30|5,3|6,3|7,3|8,3|9,3|10,3|11,3|12,3|13,3|14,3|15,3" taste="非常甜" describe="吃起来非常甜的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="4" pId="120" addValue="10" randBuff="1,3|2,3|3,3|4,120|5,30|6,3|7,3|8,3|9,3|10,3|11,3|12,3|13,3|14,3|15,3" taste="有点辣" describe="带点辣味的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="5" pId="121" addValue="10" randBuff="1,3|2,3|3,3|4,3|5,120|6,30|7,3|8,3|9,3|10,3|11,3|12,3|13,3|14,3|15,3" taste="苦涩" describe="带点苦味的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="6" pId="122" addValue="10" randBuff="1,3|2,3|3,3|4,3|5,3|6,120|7,30|8,3|9,3|10,3|11,3|12,3|13,3|14,3|15,3" taste="有点酸" describe="带点酸味的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="7" pId="123" addValue="10" randBuff="1,3|2,3|3,3|4,3|5,3|6,3|7,120|8,30|9,3|10,3|11,3|12,3|13,3|14,3|15,3" taste="苦涩" describe="带点苦味的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="8" pId="124" addValue="10" randBuff="1,3|2,3|3,3|4,3|5,3|6,3|7,3|8,120|9,30|10,3|11,3|12,3|13,3|14,3|15,3" taste="有点甜" describe="带点甜味的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="9" pId="125" addValue="25" randBuff="1,10|2,10|3,10|4,10|5,10|6,10|7,10|8,10|9,400|10,100|11,10|12,10|13,10|14,10|15,10" taste="非常甜" describe="吃起来非常甜的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="10" pId="126" addValue="20" randBuff="1,6|2,6|3,6|4,6|5,6|6,6|7,6|8,6|9,6|10,240|11,60|12,6|13,6|14,6|15,6" taste="辛辣" describe="味道非常辣的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="11" pId="70001" addValue="40" randBuff="1,20|2,20|3,20|4,20|5,20|6,20|7,20|8,20|9,20|10,20|11,800|12,200|13,20|14,20|15,20" taste="辛辣" describe="味道非常辣的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="12" pId="70002" addValue="40" randBuff="1,20|2,20|3,20|4,20|5,20|6,20|7,20|8,20|9,20|10,20|11,20|12,800|13,200|14,20|15,20" taste="辛辣" describe="味道非常辣的果实，更容易吸引到小精灵"/>
+<sta_guildWalkFoodFruit id="13" pId="70003" addValue="40" randBuff="1,20|2,20|3,20|4,20|5,20|6,20|7,20|8,20|9,20|10,20|11,20|12,20|13,800|14,200|15,20" taste="有点辣" describe="有点微辣的果实，对小精灵吸引力非常强"/>
+<sta_guildWalkFoodFruit id="14" pId="70004" addValue="40" randBuff="1,20|2,20|3,20|4,20|5,20|6,20|7,20|8,20|9,20|10,20|11,20|12,20|13,20|14,800|15,200" taste="强烈酸味" describe="酸到极致的果实，对小精灵吸引力非常强"/>
+<sta_guildWalkFoodFruit id="15" pId="70005" addValue="40" randBuff="1,200|2,20|3,20|4,20|5,20|6,20|7,20|8,20|9,20|10,20|11,20|12,20|13,20|14,20|15,800" taste="有点酸" describe="带点酸味的果实，更容易吸引到小精灵"/>
+</root>

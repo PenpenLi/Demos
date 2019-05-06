@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pvpTeach id="1" title="属性克制" picId="1|2|3|4" desc="18种属性互相克制，用克制对手的属性进行致命的打击！"/>
+<sta_pvpTeach id="2" title="物攻与特攻" picId="5|6|7|8|9" desc="根据精灵的攻击属性选择合适的招式，发挥最大威力进行打击！"/>
+<sta_pvpTeach id="3" title="带上树果吧" picId="10|11|12|13" desc="树果会帮精灵自动补血及解除异常状态，乃对战必备利器！"/>
+<sta_pvpTeach id="4" title="带上道具吧" picId="14|15|16|17|18" desc="带上携带道具，提高精灵攻击威力，能打出更高伤害！"/>
+<sta_pvpTeach id="5" title="激活特性吧" picId="19|20|21|22" desc="民间有言:有特性的精灵比没特性的精灵强2倍。这不是空穴来风的！"/>
+<sta_pvpTeach id="6" title="联防" picId="23|24|25|26|27" desc="属性处于下风的时候，学会换上抵抗的精灵进行防守，保留实力！"/>
+<sta_pvpTeach id="7" title="预判" picId="28|29|30|31|32" desc="属性占优时，大胆预判对手的联防精灵进行先制打击，扩大优势！"/>
+</root>

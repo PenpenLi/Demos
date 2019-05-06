@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_puzzle id="1" picId="1" pId="2540,2541,2542,2543,2544,2545" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:1352,&apos;num&apos;:3},{&apos;pId&apos;:234,&apos;num&apos;:20}]}" newYearAct="0"/>
+<sta_puzzle id="2" picId="2" pId="2851,2852,2853,2854,2855,2856" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:2791,&apos;num&apos;:2},{&apos;pId&apos;:234,&apos;num&apos;:20}]}" newYearAct="0"/>
+<sta_puzzle id="3" picId="3" pId="3052,3053,3054,3055,3056,3057" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:1523,&apos;num&apos;:3},{&apos;pId&apos;:234,&apos;num&apos;:20}]}" newYearAct="0"/>
+<sta_puzzle id="4" picId="4" pId="100336,100337,100338,100339,100341,100342,100343,100344,100346,100347,100348,100349,100351,100352,100353,100354" exchangeTimes="0" rewardJNS="" newYearAct="1"/>
+<sta_puzzle id="5" picId="5" pId="5317,5318,5319,5320,5321,5322" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:1453,&apos;num&apos;:2},{&apos;pId&apos;:5327,&apos;num&apos;:1},{&apos;pId&apos;:234,&apos;num&apos;:20}]}" newYearAct="0"/>
+<sta_puzzle id="6" picId="6" pId="100435,100436,100437,100438,100440,100441,100442,100443,100445,100446,100447,100448" exchangeTimes="0" rewardJNS="" newYearAct="1"/>
+<sta_puzzle id="7" picId="7" pId="5622,5623,5624,5625,5626,5627" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:1432,&apos;num&apos;:3},{&apos;pId&apos;:234,&apos;num&apos;:20}]}" newYearAct="0"/>
+<sta_puzzle id="8" picId="8" pId="5827,5828,5829,5830,5831,5832" exchangeTimes="5" rewardJNS="{&apos;prop&apos;:[{&apos;pId&apos;:50001,&apos;num&apos;:2},{&apos;pId&apos;:113000,&apos;num&apos;:2},{&apos;pId&apos;:2648,&apos;num&apos;:3},{&apos;pId&apos;:1592,&apos;num&apos;:1}]}" newYearAct="0"/>
+<sta_puzzle id="9" picId="9" pId="100465,100466,100467,100468,100470,100471,100472,100473,100475,100476,100477,100478" exchangeTimes="0" rewardJNS="" newYearAct="1"/>
+<sta_puzzle id="10" picId="10" pId="6794,6795,6796,6797" exchangeTimes="0" rewardJNS="" newYearAct="1"/>
+</root>

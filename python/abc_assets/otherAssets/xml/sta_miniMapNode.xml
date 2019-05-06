@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_miniMapNode id="1" nodeName="初始小镇" nextNode="2"/>
+<sta_miniMapNode id="2" nodeName="希望小镇" nextNode="1,3,4"/>
+<sta_miniMapNode id="3" nodeName="边境小镇" nextNode="2"/>
+<sta_miniMapNode id="4" nodeName="元气市" nextNode="2,5,6,7"/>
+<sta_miniMapNode id="5" nodeName="铜矿市" nextNode="4,8,11"/>
+<sta_miniMapNode id="6" nodeName="黑钢市" nextNode="4"/>
+<sta_miniMapNode id="7" nodeName="花田小镇" nextNode="4,8"/>
+<sta_miniMapNode id="8" nodeName="黄昏市" nextNode="5,7,9,15"/>
+<sta_miniMapNode id="9" nodeName="神话小镇" nextNode="8,10,15"/>
+<sta_miniMapNode id="10" nodeName="随意小镇" nextNode="9,11,13"/>
+<sta_miniMapNode id="11" nodeName="绿缘市" nextNode="5,10,12"/>
+<sta_miniMapNode id="12" nodeName="水蓝市" nextNode="11,13,14"/>
+<sta_miniMapNode id="13" nodeName="帷幕市" nextNode="10,12"/>
+<sta_miniMapNode id="14" nodeName="灯塔市" nextNode="12,16"/>
+<sta_miniMapNode id="15" nodeName="北方小镇" nextNode="8,9"/>
+<sta_miniMapNode id="16" nodeName="滨海小镇" nextNode="14,19"/>
+<sta_miniMapNode id="17" nodeName="对战小镇" nextNode="18,19"/>
+<sta_miniMapNode id="18" nodeName="生存小镇" nextNode="17,20"/>
+<sta_miniMapNode id="19" nodeName="名胜小镇" nextNode="16,17,20"/>
+<sta_miniMapNode id="20" nodeName="边缘小镇" nextNode="18,19"/>
+</root>

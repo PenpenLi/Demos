@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_pokeFusion id="1" poke1="20643" poke2="646" getPoke="310643,320643,330643" usePorp="169001,1"/>
+<sta_pokeFusion id="2" poke1="20644" poke2="646" getPoke="310644,320644,330644" usePorp="169001,1"/>
+<sta_pokeFusion id="3" poke1="301720" poke2="720" getPoke="302720" usePorp="169002,1"/>
+<sta_pokeFusion id="4" poke1="20791" poke2="800" getPoke="301800" usePorp="169004,1"/>
+<sta_pokeFusion id="5" poke1="20792" poke2="800" getPoke="302800" usePorp="169004,1"/>
+<sta_pokeFusion id="6" poke1="301800" poke2="302800" getPoke="303800" usePorp="169004,1"/>
+<sta_pokeFusion id="7" poke1="302800" poke2="301800" getPoke="303800" usePorp="169004,1"/>
+</root>

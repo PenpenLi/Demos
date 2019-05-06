@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_firstOption id="1" type="1" speaker="小明" content="老头别挡路啊，快让我进去！" picId="duan3ku4shao4nian2"/>
+<sta_firstOption id="2" type="1" speaker="小刚" content="是啊，别挡路！" picId="tong2zi3jun1nan2"/>
+<sta_firstOption id="3" type="1" speaker="大郎" content="对对对！" picId="li3ke1nan2"/>
+<sta_firstOption id="4" type="1" speaker="老头" content="你们连精灵都没有，就想进去对战宫殿。" picId="qi2dao3shi1"/>
+<sta_firstOption id="5" type="1" speaker="老头" content="再说了，你们就算有精灵，能打得过吗？对战宫殿里的训练师都是很厉害的。" picId="qi2dao3shi1"/>
+<sta_firstOption id="6" type="1" speaker="小明" content="啧，真没意思。" picId="duan3ku4shao4nian2"/>
+<sta_firstOption id="7" type="1" speaker="小刚" content="我们到别的地方玩吧。" picId="tong2zi3jun1nan2"/>
+<sta_firstOption id="8" type="1" speaker="大郎" content="好！" picId="li3ke1nan2"/>
+<sta_firstOption id="9" type="1" speaker="老头" content="只有拥有强大实力的训练师才能进入。" picId="qi2dao3shi1"/>
+<sta_firstOption id="10" type="1" speaker="老头" content="（例如你们身后那一位。）" picId="qi2dao3shi1"/>
+<sta_firstOption id="11" type="2" speaker="小田卷博士" content="你的实力很强大，果然我没有看错。集齐图鉴的任务以后就交给你了。" picId="xiao3tian2juan3bo2shi4"/>
+<sta_firstOption id="12" type="2" speaker="小霞" content="哇哦！通过战斗，你变得更强了！恭喜你，下次我会用更强大的水系精灵与你对战。" picId="xiao3xia2guan3zhu3"/>
+<sta_firstOption id="13" type="2" speaker="小茂" content="还算你有点实力，把那个坂木给赶跑了，当然换做我也可以打败他。下次我还会和你对战的，在这之前别被打败了。" picId="xiao3mao4"/>
+<sta_firstOption id="14" type="2" speaker="大吾" content="我刚才都看见了，真是精彩的战斗。击败邪恶的火箭队，保护我们与精灵美好的城市，就是我们训练师的责任。" picId="guan4jun1da4wu2"/>
+<sta_firstOption id="15" type="2" speaker="老头" content="你击败了坂木，破坏了他们的计划。我代替所有对战树的挑战者衷心的感谢你。不过真正的考验才刚开始，到“冲榜玩法”里冲击最高的层数吧。" picId="qi2dao3shi1"/>
+</root>

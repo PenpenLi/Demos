@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_godStoryFetter id="1" heart="0" desc="" clearRate="0" supportRate="0" avoidRate="0" addPower12="0|0" naughtyRate="60"/>
+<sta_godStoryFetter id="2" heart="1" desc="皮卡丘抖擞了精神，舒展了身子" clearRate="0" supportRate="0" avoidRate="0" addPower12="0|0" naughtyRate="0"/>
+<sta_godStoryFetter id="3" heart="2" desc="皮卡丘一副干劲满满的样子" clearRate="10" supportRate="5" avoidRate="5" addPower12="10|5" naughtyRate="0"/>
+<sta_godStoryFetter id="4" heart="3" desc="皮卡丘想要对着小智撒娇……" clearRate="20" supportRate="10" avoidRate="10" addPower12="10|10" naughtyRate="0"/>
+<sta_godStoryFetter id="5" heart="4" desc="皮卡丘看起来很有精神，激动地抖动着身子！" clearRate="30" supportRate="15" avoidRate="20" addPower12="10|20" naughtyRate="0"/>
+<sta_godStoryFetter id="6" heart="5" desc="皮卡丘比起以前，更加有干劲了！" clearRate="40" supportRate="20" avoidRate="40" addPower12="20|30" naughtyRate="0"/>
+</root>

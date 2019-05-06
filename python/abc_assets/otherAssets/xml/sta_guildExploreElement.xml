@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_guildExploreElement id="1" type="1" name="藏宝图" img="cang2bao3tu2" extraData="" describe="一张破旧的地图，似乎记载着宝藏的地点。" skillDes=""/>
+<sta_guildExploreElement id="2" type="1" name="骨头" img="gu2tou2" extraData="" describe="巨大的骨头，卡拉卡拉好像很喜欢。" skillDes=""/>
+<sta_guildExploreElement id="3" type="1" name="果实" img="guo2shi3" extraData="" describe="小精灵最喜欢的食物，看上去很好吃。" skillDes=""/>
+<sta_guildExploreElement id="4" type="1" name="红宝珠" img="hong2bao2zhu1" extraData="" describe="散发着红色光辉的宝珠。据说蕴含着超古代的力量。 " skillDes=""/>
+<sta_guildExploreElement id="5" type="1" name="金宝箱" img="jin1bao2xiang1" extraData="" describe="一个金色的箱子，里面藏有未知的财宝。" skillDes=""/>
+<sta_guildExploreElement id="6" type="1" name="金钥匙" img="jin1yao4shi2" extraData="" describe="一把金色的钥匙。" skillDes=""/>
+<sta_guildExploreElement id="7" type="1" name="蓝宝珠" img="lan2bao2zhu1" extraData="" describe="散发着靛蓝色光辉的宝珠。据说蕴含着强大的超古代力量。" skillDes=""/>
+<sta_guildExploreElement id="8" type="1" name="礼盒" img="li2he2" extraData="" describe="一个漂亮的盒子，可以装满礼物。" skillDes=""/>
+<sta_guildExploreElement id="9" type="1" name="蘑菇" img="mo1gu2" extraData="" describe="地上到处能看到的蘑菇，一些精灵喜欢的食物。" skillDes=""/>
+<sta_guildExploreElement id="10" type="1" name="铜宝箱" img="tong2bao2xiang1" extraData="" describe="一个铜制的箱子，貌似没装什么东西。" skillDes=""/>
+<sta_guildExploreElement id="11" type="1" name="铜钥匙" img="tong2yao4shi2" extraData="" describe="一把铜钥匙。" skillDes=""/>
+<sta_guildExploreElement id="12" type="1" name="银宝箱" img="yin2bao2xiang1" extraData="" describe="一个银色的宝箱，里面装有精灵喜欢的东西。" skillDes=""/>
+<sta_guildExploreElement id="13" type="1" name="银钥匙" img="yin2yao4shi2" extraData="" describe="一把银色的钥匙。" skillDes=""/>
+<sta_guildExploreElement id="14" type="1" name="远古手镯" img="yuan3gu3shou3zhuo2" extraData="" describe="约3000年前的文明制造的手镯。" skillDes=""/>
+<sta_guildExploreElement id="15" type="1" name="远古之壶" img="yuan3gu3zhi1hu1" extraData="" describe="约3000年前的文明制造的壶。" skillDes=""/>
+<sta_guildExploreElement id="16" type="4" name="随机宝箱" img="shui2ji1bao2xiang1" extraData="" describe="打开不知道会发生什么。" skillDes=""/>
+<sta_guildExploreElement id="17" type="2" name="火堆" img="mc_huo" extraData="26" describe="燃烧的火堆，可以用水浇灭" skillDes=""/>
+<sta_guildExploreElement id="18" type="2" name="毒雾" img="mc_wu" extraData="28" describe="剧毒烟雾，需要强风驱散" skillDes=""/>
+<sta_guildExploreElement id="19" type="2" name="树木" img="mc_cutTree" extraData="25" describe="一颗小树，用火焰能够烧毁" skillDes=""/>
+<sta_guildExploreElement id="20" type="2" name="岩石" img="mc_rubble" extraData="27" describe="巨大岩石，用格斗技似乎能破坏" skillDes=""/>
+<sta_guildExploreElement id="21" type="3" name="古拉顿" img="mc_guladun" extraData="1" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="22" type="3" name="卡拉卡拉" img="mc_labila" extraData="2" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="23" type="3" name="卡比兽" img="mc_kabishou" extraData="3" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="24" type="3" name="雪拉比" img="mc_xuelabi" extraData="4" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="25" type="5" name="小火龙" img="xiao3huo3long2" extraData="19" describe="尾巴上熊熊燃烧的火焰，是生命力的象征,能使用喷射火焰烧毁树木。" skillDes="小火龙使用了喷射火焰烧毁了树木"/>
+<sta_guildExploreElement id="26" type="5" name="水跃鱼" img="shui3yue4yu2" extraData="17" describe="头上的鳍是非常灵敏的雷达，会使出水枪浇灭火焰。" skillDes="水跃鱼使出水枪，浇灭地上的火焰"/>
+<sta_guildExploreElement id="27" type="5" name="利欧路" img="li4ou1lu4" extraData="20" describe="拥有身轻如燕、强韧无比的体能，擅长格斗技，能破坏岩石。" skillDes="利欧路使用碎岩，破坏了路上的岩石"/>
+<sta_guildExploreElement id="28" type="5" name="巴大蝴" img="ba1da4hu2" extraData="18" describe="虫系小精灵，轻轻地振动翅膀，能够用强风吹散烟雾。" skillDes="巴大蝴煽动翅膀，吹散了剧毒烟雾"/>
+<sta_guildExploreElement id="29" type="6" name="金币" img="jin1bi4" extraData="" describe="好像很值钱的东西" skillDes=""/>
+<sta_guildExploreElement id="30" type="6" name="钻石" img="zuan4shi2" extraData="" describe="好像很贵重的东西" skillDes=""/>
+<sta_guildExploreElement id="31" type="3" name="水君" img="mc_shuijun" extraData="5" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="32" type="3" name="水君" img="mc_shuijun" extraData="6" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="33" type="3" name="古拉顿" img="mc_guladun" extraData="7" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="34" type="3" name="吉利蛋" img="mc_jilidan" extraData="8" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="35" type="3" name="卡比兽" img="mc_kabishou" extraData="9" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="36" type="3" name="小火猴" img="mc_xiaohuohou" extraData="10" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="37" type="3" name="小火猴" img="mc_xiaohuohou" extraData="11" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="38" type="3" name="由基拉" img="mc_youjila" extraData="12" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="39" type="3" name="由基拉" img="mc_youjila" extraData="13" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="40" type="3" name="水晶灯火灵" img="mc_shuijindeng" extraData="14" describe="这个家伙好帅" skillDes=""/>
+<sta_guildExploreElement id="41" type="3" name="水晶灯火灵" img="mc_shuijindeng" extraData="15" describe="这个家伙好帅" skillDes=""/>
+</root>

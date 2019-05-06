@@ -1,18 +1,3 @@
-<!-- 
-sta_rechargeInfo:
-
-
-id:
-title:标题
-recommend:是否推荐
-picture:图片名称
-rmb:价格RMB
-present:赠送数量
-rechargeExplain:充值说明
-times:限购次数
-diamond:钻石数量
-weight:权重
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 <sta_rechargeInfo id="1" title="100000钻礼包" recommend="1" picture="dia100000" rmb="9999" present="0" rechargeExplain="首次购买，额外赠送100000钻石（仅限一次）" times="0" diamond="100000" weight="12"/>
@@ -27,4 +12,5 @@ weight:权重
 <sta_rechargeInfo id="10" title="300钻月度礼包" recommend="1" picture="monthCard" rmb="25" present="0" rechargeExplain="赠送300钻石，且连续30天每天可领120钻" times="0" diamond="300" weight="1"/>
 <sta_rechargeInfo id="11" title="120钻礼包" recommend="1" picture="dia120" rmb="12" present="0" rechargeExplain="首次购买，额外赠送120钻石（仅限一次）" times="0" diamond="120" weight="9"/>
 <sta_rechargeInfo id="12" title="180钻礼包" recommend="1" picture="dia180" rmb="18" present="0" rechargeExplain="首次购买，额外赠送180钻石（仅限一次）" times="0" diamond="180" weight="8"/>
+<sta_rechargeInfo id="13" title="680钻礼包" recommend="1" picture="dia980" rmb="68" present="0" rechargeExplain="首次购买，额外赠送680钻石（仅限一次）" times="0" diamond="680" weight="6"/>
 </root>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_wishTask id="1" descs="在对战中心参与5次匹配对战" type="1" paramJNS="{&apos;reqNum&apos;:5}"/>
+<sta_wishTask id="2" descs="在冒险关卡中完成任意普通副本50次" type="2" paramJNS="{&apos;reqNum&apos;:50}"/>
+<sta_wishTask id="3" descs="在冒险关卡中完成任意精英副本30次" type="3" paramJNS="{&apos;reqNum&apos;:30}"/>
+<sta_wishTask id="4" descs="在狩猎场成功捕获3只精灵" type="4" paramJNS="{&apos;reqNum&apos;:3}"/>
+<sta_wishTask id="5" descs="在精灵试炼中完成金币试炼3次" type="5" paramJNS="{&apos;reqNum&apos;:3}"/>
+<sta_wishTask id="6" descs="在精灵试炼中完成联盟试炼3次" type="6" paramJNS="{&apos;reqNum&apos;:3}"/>
+<sta_wishTask id="7" descs="在精灵试炼中完成闪光来袭3次" type="7" paramJNS="{&apos;reqNum&apos;:3}"/>
+<sta_wishTask id="8" descs="参加联盟大赛5次" type="8" paramJNS="{&apos;reqNum&apos;:5}"/>
+<sta_wishTask id="9" descs="在精灵花园成功捕获1只精灵" type="9" paramJNS="{&apos;reqNum&apos;:1}"/>
+<sta_wishTask id="10" descs="通关王者之路第3层" type="10" paramJNS="{&apos;reqNum&apos;:1}"/>
+</root>

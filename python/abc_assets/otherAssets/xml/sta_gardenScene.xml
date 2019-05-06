@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sta_gardenScene id="1" name="草坪" unlockDiamonds="0" size="50,50" birthPlace="10,10" img="img_grass"/>
+<sta_gardenScene id="2" name="沙地" unlockDiamonds="0" size="50,50" birthPlace="10,10" img="img_desert"/>
+<sta_gardenScene id="3" name="雪地" unlockDiamonds="0" size="50,50" birthPlace="10,10" img="img_snow"/>
+<sta_gardenScene id="4" name="中型草坪" unlockDiamonds="500" size="80,80" birthPlace="10,10" img="img_grass"/>
+<sta_gardenScene id="5" name="中型沙地" unlockDiamonds="500" size="80,80" birthPlace="10,10" img="img_desert"/>
+<sta_gardenScene id="6" name="中型雪地" unlockDiamonds="500" size="80,80" birthPlace="10,10" img="img_snow"/>
+<sta_gardenScene id="7" name="大型草坪" unlockDiamonds="1000" size="100,100" birthPlace="10,10" img="img_grass"/>
+<sta_gardenScene id="8" name="大型沙地" unlockDiamonds="1000" size="100,100" birthPlace="10,10" img="img_desert"/>
+<sta_gardenScene id="9" name="大型雪地" unlockDiamonds="1000" size="100,100" birthPlace="10,10" img="img_snow"/>
+</root>
