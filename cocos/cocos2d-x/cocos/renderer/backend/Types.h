@@ -109,6 +109,11 @@ enum class PixelFormat {
     ATC_INTERPOLATED_ALPHA,
     //! Default texture format: AUTO
 
+    //! ETC2-compressed texture: GL_COMPRESSED_RGB8_ETC2
+    ETC2_RGB,
+    //! ETC2-compressed texture: GL_COMPRESSED_RGBA8_ETC2_EAC
+    ETC2_RGBA,
+
     MTL_B5G6R5,
     //MTL_A1BGR5,
     MTL_BGR5A1,

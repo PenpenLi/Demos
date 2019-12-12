@@ -44,6 +44,7 @@ Configuration::Configuration()
     : _maxModelviewStackDepth(0)
     , _supportsPVRTC(false)
     , _supportsETC1(false)
+    , _supportsETC2(false)
     , _supportsS3TC(false)
     , _supportsATITC(false)
     , _supportsNPOT(false)
@@ -107,6 +108,23 @@ std::string Configuration::getInfo() const
     return forDump.getDescription();
 }
 
+static bool checkForEtc2()
+{
+    // Only the following two formats are supported
+#define GL_COMPRESSED_RGB8_ETC2 0x9274
+#define GL_COMPRESSED_RGBA8_ETC2_EAC 0x9278
+    GLint numFormats = 0;
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &numFormats);
+    GLint* formats = new GLint[numFormats];
+    glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
+    int supportNum = 0;
+    for (GLint i = 0; i < numFormats; ++i) {
+        if (formats[i] == GL_COMPRESSED_RGB8_ETC2 || formats[i] == GL_COMPRESSED_RGBA8_ETC2_EAC)
+            supportNum++;
+    }
+    delete[] formats;
+    return supportNum >= 2;
+}
 void Configuration::gatherGPUInfo()
 {
     auto _deviceInfo = backend::Device::getInstance()->getDeviceInfo();
@@ -124,6 +142,9 @@ void Configuration::gatherGPUInfo()
 
     _supportsETC1 = _deviceInfo->checkForFeatureSupported(backend::FeatureType::ETC1);
     _valueDict["supports_ETC1"] = Value(_supportsETC1);
+
+    _supportsETC2 = checkForEtc2();
+    _valueDict["gl.supports_ETC2"] = Value(_supportsETC2);
 
     _supportsS3TC = _deviceInfo->checkForFeatureSupported(backend::FeatureType::S3TC);
     _valueDict["supports_S3TC"] = Value(_supportsS3TC);
@@ -209,6 +230,11 @@ bool Configuration::supportsPVRTC() const
 bool Configuration::supportsETC() const
 {
     return _supportsETC1;
+}
+
+bool Configuration::supportsETC2() const
+{
+    return _supportsETC2;
 }
 
 bool Configuration::supportsS3TC() const

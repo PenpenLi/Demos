@@ -101,6 +101,9 @@ static const PixelFormatInfoMapValue TexturePixelFormatInfoTablesValue[] = {
 #ifdef GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD
     PixelFormatInfoMapValue(backend::PixelFormat::ATC_INTERPOLATED_ALPHA, Texture2D::PixelFormatInfo(8, true, false)),
 #endif
+    PixelFormatInfoMapValue(backend::PixelFormat::ETC2_RGB, Texture2D::PixelFormatInfo(4, true, false)),
+    PixelFormatInfoMapValue(backend::PixelFormat::ETC2_RGBA, Texture2D::PixelFormatInfo(8, true, true)),
+
 //metal formats
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     PixelFormatInfoMapValue(backend::PixelFormat::MTL_ABGR4, Texture2D::PixelFormatInfo(16, false, true)),
@@ -253,7 +256,8 @@ bool Texture2D::initWithMipmaps(MipmapInfo* mipmaps, int mipmapsNum, backend::Pi
     if (info.compressed && !Configuration::getInstance()->supportsPVRTC()
         && !Configuration::getInstance()->supportsETC()
         && !Configuration::getInstance()->supportsS3TC()
-        && !Configuration::getInstance()->supportsATITC()) {
+        && !Configuration::getInstance()->supportsATITC()
+        && !Configuration::getInstance()->supportsETC2()) {
         CCLOG("cocos2d: WARNING: PVRTC/ETC images are not supported");
         return false;
     }
