@@ -21,7 +21,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
- 
+
 #pragma once
 
 #include "Macros.h"
@@ -31,27 +31,23 @@
 
 CC_BACKEND_BEGIN
 
-enum class BufferUsage : uint32_t
-{
+enum class BufferUsage : uint32_t {
     STATIC,
     DYNAMIC
 };
 
-enum class BufferType : uint32_t
-{
+enum class BufferType : uint32_t {
     VERTEX,
     INDEX
 };
 
-enum class ShaderStage : uint32_t
-{
+enum class ShaderStage : uint32_t {
     VERTEX,
     FRAGMENT,
     VERTEX_AND_FRAGMENT
 };
 
-enum class VertexFormat : uint32_t
-{
+enum class VertexFormat : uint32_t {
     FLOAT4,
     FLOAT3,
     FLOAT2,
@@ -68,8 +64,7 @@ enum class VertexFormat : uint32_t
 /** @typedef backend::PixelFormat
      Possible texture pixel formats
      */
-enum class PixelFormat
-{
+enum class PixelFormat {
     //! auto detect the type
     AUTO,
     //! 32-bit texture: BGRA8888
@@ -129,27 +124,23 @@ enum class PixelFormat
     NONE = -1
 };
 
-enum class TextureUsage : uint32_t
-{
+enum class TextureUsage : uint32_t {
     READ,
     WRITE,
     RENDER_TARGET
 };
 
-enum class IndexFormat : uint32_t
-{
+enum class IndexFormat : uint32_t {
     U_SHORT,
     U_INT
 };
 
-enum class VertexStepMode : uint32_t
-{
+enum class VertexStepMode : uint32_t {
     VERTEX,
     INSTANCE
 };
 
-enum class PrimitiveType : uint32_t
-{
+enum class PrimitiveType : uint32_t {
     POINT,
     LINE,
     LINE_STRIP,
@@ -157,22 +148,19 @@ enum class PrimitiveType : uint32_t
     TRIANGLE_STRIP
 };
 
-enum class TextureType: uint32_t
-{
+enum class TextureType : uint32_t {
     TEXTURE_2D,
     TEXTURE_CUBE
 };
 
-enum class SamplerAddressMode: uint32_t
-{
+enum class SamplerAddressMode : uint32_t {
     REPEAT,
     MIRROR_REPEAT,
     CLAMP_TO_EDGE,
     DONT_CARE,
 };
 
-enum class SamplerFilter: uint32_t
-{
+enum class SamplerFilter : uint32_t {
     NEAREST,
     NEAREST_MIPMAP_NEAREST,
     NEAREST_MIPMAP_LINEAR,
@@ -182,8 +170,7 @@ enum class SamplerFilter: uint32_t
     DONT_CARE,
 };
 
-enum class StencilOperation: uint32_t
-{
+enum class StencilOperation : uint32_t {
     KEEP,
     ZERO,
     REPLACE,
@@ -192,8 +179,7 @@ enum class StencilOperation: uint32_t
     DECREMENT_WRAP
 };
 
-enum class CompareFunction: uint32_t
-{
+enum class CompareFunction : uint32_t {
     NEVER,
     LESS,
     LESS_EQUAL,
@@ -204,15 +190,13 @@ enum class CompareFunction: uint32_t
     ALWAYS
 };
 
-enum class BlendOperation: uint32_t
-{
+enum class BlendOperation : uint32_t {
     ADD,
     SUBTRACT,
     RESERVE_SUBTRACT
 };
 
-enum class BlendFactor : uint32_t
-{
+enum class BlendFactor : uint32_t {
     ZERO,
     ONE,
     SRC_COLOR,
@@ -229,8 +213,7 @@ enum class BlendFactor : uint32_t
     BLEND_CLOLOR
 };
 
-enum class ColorWriteMask: uint32_t
-{
+enum class ColorWriteMask : uint32_t {
     NONE = 0x00000000,
     RED = 0x00000001,
     GREEN = 0x00000002,
@@ -239,8 +222,7 @@ enum class ColorWriteMask: uint32_t
     ALL = 0x0000000F
 };
 
-struct SamplerDescriptor
-{
+struct SamplerDescriptor {
     SamplerFilter magFilter = SamplerFilter::LINEAR;
     SamplerFilter minFilter = SamplerFilter::LINEAR;
     SamplerAddressMode sAddressMode = SamplerAddressMode::CLAMP_TO_EDGE;
@@ -252,29 +234,30 @@ struct SamplerDescriptor
         SamplerFilter _magFilter,
         SamplerFilter _minFilter,
         SamplerAddressMode _sAddressMode,
-        SamplerAddressMode _tAddressMode
-    ) : magFilter(_magFilter), minFilter(_minFilter),
-        sAddressMode(_sAddressMode), tAddressMode(_tAddressMode) {}
+        SamplerAddressMode _tAddressMode)
+        : magFilter(_magFilter)
+        , minFilter(_minFilter)
+        , sAddressMode(_sAddressMode)
+        , tAddressMode(_tAddressMode)
+    {
+    }
 };
 
-enum class CullMode: uint32_t
-{
+enum class CullMode : uint32_t {
     NONE = 0x00000000,
     BACK = 0x00000001,
     FRONT = 0x00000002
 };
 
-enum class Winding: uint32_t
-{
+enum class Winding : uint32_t {
     CLOCK_WISE,
     COUNTER_CLOCK_WISE
 };
 
-struct UniformInfo
-{
+struct UniformInfo {
     int count = 0;
     int location = -1;
-    
+
     //in opengl, type means uniform data type, i.e. GL_FLOAT_VEC2, while in metal type means data basic type, i.e. float
     unsigned int type = 0;
     bool isArray = false;
@@ -286,83 +269,78 @@ struct UniformInfo
     bool needConvert = false;
 };
 
-struct UniformLocation
-{
+struct UniformLocation {
     /**
      * in metal, those two locations represent to vertex and fragment location. 
      * in opengl, location[0] represent the location, and location[1] represent location offset in uniform buffer. 
      */
-    int location[2] = {-1, -1};
+    int location[2] = { -1, -1 };
     ShaderStage shaderStage = ShaderStage::VERTEX;
     UniformLocation() = default;
     operator bool()
     {
-        if(shaderStage == ShaderStage::VERTEX_AND_FRAGMENT)
+        if (shaderStage == ShaderStage::VERTEX_AND_FRAGMENT)
             return location[0] >= 0 && location[1] >= 0;
         else
-            return location[int(shaderStage)] >=0;
+            return location[int(shaderStage)] >= 0;
     }
     void reset() { location[0] = location[1] = -1; }
-    bool operator == (const UniformLocation &other) const;
-    std::size_t operator()(const UniformLocation &uniform) const;
+    bool operator==(const UniformLocation& other) const;
+    std::size_t operator()(const UniformLocation& uniform) const;
 };
 
-
-struct AttributeBindInfo
-{
+struct AttributeBindInfo {
     std::string attributeName;
-    int         location    = -1;
-    int         size        = 0;
-    int         type        = 0;
+    int location = -1;
+    int size = 0;
+    int type = 0;
 };
 
-enum class TextureCubeFace : uint32_t
-{
+enum class TextureCubeFace : uint32_t {
     POSITIVE_X = 0,
     NEGATIVE_X = 1,
-    POSITIVE_Y = 2, 
-    NEGATIVE_Y = 3, 
+    POSITIVE_Y = 2,
+    NEGATIVE_Y = 3,
     POSITIVE_Z = 4,
     NEGATIVE_Z = 5
 };
 
-enum class ProgramType : size_t
-{
-    POSITION_COLOR_LENGTH_TEXTURE,          //positionColorLengthTexture_vert, positionColorLengthTexture_frag
-    POSITION_COLOR_TEXTURE_AS_POINTSIZE,    //positionColorTextureAsPointsize_vert, positionColor_frag
-    POSITION_COLOR,                         //positionColor_vert,           positionColor_frag
-    POSITION,                               //position_vert,                positionColor_frag
-    POSITION_UCOLOR,                        //positionUColor_vert,          positionUColor_frag
-    POSITION_TEXTURE,                       //positionTexture_vert,         positionTexture_frag
-    POSITION_TEXTURE_COLOR,                 //positionTextureColor_vert,    positionTextureColor_frag
-    POSITION_TEXTURE_COLOR_ALPHA_TEST,      //positionTextureColor_vert,    positionTextureColorAlphaTest_frag
-    LABEL_NORMAL,                           //positionTextureColor_vert,    label_normal_frag
-    LABLE_OUTLINE,                          //positionTextureColor_vert,    labelOutline_frag
-    LABLE_DISTANCEFIELD_GLOW,               //positionTextureColor_vert,    labelDistanceFieldGlow_frag
-    LABEL_DISTANCE_NORMAL,                  //positionTextureColor_vert,    label_distanceNormal_frag
-   
-    LAYER_RADIA_GRADIENT,                   //position_vert,                layer_radialGradient_frag
-    
-    ETC1,                                   //positionTextureColor_vert,    etc1_frag
-    ETC1_GRAY,                              //positionTextureColor_vert,    etc1Gray_frag
-    GRAY_SCALE,                             //positionTextureColor_vert,    grayScale_frag
-    CAMERA_CLEAR,                           //cameraClear_vert,             cameraClear_frag
-    
-    TERRAIN_3D,                             //CC3D_terrain_vert,                    CC3D_terrain_frag
-    LINE_COLOR_3D,                          //lineColor3D_vert,                     lineColor3D_frag
-    SKYBOX_3D,                              //CC3D_skybox_vert,                     CC3D_skybox_frag
-    SKINPOSITION_TEXTURE_3D,                //CC3D_skinPositionTexture_vert,        CC3D_colorTexture_frag
-    SKINPOSITION_NORMAL_TEXTURE_3D,         //CC3D_skinPositionNormalTexture_vert,  CC3D_colorNormalTexture_frag
-    POSITION_NORMAL_TEXTURE_3D,             //CC3D_positionNormalTexture_vert,      CC3D_colorNormalTexture_frag
-    POSITION_NORMAL_3D,                     //CC3D_positionNormalTexture_vert,      CC3D_colorNormal_frag
-    POSITION_TEXTURE_3D,                    //CC3D_positionTexture_vert,            CC3D_colorTexture_frag
-    POSITION_3D,                            //CC3D_positionTexture_vert,            CC3D_color_frag
-    POSITION_BUMPEDNORMAL_TEXTURE_3D,       //CC3D_positionNormalTexture_vert,      CC3D_colorNormalTexture_frag
-    SKINPOSITION_BUMPEDNORMAL_TEXTURE_3D,   //CC3D_skinPositionNormalTexture_vert,  CC3D_colorNormalTexture_frag
-    PARTICLE_TEXTURE_3D,                    //CC3D_particle_vert,                   CC3D_particleTexture_frag
-    PARTICLE_COLOR_3D,                      //CC3D_particle_vert,                   CC3D_particleColor_frag
+enum class ProgramType : size_t {
+    POSITION_COLOR_LENGTH_TEXTURE, //positionColorLengthTexture_vert, positionColorLengthTexture_frag
+    POSITION_COLOR_TEXTURE_AS_POINTSIZE, //positionColorTextureAsPointsize_vert, positionColor_frag
+    POSITION_COLOR, //positionColor_vert,           positionColor_frag
+    POSITION, //position_vert,                positionColor_frag
+    POSITION_UCOLOR, //positionUColor_vert,          positionUColor_frag
+    POSITION_TEXTURE, //positionTexture_vert,         positionTexture_frag
+    POSITION_TEXTURE_COLOR, //positionTextureColor_vert,    positionTextureColor_frag
+    POSITION_TEXTURE_COLOR_ALPHA_TEST, //positionTextureColor_vert,    positionTextureColorAlphaTest_frag
+    LABEL_NORMAL, //positionTextureColor_vert,    label_normal_frag
+    LABLE_OUTLINE, //positionTextureColor_vert,    labelOutline_frag
+    LABLE_DISTANCEFIELD_GLOW, //positionTextureColor_vert,    labelDistanceFieldGlow_frag
+    LABEL_DISTANCE_NORMAL, //positionTextureColor_vert,    label_distanceNormal_frag
 
-    CUSTOM_PROGRAM,                         //user-define program
+    LAYER_RADIA_GRADIENT, //position_vert,                layer_radialGradient_frag
+
+    ETC1, //positionTextureColor_vert,    etc1_frag
+    ETC1_GRAY, //positionTextureColor_vert,    etc1Gray_frag
+    GRAY_SCALE, //positionTextureColor_vert,    grayScale_frag
+    CAMERA_CLEAR, //cameraClear_vert,             cameraClear_frag
+
+    TERRAIN_3D, //CC3D_terrain_vert,                    CC3D_terrain_frag
+    LINE_COLOR_3D, //lineColor3D_vert,                     lineColor3D_frag
+    SKYBOX_3D, //CC3D_skybox_vert,                     CC3D_skybox_frag
+    SKINPOSITION_TEXTURE_3D, //CC3D_skinPositionTexture_vert,        CC3D_colorTexture_frag
+    SKINPOSITION_NORMAL_TEXTURE_3D, //CC3D_skinPositionNormalTexture_vert,  CC3D_colorNormalTexture_frag
+    POSITION_NORMAL_TEXTURE_3D, //CC3D_positionNormalTexture_vert,      CC3D_colorNormalTexture_frag
+    POSITION_NORMAL_3D, //CC3D_positionNormalTexture_vert,      CC3D_colorNormal_frag
+    POSITION_TEXTURE_3D, //CC3D_positionTexture_vert,            CC3D_colorTexture_frag
+    POSITION_3D, //CC3D_positionTexture_vert,            CC3D_color_frag
+    POSITION_BUMPEDNORMAL_TEXTURE_3D, //CC3D_positionNormalTexture_vert,      CC3D_colorNormalTexture_frag
+    SKINPOSITION_BUMPEDNORMAL_TEXTURE_3D, //CC3D_skinPositionNormalTexture_vert,  CC3D_colorNormalTexture_frag
+    PARTICLE_TEXTURE_3D, //CC3D_particle_vert,                   CC3D_particleTexture_frag
+    PARTICLE_COLOR_3D, //CC3D_particle_vert,                   CC3D_particleColor_frag
+
+    CUSTOM_PROGRAM, //user-define program
 };
 
 ///built-in uniform name
@@ -386,15 +364,14 @@ static const char* ATTRIBUTE_NAME_TEXCOORD3 = "a_texCoord3";
 /**
  * @brief a structor to store blend descriptor
  */
-struct BlendDescriptor
-{
+struct BlendDescriptor {
     ColorWriteMask writeMask = ColorWriteMask::ALL;
-    
+
     bool blendEnabled = false;
-    
+
     BlendOperation rgbBlendOperation = BlendOperation::ADD;
     BlendOperation alphaBlendOperation = BlendOperation::ADD;
-    
+
     BlendFactor sourceRGBBlendFactor = BlendFactor::ONE;
     BlendFactor destinationRGBBlendFactor = BlendFactor::ZERO;
     BlendFactor sourceAlphaBlendFactor = BlendFactor::ONE;
