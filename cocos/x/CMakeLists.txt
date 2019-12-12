@@ -55,8 +55,8 @@ if(APPLE OR VS)
 endif()
 
 # record sources, headers
-set(GAME_HEADER ${RUNTIME_SRC_ROOT}/Classes/AppDelegate.h)
-set(GAME_SOURCE ${RUNTIME_SRC_ROOT}/Classes/AppDelegate.cpp)
+file(GLOB GAME_HEADER ${RUNTIME_SRC_ROOT}/Classes/*.h*)
+file(GLOB GAME_SOURCE ${RUNTIME_SRC_ROOT}/Classes/*.c*)
 # sources need to compile info, include dirs and source files
 
 if(ANDROID)

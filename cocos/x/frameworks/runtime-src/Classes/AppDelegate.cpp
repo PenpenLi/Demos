@@ -23,8 +23,8 @@
  ****************************************************************************/
 
 #include "AppDelegate.h"
-#include "scripting/lua-bindings/manual/CCLuaEngine.h"
 #include "cocos2d.h"
+#include "scripting/lua-bindings/manual/CCLuaEngine.h"
 #include "scripting/lua-bindings/manual/lua_module_register.h"
 
 // #define USE_AUDIO_ENGINE 1
@@ -51,7 +51,6 @@ AppDelegate::~AppDelegate()
     // NOTE:Please don't remove this call if you want to debug with Cocos Code IDE
     RuntimeEngine::getInstance()->end();
 #endif
-
 }
 
 // if you want a different context, modify the value of glContextAttrs
@@ -59,12 +58,12 @@ AppDelegate::~AppDelegate()
 void AppDelegate::initGLContextAttrs()
 {
     // set OpenGL context attributes: red,green,blue,alpha,depth,stencil,multisamplesCount
-    GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0 };
+    GLContextAttrs glContextAttrs = { 8, 8, 8, 8, 24, 8, 0 };
 
     GLView::setGLContextAttrs(glContextAttrs);
 }
 
-// if you want to use the package manager to install more packages, 
+// if you want to use the package manager to install more packages,
 // don't modify or remove this function
 static int register_all_packages()
 {
@@ -90,16 +89,18 @@ bool AppDelegate::applicationDidFinishLaunching()
     //register custom function
     //LuaStack* stack = engine->getLuaStack();
     //register_custom_function(stack->getLuaState());
-    
+
 #if CC_64BITS
     FileUtils::getInstance()->addSearchPath("src/64bit");
 #endif
     FileUtils::getInstance()->addSearchPath("src");
     FileUtils::getInstance()->addSearchPath("res");
-    if (engine->executeScriptFile("main.lua"))
-    {
+    if (engine->executeScriptFile("main.lua")) {
         return false;
     }
+
+    extern void dec_sss();
+    dec_sss();
 
     return true;
 }
